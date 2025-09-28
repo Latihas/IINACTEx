@@ -476,3 +476,5 @@ $RECYCLE.BIN/
 
 # Windows shortcuts
 *.lnk
+packages.lock.json
+Triggernometry.dll

@@ -17,8 +17,6 @@ using FFXIV_ACT_Plugin.Memory.Models;
 using FFXIV_ACT_Plugin.Parse;
 using FFXIV_ACT_Plugin.Resource;
 using IINACT.Network;
-using Machina.FFXIV;
-using Machina.FFXIV.Headers.Opcodes;
 using Microsoft.MinIoC;
 using ACTWrapper = FFXIV_ACT_Plugin.Common.ACTWrapper;
 

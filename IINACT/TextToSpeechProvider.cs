@@ -3,8 +3,10 @@ using Dalamud.Plugin.Services;
 using IINACT.TextToSpeech;
 using System.Net;
 using NAudio.Wave;
-using System.Threading;
 using System.IO;
+using System.Net.Http;
+using IINACT.Latihas;
+using static IINACT.Plugin;
 
 namespace IINACT;
 
@@ -14,9 +16,10 @@ internal class TextToSpeechProvider
     private readonly HttpClient client = new();
     private readonly SpeechSynthesizer? speechSynthesizer;
     private readonly EdgeTTSManager? edgeTTSManager;
-    private bool useEdgeTTS = false;
+    private bool useEdgeTTS;
+    private bool useLatihasTTS;
     private readonly IPluginLog _log;
-    
+
     public TextToSpeechProvider(IPluginLog log, string configPath)
     {
         _log = log;
@@ -42,15 +45,33 @@ internal class TextToSpeechProvider
                 speechSynthesizer = null;
             }
         }
-        
+
         Advanced_Combat_Tracker.ActGlobals.oFormActMain.TextToSpeech += Speak;
     }
 
     public void SetUseEdgeTTS(bool useEdgeTTS)
     {
-        this.useEdgeTTS = useEdgeTTS;
+        if (useEdgeTTS) Plugin.Configuration.UseLatihasTts = useLatihasTTS = false;
+        Plugin.Configuration.UseEdgeTTS = this.useEdgeTTS = useEdgeTTS;
+        Plugin.Configuration.Save();
     }
-    
+
+    public void SetUseLatihasTTS(bool useLatihasTTS)
+    {
+        if (useLatihasTTS)
+        {
+            if (LatihasTts == null || !LatihasTts!.CheckAssets())
+            {
+                Plugin.Configuration.UseLatihasTts = this.useLatihasTTS = false;
+                Plugin.Configuration.Save();
+                return;
+            }
+            Plugin.Configuration.UseEdgeTTS = useEdgeTTS = false;
+        }
+        Plugin.Configuration.UseLatihasTts = this.useLatihasTTS = useLatihasTTS;
+        Plugin.Configuration.Save();
+    }
+
     public void Speak(string message)
     {
         if (string.IsNullOrEmpty(message)) return;
@@ -59,7 +80,19 @@ internal class TextToSpeechProvider
         {
             try
             {
-                Task.Run(async () => await edgeTTSManager.Speak(message));
+                Task.Run(() => edgeTTSManager.Speak(message));
+            }
+            catch (Exception ex)
+            {
+                _log.Error(ex, $"EdgeTTS failed to play back {message}");
+            }
+            return;
+        }
+        if (useLatihasTTS)
+        {
+            try
+            {
+                LatihasTts.Speak(message);
             }
             catch (Exception ex)
             {
@@ -98,7 +131,7 @@ internal class TextToSpeechProvider
         using var waveOut = new WaveOutEvent();
         waveOut.Init(reader);
         var waitHandle = new ManualResetEventSlim(false);
-        
+
         lock (speechLock)
         {
             waveOut.Play();
@@ -106,7 +139,7 @@ internal class TextToSpeechProvider
             waitHandle.Wait();
         }
     }
-    
+
     private void SpeakSapi(string message)
     {
         lock (speechLock)

@@ -46,6 +46,8 @@ public partial class FormActMain : Form, ISynchronizeInvoke
     [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
     public bool WriteLogFile { get; set; } = true;
     [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+    public bool WriteActLogFile { get; set; } = true;
+    [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
     public bool DisableWritingPvpLogFile { get; set; }
     [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
     public int GlobalTimeSorter { get; set; }
@@ -62,12 +64,18 @@ public partial class FormActMain : Form, ISynchronizeInvoke
     [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
     public ConcurrentQueue<string> LogQueue { get; private set; } = new();
     [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+    public ConcurrentQueue<string> ActLogQueue { get; private set; } = new();
+    [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
     public string CurrentZone { get; set; }
     [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
     public FFXIV_ACT_Plugin.FFXIV_ACT_Plugin FfxivPlugin { get; set; }
     [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
     public object OverlayPluginContainer { get; set; }
 
+    [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+    public dynamic TriggernometryPlugin { get; set; }
+    [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+    public dynamic PostNamazuPlugin { get; set; }
 
     [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
     public DateTime LastHostileTime { get; private set; }
@@ -199,6 +207,8 @@ public partial class FormActMain : Form, ISynchronizeInvoke
         LastKnownTime = parsedLogTime;
         var logLineEventArgs = new LogLineEventArgs(logLine, 0, parsedLogTime, CurrentZone, inCombat, "Plugin");
         BeforeLogLineRead(false, logLineEventArgs);
+		if(WriteLogFile&&WriteActLogFile)
+			ActLogQueue.Enqueue(logLineEventArgs.logLine);
         if (OnLogLineRead == null)
             return;
         var logLineEventArgs2 = new LogLineEventArgs(logLineEventArgs.logLine, logLineEventArgs.detectedType,
@@ -372,6 +382,8 @@ public partial class FormActMain : Form, ISynchronizeInvoke
         {
             using var stream = new FileStream(LogFilePath, FileMode.Append, FileAccess.Write, FileShare.ReadWrite);
             using var outputWriter = new StreamWriter(stream);
+            using var streamAct = new FileStream(LogFilePath+".act", FileMode.Append, FileAccess.Write, FileShare.ReadWrite);
+            using var outputWriterAct = new StreamWriter(streamAct);
             while (pluginActive)
             {
                 if (!WriteLogFile || DisableWritingPvpLogFile)
@@ -381,9 +393,12 @@ public partial class FormActMain : Form, ISynchronizeInvoke
                 }
                 
                 while (LogQueue.TryDequeue(out var line))
-                    outputWriter.WriteLine(line);
+                    outputWriter.WriteLine(line); 
+                while (ActLogQueue.TryDequeue(out var line))
+                    outputWriterAct.WriteLine(line);
 
                 outputWriter.Flush();
+                outputWriterAct.Flush();
                 Thread.Sleep(500);
             }
         }

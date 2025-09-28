@@ -10,24 +10,22 @@ using System.Numerics;
 using Dalamud.Bindings.ImGui;
 using Dalamud.Interface.Utility;
 using Dalamud.Interface.Utility.Raii;
+using IINACT.Latihas;
 
 namespace IINACT.Windows;
 
 public class MainWindow : Window, IDisposable
 {
-    private Plugin Plugin { get; }
 
     private int selectedOverlayIndex;
 
-    public MainWindow(Plugin plugin) : base($"IINACT v{plugin.Version}")
+    public MainWindow() : base(LWindow.WindowPrefix)
     {
         SizeConstraints = new WindowSizeConstraints
         {
             MinimumSize = new Vector2(307, 207),
             MaximumSize = new Vector2(float.MaxValue, float.MaxValue)
         };
-
-        Plugin = plugin;
     }
 
     public IPluginConfig? OverlayPluginConfig { get; set; }
@@ -41,11 +39,13 @@ public class MainWindow : Window, IDisposable
     {
         using var bar = ImRaii.TabBar("settingsTabs");
         if (!bar) return;
-
+        LWindow.DrawHelpSettings();
         DrawMainWindow();
         DrawParseSettings();
         DrawWebSocketSettings();
         DrawTTSSettings();
+		LWindow.DrawTriggerSettings();
+		LWindow.DrawTestSettings();
     }
 
     private void DrawMainWindow()
@@ -56,7 +56,7 @@ public class MainWindow : Window, IDisposable
         ImGui.Spacing();
         ImGui.TextColored(ImGuiColors.DalamudGrey, "OverlayPlugin 状态:");
         ImGuiHelpers.ScaledRelativeSameLine(155);
-        ImGui.Text(Plugin.OverlayPluginStatus);
+        ImGui.Text(Plugin.Instance.OverlayPluginStatus);
         ImGui.Spacing();
         ImGui.Separator();
         ImGui.Spacing();
@@ -171,14 +171,18 @@ public class MainWindow : Window, IDisposable
         }
 
         ImGui.Spacing();
-        
         var writeLogFile = Plugin.Configuration.WriteLogFile;
+        var writeActLogFile = Plugin.Configuration.WriteActLogFile;
         if (ImGui.Checkbox("写入网络日志文件", ref writeLogFile))
         {
             Plugin.Configuration.WriteLogFile = writeLogFile;
             Plugin.Configuration.Save();
         }
-
+        if ( Plugin.Configuration.WriteLogFile&&ImGui.Checkbox("写入ACT日志文件", ref writeActLogFile))
+        {
+            Plugin.Configuration.WriteActLogFile = writeActLogFile;
+            Plugin.Configuration.Save();
+        }
         var disablePvp = Plugin.Configuration.DisablePvp;
         if (ImGui.Checkbox("在PvP中禁用写入网络日志文件", ref disablePvp))
         {
@@ -270,12 +274,7 @@ public class MainWindow : Window, IDisposable
         ImGui.Spacing();
         var useEdgeTTS = Plugin.Configuration.UseEdgeTTS;
         if (ImGui.Checkbox("使用EdgeTTS（不勾选则使用本地TTS）", ref useEdgeTTS))
-        {
-            Plugin.Configuration.UseEdgeTTS = useEdgeTTS;
-            Plugin.Configuration.Save();
             Plugin.TextToSpeechProvider.SetUseEdgeTTS(useEdgeTTS);
-        }
-
         if (useEdgeTTS)
         {
             ImGui.SameLine();
@@ -284,7 +283,9 @@ public class MainWindow : Window, IDisposable
                 Plugin.OpenEdgeTTSWindow();
             }
         }
-
+		var useLatihasTTS = Plugin.Configuration.UseLatihasTts;
+		if (ImGui.Checkbox("使用LatihasTTS（均不勾选则使用本地TTS）", ref useLatihasTTS)) 
+			Plugin.TextToSpeechProvider.SetUseLatihasTTS(useLatihasTTS);
         ImGui.Spacing();
         ImGui.Separator();
         ImGui.Spacing();

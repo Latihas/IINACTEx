@@ -1,3 +1,4 @@
+using System.IO;
 using Dalamud.Configuration;
 using Dalamud.Plugin;
 using Newtonsoft.Json;
@@ -30,6 +31,15 @@ public class Configuration : IPluginConfiguration
 
     [JsonProperty("useEdgeTTS")]
     public bool UseEdgeTTS { get; set; } = true;
+    [JsonProperty("useLatihasTTS")]
+    public bool UseLatihasTts { get; set; } = true;
+    
+    // public string MyNamedCallbackPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), "MyNamedCallback");
+    // public Dictionary<string,NamedCallbackInfo>MyNamedCallbackInfo  = new();
+    public class NamedCallbackInfo {
+        public bool Enabled;
+        public bool Loaded;
+    }
 
     public string LogFilePath
     {
@@ -42,6 +52,12 @@ public class Configuration : IPluginConfiguration
         get => Advanced_Combat_Tracker.ActGlobals.oFormActMain.WriteLogFile;
         set => Advanced_Combat_Tracker.ActGlobals.oFormActMain.WriteLogFile = value;
     }
+    
+	public bool WriteActLogFile
+	{
+		get => Advanced_Combat_Tracker.ActGlobals.oFormActMain.WriteActLogFile;
+		set => Advanced_Combat_Tracker.ActGlobals.oFormActMain.WriteActLogFile = value;
+	}
 
     public bool DisableWritingPvpLogFile
     {

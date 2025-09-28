@@ -1,19 +1,14 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFramework>net10.0-windows</TargetFramework>
         <EnableWindowsTargeting>true</EnableWindowsTargeting>
         <Nullable>enable</Nullable>
         <UseWindowsForms>true</UseWindowsForms>
         <ImplicitUsings>enable</ImplicitUsings>
         <AssemblyName>Advanced Combat Tracker</AssemblyName>
         <RootNamespace>Advanced_Combat_Tracker</RootNamespace>
-        <PlatformTarget>x64</PlatformTarget>
-        <RuntimeIdentifier>win-x64</RuntimeIdentifier>
         <Version>6.9</Version>
-        <LangVersion>11</LangVersion>
         <ProduceReferenceAssembly>false</ProduceReferenceAssembly>
-        <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
         <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
         <NoWarn>1701;1702;CS8618;IDE1006</NoWarn>
     </PropertyGroup>
@@ -21,19 +16,6 @@
     <ItemGroup>
         <Folder Include="Datatypes\"/>
     </ItemGroup>
-
-    <PropertyGroup>
-        <DalamudLibPath>$(appdata)\XIVLauncher\addon\Hooks\dev\</DalamudLibPath>
-        <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
-    </PropertyGroup>
-
-    <PropertyGroup Condition="'$([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform($([System.Runtime.InteropServices.OSPlatform]::Linux)))'">
-        <DalamudLibPath>$(DALAMUD_HOME)/</DalamudLibPath>
-    </PropertyGroup>
-
-    <PropertyGroup Condition="'$([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform($([System.Runtime.InteropServices.OSPlatform]::OSX)))'">
-        <DalamudLibPath>$(HOME)/Library/Application Support/XIV on Mac/dalamud/Hooks/dev/</DalamudLibPath>
-    </PropertyGroup>
 
     <ItemGroup>
         <Reference Include="Dalamud">

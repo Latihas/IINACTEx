@@ -11,11 +11,10 @@ public class EdgeTTSWindow : Window
 {
     private readonly EdgeTTSManager _manager;
     private bool _shouldMigrateFiles;
-    private readonly Plugin _plugin;
     private string _newRuleFrom = "";
     private string _newRuleTo = "";
 
-    public EdgeTTSWindow(EdgeTTSManager manager, Plugin plugin) : base("EdgeTTS设置")
+    public EdgeTTSWindow(EdgeTTSManager manager) : base("EdgeTTS设置")
     {
         SizeConstraints = new WindowSizeConstraints
         {
@@ -24,7 +23,6 @@ public class EdgeTTSWindow : Window
         };
 
         _manager = manager;
-        _plugin = plugin;
     }
 
     public void Show()
@@ -238,7 +236,7 @@ public class EdgeTTSWindow : Window
         ImGui.SameLine();
         if (ImGuiComponents.DisabledButton(FontAwesomeIcon.Folder))
         {
-            _plugin.FileDialogManager.OpenFolderDialog("选择缓存文件夹", (success, path) =>
+            Plugin.FileDialogManager.OpenFolderDialog("选择缓存文件夹", (success, path) =>
             {
                 if (!success) return;
                 if (_shouldMigrateFiles)

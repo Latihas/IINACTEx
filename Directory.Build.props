@@ -1,0 +1,17 @@
+﻿<Project >
+    <PropertyGroup>
+        <NoWarn>CA1416</NoWarn>
+        <TargetFramework>net9.0-windows</TargetFramework>
+        <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+        <SatelliteResourceLanguages>None</SatelliteResourceLanguages>
+        <PlatformTarget>x64</PlatformTarget>
+        <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+        <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
+        <LangVersion>latest</LangVersion>
+        <Configuration>Release</Configuration>
+    </PropertyGroup>
+    <PropertyGroup>
+        <DalamudLibPath>$(appdata)\XIVLauncherCN\addon\Hooks\dev\</DalamudLibPath>
+        <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+    </PropertyGroup>
+</Project>
