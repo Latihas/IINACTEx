@@ -1,3 +1,12 @@
+> 友情裤链: https://raw.githubusercontent.com/Latihas/dalamud-plugins/main/repo.json
+
+## IINACT改版，整合了CN、Triggernometry、PostNamazu
+# 重要提醒！！！请一定要先看完介绍再使用，本插件仍然不是很稳定，有炸游戏风险
+# 重要提醒！！！请一定要先看完介绍再使用，本插件仍然不是很稳定，有炸游戏风险
+# 重要提醒！！！请一定要先看完介绍再使用，本插件仍然不是很稳定，有炸游戏风险
+
+本项目仍然处于野蛮开发期，代码管理极其混乱，暗藏神秘bug，仅作开发测试使用。剩下的自己去游戏里体验吧。
+
 ## 笔记
 
 >国服兼容 [授人以渔](https://www.bilibili.com/opus/1045734514081398787)  
