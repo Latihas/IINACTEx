@@ -1,0 +1,47 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <ItemGroup>
+        <Reference Include="Dalamud">
+            <HintPath>$(DalamudLibPath)Dalamud.dll</HintPath>
+            <Private>false</Private>
+        </Reference>
+    </ItemGroup>
+    <ItemGroup>
+        <PackageReference Include="Microsoft.ML.OnnxRuntime" Version="1.23.2" />
+        <PackageReference Include="NAudio" Version="2.2.1"/>
+    </ItemGroup>
+    <ItemGroup>
+        <Content Include="..\tts\TtsAssets\a.ort">
+            <Link>TtsAssets\a.ort</Link>
+        </Content>
+        <Content Include="..\tts\TtsAssets\Microsoft.ML.OnnxRuntime.dll">
+            <Link>TtsAssets\Microsoft.ML.OnnxRuntime.dll</Link>
+        </Content>
+        <Content Include="..\tts\TtsAssets\onnxruntime.dll">
+            <Link>TtsAssets\onnxruntime.dll</Link>
+        </Content>
+        <Content Include="..\tts\TtsAssets\onnxruntime.lib">
+            <Link>TtsAssets\onnxruntime.lib</Link>
+        </Content>
+        <Content Include="..\tts\TtsAssets\onnxruntime_providers_shared.dll">
+            <Link>TtsAssets\onnxruntime_providers_shared.dll</Link>
+        </Content>
+        <Content Include="..\tts\TtsAssets\onnxruntime_providers_shared.lib">
+            <Link>TtsAssets\onnxruntime_providers_shared.lib</Link>
+        </Content>
+        <Content Include="..\tts\TtsAssets\pinyin.txt">
+            <Link>TtsAssets\pinyin.txt</Link>
+        </Content>
+        <Content Include="..\tts\TtsAssets\symbol.txt">
+            <Link>TtsAssets\symbol.txt</Link>
+        </Content>
+        <Content Include="..\tts\TtsAssets\v.ort">
+            <Link>TtsAssets\v.ort</Link>
+        </Content>
+        <Content Include="..\tts\TtsAssets\vocab.txt">
+            <Link>TtsAssets\vocab.txt</Link>
+        </Content>
+    </ItemGroup>
+
+
+</Project>
