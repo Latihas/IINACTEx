@@ -1,10 +1,10 @@
 ﻿[submodule "machina"]
 	path = machina
-	url = https://github.com/MeowZWR/machina
+	url = https://github.com/MeowZWR/machina.git
 	branch = cn
 [submodule "OverlayPlugin.Core/resources/act-overlays"]
 	path = OverlayPlugin.Core/resources/act-overlays
-	url = https://github.com/MeowZWR/act-overlays
+	url = https://github.com/MeowZWR/act-overlays.git
 	branch = cn
 [submodule "EdgeTTS"]
 	path = EdgeTTS
