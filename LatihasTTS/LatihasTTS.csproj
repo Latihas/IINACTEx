@@ -11,9 +11,6 @@
         <PackageReference Include="NAudio" Version="2.2.1"/>
     </ItemGroup>
     <ItemGroup>
-        <Content Include="..\tts\TtsAssets\a.ort">
-            <Link>TtsAssets\a.ort</Link>
-        </Content>
         <Content Include="..\tts\TtsAssets\Microsoft.ML.OnnxRuntime.dll">
             <Link>TtsAssets\Microsoft.ML.OnnxRuntime.dll</Link>
         </Content>
@@ -28,18 +25,6 @@
         </Content>
         <Content Include="..\tts\TtsAssets\onnxruntime_providers_shared.lib">
             <Link>TtsAssets\onnxruntime_providers_shared.lib</Link>
-        </Content>
-        <Content Include="..\tts\TtsAssets\pinyin.txt">
-            <Link>TtsAssets\pinyin.txt</Link>
-        </Content>
-        <Content Include="..\tts\TtsAssets\symbol.txt">
-            <Link>TtsAssets\symbol.txt</Link>
-        </Content>
-        <Content Include="..\tts\TtsAssets\v.ort">
-            <Link>TtsAssets\v.ort</Link>
-        </Content>
-        <Content Include="..\tts\TtsAssets\vocab.txt">
-            <Link>TtsAssets\vocab.txt</Link>
         </Content>
     </ItemGroup>
 
