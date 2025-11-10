@@ -478,4 +478,4 @@ $RECYCLE.BIN/
 *.lnk
 packages.lock.json
 Triggernometry.dll
-./tts
+tts/
