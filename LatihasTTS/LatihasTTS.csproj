@@ -1,5 +1,4 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-
     <ItemGroup>
         <Reference Include="Dalamud">
             <HintPath>$(DalamudLibPath)Dalamud.dll</HintPath>
@@ -10,23 +9,4 @@
         <PackageReference Include="Microsoft.ML.OnnxRuntime" Version="1.23.2" />
         <PackageReference Include="NAudio" Version="2.2.1"/>
     </ItemGroup>
-    <ItemGroup>
-        <Content Include="..\tts\TtsAssets\Microsoft.ML.OnnxRuntime.dll">
-            <Link>TtsAssets\Microsoft.ML.OnnxRuntime.dll</Link>
-        </Content>
-        <Content Include="..\tts\TtsAssets\onnxruntime.dll">
-            <Link>TtsAssets\onnxruntime.dll</Link>
-        </Content>
-        <Content Include="..\tts\TtsAssets\onnxruntime.lib">
-            <Link>TtsAssets\onnxruntime.lib</Link>
-        </Content>
-        <Content Include="..\tts\TtsAssets\onnxruntime_providers_shared.dll">
-            <Link>TtsAssets\onnxruntime_providers_shared.dll</Link>
-        </Content>
-        <Content Include="..\tts\TtsAssets\onnxruntime_providers_shared.lib">
-            <Link>TtsAssets\onnxruntime_providers_shared.lib</Link>
-        </Content>
-    </ItemGroup>
-
-
 </Project>

@@ -1,5 +1,4 @@
 <Project Sdk="Microsoft.NET.Sdk">
-
     <PropertyGroup>
         <ProduceReferenceAssembly>false</ProduceReferenceAssembly>
         <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
@@ -7,24 +6,10 @@
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
     </PropertyGroup>
-
     <ItemGroup>
         <Reference Include="Mono.Cecil">
             <HintPath>$(DalamudLibPath)Mono.Cecil.dll</HintPath>
             <Private>false</Private>
         </Reference>
-        <Reference Include="Mono.Cecil.Mdb">
-            <HintPath>$(DalamudLibPath)Mono.Cecil.Mdb.dll</HintPath>
-            <Private>false</Private>
-        </Reference>
-        <Reference Include="Mono.Cecil.Pdb">
-            <HintPath>$(DalamudLibPath)Mono.Cecil.Pdb.dll</HintPath>
-            <Private>false</Private>
-        </Reference>
-        <Reference Include="Mono.Cecil.Rocks">
-            <HintPath>$(DalamudLibPath)Mono.Cecil.Rocks.dll</HintPath>
-            <Private>false</Private>
-        </Reference>
     </ItemGroup>
-
 </Project>

@@ -18,6 +18,8 @@
         <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
         <UseWindowsForms>true</UseWindowsForms>
         <UseWpf>true</UseWpf>
+        <DebugType>pdbonly</DebugType>
+        <DebugSymbols>true</DebugSymbols>
     </PropertyGroup>
 
     <ItemGroup>

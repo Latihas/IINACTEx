@@ -1,10 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
-using System.Reflection;
 using System.Runtime.InteropServices;
-using System.Runtime.Loader;
 using System.Text.RegularExpressions;
 using System.Threading;
 using Dalamud.Plugin.Services;
@@ -13,7 +12,9 @@ using NAudio.Wave;
 
 namespace LatihasTTS;
 
-public class LatihasTts:IDisposable
+[SuppressMessage("ReSharper", "UnusedType.Global")]
+[SuppressMessage("Usage", "CA2211:非常量字段应当不可见")]
+public class LatihasTts : IDisposable
 {
     internal static string Rootdir, Tmpdir;
     public static string Assetsdir;
@@ -23,14 +24,15 @@ public class LatihasTts:IDisposable
     [
         true
     ];
-    private readonly List<IntPtr> _onnxruntimedll = [];
+    private readonly List<IntPtr> onnxruntimedll = [];
 
     [DllImport("kernel32.dll", SetLastError = true)]
     private static extern bool FreeLibrary(IntPtr hModule);
 
     [DllImport("kernel32.dll", SetLastError = true)]
     private static extern IntPtr LoadLibrary(string lpFileName);
-    public void Init(string s,IPluginLog log)
+
+    public void Init(string s, IPluginLog log)
     {
         Log = log;
         Rootdir = s;
@@ -49,8 +51,8 @@ public class LatihasTts:IDisposable
             Path.Combine(Assetsdir, "onnxruntime_providers_shared.lib"),
             Path.Combine(Assetsdir, "Microsoft.ML.OnnxRuntime.dll"),
         ];
-        _onnxruntimedll.Add(LoadLibrary(Path.Combine(Assetsdir, "onnxruntime.dll")));
-        _onnxruntimedll.Add(LoadLibrary(Path.Combine(Assetsdir, "onnxruntime_providers_shared.dll.dll")));
+        onnxruntimedll.Add(LoadLibrary(Path.Combine(Assetsdir, "onnxruntime.dll")));
+        onnxruntimedll.Add(LoadLibrary(Path.Combine(Assetsdir, "onnxruntime_providers_shared.dll.dll")));
     }
 
     private static void _Speak(object message)
@@ -73,7 +75,7 @@ public class LatihasTts:IDisposable
         }
         catch (Exception e)
         {
-           Log.Error("TTS: " + message + e);
+            Log.Error("TTS: " + message + e);
         }
     }
 
@@ -84,7 +86,10 @@ public class LatihasTts:IDisposable
         {
             new Thread(_Speak).Start(message);
         }
-        catch { }
+        catch
+        {
+            // ignored
+        }
     }
 
     public bool CheckAssets()
@@ -152,7 +157,10 @@ public class LatihasTts:IDisposable
                             }
                             else Thread.Sleep(50);
                         }
-                        catch { }
+                        catch
+                        {
+                            // ignored
+                        }
                     }
                 }).Start();
             }
@@ -173,7 +181,10 @@ public class LatihasTts:IDisposable
                     waveOut.Play();
                     while (waveOut.PlaybackState == PlaybackState.Playing) Thread.Sleep(250);
                 }
-                catch { }
+                catch
+                {
+                    // ignored
+                }
             }
 
             private class WavInfo(MemoryStream memoryStream, bool b)
@@ -200,7 +211,10 @@ public class LatihasTts:IDisposable
                             var array = nextLine.Split(':');
                             Vocab[array[0]] = array[1];
                         }
-                        catch (Exception) { }
+                        catch (Exception)
+                        {
+                            // ignored
+                        }
                     }
                 }
                 using (var sr = File.OpenText(Assetsdir + "pinyin.txt"))
@@ -212,7 +226,10 @@ public class LatihasTts:IDisposable
                             var array = nextLine.Split(':');
                             Pinyin[array[0]] = array[1];
                         }
-                        catch (Exception) { }
+                        catch (Exception)
+                        {
+                            // ignored
+                        }
                     }
                 }
                 using (var sr = File.OpenText(Assetsdir + "symbol.txt"))
@@ -224,7 +241,10 @@ public class LatihasTts:IDisposable
                             var array = nextLine.Split(' ');
                             Symbol[array[0]] = long.Parse(array[1]);
                         }
-                        catch (Exception) { }
+                        catch (Exception)
+                        {
+                            // ignored
+                        }
                     }
                 }
             }
@@ -296,6 +316,7 @@ public class LatihasTts:IDisposable
                 return res;
             }
         }
+
         private static class GenTts
         {
             private static readonly InferenceSession SessionFastspeech, SessionVcoder;
@@ -312,10 +333,9 @@ public class LatihasTts:IDisposable
             public static float[] Forward(long[] ids)
             {
                 if (ids.Length == 0) return [];
-                using var inputOrtValue = OrtValue.CreateTensorValueFromMemory(ids, new long[]
-                {
+                using var inputOrtValue = OrtValue.CreateTensorValueFromMemory(ids, [
                     ids.Length
-                });
+                ]);
                 var inputs1 = new Dictionary<string, OrtValue>
                 {
                     {
@@ -338,7 +358,7 @@ public class LatihasTts:IDisposable
     public void Dispose()
     {
         LatihasTts.Alive[0] = false;
-        foreach (var onnx in _onnxruntimedll)
+        foreach (var onnx in onnxruntimedll)
         {
             try
             {
