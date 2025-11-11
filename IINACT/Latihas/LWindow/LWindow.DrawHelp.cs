@@ -7,8 +7,8 @@ namespace IINACT.Latihas;
 
 public static partial class LWindow
 {
-    private static string testTriggerId = "", testCode = "", testExpression = "", testTTS = "", sb = "";
-    private static Context testContext = new();
+    private static string TestTriggerId = "", TestCode = "", TestExpression = "", TestTts = "", Sb = "";
+    private static readonly Context TestContext = new();
 
     internal static void DrawHelpSettings()
     {
@@ -87,68 +87,71 @@ public static partial class LWindow
         using var tab = ImRaii.TabItem("测试");
         if (!tab) return;
         if (ImGui.Button("打开插件目录"))
-            Start(Plugin.PluginInterface.AssemblyLocation.Directory.FullName);
+            Start(Plugin.PluginInterface.AssemblyLocation.Directory!.FullName);
         ImGui.SameLine();
         if (ImGui.Button("打开配置目录"))
             Start(Plugin.PluginInterface.ConfigDirectory.FullName);
-        ImGui.Separator();
-        ImGui.InputText("## 测试TTS", ref testTTS);
         ImGui.SameLine();
-        if (ImGui.Button("测试TTS")) Advanced_Combat_Tracker.ActGlobals.oFormActMain.TTS(testTTS);
+        if (ImGui.Button("打开Log目录"))
+            Start(Plugin.Configuration.LogFilePath);
         ImGui.Separator();
-        ImGui.InputText("触发器Id", ref testTriggerId);
+        ImGui.InputText("## 测试TTS", ref TestTts);
+        ImGui.SameLine();
+        if (ImGui.Button("测试TTS")) Advanced_Combat_Tracker.ActGlobals.oFormActMain.TTS(TestTts);
+        ImGui.Separator();
+        ImGui.InputText("触发器Id", ref TestTriggerId);
         ImGui.SameLine();
         if (ImGui.Button("验证触发器"))
         {
-            sb = $"总量: {RealPlugin.plug.Triggers.Count}";
+            Sb = $"总量: {RealPlugin.plug.Triggers.Count}";
             foreach (var t in RealPlugin.plug.Triggers)
-                if (t.Id.ToString() == testTriggerId)
-                    sb += "存活于Triggers.";
+                if (t.Id.ToString() == TestTriggerId)
+                    Sb += "存活于Triggers.";
             foreach (var t in RealPlugin.plug.ActiveTextTriggers)
-                if (t.Id.ToString() == testTriggerId)
-                    sb += "存活于ActiveTextTriggers.";
+                if (t.Id.ToString() == TestTriggerId)
+                    Sb += "存活于ActiveTextTriggers.";
             foreach (var t in RealPlugin.plug.ActiveACTTriggers)
-                if (t.Id.ToString() == testTriggerId)
-                    sb += "存活于ActiveACTTriggers.";
+                if (t.Id.ToString() == TestTriggerId)
+                    Sb += "存活于ActiveACTTriggers.";
             foreach (var t in RealPlugin.plug.ActiveEndpointTriggers)
-                if (t.Id.ToString() == testTriggerId)
-                    sb += "存活于ActiveEndpointTriggers.";
+                if (t.Id.ToString() == TestTriggerId)
+                    Sb += "存活于ActiveEndpointTriggers.";
             foreach (var t in RealPlugin.plug.ActiveFFXIVNetworkTriggers)
-                if (t.Id.ToString() == testTriggerId)
-                    sb += "存活于ActiveFFXIVNetworkTriggers.";
+                if (t.Id.ToString() == TestTriggerId)
+                    Sb += "存活于ActiveFFXIVNetworkTriggers.";
         }
         ImGui.Separator();
         ImGui.SetNextItemWidth(-1);
-        ImGui.InputTextMultiline("代码", ref testCode, 1145141, new Vector2(400, 300));
+        ImGui.InputTextMultiline("代码", ref TestCode, 1145141, new Vector2(400, 300));
         if (ImGui.Button("编译代码"))
-            sb = CSharpScriptCompiler.CompileScript(testCode, [])
+            Sb = CSharpScriptCompiler.CompileScript(TestCode, [])
                      ? "成功"
                      : "失败，详情见/xllog";
         ImGui.Separator();
         ImGui.SetNextItemWidth(-1);
         ImGui.SameLine();
-        ImGui.InputText("表达式", ref testExpression);
+        ImGui.InputText("表达式", ref TestExpression);
         if (ImGui.Button("评估表达式"))
-            sb = testContext.ExpandVariables(null, null, false, testCode);
+            Sb = TestContext.ExpandVariables(null, null, false, TestCode);
         ImGui.Separator();
-        ImGui.Text(sb);
+        ImGui.Text(Sb);
         ImGui.Separator();
         ImGui.Text("常用表达式");
-        ImGui.Text("${_systemtime} = " + testContext.ExpandVariables(null, null, false, "${_systemtime}"));
-        ImGui.Text("${_systemtimems} = " + testContext.ExpandVariables(null, null, false, "${_systemtimems}"));
-        ImGui.Text("${_me}/${_ffxivplayer} = " + testContext.ExpandVariables(null, null, false, "${_me}"));
-        ImGui.Text("${_me.id} = " + testContext.ExpandVariables(null, null, false, "${_me.id}"));
-        ImGui.Text("${_ffxivzoneid} = " + testContext.ExpandVariables(null, null, false, "${_ffxivzoneid}"));
+        ImGui.Text("${_systemtime} = " + TestContext.ExpandVariables(null, null, false, "${_systemtime}"));
+        ImGui.Text("${_systemtimems} = " + TestContext.ExpandVariables(null, null, false, "${_systemtimems}"));
+        ImGui.Text("${_me}/${_ffxivplayer} = " + TestContext.ExpandVariables(null, null, false, "${_me}"));
+        ImGui.Text("${_me.id} = " + TestContext.ExpandVariables(null, null, false, "${_me.id}"));
+        ImGui.Text("${_ffxivzoneid} = " + TestContext.ExpandVariables(null, null, false, "${_ffxivzoneid}"));
         // ImGui.Text("${_ffxivpartyorder} = "+testContext.ExpandVariables(null, null, false, "${_ffxivpartyorder}"));
-        ImGui.Text("${_ffxivprocid} = " + testContext.ExpandVariables(null, null, false, "${_ffxivprocid}"));
-        ImGui.Text("${_ffxivprocname} = " + testContext.ExpandVariables(null, null, false, "${_ffxivprocname}"));
-        ImGui.Text("${_ffxivversion} = " + testContext.ExpandVariables(null, null, false, "${_ffxivversion}"));
-        ImGui.Text("${_ffxivlanguage} = " + testContext.ExpandVariables(null, null, false, "${_ffxivlanguage}"));
-        ImGui.Text("${_ffxivlanguageid} = " + testContext.ExpandVariables(null, null, false, "${_ffxivlanguageid}"));
-        ImGui.Text("${_ffxivisglobal} = " + testContext.ExpandVariables(null, null, false, "${_ffxivisglobal}"));
-        ImGui.Text("${_ffxivincombat} = " + testContext.ExpandVariables(null, null, false, "${_ffxivincombat}"));
-        ImGui.Text("${_incombat} = " + testContext.ExpandVariables(null, null, false, "${_incombat}"));
-        ImGui.Text("${_duration} = " + testContext.ExpandVariables(null, null, false, "${_duration}"));
+        ImGui.Text("${_ffxivprocid} = " + TestContext.ExpandVariables(null, null, false, "${_ffxivprocid}"));
+        ImGui.Text("${_ffxivprocname} = " + TestContext.ExpandVariables(null, null, false, "${_ffxivprocname}"));
+        ImGui.Text("${_ffxivversion} = " + TestContext.ExpandVariables(null, null, false, "${_ffxivversion}"));
+        ImGui.Text("${_ffxivlanguage} = " + TestContext.ExpandVariables(null, null, false, "${_ffxivlanguage}"));
+        ImGui.Text("${_ffxivlanguageid} = " + TestContext.ExpandVariables(null, null, false, "${_ffxivlanguageid}"));
+        ImGui.Text("${_ffxivisglobal} = " + TestContext.ExpandVariables(null, null, false, "${_ffxivisglobal}"));
+        ImGui.Text("${_ffxivincombat} = " + TestContext.ExpandVariables(null, null, false, "${_ffxivincombat}"));
+        ImGui.Text("${_incombat} = " + TestContext.ExpandVariables(null, null, false, "${_incombat}"));
+        ImGui.Text("${_duration} = " + TestContext.ExpandVariables(null, null, false, "${_duration}"));
         ImGui.Text("...蓝笔了不写了");
     }
 }

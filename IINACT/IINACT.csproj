@@ -109,7 +109,6 @@
             <Private>False</Private>
         </Reference>
     </ItemGroup>
-
     <ItemGroup>
         <Content Include="..\external_dependencies\SafeMemoryReader.dll">
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
@@ -118,7 +117,7 @@
     <ItemGroup>
         <Content Include="zh-CN.triglations.xml">
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-        </Content>  
+        </Content>
         <Content Include="IINACTEx.json">
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </Content>
