@@ -10,3 +10,11 @@
 	path = EdgeTTS
 	url = https://github.com/MeowZWR/EdgeTTS.git
 	branch = iinact
+[submodule "Triggernometry"]
+	path = Triggernometry
+	url = https://github.com/Latihas/Triggernometry.git
+	branch = new
+[submodule "PostNamazu"]
+	path = PostNamazu
+	url = https://github.com/Latihas/PostNamazu.git
+	branch = master
