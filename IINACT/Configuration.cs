@@ -34,6 +34,7 @@ public class Configuration : IPluginConfiguration
     [JsonProperty("useLatihasTTS")]
     public bool UseLatihasTts { get; set; } = true;
     
+    
     // public string MyNamedCallbackPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), "MyNamedCallback");
     // public Dictionary<string,NamedCallbackInfo>MyNamedCallbackInfo  = new();
     public class NamedCallbackInfo {

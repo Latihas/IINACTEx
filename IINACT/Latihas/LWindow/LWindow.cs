@@ -1,4 +1,6 @@
-﻿using System.Numerics;
+﻿using System.Diagnostics;
+using System.Numerics;
+using System.Text;
 using Dalamud.Bindings.ImGui;
 using Dalamud.Interface.Utility.Raii;
 using Triggernometry;
@@ -10,7 +12,6 @@ public static partial class LWindow
 {
     internal static string WindowPrefix = "";
 
-
     internal static void DrawTriggerSettings()
     {
         using var tab = ImRaii.TabItem("Trigger");
@@ -19,6 +20,7 @@ public static partial class LWindow
         if (!bar) return;
         DrawTriggerTriggerSettings();
         DrawTriggerVarSettings();
+        DrawTriggerSettingsSettings();
     }
 
     internal static void DrawTriggerTriggerSettings()
@@ -50,6 +52,18 @@ public static partial class LWindow
         DrawTriggerVarPDictSettings();
     }
 
+    internal static void DrawTriggerSettingsSettings()
+    {
+        using var tab = ImRaii.TabItem("设置");
+        if (!tab) return;
+        var DebugLevelItem = (int)RealPlugin.plug.cfg.DebugLevel;
+        if (ImGui.Combo("DebugLevel", ref DebugLevelItem, Enum.GetValues<RealPlugin.DebugLevelEnum>().Select(i => i.ToString()).ToList()))
+            RealPlugin.plug.cfg.DebugLevel = (RealPlugin.DebugLevelEnum)DebugLevelItem;
+        var EnableModuleBase = RealPlugin.plug.cfg.EnableModuleBase;
+        if (ImGui.Checkbox("启用EnableModuleBase(极有可能炸游戏的功能，如绘图等，关闭需要重新加载插件生效)", ref EnableModuleBase))
+            RealPlugin.plug.cfg.EnableModuleBase = EnableModuleBase;
+    }
+
     private static void TScaler(SerializableDictionary<string, VariableScalar> data) =>
         NewTable(["名称", "值", "时间", "源"], data.ToArray(), [
             i => ImGui.Text(i.Key),
@@ -73,10 +87,10 @@ public static partial class LWindow
     }
 
     private static void TList(SerializableDictionary<string, VariableList> data) =>
-        NewTable(["名称", "值", "时间", "源"], data.ToArray(), [
+        NewTable(["名称", "长度", "值", "时间", "源"], data.ToArray(), [
             i => ImGui.Text(i.Key),
             i => ImGui.Text(i.Value.Size.ToString()),
-            i => ImGui.Text(i.Value.Values.ToString()),
+            i => ImGui.Text(string.Join(",", i.Value.Values)),
             i => ImGui.Text(i.Value.LastChanged.ToString()),
             i => ImGui.Text(i.Value.LastChanger),
         ]);
@@ -100,7 +114,13 @@ public static partial class LWindow
             i => ImGui.Text(i.Key),
             i => ImGui.Text(i.Value.Width.ToString()),
             i => ImGui.Text(i.Value.Height.ToString()),
-            i => ImGui.Text(i.Value.Rows.ToString()),
+            i =>
+            {
+                List<string> sb = [];
+                foreach (var item in i.Value.Rows)
+                    sb.Add($"({string.Join(',', item.Values)})");
+                ImGui.Text(string.Join(';', sb));
+            },
             i => ImGui.Text(i.Value.LastChanged.ToString()),
             i => ImGui.Text(i.Value.LastChanger),
         ]);
@@ -123,7 +143,13 @@ public static partial class LWindow
         NewTable(["名称", "长度", "值", "时间", "源"], data.ToArray(), [
             i => ImGui.Text(i.Key),
             i => ImGui.Text(i.Value.Size.ToString()),
-            i => ImGui.Text(i.Value.Values.ToString()),
+            i =>
+            {
+                List<string> sb = [];
+                foreach (var item in i.Value.Values)
+                    sb.Add($"({item.Key}:{item.Value})");
+                ImGui.Text(string.Join(',', sb));
+            },
             i => ImGui.Text(i.Value.LastChanged.ToString()),
             i => ImGui.Text(i.Value.LastChanger),
         ]);
@@ -142,6 +168,10 @@ public static partial class LWindow
         TDict(RealPlugin.plug.cfg.PersistentVariables.Dict);
     }
 
+    private static void Start(string cmd) => Process.Start(new ProcessStartInfo(cmd)
+    {
+        UseShellExecute = true
+    });
 
     private static void NewTable<T>(string[] header, T[]? data, Action<T>[] acts)
     {

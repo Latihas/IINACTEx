@@ -54,7 +54,7 @@ public sealed class Plugin : IDalamudPlugin
     internal static INotificationManager NotificationManager { get; private set; }
     [PluginService]
     public static IPluginLog Log { get; private set; }
-
+    public Configuration GetConfiguration => Configuration;
     internal static Configuration Configuration { get; private set; }
     internal static TextToSpeechProvider TextToSpeechProvider { get; private set; }
     private static MainWindow MainWindow = null!;
@@ -73,11 +73,11 @@ public sealed class Plugin : IDalamudPlugin
     private HttpClient HttpClient { get; }
 
     public LWindow.TriggerWindow TriggerWindow = null!;
-    public LWindow.NewFolderWindow NewFolderWindow = null!;
+    public LWindow.FolderWindow FolderWindow = null!;
     public LWindow.ActionWindow ActionWindow = null!;
     public LWindow.ExportWindow ExportWindow = null!;
     public LWindow.ImportWindow ImportWindow = null!;
-
+    public LWindow.RepoWindow RepoWindow = null!;
 
 
     internal static EdgeTTSWindow EdgeTTSWindow = null!;
@@ -109,19 +109,23 @@ public sealed class Plugin : IDalamudPlugin
         try
         {
             var text = PluginInterface.AssemblyLocation.Directory.ToString();
-            var Assetsdir = text + "/TtsAssets/";
+            var assetsdir = text + "/TtsAssets/";
             Assembly latihasTtsAssembly;
-            using (var memoryStream = new MemoryStream(File.ReadAllBytes(Assetsdir + "Microsoft.ML.OnnxRuntime.dll")))
+            using (var memoryStream = new MemoryStream(File.ReadAllBytes(assetsdir + "System.Numerics.Tensors.dll")))
             {
                 AssemblyLoadContext.GetLoadContext(Assembly.GetExecutingAssembly())!.LoadFromStream(memoryStream);
             }
-            using (var memoryStream = new MemoryStream(File.ReadAllBytes(Assetsdir + "LatihasTTS.dll")))
+            using (var memoryStream = new MemoryStream(File.ReadAllBytes(assetsdir + "Microsoft.ML.OnnxRuntime.dll")))
+            {
+                AssemblyLoadContext.GetLoadContext(Assembly.GetExecutingAssembly())!.LoadFromStream(memoryStream);
+            }
+            using (var memoryStream = new MemoryStream(File.ReadAllBytes(assetsdir + "LatihasTTS.dll")))
             {
                 latihasTtsAssembly = AssemblyLoadContext.GetLoadContext(Assembly.GetExecutingAssembly())!.LoadFromStream(memoryStream);
             }
             LatihasTts = Activator.CreateInstance(latihasTtsAssembly.GetType("LatihasTTS.LatihasTts")!)!;
             LatihasTts.Init(text, Log);
-            }
+        }
         catch (Exception e)
         {
             Log.Warning(e.ToString());
@@ -156,10 +160,11 @@ public sealed class Plugin : IDalamudPlugin
         LWindow.WindowPrefix = "IINACT ";
         WindowSystem.AddWindow(MainWindow = new MainWindow());
         WindowSystem.AddWindow(TriggerWindow = new LWindow.TriggerWindow());
-        WindowSystem.AddWindow(NewFolderWindow = new LWindow.NewFolderWindow());
+        WindowSystem.AddWindow(FolderWindow = new LWindow.FolderWindow());
         WindowSystem.AddWindow(ActionWindow = new LWindow.ActionWindow());
         WindowSystem.AddWindow(ExportWindow = new LWindow.ExportWindow());
         WindowSystem.AddWindow(ImportWindow = new LWindow.ImportWindow());
+        WindowSystem.AddWindow(RepoWindow = new LWindow.RepoWindow());
 
         CommandManager.AddHandler(MainWindowCommandName, new CommandInfo(OnCommand)
         {

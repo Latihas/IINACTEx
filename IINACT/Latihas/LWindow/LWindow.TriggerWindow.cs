@@ -12,10 +12,12 @@ public static partial class LWindow
     public class TriggerWindow() : Window($"{WindowPrefix}TriggerWindow")
     {
         internal static Trigger? Trigger;
+        internal static ConditionPanel ConditionPanel;
 
         public void Open(Trigger trigger)
         {
             Trigger = trigger;
+            ConditionPanel = new ConditionPanel(trigger);
             IsOpen = true;
         }
 
@@ -67,6 +69,19 @@ public static partial class LWindow
                                     Plugin.Instance.ActionWindow.DeleteAction(Trigger, Trigger.Actions[i]);
                                     break;
                                 }
+                                if (ImGui.MenuItem("测试"))
+                                {
+                                    Trigger.Actions[i].Execute(null, fakectx);
+                                    break;
+                                }
+                                if (ImGui.MenuItem("测试(忽略条件)"))
+                                {
+                                    var bc = Trigger.Actions[i].Condition;
+                                    Trigger.Actions[i].Condition = new ConditionGroup();
+                                    Trigger.Actions[i].Execute(null, fakectx);
+                                    Trigger.Actions[i].Condition = bc;
+                                    break;
+                                }
                                 ImGui.EndPopup();
                             }
                             if (!Enabled[i]) ImGui.PopStyleColor();
@@ -75,12 +90,17 @@ public static partial class LWindow
                     }
                     ImGui.EndTabItem();
                 }
+                if (ImGui.BeginTabItem("动作条件"))
+                {
+                    ConditionPanel.Draw();
+                    ImGui.EndTabItem();
+                }
                 if (ImGui.BeginTabItem("计划任务"))
                 {
                     var currenSourceItem = (int)Trigger.Source;
                     if (ImGui.Combo("触发器事件源", ref currenSourceItem,
                                     Enum.GetValues<Trigger.TriggerSourceEnum>()
-                                        .Select(enumValue => enumValue.ToString()).ToList()))
+                                        .Select(i => i.ToString()).ToList()))
                         Trigger.Source = (Trigger.TriggerSourceEnum)currenSourceItem;
                     var currenPrevActionsEnumItem = (int)Trigger.PrevActions;
                     if (ImGui.Combo("触发器再次触发时，此动作若尚未结束", ref currenPrevActionsEnumItem,
@@ -93,12 +113,12 @@ public static partial class LWindow
                     var currenSchedulingEnumItem = (int)Trigger.Scheduling;
                     if (ImGui.Combo("计划", ref currenSchedulingEnumItem,
                                     Enum.GetValues<Trigger.SchedulingEnum>()
-                                        .Select(enumValue => enumValue.ToString()).ToList()))
+                                        .Select(i => i.ToString()).ToList()))
                         Trigger.Scheduling = ((Trigger.SchedulingEnum)currenSchedulingEnumItem);
                     var currenRefireEnumItem = (int)Trigger.PeriodRefire;
                     if (ImGui.Combo("触发器连续触发时", ref currenRefireEnumItem,
                                     Enum.GetValues<Trigger.RefireEnum>()
-                                        .Select(enumValue => enumValue.ToString()).ToList()))
+                                        .Select(i => i.ToString()).ToList()))
                         Trigger.PeriodRefire = ((Trigger.RefireEnum)currenRefireEnumItem);
                     var RefirePeriodExpression = Trigger.RefirePeriodExpression;
                     if (ImGui.InputText("触发冷却时间(ms)", ref RefirePeriodExpression))

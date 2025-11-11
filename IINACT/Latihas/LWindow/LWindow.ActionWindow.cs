@@ -3,6 +3,8 @@ using System.Numerics;
 using Dalamud.Interface.Windowing;
 using Dalamud.Bindings.ImGui;
 using Triggernometry;
+using static Triggernometry.ConditionGroup;
+using static Triggernometry.ConditionSingle;
 using Action = Triggernometry.Action;
 
 namespace IINACT.Latihas;
@@ -14,11 +16,13 @@ public partial class LWindow
     {
         internal static Action? Action;
         internal static Trigger? Trigger;
+        internal static ConditionPanel ConditionPanel;
 
         internal void Open(Trigger trigger, Action action)
         {
             Trigger = trigger;
             Action = action;
+            ConditionPanel = new ConditionPanel(action);
             Plugin.Instance.ActionWindow.IsOpen = true;
         }
 
@@ -35,6 +39,7 @@ public partial class LWindow
             }
         }
 
+
         public override void Draw()
         {
             if (Action == null) return;
@@ -44,7 +49,7 @@ public partial class LWindow
                 currentActionTypeEnumItem = (int)actionType;
             if (ImGui.Combo("动作类型", ref currentActionTypeEnumItem,
                             Enum.GetValues<Action.ActionTypeEnum>()
-                                .Select(enumValue => enumValue.ToString())
+                                .Select(i => i.ToString())
                                 .ToList()))
                 Action.ActionType = currentActionTypeEnumItem == 0 ? null : ((Action.ActionTypeEnum)currentActionTypeEnumItem).ToString();
             if (ImGui.BeginTabBar("## EActionTabBar"))
@@ -71,9 +76,8 @@ public partial class LWindow
                             var PlaySoundVolumeExpression = Action.PlaySoundVolumeExpression;
                             if (ImGui.InputText("音量(0-100)", ref PlaySoundVolumeExpression))
                                 Action.PlaySoundVolumeExpression = PlaySoundVolumeExpression;
-                            // var PlaySoundExclusive = Action.PlaySoundExclusive;
-                            // if (ImGui.InputText("使用专用声音播放器", ref PlaySoundExclusive))
-                            //     Action.PlaySoundExclusive = PlaySoundExclusive;
+
+
                             break;
                         }
                         case nameof(Action.ActionTypeEnum.UseTTS):
@@ -81,9 +85,8 @@ public partial class LWindow
                             var UseTTSTextExpression = Action.UseTTSTextExpression;
                             if (ImGui.InputText("播读内容", ref UseTTSTextExpression))
                                 Action.UseTTSTextExpression = UseTTSTextExpression;
-                            // var UseTTSVolumeExpression = Action.UseTTSVolumeExpression;
-                            // if (ImGui.InputText("播读音量(0-100)", ref UseTTSVolumeExpression))
-                            //     Action.UseTTSVolumeExpression = UseTTSVolumeExpression;
+
+
                             break;
                         }
                         case nameof(Action.ActionTypeEnum.Variable):
@@ -93,7 +96,7 @@ public partial class LWindow
                                 currenVariableOpEnumItem = (int)VariableOpEnumType;
                             if (ImGui.Combo("操作", ref currenVariableOpEnumItem,
                                             Enum.GetValues<Action.VariableOpEnum>()
-                                                .Select(enumValue => enumValue.ToString())
+                                                .Select(i => i.ToString())
                                                 .ToList()))
                                 Action.VariableOp = currenVariableOpEnumItem == 0 ? null : ((Action.VariableOpEnum)currenVariableOpEnumItem).ToString();
                             if (Action.VariableOp == nameof(Action.VariableOpEnum.UnsetAll)) break;
@@ -137,7 +140,7 @@ public partial class LWindow
                                 currenMessageBoxIconTypeEnumItem = (int)MessageBoxIconType;
                             if (ImGui.Combo("消息级别", ref currenMessageBoxIconTypeEnumItem,
                                             Enum.GetValues<Action.MessageBoxIconTypeEnum>()
-                                                .Select(enumValue => enumValue.ToString()).ToList()))
+                                                .Select(i => i.ToString()).ToList()))
                                 Action.MessageBoxIconType = currenMessageBoxIconTypeEnumItem == 0 ? null : ((Action.MessageBoxIconTypeEnum)currenMessageBoxIconTypeEnumItem).ToString();
                             var MessageBoxText = Action.MessageBoxText;
                             if (ImGui.InputText("消息内容", ref MessageBoxText))
@@ -162,7 +165,7 @@ public partial class LWindow
                                     currenSourceEnumItem = (int)SourceEnumType;
                                 if (ImGui.Combo("日志行类型", ref currenSourceEnumItem,
                                                 Enum.GetValues<LogEvent.SourceEnum>()
-                                                    .Select(enumValue => enumValue.ToString()).ToList()))
+                                                    .Select(i => i.ToString()).ToList()))
                                     Action.LogMessageTarget = currenSourceEnumItem == 0 ? null : ((LogEvent.SourceEnum)currenSourceEnumItem).ToString();
                             }
                             else
@@ -172,7 +175,7 @@ public partial class LWindow
                                     currenLogMessageEnumItem = (int)LogMessage;
                                 if (ImGui.Combo("触发器日志等级", ref currenLogMessageEnumItem,
                                                 Enum.GetValues<Action.LogMessageEnum>()
-                                                    .Select(enumValue => enumValue.ToString()).ToList()))
+                                                    .Select(i => i.ToString()).ToList()))
                                     Action.LogLevel = currenLogMessageEnumItem == 0 ? null : ((Action.LogMessageEnum)currenLogMessageEnumItem).ToString();
                             }
                             break;
@@ -233,7 +236,7 @@ public partial class LWindow
                                 currenProcessWindowStyleItem = (int)ProcessWindowStyle;
                             if (ImGui.Combo("日志行类型", ref currenProcessWindowStyleItem,
                                             Enum.GetValues<System.Diagnostics.ProcessWindowStyle>()
-                                                .Select(enumValue => enumValue.ToString()).ToList()))
+                                                .Select(i => i.ToString()).ToList()))
                                 Action.LaunchProcessWindowStyle = currenProcessWindowStyleItem == 0 ? null : ((System.Diagnostics.ProcessWindowStyle)currenProcessWindowStyleItem).ToString();
                             break;
                         }
@@ -282,7 +285,6 @@ public partial class LWindow
                         }
                         case nameof(Action.ActionTypeEnum.Trigger):
                         {
-                            //TODO
                             ImGui.Text("还没做");
                             break;
                         }
@@ -298,6 +300,11 @@ public partial class LWindow
                         }
                         case nameof(Action.ActionTypeEnum.Placeholder): break;
                     }
+                    ImGui.EndTabItem();
+                }
+                if (ImGui.BeginTabItem("动作条件"))
+                {
+                    ConditionPanel.Draw();
                     ImGui.EndTabItem();
                 }
                 if (ImGui.BeginTabItem("计划任务"))

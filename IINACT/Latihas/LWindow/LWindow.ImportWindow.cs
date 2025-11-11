@@ -19,13 +19,17 @@ public static partial class LWindow
                 1145141,
                 new Vector2(400, 300)
             );
-            if (ImGui.Button("导入"))
-            {
-                var content = "";
-                if (str.StartsWith("<?xml")) content = str;
-                Triggernometry.CustomControls.UserInterface.ImportResultsFromForm(Tag, content);
-                Triggernometry.CustomControls.UserInterface.BuildTriggerTreeFromConfiguration(null, null);
-            }
+            if (ImGui.Button("导入")) Import(Tag,str);
+        }
+
+        public void Import(object tag,string s)
+        {
+            str = s;
+            Tag = tag;
+            var content = "";
+            if (str.StartsWith("<?xml")) content = str;
+            Triggernometry.CustomControls.UserInterface.ImportResultsFromForm(Tag, content);
+            Triggernometry.CustomControls.UserInterface.BuildTriggerTreeFromConfiguration(null, null);
         }
 
         public void Open(object obj)

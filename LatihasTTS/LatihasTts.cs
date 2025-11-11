@@ -50,6 +50,7 @@ public class LatihasTts : IDisposable
             Path.Combine(Assetsdir, "onnxruntime_providers_shared.dll"),
             Path.Combine(Assetsdir, "onnxruntime_providers_shared.lib"),
             Path.Combine(Assetsdir, "Microsoft.ML.OnnxRuntime.dll"),
+            Path.Combine(Assetsdir, "System.Numerics.Tensors.dll")
         ];
         onnxruntimedll.Add(LoadLibrary(Path.Combine(Assetsdir, "onnxruntime.dll")));
         onnxruntimedll.Add(LoadLibrary(Path.Combine(Assetsdir, "onnxruntime_providers_shared.dll.dll")));
