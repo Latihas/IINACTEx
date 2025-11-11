@@ -1,20 +1,20 @@
 ﻿[submodule "machina"]
 	path = machina
-	url = https://github.com/MeowZWR/machina.git
+	url = https://github.com/MeowZWR/machina
 	branch = cn
 [submodule "OverlayPlugin.Core/resources/act-overlays"]
 	path = OverlayPlugin.Core/resources/act-overlays
-	url = https://github.com/MeowZWR/act-overlays.git
+	url = https://github.com/MeowZWR/act-overlays
 	branch = cn
 [submodule "EdgeTTS"]
 	path = EdgeTTS
-	url = https://github.com/MeowZWR/EdgeTTS.git
+	url = https://github.com/MeowZWR/EdgeTTS
 	branch = iinact
 [submodule "Triggernometry"]
 	path = Triggernometry
-	url = https://github.com/Latihas/Triggernometry.git
+	url = https://github.com/Latihas/Triggernometry
 	branch = new
 [submodule "PostNamazu"]
 	path = PostNamazu
-	url = https://github.com/Latihas/PostNamazu.git
+	url = https://github.com/Latihas/PostNamazu
 	branch = master
