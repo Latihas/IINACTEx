@@ -14,6 +14,9 @@ public static partial class LWindow
 
         public override void Draw()
         {
+            var Name = Folder.Name;
+            if (ImGui.InputText("名称", ref Name))
+                Folder.Name = Name;
             var ZoneFilterEnabled = Folder.ZoneFilterEnabled != null && bool.Parse(Folder.ZoneFilterEnabled);
             if (ImGui.Checkbox("限制区域名(正则)", ref ZoneFilterEnabled))
                 Folder.ZoneFilterEnabled = ZoneFilterEnabled.ToString();
