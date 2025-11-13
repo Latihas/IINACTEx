@@ -1,6 +1,7 @@
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
+using System.IO.Compression;
 using System.Net.Http;
 using System.Reflection;
 using System.Runtime.InteropServices;
@@ -18,6 +19,7 @@ using IINACT.Network;
 using IINACT.Windows;
 using Machina.FFXIV;
 using Machina.FFXIV.Headers.Opcodes;
+using Triggernometry;
 using TriggernometryProxy;
 
 namespace IINACT;
@@ -79,10 +81,24 @@ public sealed class Plugin : IDalamudPlugin
     public LWindow.ImportWindow ImportWindow = null!;
     public LWindow.RepoWindow RepoWindow = null!;
 
-
     internal static EdgeTTSWindow EdgeTTSWindow = null!;
     public static Plugin Instance;
     public static dynamic? LatihasTts;
+
+    public static void UnzipWithoutPassword(string zipFilePath, string extractDir, bool overwrite = false)
+    {
+        try
+        {
+            if (Directory.Exists(extractDir))
+                if (overwrite) Directory.Delete(extractDir, recursive: true);
+                else return;
+            ZipFile.ExtractToDirectory(zipFilePath, extractDir);
+        }
+        catch (Exception ex)
+        {
+            Log.Error($"解压失败：{ex.Message}");
+        }
+    }
 
     public Plugin()
     {
@@ -105,6 +121,8 @@ public sealed class Plugin : IDalamudPlugin
         Advanced_Combat_Tracker.ActGlobals.oFormActMain = new Advanced_Combat_Tracker.FormActMain(Log);
         Configuration = PluginInterface.GetPluginConfig() as Configuration ?? new Configuration();
         Configuration.Initialize(PluginInterface);
+        UnzipWithoutPassword(Path.Combine(PluginInterface.AssemblyLocation.Directory.ToString(), "cactbot.zip"),
+                             Path.Combine(PluginInterface.AssemblyLocation.Directory.ToString(), "cactbot"));
         //TTS
         try
         {
@@ -156,7 +174,6 @@ public sealed class Plugin : IDalamudPlugin
         Advanced_Combat_Tracker.ActGlobals.oFormActMain.PostNamazuPlugin = PostNamazuPlugin = new PostNamazu.PostNamazu();
         PostNamazuPlugin.InitPlugin(PluginInterface, Log, SigScanner);
         IpcProviders = new IpcProviders(PluginInterface);
-
         LWindow.WindowPrefix = "IINACT ";
         WindowSystem.AddWindow(MainWindow = new MainWindow());
         WindowSystem.AddWindow(TriggerWindow = new LWindow.TriggerWindow());
@@ -189,6 +206,7 @@ public sealed class Plugin : IDalamudPlugin
         ZoneDownHookManager = createZoneDownHookManager.Result;
         Advanced_Combat_Tracker.ActGlobals.oFormActMain.TTS("插件加载完成");
         MainWindow.Toggle();
+        RealPlugin.plug.InitAura(Framework);
     }
 
     public const BindingFlags AllFlags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static;
@@ -212,7 +230,7 @@ public sealed class Plugin : IDalamudPlugin
         TriggernometryProxyPlugin.DeInitPlugin();
         OverlayPlugin.DeInitPlugin();
         PostNamazuPlugin.DeInitPlugin();
-
+        RealPlugin.plug.DeInitAura(Framework);
         Advanced_Combat_Tracker.ActGlobals.Dispose();
     }
 
@@ -246,8 +264,10 @@ public sealed class Plugin : IDalamudPlugin
             MainWindow.OverlayPluginConfig = container.Resolve<RainbowMage.OverlayPlugin.IPluginConfig>();
             Triggernometry.PluginBridges.BridgeNamazu.BridgeNamazu.InitializeModules();
             Triggernometry.PluginBridges.BridgeNamazu.BridgeNamazu.RegisterAnnotatedMethods();
+            PostNamazuPlugin.DoAction("command","/bw overlay 伤害统计 reload");
+            PostNamazuPlugin.DoAction("command","/bw overlay 时间轴 reload");
+            PostNamazuPlugin.DoAction("command","/bw overlay 设置 reload");
         });
-
         return overlayPlugin;
     }
 

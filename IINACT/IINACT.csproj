@@ -111,51 +111,6 @@
         <Content Include="..\external_dependencies\SafeMemoryReader.dll">
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </Content>
-        <Content Update="..\tts\TtsAssets\LatihasTTS.dll">
-          <Link>TtsAssets\LatihasTTS.dll</Link>
-        </Content>
-        <Content Update="..\tts\TtsAssets\LatihasTTS.deps.json">
-          <Link>TtsAssets\LatihasTTS.deps.json</Link>
-        </Content>
-        <Content Update="..\tts\TtsAssets\Microsoft.ML.OnnxRuntime.dll">
-          <Link>TtsAssets\Microsoft.ML.OnnxRuntime.dll</Link>
-        </Content>
-        <Content Update="..\tts\TtsAssets\NAudio.dll">
-          <Link>TtsAssets\NAudio.dll</Link>
-        </Content>
-        <Content Update="..\tts\TtsAssets\NAudio.Asio.dll">
-          <Link>TtsAssets\NAudio.Asio.dll</Link>
-        </Content>
-        <Content Update="..\tts\TtsAssets\NAudio.Core.dll">
-          <Link>TtsAssets\NAudio.Core.dll</Link>
-        </Content>
-        <Content Update="..\tts\TtsAssets\NAudio.Midi.dll">
-          <Link>TtsAssets\NAudio.Midi.dll</Link>
-        </Content>
-        <Content Update="..\tts\TtsAssets\NAudio.Wasapi.dll">
-          <Link>TtsAssets\NAudio.Wasapi.dll</Link>
-        </Content>
-        <Content Update="..\tts\TtsAssets\NAudio.WinForms.dll">
-          <Link>TtsAssets\NAudio.WinForms.dll</Link>
-        </Content>
-        <Content Update="..\tts\TtsAssets\NAudio.WinMM.dll">
-          <Link>TtsAssets\NAudio.WinMM.dll</Link>
-        </Content>
-        <Content Update="..\tts\TtsAssets\onnxruntime.dll">
-          <Link>TtsAssets\onnxruntime.dll</Link>
-        </Content>
-        <Content Update="..\tts\TtsAssets\onnxruntime.lib">
-          <Link>TtsAssets\onnxruntime.lib</Link>
-        </Content>
-        <Content Update="..\tts\TtsAssets\onnxruntime_providers_shared.dll">
-          <Link>TtsAssets\onnxruntime_providers_shared.dll</Link>
-        </Content>
-        <Content Update="..\tts\TtsAssets\onnxruntime_providers_shared.lib">
-          <Link>TtsAssets\onnxruntime_providers_shared.lib</Link>
-        </Content>
-        <Content Update="..\tts\TtsAssets\System.Numerics.Tensors.dll">
-          <Link>TtsAssets\System.Numerics.Tensors.dll</Link>
-        </Content>
     </ItemGroup>
     <ItemGroup>
         <Content Include="zh-CN.triglations.xml">

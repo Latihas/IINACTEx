@@ -1,3 +1,4 @@
+using System.IO;
 using Dalamud.Interface;
 using Dalamud.Interface.Colors;
 using Dalamud.Interface.Components;
@@ -42,7 +43,6 @@ public class MainWindow : Window, IDisposable
         LWindow.DrawHelpSettings();
         DrawMainWindow();
         DrawParseSettings();
-        DrawWebSocketSettings();
         DrawTTSSettings();
 		LWindow.DrawTriggerSettings();
 		LWindow.DrawTestSettings();
@@ -98,6 +98,24 @@ public class MainWindow : Window, IDisposable
         ImGui.InputText("URI", ref overlayUriString, 1000, ImGuiInputTextFlags.ReadOnly);
 
         ImGui.Spacing();
+        
+        ImGui.Text("在线的部分网页(如Timeline)不一定是最新的，IINACTEx尽量提供最新版Diemoe ACT内置的资源");
+        var cactbotDir = Path.Combine(Plugin.PluginInterface.AssemblyLocation.Directory.ToString(), "cactbot");
+        if (ImGui.Button("打开资源文件夹")) LWindow.Start(cactbotDir);
+        ImGui.Text("更多网页可见资源文件夹。以下是开发者喜欢用的网址，点击复制:");
+        foreach (var url in new []{
+                     ("伤害统计",$"http://overlay.diemoe.net/kagerou/overlay/?HOST_PORT=ws://{Server?.Address}:{Server?.Port}"),
+                     ("时间轴",$"file:///{cactbotDir}/ui/raidboss/raidboss.html?timeline=1&alerts=1&OVERLAY_WS=ws://{Server?.Address}:{Server?.Port}/ws".Replace('\\','/')),
+                     ("设置",$"http://cactbot.diemoe.net/ui/config/config.html?OVERLAY_WS=ws://{Server?.Address}:{Server?.Port}/ws")
+                 })
+        {
+            if (ImGui.Button(url.Item1))ImGui.SetClipboardText(url.Item1);
+            ImGui.SameLine();
+            ImGui.Text(":");
+            ImGui.SameLine();
+            if (ImGui.Button(url.Item2))ImGui.SetClipboardText(url.Item2);
+        }
+        ImGui.Text("每次插件加载会自动刷新bw的上述名称(伤害统计,时间轴,设置)的悬浮窗。");
         ImGui.Separator();
         ImGui.Spacing();
         var serverStatus = Server is null ? "初始化中..." : "已停止";
@@ -132,6 +150,7 @@ public class MainWindow : Window, IDisposable
             if (ImGui.Button("启动"))
                 Server.Start();
         }
+        DrawWebSocketSettings();
     }
 
      private void DrawParseSettings()
@@ -236,8 +255,8 @@ public class MainWindow : Window, IDisposable
 
     private void DrawWebSocketSettings()
     {
-        using var tab = ImRaii.TabItem("WebSocket 服务");
-        if (!tab) return;
+        // using var tab = ImRaii.TabItem("WebSocket 服务");
+        // if (!tab) return;
         
         ImGui.Spacing();
         var wsServerIp = OverlayPluginConfig?.WSServerIP ?? "";

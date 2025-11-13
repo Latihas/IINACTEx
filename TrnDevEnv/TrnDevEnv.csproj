@@ -1,4 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <OutputType>Exe</OutputType>
+    </PropertyGroup>
     <ItemGroup>
         <Reference Include="Triggernometry">
             <HintPath>../Triggernometry/Source/Triggernometry/bin/Debug/Triggernometry.dll</HintPath>

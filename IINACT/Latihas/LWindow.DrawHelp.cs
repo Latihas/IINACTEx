@@ -94,6 +94,12 @@ public static partial class LWindow
         ImGui.SameLine();
         if (ImGui.Button("打开Log目录"))
             Start(Plugin.Configuration.LogFilePath);
+        ImGui.SameLine();
+        if (ImGui.Button("打开卫月Log"))
+            RealPlugin._plug.InvokeNamedCallback("command","/xllog");
+        ImGui.SameLine();
+        if (ImGui.Button("打开bw设置"))
+            RealPlugin._plug.InvokeNamedCallback("command","/bw config");
         ImGui.Separator();
         ImGui.InputText("## 测试TTS", ref TestTts);
         ImGui.SameLine();
@@ -122,7 +128,7 @@ public static partial class LWindow
         }
         ImGui.Separator();
         ImGui.SetNextItemWidth(-1);
-        ImGui.InputTextMultiline("代码", ref TestCode, 1145141, new Vector2(400, 300));
+        ImGui.InputTextMultiline("代码", ref TestCode, 1145141);
         if (ImGui.Button("编译代码"))
             Sb = CSharpScriptCompiler.CompileScript(TestCode, [])
                      ? "成功"

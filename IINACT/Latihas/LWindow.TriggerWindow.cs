@@ -19,6 +19,7 @@ public static partial class LWindow
             Trigger = trigger;
             ConditionPanel = new ConditionPanel(trigger);
             IsOpen = true;
+            TriggernometryProxy.ProxyPlugin.DalamudPlugin.ActionWindow.IsOpen = false;
         }
 
         private readonly Context fakectx = new();
