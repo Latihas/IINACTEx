@@ -8,10 +8,14 @@ public static partial class LWindow
 {
     public class FolderWindow() : Window($"{WindowPrefix}FolderWindow")
     {
-        private static Folder Folder;
+        private static Folder? Folder;
 
         public override void Draw()
-        {
+        {if(Folder==null)return;
+            ImGui.Text("Id: ");
+            ImGui.SameLine();
+            var id = Folder.Id.ToString();
+            if (ImGui.Button(id)) ImGui.SetClipboardText(id);
             var Name = Folder.Name;
             if (ImGui.InputText("名称", ref Name))
                 Folder.Name = Name;

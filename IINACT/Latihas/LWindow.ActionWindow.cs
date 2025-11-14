@@ -41,6 +41,10 @@ public partial class LWindow
         public override void Draw()
         {
             if (Action == null) return;
+            ImGui.Text("Id: ");
+            ImGui.SameLine();
+            var id = Action.Id.ToString();
+            if (ImGui.Button(id)) ImGui.SetClipboardText(id);
             if (ImGui.Button("删除")) DeleteAction(Trigger!, Action);
             var currentActionTypeEnumItem = 0;
             if (Enum.TryParse(typeof(ActionTypeEnum), Action.ActionType, out var actionType))

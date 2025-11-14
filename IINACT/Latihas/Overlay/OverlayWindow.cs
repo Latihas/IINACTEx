@@ -14,7 +14,7 @@ public class OverlayWindow() : Window("IINACT Overlay"), IDisposable
     private CombatDataWrapper? currentCombatData;
     private readonly List<HistoricalCombatData> historicalRecords = [];
     private HistoricalCombatData? selectedHistoricalRecord;
-    private bool IsActive;
+    private bool isActive;
     public void Dispose() => webSocketClient?.Dispose();
 
     public void Parse(string data)
@@ -23,13 +23,13 @@ public class OverlayWindow() : Window("IINACT Overlay"), IDisposable
         {
             var x = JsonConvert.DeserializeObject<CombatDataWrapper>(data);
             Plugin.Log.Warning(data);
-            if (x is { Type: "broadcast", MsgType: "CombatData" })
+            if (x is { Type: "broadcast", MsgType: "CombatData" } && x.Msg.Combatant.Count != 0)
             {
                 currentCombatData = x;
-                var newActive = bool.Parse(currentCombatData.Msg.IsActive);
-                if (IsActive && !newActive && currentCombatData != null)
+                var newActive = bool.Parse(x.Msg.IsActive);
+                if (isActive && !newActive)
                     AddHistoricalRecord(currentCombatData);
-                IsActive = newActive;
+                isActive = newActive;
             }
         }
         catch (Exception)
@@ -82,25 +82,17 @@ public class OverlayWindow() : Window("IINACT Overlay"), IDisposable
                 if (hps)
                     DrawCatDetails("HPS", c => new Cat(c.name, c.Job, c.ENCHPS));
             using (var dmg = ImRaii.TabItem("DMG"))
-            {
                 if (dmg)
-                    DrawCatDetails("DMG",
-                                   c => new Cat(c.name,
-                                                c.Job,
-                                                // c.damagetaken is "∞" or "---" ? 0 : int.Parse(c.damagetaken),
-                                                c.damagetaken));
-            }
+                    DrawCatDetails("DMG", c => new Cat(c.name, c.Job, c.damagetaken));
             using (var historyTab = ImRaii.TabItem("历史记录"))
                 if (historyTab)
                     DrawHistoricalRecords();
             using (var comb = ImRaii.TabItem("战斗概览"))
-            {
                 if (comb)
                 {
                     DrawEncounterOverview(currentCombatData);
                     DrawCombatantDetails(currentCombatData);
                 }
-            }
         }
     }
 
@@ -202,13 +194,12 @@ public class OverlayWindow() : Window("IINACT Overlay"), IDisposable
 
     private void DrawCatDetails(string name, Func<Combatant, Cat> selector)
     {
-        if (currentCombatData?.Msg?.Combatant == null || currentCombatData.Msg.Combatant.Count == 0)
+        if (currentCombatData == null)
         {
-            ImGui.Text("暂无战斗者数据");
+            ImGui.Text("暂无战斗数据");
             return;
         }
-        var combatantList = currentCombatData.Msg.Combatant.Values
-                                             .Select(selector)
+        var combatantList = currentCombatData.Msg.Combatant.Values.Select(selector)
                                              .Where(c => !string.IsNullOrEmpty(c.Name))
                                              .OrderByDescending(Catval).ToList();
 

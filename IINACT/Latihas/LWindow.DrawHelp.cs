@@ -32,9 +32,10 @@ public static partial class LWindow
         ImGui.Text("比如开发者的ACT装在D盘，那么URL就类似于file:///D:/ACT.DieMoe/Plugins/ACT.OverlayPlugin/cactbot/ui/raidboss/raidboss.html?timeline=1&alerts=1");
         ImGui.Text("有时候bw会不显示东西（如时间轴），需要手动在bw里面刷新一下");
         ImGui.Text("更多详情请见·运行状态·栏");
-        ImGui.Text("=====TTS=====");
-        ImGui.Text("IINACT CN默认使用了EdgeTTS，如果你EdgeTTS工作正常可以跳过这部分。由于开发者比较喜欢用LatihasTTS(纯本地模型推理)所以也做了接口");
-        ImGui.Text("仅需将TTS相关文件放入插件安装目录下即可使用，加号代表添加的文件，像这样:");
+        ImGui.Text("=====TTS/Cactbot=====");
+        ImGui.Text("IINACT CN默认使用了EdgeTTS，如果你EdgeTTS工作正常可以跳过这部分。由于开发者比较喜欢用LatihasTTS(纯本地模型推理)所以也做了接口。");
+        ImGui.Text("cactbot资源可在·运行状态·栏找到链接并下载。");
+        ImGui.Text("仅需将相关文件放入插件安装目录下即可使用，加号代表添加的文件，像这样:");
         ImGui.Text("$(installedPlugins/IINACTEx)");
         ImGui.Text("    Scripts/");
         ImGui.Text("    TriggernometryRepoBackups/");
@@ -44,25 +45,27 @@ public static partial class LWindow
         ImGui.Text("        + vocab.txt");
         ImGui.Text("        + a.ort");
         ImGui.Text("        + v.ort");
+        ImGui.Text("        + ...");
         ImGui.Text("    Advanced Combat Tracker.dll");
         ImGui.Text("    Triggernometry.dll");
         ImGui.Text("    xxx.dll");
+        ImGui.Text("    + cactbot.zip");
         ImGui.Text("    ...");
         ImGui.Text("=====已知限制=====");
         ImGui.Text("!!! 不要在插件加载后立刻卸载插件，否则大概率会线程回收失败，只能重启游戏解决。");
-        ImGui.Text("!!! Triggernometry有时会因为宝宝椅的鲇鱼精扩展功能炸游戏/显示异常/...。目前已知场景是本里掉线上线会炸渲染，开发者用Penumbra可以恢复");
+        ImGui.Text("!!! Triggernometry有时会因为宝宝椅的鲇鱼精扩展功能炸游戏/显示异常/...。开发者用Penumbra可以恢复部分图形问题");
         ImGui.SameLine();
         if (ImGui.Button("/penumbra redraw")) RealPlugin.plug.InvokeNamedCallback("command", "/penumbra redraw");
         ImGui.Text("IActPluginV1仅为不报错存在，不会执行加载等逻辑");
         ImGui.Text("Postnamezu的Preset不可用");
         ImGui.Text("触发器有时候声音比较小，减小游戏音量以调整。");
-        ImGui.Text("Triggernometry的配置文件与ACT版本完全兼容，可以直接把act的配置文件复制到插件config目录下");
+        ImGui.Text("Triggernometry的配置文件与ACT版本完全兼容，可以直接把act的配置文件复制到插件胚子目录下");
         ImGui.Text("Triggernometry的触发器不支持导入文件，过大的触发器建议分批导入");
         ImGui.Text("Triggernometry不会自动保存配置文件。请导入或修改过任何触发器/配置/...后手动保存。");
         ImGui.Text("Triggernometry的部分高级内存操作与回调不可用");
-        ImGui.Text("Triggernometry的悬浮窗不可用");
+        ImGui.Text("Triggernometry的重复触发器导入重命名可能有问题，请尽量不要二次导入相同的触发器");
         ImGui.Text("Triggernometry的部分编辑还没写");
-        ImGui.Text("Triggernometry的绝大部分Form或Control因兼容性被移除，可能误伤配置弹出框，一般报错中可以看出来，可以提Issue。");
+        ImGui.Text("Triggernometry的绝大部分Form或Control因兼容性被移除，可能误伤配置弹出框，一般报错中可以看出来。");
         ImGui.Text("Triggernometry的脚本执行引用库如下，若超出引用库不可编译：");
         ImGui.Text("    Path.Combine(pluginPathRoot,'Triggernometry.dll')");
         ImGui.Text("    Path.Combine(pluginPathRoot,'AdvancedCombatTracker.dll')");
@@ -94,12 +97,16 @@ public static partial class LWindow
         ImGui.SameLine();
         if (ImGui.Button("打开Log目录"))
             Start(Plugin.Configuration.LogFilePath);
-        ImGui.SameLine();
         if (ImGui.Button("打开卫月Log"))
-            RealPlugin._plug.InvokeNamedCallback("command","/xllog");
+            RealPlugin._plug.InvokeNamedCallback("command", "/xllog");
+        ImGui.SameLine();
+        if (ImGui.Button("刷新Bw悬浮窗"))
+            Plugin.Instance.RefreshBw();
         ImGui.SameLine();
         if (ImGui.Button("打开bw设置"))
-            RealPlugin._plug.InvokeNamedCallback("command","/bw config");
+            RealPlugin._plug.InvokeNamedCallback("command", "/bw config");
+        if (ImGui.Button("打开伤害统计悬浮窗"))
+            Plugin.Instance.OverlayWindow.IsOpen = true;
         ImGui.Separator();
         ImGui.InputText("## 测试TTS", ref TestTts);
         ImGui.SameLine();

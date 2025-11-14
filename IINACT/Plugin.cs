@@ -99,7 +99,7 @@ public sealed class Plugin : IDalamudPlugin
         }
         catch (Exception ex)
         {
-            Log.Error($"解压失败：{ex.Message}");
+            Log.Warning($"解压失败：{ex.Message}");
         }
     }
 
@@ -173,7 +173,7 @@ public sealed class Plugin : IDalamudPlugin
             Log.Error($"{e.Message}\n{e.StackTrace ?? ""}");
         }
         Advanced_Combat_Tracker.ActGlobals.oFormActMain.TriggernometryPlugin = TriggernometryProxyPlugin = new ProxyPlugin();
-        TriggernometryProxyPlugin.InitPlugin(this, PluginInterface, Log, ClientState, Framework);
+        TriggernometryProxyPlugin.InitPlugin(this, PluginInterface, Log, ClientState, Framework, GameInteropProvider);
         Advanced_Combat_Tracker.ActGlobals.oFormActMain.PostNamazuPlugin = PostNamazuPlugin = new PostNamazu.PostNamazu();
         PostNamazuPlugin.InitPlugin(PluginInterface, Log, SigScanner);
         IpcProviders = new IpcProviders(PluginInterface);
@@ -245,6 +245,13 @@ public sealed class Plugin : IDalamudPlugin
         Advanced_Combat_Tracker.ActGlobals.Dispose();
     }
 
+    internal void RefreshBw()
+    {
+        PostNamazuPlugin.DoAction("command", "/bw overlay 伤害统计 reload");
+        PostNamazuPlugin.DoAction("command", "/bw overlay 时间轴 reload");
+        PostNamazuPlugin.DoAction("command", "/bw overlay 设置 reload");
+    }
+
     private RainbowMage.OverlayPlugin.PluginMain InitOverlayPluginTrn()
     {
         var container = new RainbowMage.OverlayPlugin.TinyIoCContainer();
@@ -276,9 +283,8 @@ public sealed class Plugin : IDalamudPlugin
             MainWindow.OverlayPluginConfig = container.Resolve<RainbowMage.OverlayPlugin.IPluginConfig>();
             Triggernometry.PluginBridges.BridgeNamazu.BridgeNamazu.InitializeModules();
             Triggernometry.PluginBridges.BridgeNamazu.BridgeNamazu.RegisterAnnotatedMethods();
-            PostNamazuPlugin.DoAction("command", "/bw overlay 伤害统计 reload");
-            PostNamazuPlugin.DoAction("command", "/bw overlay 时间轴 reload");
-            PostNamazuPlugin.DoAction("command", "/bw overlay 设置 reload");
+            if (Directory.Exists(Path.Combine(PluginInterface.AssemblyLocation.Directory.ToString(), "cactbot")))
+                RefreshBw();
         });
         return overlayPlugin;
     }
@@ -287,7 +293,7 @@ public sealed class Plugin : IDalamudPlugin
     {
         if (command == OverlayCommandName)
         {
-            OverlayWindow.IsOpen=true;
+            OverlayWindow.IsOpen = true;
             return;
         }
         if (command == EndEncCommandName)

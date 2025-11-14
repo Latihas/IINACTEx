@@ -99,6 +99,13 @@ public class MainWindow : Window, IDisposable
         ImGui.Spacing();
 
         ImGui.Text("在线的部分网页(如Timeline)不一定是最新的，IINACTEx尽量提供最新版Diemoe ACT内置的资源");
+        ImGui.Text("cactbot.zip可在");
+        ImGui.SameLine();
+        const string cactboturl = "https://raw.githubusercontent.com/Latihas/dalamud-plugins/main/cactbot.zip";
+        if (ImGui.Button(cactboturl)) LWindow.Start(cactboturl);
+        ImGui.SameLine();
+        ImGui.Text("下载");
+        ImGui.Text("下载完成后放在IINACTEx插件的安装目录下，可以选择手动解压，也可以在插件下次加载时自动解压。解压后，即可打开资源文件夹。");
         var cactbotDir = Path.Combine(Plugin.PluginInterface.AssemblyLocation.Directory.ToString(), "cactbot");
         if (ImGui.Button("打开资源文件夹")) LWindow.Start(cactbotDir);
         ImGui.Text("更多网页可见资源文件夹。以下是开发者喜欢用的网址，点击复制:");
