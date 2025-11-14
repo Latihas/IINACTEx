@@ -17,7 +17,6 @@ namespace IINACT.Windows;
 
 public class MainWindow : Window, IDisposable
 {
-
     private int selectedOverlayIndex;
 
     public MainWindow() : base(LWindow.WindowPrefix)
@@ -44,8 +43,8 @@ public class MainWindow : Window, IDisposable
         DrawMainWindow();
         DrawParseSettings();
         DrawTTSSettings();
-		LWindow.DrawTriggerSettings();
-		LWindow.DrawTestSettings();
+        LWindow.DrawTriggerSettings();
+        LWindow.DrawTestSettings();
     }
 
     private void DrawMainWindow()
@@ -64,14 +63,14 @@ public class MainWindow : Window, IDisposable
         ImGui.TextColored(ImGuiColors.DalamudGrey, "Overlay URI 生成器:");
 
         var comboWidth = ImGui.GetWindowWidth() * 0.8f;
-        
+
         var selectedIndexOverlayName = OverlayNames?[selectedOverlayIndex] ?? "";
         var selectedOverlayName = Plugin.Configuration.SelectedOverlay ?? selectedIndexOverlayName;
         if (selectedOverlayName != selectedIndexOverlayName)
             for (var i = 0; i < OverlayNames?.Length; i++)
-                if (OverlayNames?[i] == selectedOverlayName) 
+                if (OverlayNames?[i] == selectedOverlayName)
                     selectedOverlayIndex = i;
-        
+
         ImGui.SetNextItemWidth(comboWidth);
         if (ImGui.BeginCombo("悬浮窗", selectedOverlayName))
         {
@@ -98,24 +97,28 @@ public class MainWindow : Window, IDisposable
         ImGui.InputText("URI", ref overlayUriString, 1000, ImGuiInputTextFlags.ReadOnly);
 
         ImGui.Spacing();
-        
+
         ImGui.Text("在线的部分网页(如Timeline)不一定是最新的，IINACTEx尽量提供最新版Diemoe ACT内置的资源");
         var cactbotDir = Path.Combine(Plugin.PluginInterface.AssemblyLocation.Directory.ToString(), "cactbot");
         if (ImGui.Button("打开资源文件夹")) LWindow.Start(cactbotDir);
         ImGui.Text("更多网页可见资源文件夹。以下是开发者喜欢用的网址，点击复制:");
-        foreach (var url in new []{
-                     ("伤害统计",$"http://overlay.diemoe.net/kagerou/overlay/?HOST_PORT=ws://{Server?.Address}:{Server?.Port}"),
-                     ("时间轴",$"file:///{cactbotDir}/ui/raidboss/raidboss.html?timeline=1&alerts=1&OVERLAY_WS=ws://{Server?.Address}:{Server?.Port}/ws".Replace('\\','/')),
-                     ("设置",$"http://cactbot.diemoe.net/ui/config/config.html?OVERLAY_WS=ws://{Server?.Address}:{Server?.Port}/ws")
+        foreach (var url in new[]
+                 {
+                     ("伤害统计", $"http://overlay.diemoe.net/kagerou/overlay/?HOST_PORT=ws://{Server?.Address}:{Server?.Port}"),
+                     ("时间轴", $"file:///{cactbotDir}/ui/raidboss/raidboss.html?timeline=1&alerts=1&OVERLAY_WS=ws://{Server?.Address}:{Server?.Port}/ws".Replace('\\', '/')),
+                     ("设置", $"http://cactbot.diemoe.net/ui/config/config.html?OVERLAY_WS=ws://{Server?.Address}:{Server?.Port}/ws")
                  })
         {
-            if (ImGui.Button(url.Item1))ImGui.SetClipboardText(url.Item1);
+            if (ImGui.Button(url.Item1)) ImGui.SetClipboardText(url.Item1);
             ImGui.SameLine();
             ImGui.Text(":");
             ImGui.SameLine();
-            if (ImGui.Button(url.Item2))ImGui.SetClipboardText(url.Item2);
+            if (ImGui.Button(url.Item2)) ImGui.SetClipboardText(url.Item2);
         }
         ImGui.Text("每次插件加载会自动刷新bw的上述名称(伤害统计,时间轴,设置)的悬浮窗。");
+        ImGui.Text("IINACTEx也有内置一个原生的伤害统计悬浮窗，" + Plugin.OverlayCommandName);
+        ImGui.SameLine();
+        if (ImGui.Button("点击打开")) Plugin.Instance.OverlayWindow.IsOpen = true;
         ImGui.Separator();
         ImGui.Spacing();
         var serverStatus = Server is null ? "初始化中..." : "已停止";
@@ -143,7 +146,10 @@ public class MainWindow : Window, IDisposable
             ImGui.SameLine();
 
             if (ImGui.Button("重启"))
+            {
                 Server.Restart();
+                Plugin.Instance.OverlayWindow.Init(Server);
+            }
         }
         else if (Server is not null)
         {
@@ -153,7 +159,7 @@ public class MainWindow : Window, IDisposable
         DrawWebSocketSettings();
     }
 
-     private void DrawParseSettings()
+    private void DrawParseSettings()
     {
         using var tab = ImRaii.TabItem("解析设置");
         if (!tab) return;
@@ -197,7 +203,7 @@ public class MainWindow : Window, IDisposable
             Plugin.Configuration.WriteLogFile = writeLogFile;
             Plugin.Configuration.Save();
         }
-        if ( Plugin.Configuration.WriteLogFile&&ImGui.Checkbox("写入ACT日志文件", ref writeActLogFile))
+        if (Plugin.Configuration.WriteLogFile && ImGui.Checkbox("写入ACT日志文件", ref writeActLogFile))
         {
             Plugin.Configuration.WriteActLogFile = writeActLogFile;
             Plugin.Configuration.Save();
@@ -257,7 +263,7 @@ public class MainWindow : Window, IDisposable
     {
         // using var tab = ImRaii.TabItem("WebSocket 服务");
         // if (!tab) return;
-        
+
         ImGui.Spacing();
         var wsServerIp = OverlayPluginConfig?.WSServerIP ?? "";
         ImGui.InputText("IP地址", ref wsServerIp, 100, ImGuiInputTextFlags.None);
@@ -302,9 +308,9 @@ public class MainWindow : Window, IDisposable
                 Plugin.OpenEdgeTTSWindow();
             }
         }
-		var useLatihasTTS = Plugin.Configuration.UseLatihasTts;
-		if (ImGui.Checkbox("使用LatihasTTS（均不勾选则使用本地TTS）", ref useLatihasTTS)) 
-			Plugin.TextToSpeechProvider.SetUseLatihasTTS(useLatihasTTS);
+        var useLatihasTTS = Plugin.Configuration.UseLatihasTts;
+        if (ImGui.Checkbox("使用LatihasTTS（均不勾选则使用本地TTS）", ref useLatihasTTS))
+            Plugin.TextToSpeechProvider.SetUseLatihasTTS(useLatihasTTS);
         ImGui.Spacing();
         ImGui.Separator();
         ImGui.Spacing();
@@ -314,10 +320,10 @@ public class MainWindow : Window, IDisposable
     {
         return mode switch
         {
-            ParseFilterMode.None        => "无 (None)",
-            ParseFilterMode.Self        => "仅自己 (Self)",
-            ParseFilterMode.Party       => "仅小队成员 (Party)",
-            ParseFilterMode.Alliance    => "仅团队成员 (Alliance)",
+            ParseFilterMode.None => "无 (None)",
+            ParseFilterMode.Self => "仅自己 (Self)",
+            ParseFilterMode.Party => "仅小队成员 (Party)",
+            ParseFilterMode.Alliance => "仅团队成员 (Alliance)",
             _ => mode.ToString()
         };
     }

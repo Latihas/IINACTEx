@@ -1,11 +1,9 @@
 ﻿using System.Diagnostics.CodeAnalysis;
-using System.Numerics;
 using Dalamud.Interface.Windowing;
 using Dalamud.Bindings.ImGui;
 using Triggernometry;
+using WebSocketSharp;
 using static Triggernometry.Action;
-using static Triggernometry.ConditionGroup;
-using static Triggernometry.ConditionSingle;
 using Action = Triggernometry.Action;
 
 namespace IINACT.Latihas;
@@ -39,7 +37,6 @@ public partial class LWindow
                 Plugin.Instance.ActionWindow.IsOpen = false;
             }
         }
-
 
         public override void Draw()
         {
@@ -235,7 +232,7 @@ public partial class LWindow
                                 Action.TextAuraName = TextAuraName;
                             var TextAuraExpression = Action.TextAuraExpression;
                             if (ImGui.InputText("文本", ref TextAuraExpression))
-                                Action.TextAuraName = TextAuraExpression;
+                                Action.TextAuraExpression = TextAuraExpression;
                             var TextAuraAlignmentEnumItem = 0;
                             if (Enum.TryParse(typeof(TextAuraAlignmentEnum), Action.TextAuraAlignment, out var TextAuraAlignment))
                                 TextAuraAlignmentEnumItem = (int)TextAuraAlignment;
@@ -243,9 +240,19 @@ public partial class LWindow
                                             Enum.GetValues<TextAuraAlignmentEnum>()
                                                 .Select(i => i.ToString()).ToList()))
                                 Action.TextAuraAlignment = TextAuraAlignmentEnumItem == 0 ? null : ((TextAuraAlignmentEnum)TextAuraAlignmentEnumItem).ToString();
-                            var TextAuraTTLTickExpression = Action.TextAuraTTLTickExpression;
-                            if (ImGui.InputText("存续条件", ref TextAuraTTLTickExpression))
+
+                            var TextAuraTTLTickExpression = Action.TextAuraTTLTickExpression.IsNullOrEmpty() ? "1*1000-${_sincems}" : Action.TextAuraTTLTickExpression;
+                            if (Action.TextAuraTTLTickExpression.IsNullOrEmpty() || ImGui.InputText("存续条件(>0)", ref TextAuraTTLTickExpression))
                                 Action.TextAuraTTLTickExpression = TextAuraTTLTickExpression;
+                            var TextAuraFontName = Action.TextAuraFontName.IsNullOrEmpty() ? "Microsoft YaHei UI" : Action.TextAuraFontName;
+                            if (Action.TextAuraFontName.IsNullOrEmpty() || ImGui.InputText("字体名称", ref TextAuraFontName))
+                                Action.TextAuraFontName = TextAuraFontName;
+                            var TextAuraEffect = Action.TextAuraEffect.IsNullOrEmpty() ? "Bold" : Action.TextAuraEffect;
+                            if (Action.TextAuraEffect.IsNullOrEmpty() || ImGui.InputText("字体效果", ref TextAuraEffect))
+                                Action.TextAuraEffect = TextAuraEffect;
+                            var TextAuraFontSize = Action.TextAuraFontSize.IsNullOrEmpty() ? "18" : Action.TextAuraFontSize;
+                            if (Action.TextAuraFontSize.IsNullOrEmpty() || ImGui.InputText("字体大小", ref TextAuraFontSize))
+                                Action.TextAuraFontSize = TextAuraFontSize;
                             ImGui.Separator();
                             var TextAuraForeground = Action.TextAuraForeground;
                             if (ImGui.InputText("前景颜色(文本)", ref TextAuraForeground))
@@ -257,17 +264,17 @@ public partial class LWindow
                             if (ImGui.InputText("轮廓颜色", ref TextAuraOutline))
                                 Action.TextAuraOutline = TextAuraOutline;
                             ImGui.Separator();
-                            var TextAuraXIniExpression = Action.TextAuraXIniExpression;
-                            if (ImGui.InputText("窗口初始坐标X", ref TextAuraXIniExpression))
+                            var TextAuraXIniExpression = Action.TextAuraXIniExpression.IsNullOrEmpty() ? "500" : Action.TextAuraXIniExpression;
+                            if (Action.TextAuraXIniExpression.IsNullOrEmpty() || ImGui.InputText("窗口初始坐标X", ref TextAuraXIniExpression))
                                 Action.TextAuraXIniExpression = TextAuraXIniExpression;
-                            var TextAuraYIniExpression = Action.TextAuraYIniExpression;
-                            if (ImGui.InputText("窗口初始坐标Y", ref TextAuraYIniExpression))
+                            var TextAuraYIniExpression = Action.TextAuraYIniExpression.IsNullOrEmpty() ? "500" : Action.TextAuraYIniExpression;
+                            if (Action.TextAuraYIniExpression.IsNullOrEmpty() || ImGui.InputText("窗口初始坐标Y", ref TextAuraYIniExpression))
                                 Action.TextAuraYIniExpression = TextAuraYIniExpression;
-                            var TextAuraWIniExpression = Action.TextAuraWIniExpression;
-                            if (ImGui.InputText("窗口初始宽度W", ref TextAuraWIniExpression))
+                            var TextAuraWIniExpression = Action.TextAuraWIniExpression.IsNullOrEmpty() ? "500" : Action.TextAuraWIniExpression;
+                            if (Action.TextAuraWIniExpression.IsNullOrEmpty() || ImGui.InputText("窗口初始宽度W", ref TextAuraWIniExpression))
                                 Action.TextAuraWIniExpression = TextAuraWIniExpression;
-                            var TextAuraHIniExpression = Action.TextAuraHIniExpression;
-                            if (ImGui.InputText("窗口初始高度H", ref TextAuraHIniExpression))
+                            var TextAuraHIniExpression = Action.TextAuraHIniExpression.IsNullOrEmpty() ? "500" : Action.TextAuraHIniExpression;
+                            if (Action.TextAuraHIniExpression.IsNullOrEmpty() || ImGui.InputText("窗口初始高度H", ref TextAuraHIniExpression))
                                 Action.TextAuraHIniExpression = TextAuraHIniExpression;
                             var TextAuraOIniExpression = Action.TextAuraOIniExpression;
                             if (ImGui.InputText("窗口初始不透明度O", ref TextAuraOIniExpression))
@@ -570,24 +577,19 @@ public partial class LWindow
                         case nameof(ActionTypeEnum.Placeholder): break;
                     }
                     ImGui.Separator();
-                    var key = "";
-                    switch (Action.ActionType)
+                    var key = Action.ActionType switch
                     {
-                        case nameof(ActionTypeEnum.Variable):
-                            key = "rtbHelperVar" + Action.VariableOp; break;
-                        case nameof(ActionTypeEnum.ListVariable):
-                            key = "rtbHelperLvar" + Action.ListVariableOp; break;
-                        case nameof(ActionTypeEnum.TableVariable):
-                            key = "rtbHelperTvar" + Action.TableVariableOp; break;
-                        case nameof(ActionTypeEnum.DictVariable):
-                            key = "rtbHelperDict" + Action.DictVariableOp; break;
-                        case nameof(ActionTypeEnum.KeyPress):
-                            key = "rtbHelperSendKeys" + Action.KeypressType; break;
-                        case "rtbCallbackHelper": key = "rtbHelperCallback"; break;
-                        case "rtbWmsgHelper": key = "rtbHelperWmsg"; break;
-                        case "rtbJsonHelper": key = "rtbHelperJson"; break;
-                    }
-                    ImGui.Text(I18n.Translate($"ActionForm/{key}", $"{key}.Text") ?? "");
+                        nameof(ActionTypeEnum.Variable) => "rtbHelperVar" + (Action.VariableOp ?? ((VariableOpEnum)0).ToString()),
+                        nameof(ActionTypeEnum.ListVariable) => "rtbHelperLvar" + (Action.ListVariableOp ?? ((ListVariableOpEnum)0).ToString()),
+                        nameof(ActionTypeEnum.TableVariable) => "rtbHelperTvar" + (Action.TableVariableOp ?? ((TableVariableOpEnum)0).ToString()),
+                        nameof(ActionTypeEnum.DictVariable) => "rtbHelperDict" + (Action.DictVariableOp ?? ((DictVariableOpEnum)0).ToString()),
+                        nameof(ActionTypeEnum.KeyPress) => "rtbHelperSendKeys" + (Action.KeypressType ?? ((KeypressTypeEnum)0).ToString()),
+                        nameof(ActionTypeEnum.NamedCallback) => "rtbHelperCallback",
+                        nameof(ActionTypeEnum.WindowMessage) => "rtbHelperWmsg",
+                        nameof(ActionTypeEnum.GenericJson) => "rtbHelperJson",
+                        _ => ""
+                    };
+                    if (key != "") ImGui.Text(I18n.Translate($"ActionForm/{key}", $"{key}.Text"));
                     ImGui.EndTabItem();
                 }
                 if (ImGui.BeginTabItem("动作条件"))
@@ -599,16 +601,16 @@ public partial class LWindow
                 {
                     var currentRefireInterruptItem = Action.RefireInterrupt != null && bool.Parse(Action.RefireInterrupt) ? 0 : 1;
                     if (ImGui.Combo("触发器再次触发时，此动作若尚未结束", ref currentRefireInterruptItem,
-                                    new[] { "保留队列中所有旧动作，", "中断队列中所有旧动作，" })) ;
-                    Action.RefireInterrupt = (currentRefireInterruptItem == 1).ToString();
-                    var currentRefireRequeueItem = Action.RefireRequeue != null && bool.Parse(Action.RefireRequeue) ? 1 : 0;
+                                    new[] { "保留队列中所有旧动作，", "中断队列中所有旧动作，" }))
+                        Action.RefireInterrupt = (currentRefireInterruptItem == 0).ToString();
+                    var currentRefireRequeueItem = Action.RefireRequeue == null || bool.Parse(Action.RefireRequeue) ? 1 : 0;
                     if (ImGui.Combo("## 触发器再次触发时，此动作若尚未结束", ref currentRefireRequeueItem,
-                                    new[] { "并允许触发器再次触发", "并禁止触发器再次触发" })) ;
-                    Action.RefireRequeue = (currentRefireRequeueItem == 0).ToString();
+                                    new[] { "并允许触发器再次触发", "并禁止触发器再次触发" }))
+                        Action.RefireRequeue = (currentRefireRequeueItem == 1).ToString();
                     var ExecutionDelayExpression = Action.ExecutionDelayExpression;
                     if (ImGui.InputText("动作延迟(ms)", ref ExecutionDelayExpression))
-                        Action.ExecScriptExpression = ExecutionDelayExpression;
-                    var Asynchronous = Action.Asynchronous != null && bool.Parse(Action.Asynchronous);
+                        Action.ExecutionDelayExpression = ExecutionDelayExpression;
+                    var Asynchronous = Action.Asynchronous == null || bool.Parse(Action.Asynchronous);
                     if (ImGui.Checkbox("异步执行", ref Asynchronous))
                         Action.Asynchronous = Asynchronous.ToString();
                     ImGui.EndTabItem();

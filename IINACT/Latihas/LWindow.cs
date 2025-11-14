@@ -1,12 +1,10 @@
 ﻿using System.Diagnostics;
 using System.Numerics;
-using System.Text;
 using Dalamud.Bindings.ImGui;
 using Dalamud.Interface.ImGuiNotification;
 using Dalamud.Interface.Utility.Raii;
 using Triggernometry;
 using Triggernometry.Variables;
-using Action = Triggernometry.Action;
 
 namespace IINACT.Latihas;
 
@@ -107,7 +105,6 @@ public static partial class LWindow
         using var tab = ImRaii.TabItem("临时标量");
         if (!tab) return;
         TScaler(RealPlugin.plug.sessionvars.Scalar);
-        DrawTriggerVarETScalerSettings(false);
         DrawTriggerVarESettings(false, TriggerVarType.Scalar);
     }
 
@@ -116,46 +113,7 @@ public static partial class LWindow
         using var tab = ImRaii.TabItem("永久标量");
         if (!tab) return;
         TScaler(RealPlugin.plug.cfg.PersistentVariables.Scalar);
-        DrawTriggerVarETScalerSettings(true);
         DrawTriggerVarESettings(true, TriggerVarType.Scalar);
-    }
-
-    private static readonly Action EScalerAction = new();
-
-    private static void DrawTriggerVarETScalerSettings(bool persist)
-    {
-        ImGui.Separator();
-
-        if (ImGui.Button("执行")) EScalerAction.Execute(null, new Context());
-        var currenVariableOpEnumItem = 0;
-        if (Enum.TryParse(typeof(Action.VariableOpEnum), EScalerAction.VariableOp, out var VariableOpEnumType))
-            currenVariableOpEnumItem = (int)VariableOpEnumType;
-        if (ImGui.Combo("操作", ref currenVariableOpEnumItem,
-                        Enum.GetValues<Action.VariableOpEnum>()
-                            .Select(i => i.ToString())
-                            .ToList()))
-            EScalerAction.VariableOp = currenVariableOpEnumItem == 0 ? null : ((Action.VariableOpEnum)currenVariableOpEnumItem).ToString();
-        if (currenVariableOpEnumItem == (int)(Action.VariableOpEnum.UnsetAll)) return;
-        var VariableName = EScalerAction.VariableName;
-        if (ImGui.InputText("源变量", ref VariableName))
-            EScalerAction.VariableName = VariableName;
-        EScalerAction.VariablePersist = persist.ToString();
-        if (currenVariableOpEnumItem is (int)Action.VariableOpEnum.Unset
-            or (int)Action.VariableOpEnum.UnsetRegex
-            or (int)Action.VariableOpEnum.UnsetRegexUniversal) return;
-        var VariableExpression = EScalerAction.VariableExpression;
-        if (ImGui.InputText("表达式", ref VariableExpression))
-            EScalerAction.VariableExpression = VariableExpression;
-        if (EScalerAction.VariableOp is nameof(Action.VariableOpEnum.QueryJsonPath)
-            or nameof(Action.VariableOpEnum.QueryJsonPathList))
-        {
-            var VariableJsonTarget = EScalerAction.VariableJsonTarget;
-            if (ImGui.InputText("目标变量", ref VariableJsonTarget))
-                EScalerAction.VariableJsonTarget = VariableJsonTarget;
-            var VariableTargetPersist = EScalerAction.VariableTargetPersist != null && bool.Parse(EScalerAction.VariableTargetPersist);
-            if (ImGui.Checkbox("目标变量为永久变量", ref VariableTargetPersist))
-                EScalerAction.VariableTargetPersist = VariableTargetPersist.ToString();
-        }
     }
 
     private enum TriggerVarType

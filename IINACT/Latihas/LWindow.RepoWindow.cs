@@ -1,5 +1,4 @@
-﻿using System.Numerics;
-using Dalamud.Bindings.ImGui;
+﻿using Dalamud.Bindings.ImGui;
 using Dalamud.Interface.Windowing;
 using Triggernometry;
 

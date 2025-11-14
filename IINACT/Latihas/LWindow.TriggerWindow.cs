@@ -65,24 +65,8 @@ public static partial class LWindow
                                 ImGui.OpenPopup($"context_menu_action_{i}");
                             if (ImGui.BeginPopup($"context_menu_action_{i}"))
                             {
-                                if (ImGui.MenuItem("删除"))
-                                {
+                                if (ImGui.MenuItem($"删除{i}"))
                                     Plugin.Instance.ActionWindow.DeleteAction(Trigger, Trigger.Actions[i]);
-                                    break;
-                                }
-                                if (ImGui.MenuItem("测试"))
-                                {
-                                    Trigger.Actions[i].Execute(null, fakectx);
-                                    break;
-                                }
-                                if (ImGui.MenuItem("测试(忽略条件)"))
-                                {
-                                    var bc = Trigger.Actions[i].Condition;
-                                    Trigger.Actions[i].Condition = new ConditionGroup();
-                                    Trigger.Actions[i].Execute(null, fakectx);
-                                    Trigger.Actions[i].Condition = bc;
-                                    break;
-                                }
                                 ImGui.EndPopup();
                             }
                             if (!Enabled[i]) ImGui.PopStyleColor();
@@ -108,7 +92,7 @@ public static partial class LWindow
                                     new[] { "保留队列中所有旧动作，", "中断队列中所有旧动作，" }))
                         Trigger.PrevActions = ((Trigger.PrevActionsEnum)currenPrevActionsEnumItem);
                     var currenPrevActionsRefireEnumItem = (int)Trigger.PrevActionsRefire;
-                    if (ImGui.Combo("## 触发器再次触发时，此动作若尚未结束", ref currenPrevActionsEnumItem,
+                    if (ImGui.Combo("## 触发器再次触发时，此动作若尚未结束", ref currenPrevActionsRefireEnumItem,
                                     new[] { "并允许触发器再次触发", "并禁止触发器再次触发" }))
                         Trigger.PrevActionsRefire = ((Trigger.RefireEnum)currenPrevActionsRefireEnumItem);
                     var currenSchedulingEnumItem = (int)Trigger.Scheduling;

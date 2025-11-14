@@ -1,7 +1,6 @@
 ﻿using System.Numerics;
 using Dalamud.Bindings.ImGui;
 using Triggernometry;
-using Action = Triggernometry.Action;
 
 namespace IINACT.Latihas;
 
@@ -74,7 +73,6 @@ public partial class LWindow
                 }
             else ImGui.TextDisabled("请先选择一个条件(组)");
             ImGui.EndChild();
-            ImGui.EndTabItem();
         }
 
         private void BuildConditionTree(ConditionGroup? parent, ConditionComponent current)

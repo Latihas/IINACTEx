@@ -14,6 +14,7 @@ using Dalamud.IoC;
 using Dalamud.Plugin;
 using Dalamud.Plugin.Services;
 using IINACT.Latihas;
+using IINACT.Latihas.Overlay;
 using IINACT.TextToSpeech;
 using IINACT.Network;
 using IINACT.Windows;
@@ -33,6 +34,7 @@ public sealed class Plugin : IDalamudPlugin
 
     private const string MainWindowCommandName = "/iinact";
     private const string EndEncCommandName = "/endenc";
+    internal const string OverlayCommandName = "/iinactoverlay";
     public readonly WindowSystem WindowSystem = new("IINACT");
     [PluginService]
     public static IDalamudPluginInterface PluginInterface { get; private set; }
@@ -80,6 +82,7 @@ public sealed class Plugin : IDalamudPlugin
     public LWindow.ExportWindow ExportWindow = null!;
     public LWindow.ImportWindow ImportWindow = null!;
     public LWindow.RepoWindow RepoWindow = null!;
+    public OverlayWindow OverlayWindow = null!;
 
     internal static EdgeTTSWindow EdgeTTSWindow = null!;
     public static Plugin Instance;
@@ -182,6 +185,7 @@ public sealed class Plugin : IDalamudPlugin
         WindowSystem.AddWindow(ExportWindow = new LWindow.ExportWindow());
         WindowSystem.AddWindow(ImportWindow = new LWindow.ImportWindow());
         WindowSystem.AddWindow(RepoWindow = new LWindow.RepoWindow());
+        WindowSystem.AddWindow(OverlayWindow = new OverlayWindow());
 
         CommandManager.AddHandler(MainWindowCommandName, new CommandInfo(OnCommand)
         {
@@ -192,7 +196,10 @@ public sealed class Plugin : IDalamudPlugin
         {
             HelpMessage = "终止IINACT正在处理的战斗"
         });
-
+        CommandManager.AddHandler(OverlayCommandName, new CommandInfo(OnCommand)
+        {
+            HelpMessage = "打开统计悬浮窗"
+        });
         PluginInterface.UiBuilder.Draw += DrawUI;
         PluginInterface.UiBuilder.OpenConfigUi += DrawConfigUI;
         if (ClientState.IsPvP)
@@ -206,7 +213,8 @@ public sealed class Plugin : IDalamudPlugin
         ZoneDownHookManager = createZoneDownHookManager.Result;
         Advanced_Combat_Tracker.ActGlobals.oFormActMain.TTS("插件加载完成");
         MainWindow.Toggle();
-        RealPlugin.plug.InitAura(Framework);
+        OverlayWindow.Toggle();
+        RealPlugin.plug.InitAura();
     }
 
     public const BindingFlags AllFlags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static;
@@ -224,13 +232,16 @@ public sealed class Plugin : IDalamudPlugin
         Trace.Listeners.Remove(PluginLogTraceListener);
         WindowSystem.RemoveAllWindows();
         MainWindow.Dispose();
+        OverlayWindow.Dispose();
         CommandManager.RemoveHandler(MainWindowCommandName);
         CommandManager.RemoveHandler(EndEncCommandName);
+        CommandManager.RemoveHandler(OverlayCommandName);
+        RealPlugin.plug.DeInitAura();
         PostNamazuPlugin.DeInitPlugin();
         TriggernometryProxyPlugin.DeInitPlugin();
         OverlayPlugin.DeInitPlugin();
         PostNamazuPlugin.DeInitPlugin();
-        RealPlugin.plug.DeInitAura(Framework);
+
         Advanced_Combat_Tracker.ActGlobals.Dispose();
     }
 
@@ -259,20 +270,26 @@ public sealed class Plugin : IDalamudPlugin
             MainWindow.OverlayPresets = registry.OverlayTemplates;
             WebSocketServer = container.Resolve<RainbowMage.OverlayPlugin.WebSocket.ServerController>();
             MainWindow.Server = WebSocketServer;
+            OverlayWindow.Init(WebSocketServer);
             IpcProviders.Server = WebSocketServer;
             IpcProviders.OverlayIpcHandler = container.Resolve<RainbowMage.OverlayPlugin.Handlers.Ipc.IpcHandlerController>();
             MainWindow.OverlayPluginConfig = container.Resolve<RainbowMage.OverlayPlugin.IPluginConfig>();
             Triggernometry.PluginBridges.BridgeNamazu.BridgeNamazu.InitializeModules();
             Triggernometry.PluginBridges.BridgeNamazu.BridgeNamazu.RegisterAnnotatedMethods();
-            PostNamazuPlugin.DoAction("command","/bw overlay 伤害统计 reload");
-            PostNamazuPlugin.DoAction("command","/bw overlay 时间轴 reload");
-            PostNamazuPlugin.DoAction("command","/bw overlay 设置 reload");
+            PostNamazuPlugin.DoAction("command", "/bw overlay 伤害统计 reload");
+            PostNamazuPlugin.DoAction("command", "/bw overlay 时间轴 reload");
+            PostNamazuPlugin.DoAction("command", "/bw overlay 设置 reload");
         });
         return overlayPlugin;
     }
 
     private void OnCommand(string command, string args)
     {
+        if (command == OverlayCommandName)
+        {
+            OverlayWindow.IsOpen=true;
+            return;
+        }
         if (command == EndEncCommandName)
         {
             Advanced_Combat_Tracker.ActGlobals.oFormActMain.EndCombat(false);
