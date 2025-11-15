@@ -32,7 +32,7 @@ Plugin以适配现代.NET。与此同时，也添加了大量修改的Triggernom
 
 IINACTEx也有内置一个原生的伤害统计悬浮窗，输入/iinactoverlay可打开。提供最基础的统计功能:
 
-[](./pic/overlay.jpg)
+![](./pic/overlay.jpg)
 
 # TTS/Cactbot
 
