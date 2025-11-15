@@ -15,10 +15,15 @@ Plugin以适配现代.NET。与此同时，也添加了大量修改的Triggernom
 
 相关参考文献如下：
 > IINACT官方: https://github.com/marzent/IINACT
+> 
 > IINACT CN: https://github.com/MeowZWR/IINACT
+> 
 > Machina: https://github.com/MeowZWR/machina
+> 
 > Edge TTS: https://github.com/AtmoOmen/EdgeTTS
+> 
 > Triggernometry: https://github.com/MnFeN/Triggernometry
+> 
 > PostNamazu: https://github.com/Natsukage/PostNamazu
 
 # 悬浮窗
