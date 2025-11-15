@@ -39,25 +39,27 @@ public sealed class Plugin : IDalamudPlugin
     [PluginService]
     public static IDalamudPluginInterface PluginInterface { get; private set; }
     [PluginService]
-    internal static ICommandManager CommandManager { get; private set; }
+    public static ICommandManager CommandManager { get; private set; }
     [PluginService]
-    internal static IClientState ClientState { get; private set; }
+    public static IClientState ClientState { get; private set; }
     [PluginService]
-    internal static IDataManager DataManager { get; private set; }
+    public static IDataManager DataManager { get; private set; }
     [PluginService]
-    internal static IChatGui ChatGui { get; private set; }
+    public static IChatGui ChatGui { get; private set; }
     [PluginService]
-    internal static IFramework Framework { get; private set; }
+    public static IFramework Framework { get; private set; }
     [PluginService]
-    internal static ICondition Condition { get; private set; }
+    public static ICondition Condition { get; private set; }
     [PluginService]
-    internal static IGameInteropProvider GameInteropProvider { get; private set; }
+    public static IGameInteropProvider GameInteropProvider { get; private set; }
     [PluginService]
-    internal static ISigScanner SigScanner { get; private set; }
+    public static ISigScanner SigScanner { get; private set; }
     [PluginService]
-    internal static INotificationManager NotificationManager { get; private set; }
+    public static INotificationManager NotificationManager { get; private set; }
     [PluginService]
     public static IPluginLog Log { get; private set; }
+    [PluginService]
+    public static IGameGui GameGui { get; private set; }
     public Configuration GetConfiguration => Configuration;
     internal static Configuration Configuration { get; private set; }
     internal static TextToSpeechProvider TextToSpeechProvider { get; private set; }
@@ -247,7 +249,6 @@ public sealed class Plugin : IDalamudPlugin
 
     internal void RefreshBw()
     {
-        PostNamazuPlugin.DoAction("command", "/bw overlay 伤害统计 reload");
         PostNamazuPlugin.DoAction("command", "/bw overlay 时间轴 reload");
         PostNamazuPlugin.DoAction("command", "/bw overlay 设置 reload");
     }

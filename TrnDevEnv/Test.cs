@@ -1,24 +1,20 @@
-﻿using System.Collections.Generic;
-using Triggernometry;
-using Triggernometry.Variables;
+﻿using System.Numerics;
+using System.Threading.Tasks;
+using Dalamud.Bindings.ImGui;
+using IINACT;
 
-int a=0;
-RealPlugin._plug.sessionvars.Scalar["a"] = new()
+var action = () =>
 {
-    Value = "1"
+    var bdl = ImGui.GetBackgroundDrawList(ImGui.GetMainViewport());
+    if (Plugin.GameGui.WorldToScreen(new Vector3(100, 0, 100), out var v1))
+        bdl.AddCircleFilled(v1, 10f, 0xFFFF0000);
+    if (Plugin.GameGui.WorldToScreen(Plugin.ClientState.LocalPlayer!.Position, out var v2))
+        bdl.AddCircleFilled(v2, 10f, 0xFFFF0000);
+    bdl.AddLine(v1, v2, 0xFFFF0000);
 };
-RealPlugin._plug.sessionvars.List["a"] = new()
+TriggernometryProxy.ProxyPlugin.PluginInterface.UiBuilder.Draw += action;
+_ = Task.Run(async () =>
 {
-    Values = []
-};
-
-RealPlugin._plug.sessionvars.Dict["a"] = new()
-{
-    Values = new Dictionary<string, Variable>()
-    {
-        
-    }
-};
-RealPlugin._plug.sessionvars.Table["a"] = new()
-{
-};
+    await Task.Delay(5000);
+    TriggernometryProxy.ProxyPlugin.PluginInterface.UiBuilder.Draw -= action;
+});

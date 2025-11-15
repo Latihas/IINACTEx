@@ -108,7 +108,7 @@ public class MainWindow : Window, IDisposable
         ImGui.Text("下载完成后放在IINACTEx插件的安装目录下，可以选择手动解压，也可以在插件下次加载时自动解压。解压后，即可打开资源文件夹。");
         var cactbotDir = Path.Combine(Plugin.PluginInterface.AssemblyLocation.Directory.ToString(), "cactbot");
         if (ImGui.Button("打开资源文件夹")) LWindow.Start(cactbotDir);
-        ImGui.Text("更多网页可见资源文件夹。以下是开发者喜欢用的网址，点击复制:");
+        ImGui.Text("更多网页可见cactbot文件夹。以下是开发者喜欢用的网址，点击复制:");
         foreach (var url in new[]
                  {
                      ("伤害统计", $"http://overlay.diemoe.net/kagerou/overlay/?HOST_PORT=ws://{Server?.Address}:{Server?.Port}"),
@@ -122,7 +122,7 @@ public class MainWindow : Window, IDisposable
             ImGui.SameLine();
             if (ImGui.Button(url.Item2)) ImGui.SetClipboardText(url.Item2);
         }
-        ImGui.Text("每次插件加载会自动刷新bw的上述名称(伤害统计,时间轴,设置)的悬浮窗。");
+        ImGui.Text("每次插件加载会自动刷新bw的上述名称(时间轴,设置)的悬浮窗。");
         ImGui.Text("IINACTEx也有内置一个原生的伤害统计悬浮窗，" + Plugin.OverlayCommandName);
         ImGui.SameLine();
         if (ImGui.Button("点击打开")) Plugin.Instance.OverlayWindow.IsOpen = true;

@@ -23,7 +23,7 @@ public static partial class LWindow
         ImGui.Text("本分支基于国服IINACT开发，如需移植到国际服理论上仅需修改IINACT官库与CN库的区别即可(可能有部分翻译由于开发时未注意多语言需要适配一下)。相关参考文献如下：");
         ImGui.Text("    IINACT官方: https://github.com/marzent/IINACT");
         ImGui.Text("    IINACT CN: https://github.com/MeowZWR/IINACT");
-        ImGui.Text("    Machina: https://github.com/MeowZWR/machina/");
+        ImGui.Text("    Machina: https://github.com/MeowZWR/machina");
         ImGui.Text("    Edge TTS: https://github.com/AtmoOmen/EdgeTTS");
         ImGui.Text("    Triggernometry: https://github.com/MnFeN/Triggernometry");
         ImGui.Text("    PostNamazu: https://github.com/Natsukage/PostNamazu");
@@ -59,30 +59,25 @@ public static partial class LWindow
         ImGui.Text("IActPluginV1仅为不报错存在，不会执行加载等逻辑");
         ImGui.Text("Postnamezu的Preset不可用");
         ImGui.Text("触发器有时候声音比较小，减小游戏音量以调整。");
-        ImGui.Text("Triggernometry的配置文件与ACT版本完全兼容，可以直接把act的配置文件复制到插件胚子目录下");
-        ImGui.Text("Triggernometry的触发器不支持导入文件，过大的触发器建议分批导入");
-        ImGui.Text("Triggernometry不会自动保存配置文件。请导入或修改过任何触发器/配置/...后手动保存。");
+        ImGui.Text("Triggernometry的配置文件与ACT版本完全兼容，可以直接把act的配置文件复制到插件配置目录下");
+        ImGui.Text("Triggernometry的触发器不支持导入文件，过大的触发器建议分批导入。");
+        ImGui.Text("Triggernometry保存配置逻辑与原版一致，即每5分钟或是卸载时，所以游戏崩溃可能会丢失配置。请导入或修改过任何触发器/配置/...后点击保存配置按钮手动保存。");
         ImGui.Text("Triggernometry的部分高级内存操作与回调不可用");
         ImGui.Text("Triggernometry的重复触发器导入重命名可能有问题，请尽量不要二次导入相同的触发器");
         ImGui.Text("Triggernometry的部分编辑还没写");
         ImGui.Text("Triggernometry的绝大部分Form或Control因兼容性被移除，可能误伤配置弹出框，一般报错中可以看出来。");
         ImGui.Text("Triggernometry的脚本执行引用库如下，若超出引用库不可编译：");
-        ImGui.Text("    Path.Combine(pluginPathRoot,'Triggernometry.dll')");
-        ImGui.Text("    Path.Combine(pluginPathRoot,'AdvancedCombatTracker.dll')");
-        ImGui.Text("    Path.Combine(pluginPathRoot,'PostNamazu.dll')");
-        ImGui.Text("    Path.Combine(dalamudPathRoot,'Dalamud.dll')");
-        ImGui.Text("    Path.Combine(dalamudPathRoot,'Dalamud.Bindings.ImGui.dll')");
-        ImGui.Text("    Path.Combine(dalamudPathRoot,'InteropGenerator.Runtime.dll')");
-        ImGui.Text("    Path.Combine(dalamudPathRoot,'ImGuiScene.dll')");
-        ImGui.Text("    Path.Combine(dalamudPathRoot,'Lumina.dll')");
-        ImGui.Text("    Path.Combine(dalamudPathRoot,'Lumina.Excel.dll')");
-        ImGui.Text("    Path.Combine(dalamudPathRoot,'FFXIVClientStructs.dll')");
-        ImGui.Text("    Path.Combine(dalamudPathRoot,'Newtonsoft.Json.dll')");
-        ImGui.Text("    System.Windows.Forms.Form, System.Windows.Forms");
-        foreach (var asm in CSharpScriptCompiler.SystemReferenes)
-            ImGui.Text("    " + asm);
+        ImGui.Text("    //SystemReferenes");
+        foreach (var asm in CSharpScriptCompiler.SystemReferenes) ImGui.Text("    " + asm);
+        ImGui.Text("    //SystemTypeReferenes");
+        foreach (var asm in CSharpScriptCompiler.SystemTypeReferenes) ImGui.Text("    " + asm);
+        ImGui.Text("    //PluginDirReferenes");
+        foreach (var asm in CSharpScriptCompiler.PluginDirReferenes) ImGui.Text("    " + asm);
+        ImGui.Text("    //DalamudDirReferenes");
+        foreach (var asm in CSharpScriptCompiler.DalamudDirReferenes) ImGui.Text("    " + asm);
         ImGui.Text("=====常见问题=====");
         ImGui.Text("问题太多了。如果出现bug，试着关开一下插件，说不定就自己会好了。");
+        ImGui.Text("可以提issue让我写进来。");
     }
 
     internal static void DrawTestSettings()
@@ -140,6 +135,11 @@ public static partial class LWindow
             Sb = CSharpScriptCompiler.CompileScript(TestCode, [])
                      ? "成功"
                      : "失败，详情见/xllog";
+        ImGui.SameLine();
+        if (ImGui.Button("编译并运行代码(无反馈)"))
+            RealPlugin._plug.scripting.Evaluate(TestCode, null, null);
+        ImGui.SameLine();
+        if (ImGui.Button("清空编译错误历史")) RealPlugin.plug.cfg.CompileFailedScripts.Clear();
         ImGui.Separator();
         ImGui.SetNextItemWidth(-1);
         ImGui.SameLine();
