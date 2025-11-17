@@ -1,5 +1,7 @@
 > 友情裤链: https://raw.githubusercontent.com/Latihas/dalamud-plugins/main/repo.json
 
+![](https://socialify.git.ci/Latihas/IINACTEx/image?description=1&forks=1&issues=1&language=1&name=1&owner=1&pattern=Transparent&pulls=1&stargazers=1&theme=Auto)
+
 ## IINACT改版，整合了CN、Triggernometry、PostNamazu
 
 # 重要提醒！！！请一定要先看完介绍再使用，本插件仍然不是很稳定，有炸游戏风险
