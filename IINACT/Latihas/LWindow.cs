@@ -64,6 +64,12 @@ public static partial class LWindow
         var EnableModuleBase = RealPlugin.plug.cfg.EnableModuleBase;
         if (ImGui.Checkbox("启用EnableModuleBase(极有可能炸游戏的功能，如绘图等，需要重新加载插件生效)", ref EnableModuleBase))
             RealPlugin.plug.cfg.EnableModuleBase = EnableModuleBase;
+        var ShowWindowOnInit = Plugin.Configuration.ShowWindowOnInit;
+        if (ImGui.Checkbox("启动时显示界面", ref ShowWindowOnInit))
+            Plugin.Configuration.ShowWindowOnInit = ShowWindowOnInit;
+        var ShowOverlayOnInit = Plugin.Configuration.ShowOverlayOnInit;
+        if (ImGui.Checkbox("启动时显示Overlay", ref ShowOverlayOnInit))
+            Plugin.Configuration.ShowOverlayOnInit = ShowOverlayOnInit;
         var TextPort = Plugin.Instance.PostNamazuPlugin.PluginUi.TextPort.Text;
         if (ImGui.InputText("鲇鱼精端口", ref TextPort))
             Plugin.Instance.PostNamazuPlugin.PluginUi.TextPort.Text = TextPort;
@@ -76,6 +82,9 @@ public static partial class LWindow
                 Plugin.Instance.PostNamazuPlugin.ServerStop();
         ImGui.SameLine();
         if(ImGui.Button("清空"))Plugin.Instance.PostNamazuPlugin.PluginUi.lstMessages.Items.Clear();
+        var PostNamazuAutoStart = Plugin.Configuration.PostNamazuAutoStart;
+        if (ImGui.Checkbox("鲇鱼精监听自动启动", ref PostNamazuAutoStart))
+            Plugin.Configuration.PostNamazuAutoStart = PostNamazuAutoStart;
         var items = Plugin.Instance.PostNamazuPlugin.PluginUi.lstMessages.Items;
         for (var i = 0; i < items.Count; i++)
         {

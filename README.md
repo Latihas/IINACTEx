@@ -65,7 +65,7 @@ cactbot资源可在 https://raw.githubusercontent.com/Latihas/dalamud-plugins/ma
     - +cactbot.zip
     - ...
 
-cactbot可以选择手动解压，也可以在插件下次加载时自动解压。
+目前支持cactbot.zip与TTS资源放在插件安装目录或者是插件Config目录，优先使用插件安装目录的。cactbot可以选择手动解压，也可以在插件下次加载时自动解压。
 
 # 已知限制
 

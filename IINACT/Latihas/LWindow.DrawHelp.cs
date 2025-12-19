@@ -13,6 +13,9 @@ public static partial class LWindow
     {
         using var tab = ImRaii.TabItem("帮助");
         if (!tab) return;
+        ImGui.Text("更新日志");
+        ImGui.Text("由于Triggernometry发生大量变动，而且最近开发者有点忙，目前IINACT内置的Trn仍然为1.2时期的API，并且缓慢更新API使用，期间触发器可能会出现各种问题，部分自动更新的在线依赖库也可能会受到影响。有问题的话尝试测试-清空编译错误历史。");
+        ImGui.Separator();
         ImGui.Text("重要提醒！！！请一定要先看完介绍再使用，本插件仍然不是很稳定，有炸游戏风险");
         ImGui.Text("重要提醒！！！请一定要先看完介绍再使用，本插件仍然不是很稳定，有炸游戏风险");
         ImGui.Text("重要提醒！！！请一定要先看完介绍再使用，本插件仍然不是很稳定，有炸游戏风险");
@@ -37,8 +40,6 @@ public static partial class LWindow
         ImGui.Text("cactbot资源可在·运行状态·栏找到链接并下载。");
         ImGui.Text("仅需将相关文件放入插件安装目录下即可使用，加号代表添加的文件，像这样:");
         ImGui.Text("$(installedPlugins/IINACTEx)");
-        ImGui.Text("    Scripts/");
-        ImGui.Text("    TriggernometryRepoBackups/");
         ImGui.Text("    + TtsAssets/");
         ImGui.Text("        + pinyin.txt");
         ImGui.Text("        + symbol.txt");
@@ -51,6 +52,7 @@ public static partial class LWindow
         ImGui.Text("    xxx.dll");
         ImGui.Text("    + cactbot.zip");
         ImGui.Text("    ...");
+        ImGui.Text("目前支持cactbot.zip与TTS资源放在插件安装目录或者是插件Config目录，优先使用插件安装目录的。");
         ImGui.Text("=====已知限制=====");
         ImGui.Text("!!! 不要在插件加载后立刻卸载插件，否则大概率会线程回收失败，只能重启游戏解决。");
         ImGui.Text("!!! Triggernometry有时会因为宝宝椅的鲇鱼精扩展功能炸游戏/显示异常/...。开发者用Penumbra可以恢复部分图形问题");

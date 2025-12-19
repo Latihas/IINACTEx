@@ -32,12 +32,12 @@ public class LatihasTts : IDisposable
     [DllImport("kernel32.dll", SetLastError = true)]
     private static extern IntPtr LoadLibrary(string lpFileName);
 
-    public void Init(string s, IPluginLog log)
+    public void Init(string rootDir,string tmpDir, IPluginLog log)
     {
         Log = log;
-        Rootdir = s;
+        Rootdir = rootDir;
         Assetsdir = Rootdir + "/TtsAssets/";
-        Tmpdir = Rootdir + "/tmp/";
+        Tmpdir =tmpDir+"/";
         AssetsList =
         [
             Path.Combine(Assetsdir, "vocab.txt"),

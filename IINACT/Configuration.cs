@@ -33,8 +33,9 @@ public class Configuration : IPluginConfiguration
     public bool UseEdgeTTS { get; set; } = true;
     [JsonProperty("useLatihasTTS")]
     public bool UseLatihasTts { get; set; } = true;
-    
-    
+    public bool ShowWindowOnInit { get; set; } = true;
+    public bool ShowOverlayOnInit { get; set; } = true;
+    public bool PostNamazuAutoStart { get; set; }
     // public string MyNamedCallbackPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), "MyNamedCallback");
     // public Dictionary<string,NamedCallbackInfo>MyNamedCallbackInfo  = new();
     public class NamedCallbackInfo {
@@ -79,4 +80,5 @@ public class Configuration : IPluginConfiguration
     {
         PluginInterface?.SavePluginConfig(this);
     }
+    
 }

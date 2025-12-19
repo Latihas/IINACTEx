@@ -1,7 +1,7 @@
 {
   "version": 1,
   "dependencies": {
-    "net9.0-windows7.0": {
+    "net10.0-windows7.0": {
       "Microsoft.CSharp": {
         "type": "Direct",
         "requested": "[4.7.0, )",
@@ -10,9 +10,9 @@
       },
       "Microsoft.Extensions.ObjectPool": {
         "type": "Direct",
-        "requested": "[10.0.0-rc.2.25502.107, )",
-        "resolved": "10.0.0-rc.2.25502.107",
-        "contentHash": "BHzyZuN9Q+G+xe+FZicMIvhY/fMviTzdJTIFy75UAEG+Rpki6Q4aQKD5uMPLpvVfHMWmLVposBt0bX0Gl1kaFA=="
+        "requested": "[10.0.1, )",
+        "resolved": "10.0.1",
+        "contentHash": "HqAEbtoAhgvH53c54IV5e4vQ60PYvl7Z/WIHsbet+UGGE7n+7dwVNXw1mb9LZlWbsxnupCevvtgIne5P//ZKpQ=="
       },
       "NetCoreServer": {
         "type": "Direct",
@@ -33,7 +33,10 @@
         "type": "Project"
       },
       "machina.ffxiv": {
-        "type": "Project"
+        "type": "Project",
+        "dependencies": {
+          "Machina": "[2.3.1.3, )"
+        }
       },
       "overlayplugin.common": {
         "type": "Project",
@@ -44,6 +47,6 @@
         }
       }
     },
-    "net9.0-windows7.0/win-x64": {}
+    "net10.0-windows7.0/win-x64": {}
   }
 }

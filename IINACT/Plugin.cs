@@ -90,18 +90,20 @@ public sealed class Plugin : IDalamudPlugin
     public static Plugin Instance;
     public static dynamic? LatihasTts;
 
-    public static void UnzipWithoutPassword(string zipFilePath, string extractDir, bool overwrite = false)
+    public static bool UnzipWithoutPassword(string zipFilePath, string extractDir, bool overwrite = false)
     {
         try
         {
             if (Directory.Exists(extractDir))
                 if (overwrite) Directory.Delete(extractDir, recursive: true);
-                else return;
+                else return true;
             ZipFile.ExtractToDirectory(zipFilePath, extractDir);
+            return true;
         }
         catch (Exception ex)
         {
             Log.Warning($"解压失败：{ex.Message}");
+            return false;
         }
     }
 
@@ -126,32 +128,49 @@ public sealed class Plugin : IDalamudPlugin
         Advanced_Combat_Tracker.ActGlobals.oFormActMain = new Advanced_Combat_Tracker.FormActMain(Log);
         Configuration = PluginInterface.GetPluginConfig() as Configuration ?? new Configuration();
         Configuration.Initialize(PluginInterface);
-        UnzipWithoutPassword(Path.Combine(PluginInterface.AssemblyLocation.Directory.ToString(), "cactbot.zip"),
-                             Path.Combine(PluginInterface.AssemblyLocation.Directory.ToString(), "cactbot"));
+        if (!UnzipWithoutPassword(Path.Combine(PluginInterface.AssemblyLocation.Directory.ToString(), "cactbot.zip"),
+                Path.Combine(PluginInterface.AssemblyLocation.Directory.ToString(), "cactbot")))
+            UnzipWithoutPassword(Path.Combine(PluginInterface.ConfigDirectory.ToString(), "cactbot.zip"),
+                Path.Combine(PluginInterface.ConfigDirectory.ToString(), "cactbot"));
         //TTS
-        try
-        {
+        var tmpdir = Path.Combine(PluginInterface.ConfigDirectory.ToString(), "tmp");
+        try {
             var text = PluginInterface.AssemblyLocation.Directory.ToString();
             var assetsdir = text + "/TtsAssets/";
             Assembly latihasTtsAssembly;
-            using (var memoryStream = new MemoryStream(File.ReadAllBytes(assetsdir + "System.Numerics.Tensors.dll")))
-            {
+            using (var memoryStream = new MemoryStream(File.ReadAllBytes(assetsdir + "System.Numerics.Tensors.dll"))) {
                 AssemblyLoadContext.GetLoadContext(Assembly.GetExecutingAssembly())!.LoadFromStream(memoryStream);
             }
-            using (var memoryStream = new MemoryStream(File.ReadAllBytes(assetsdir + "Microsoft.ML.OnnxRuntime.dll")))
-            {
+            using (var memoryStream = new MemoryStream(File.ReadAllBytes(assetsdir + "Microsoft.ML.OnnxRuntime.dll"))) {
                 AssemblyLoadContext.GetLoadContext(Assembly.GetExecutingAssembly())!.LoadFromStream(memoryStream);
             }
-            using (var memoryStream = new MemoryStream(File.ReadAllBytes(assetsdir + "LatihasTTS.dll")))
-            {
+            using (var memoryStream = new MemoryStream(File.ReadAllBytes(assetsdir + "LatihasTTS.dll"))) {
                 latihasTtsAssembly = AssemblyLoadContext.GetLoadContext(Assembly.GetExecutingAssembly())!.LoadFromStream(memoryStream);
             }
             LatihasTts = Activator.CreateInstance(latihasTtsAssembly.GetType("LatihasTTS.LatihasTts")!)!;
-            LatihasTts.Init(text, Log);
+            LatihasTts.Init(text, tmpdir, Log);
         }
-        catch (Exception e)
-        {
-            Log.Warning(e.ToString());
+        catch (Exception e) {
+            Log.Warning(e + " Retry");
+            try {
+                var text = PluginInterface.ConfigDirectory.ToString();
+                var assetsdir = text + "/TtsAssets/";
+                Assembly latihasTtsAssembly;
+                using (var memoryStream = new MemoryStream(File.ReadAllBytes(assetsdir + "System.Numerics.Tensors.dll"))) {
+                    AssemblyLoadContext.GetLoadContext(Assembly.GetExecutingAssembly())!.LoadFromStream(memoryStream);
+                }
+                using (var memoryStream = new MemoryStream(File.ReadAllBytes(assetsdir + "Microsoft.ML.OnnxRuntime.dll"))) {
+                    AssemblyLoadContext.GetLoadContext(Assembly.GetExecutingAssembly())!.LoadFromStream(memoryStream);
+                }
+                using (var memoryStream = new MemoryStream(File.ReadAllBytes(assetsdir + "LatihasTTS.dll"))) {
+                    latihasTtsAssembly = AssemblyLoadContext.GetLoadContext(Assembly.GetExecutingAssembly())!.LoadFromStream(memoryStream);
+                }
+                LatihasTts = Activator.CreateInstance(latihasTtsAssembly.GetType("LatihasTTS.LatihasTts")!)!;
+                LatihasTts.Init(text, tmpdir, Log);
+            }
+            catch (Exception ex) {
+                Log.Warning(ex.ToString());
+            }
         }
         TextToSpeechProvider = new TextToSpeechProvider(Log, PluginInterface.ConfigFile.FullName);
         TextToSpeechProvider.SetUseEdgeTTS(Configuration.UseEdgeTTS);
@@ -214,8 +233,8 @@ public sealed class Plugin : IDalamudPlugin
 
         ZoneDownHookManager = createZoneDownHookManager.Result;
         Advanced_Combat_Tracker.ActGlobals.oFormActMain.TTS("插件加载完成");
-        MainWindow.Toggle();
-        OverlayWindow.Toggle();
+        if (Configuration.ShowWindowOnInit) MainWindow.Toggle();
+        if (Configuration.ShowOverlayOnInit) OverlayWindow.Toggle();
         RealPlugin.plug.InitAura();
     }
 
@@ -284,7 +303,9 @@ public sealed class Plugin : IDalamudPlugin
             MainWindow.OverlayPluginConfig = container.Resolve<RainbowMage.OverlayPlugin.IPluginConfig>();
             Triggernometry.PluginBridges.BridgeNamazu.BridgeNamazu.InitializeModules();
             Triggernometry.PluginBridges.BridgeNamazu.BridgeNamazu.RegisterAnnotatedMethods();
-            if (Directory.Exists(Path.Combine(PluginInterface.AssemblyLocation.Directory.ToString(), "cactbot")))
+            if(Configuration.PostNamazuAutoStart) Instance.PostNamazuPlugin.ServerStart();
+            if (Directory.Exists(Path.Combine(PluginInterface.AssemblyLocation.Directory.ToString(), "cactbot"))||
+                Directory.Exists(Path.Combine(PluginInterface.ConfigDirectory.ToString(), "cactbot")) )
                 RefreshBw();
         });
         return overlayPlugin;
