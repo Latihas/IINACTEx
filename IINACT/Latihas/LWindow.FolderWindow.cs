@@ -1,6 +1,7 @@
 ﻿using Dalamud.Bindings.ImGui;
 using Dalamud.Interface.Windowing;
 using Triggernometry;
+using Triggernometry.Core;
 
 namespace IINACT.Latihas;
 
@@ -19,26 +20,25 @@ public static partial class LWindow
             var Name = Folder.Name;
             if (ImGui.InputText("名称", ref Name))
                 Folder.Name = Name;
-            var ZoneFilterEnabled = Folder.ZoneFilterEnabled != null && bool.Parse(Folder.ZoneFilterEnabled);
+            var ZoneFilterEnabled = Folder.ZoneFilterEnabled;
             if (ImGui.Checkbox("限制区域名(正则)", ref ZoneFilterEnabled))
-                Folder.ZoneFilterEnabled = ZoneFilterEnabled.ToString();
-            var ZoneFilterRegularExpression = Folder.ZoneFilterRegularExpression;
-            if (ImGui.InputText("区域名称", ref ZoneFilterRegularExpression))
-                Folder.ZoneFilterRegularExpression = ZoneFilterRegularExpression;
-
-            var FFXIVZoneFilterEnabled = Folder.FFXIVZoneFilterEnabled != null && bool.Parse(Folder.FFXIVZoneFilterEnabled);
+                Folder.ZoneFilterEnabled = ZoneFilterEnabled;
+            var ZoneRegex = Folder.ZoneRegex;
+            if (ImGui.InputText("区域名称", ref ZoneRegex))
+                Folder.ZoneRegex = ZoneRegex;
+            var FFXIVZoneFilterEnabled = Folder.FFXIVZoneFilterEnabled;
             if (ImGui.Checkbox("限制区域ID(正则)", ref FFXIVZoneFilterEnabled))
-                Folder.FFXIVZoneFilterEnabled = FFXIVZoneFilterEnabled.ToString();
-            var FfxivZoneFilterRegularExpression = Folder.FfxivZoneFilterRegularExpression;
-            if (ImGui.InputText("区域ID", ref FfxivZoneFilterRegularExpression))
-                Folder.FfxivZoneFilterRegularExpression = FfxivZoneFilterRegularExpression;
+                Folder.FFXIVZoneFilterEnabled = FFXIVZoneFilterEnabled;
+            var FfxivZoneIdRegex = Folder.FfxivZoneIdRegex;
+            if (ImGui.InputText("区域ID", ref FfxivZoneIdRegex))
+                Folder.FfxivZoneIdRegex = FfxivZoneIdRegex;
 
-            var EventFilterEnabled = Folder.EventFilterEnabled != null && bool.Parse(Folder.EventFilterEnabled);
+            var EventFilterEnabled =Folder.EventFilterEnabled;
             if (ImGui.Checkbox("限制文本匹配(正则)", ref EventFilterEnabled))
-                Folder.EventFilterEnabled = EventFilterEnabled.ToString();
-            var EventFilterRegularExpression = Folder.EventFilterRegularExpression;
-            if (ImGui.InputText("文本", ref EventFilterRegularExpression))
-                Folder.EventFilterRegularExpression = EventFilterRegularExpression;
+                Folder.EventFilterEnabled = EventFilterEnabled;
+            var EventRegex = Folder.EventRegex;
+            if (ImGui.InputText("文本", ref EventRegex))
+                Folder.EventRegex = EventRegex;
             
             // var FFXIVJobFilterEnabled = Folder.FFXIVJobFilterEnabled != null && bool.Parse(Folder.FFXIVJobFilterEnabled);
             // if (ImGui.Checkbox("限制职业", ref FFXIVJobFilterEnabled))

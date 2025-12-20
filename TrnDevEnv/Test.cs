@@ -2,6 +2,7 @@
 using System.Threading.Tasks;
 using Dalamud.Bindings.ImGui;
 using IINACT;
+using Triggernometry;
 
 var action = () =>
 {
@@ -12,9 +13,9 @@ var action = () =>
         bdl.AddCircleFilled(v2, 10f, 0xFFFF0000);
     bdl.AddLine(v1, v2, 0xFFFF0000);
 };
-TriggernometryProxy.ProxyPlugin.PluginInterface.UiBuilder.Draw += action;
+ProxyPlugin.PluginInterface.UiBuilder.Draw += action;
 _ = Task.Run(async () =>
 {
     await Task.Delay(5000);
-    TriggernometryProxy.ProxyPlugin.PluginInterface.UiBuilder.Draw -= action;
+    ProxyPlugin.PluginInterface.UiBuilder.Draw -= action;
 });

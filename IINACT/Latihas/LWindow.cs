@@ -4,7 +4,11 @@ using Dalamud.Bindings.ImGui;
 using Dalamud.Interface.ImGuiNotification;
 using Dalamud.Interface.Utility.Raii;
 using Triggernometry;
-using Triggernometry.Variables;
+using Triggernometry.Core;
+using Triggernometry.Core.Serialization;
+using Triggernometry.Core.Variables;
+using Triggernometry.UI.CustomControls;
+using Triggernometry.Utilities;
 
 namespace IINACT.Latihas;
 
@@ -27,13 +31,13 @@ public static partial class LWindow
     {
         using var tab = ImRaii.TabItem("触发器");
         if (!tab) return;
-        if (ImGui.Button("刷新触发器")) Triggernometry.CustomControls.UserInterface.BuildTriggerTreeFromConfiguration(null, null);
+        if (ImGui.Button("刷新触发器")) UserInterface.BuildTriggerTreeFromConfiguration(null, null);
         ImGui.SameLine();
-        if (ImGui.Button("保存设置") && !RealPlugin.plug.configBroken)
-            RealPlugin.plug.SaveCurrentConfig();
+        if (ImGui.Button("保存设置") && !RealPlugin.Instance.configBroken)
+            RealPlugin.Instance.SaveCurrentConfig();
         ImGui.Text("由于现版本不稳定，不会自动保存配置文件。请导入或修改过任何触发器/配置/...后手动保存。");
         ImGui.ProgressBar(RealPlugin.UProgress / 100f, new Vector2(300, 24), RealPlugin.UState);
-        Triggernometry.CustomControls.UserInterface.BuildRenderTreeFromConfiguration(null, null, false);
+        UserInterface.BuildRenderTreeFromConfiguration(null, null, false);
     }
 
     internal static void DrawTriggerVarSettings()
@@ -58,12 +62,12 @@ public static partial class LWindow
     {
         using var tab = ImRaii.TabItem("设置");
         if (!tab) return;
-        var DebugLevelItem = (int)RealPlugin.plug.cfg.DebugLevel;
+        var DebugLevelItem = (int)RealPlugin.Instance.cfg.DebugLevel;
         if (ImGui.Combo("DebugLevel", ref DebugLevelItem, Enum.GetValues<RealPlugin.DebugLevelEnum>().Select(i => i.ToString()).ToList()))
-            RealPlugin.plug.cfg.DebugLevel = (RealPlugin.DebugLevelEnum)DebugLevelItem;
-        var EnableModuleBase = RealPlugin.plug.cfg.EnableModuleBase;
+            RealPlugin.Instance.cfg.DebugLevel = (RealPlugin.DebugLevelEnum)DebugLevelItem;
+        var EnableModuleBase = RealPlugin.Instance.cfg.EnableModuleBase;
         if (ImGui.Checkbox("启用EnableModuleBase(极有可能炸游戏的功能，如绘图等，需要重新加载插件生效)", ref EnableModuleBase))
-            RealPlugin.plug.cfg.EnableModuleBase = EnableModuleBase;
+            RealPlugin.Instance.cfg.EnableModuleBase = EnableModuleBase;
         var ShowWindowOnInit = Plugin.Configuration.ShowWindowOnInit;
         if (ImGui.Checkbox("启动时显示界面", ref ShowWindowOnInit))
             Plugin.Configuration.ShowWindowOnInit = ShowWindowOnInit;
@@ -113,7 +117,7 @@ public static partial class LWindow
     {
         using var tab = ImRaii.TabItem("临时标量");
         if (!tab) return;
-        TScaler(RealPlugin.plug.sessionvars.Scalar);
+        TScaler(RealPlugin.Instance.sessionvars.Scalar);
         DrawTriggerVarESettings(false, TriggerVarType.Scalar);
     }
 
@@ -121,7 +125,7 @@ public static partial class LWindow
     {
         using var tab = ImRaii.TabItem("永久标量");
         if (!tab) return;
-        TScaler(RealPlugin.plug.cfg.PersistentVariables.Scalar);
+        TScaler(RealPlugin.Instance.cfg.PersistentVariables.Scalar);
         DrawTriggerVarESettings(true, TriggerVarType.Scalar);
     }
 
@@ -168,7 +172,7 @@ public static partial class LWindow
     {
         using var tab = ImRaii.TabItem("临时列表");
         if (!tab) return;
-        TList(RealPlugin.plug.sessionvars.List);
+        TList(RealPlugin.Instance.sessionvars.List);
         DrawTriggerVarESettings(false, TriggerVarType.List);
     }
 
@@ -176,7 +180,7 @@ public static partial class LWindow
     {
         using var tab = ImRaii.TabItem("永久列表");
         if (!tab) return;
-        TList(RealPlugin.plug.cfg.PersistentVariables.List);
+        TList(RealPlugin.Instance.cfg.PersistentVariables.List);
         DrawTriggerVarESettings(true, TriggerVarType.List);
     }
 
@@ -200,7 +204,7 @@ public static partial class LWindow
     {
         using var tab = ImRaii.TabItem("临时表格");
         if (!tab) return;
-        TTable(RealPlugin.plug.sessionvars.Table);
+        TTable(RealPlugin.Instance.sessionvars.Table);
         DrawTriggerVarESettings(false, TriggerVarType.Table);
     }
 
@@ -208,7 +212,7 @@ public static partial class LWindow
     {
         using var tab = ImRaii.TabItem("永久表格");
         if (!tab) return;
-        TTable(RealPlugin.plug.cfg.PersistentVariables.Table);
+        TTable(RealPlugin.Instance.cfg.PersistentVariables.Table);
         DrawTriggerVarESettings(true, TriggerVarType.Table);
     }
 
@@ -231,7 +235,7 @@ public static partial class LWindow
     {
         using var tab = ImRaii.TabItem("临时字典");
         if (!tab) return;
-        TDict(RealPlugin.plug.sessionvars.Dict);
+        TDict(RealPlugin.Instance.sessionvars.Dict);
         DrawTriggerVarESettings(false, TriggerVarType.Dict);
     }
 
@@ -239,7 +243,7 @@ public static partial class LWindow
     {
         using var tab = ImRaii.TabItem("永久字典");
         if (!tab) return;
-        TDict(RealPlugin.plug.cfg.PersistentVariables.Dict);
+        TDict(RealPlugin.Instance.cfg.PersistentVariables.Dict);
         DrawTriggerVarESettings(true, TriggerVarType.Dict);
     }
 
@@ -248,7 +252,7 @@ public static partial class LWindow
         using var tab = ImRaii.TabItem("具名回调");
         if (!tab) return;
         List<RealPlugin.NamedCallback> nCs = [];
-        foreach (var cs in RealPlugin.plug.callbacksByName.Values)
+        foreach (var cs in RealPlugin.Instance.callbacksByName.Values)
         foreach (var nc in cs)
             nCs.Add(nc);
         NewTable(["Id", "名称", "注册者", "注册时间"], nCs.ToArray(), [
@@ -263,7 +267,7 @@ public static partial class LWindow
     {
         using var tab = ImRaii.TabItem("文本悬浮窗");
         if (!tab) return;
-        NewTable(["悬浮窗名称", "名称", "文本"], RealPlugin._plug.textauras.ToArray(), [
+        NewTable(["悬浮窗名称", "名称", "文本"], RealPlugin._instance.textauras.ToArray(), [
             i => ImGui.Text(i.Key),
             i => ImGui.Text(i.Value.AuraName),
             i => ImGui.Text(i.Value.TextExpression.ToString()),

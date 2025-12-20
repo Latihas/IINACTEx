@@ -21,7 +21,8 @@ using IINACT.Windows;
 using Machina.FFXIV;
 using Machina.FFXIV.Headers.Opcodes;
 using Triggernometry;
-using TriggernometryProxy;
+using Triggernometry.Core;
+
 
 namespace IINACT;
 
@@ -235,7 +236,7 @@ public sealed class Plugin : IDalamudPlugin
         Advanced_Combat_Tracker.ActGlobals.oFormActMain.TTS("插件加载完成");
         if (Configuration.ShowWindowOnInit) MainWindow.Toggle();
         if (Configuration.ShowOverlayOnInit) OverlayWindow.Toggle();
-        RealPlugin.plug.InitAura();
+        RealPlugin.Instance.InitAura();
     }
 
     public const BindingFlags AllFlags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static;
@@ -257,7 +258,7 @@ public sealed class Plugin : IDalamudPlugin
         CommandManager.RemoveHandler(MainWindowCommandName);
         CommandManager.RemoveHandler(EndEncCommandName);
         CommandManager.RemoveHandler(OverlayCommandName);
-        RealPlugin.plug.DeInitAura();
+        RealPlugin.Instance.DeInitAura();
         PostNamazuPlugin.DeInitPlugin();
         TriggernometryProxyPlugin.DeInitPlugin();
         OverlayPlugin.DeInitPlugin();

@@ -3,6 +3,7 @@ using System.Numerics;
 using Dalamud.Bindings.ImGui;
 using Dalamud.Interface.Windowing;
 using Triggernometry;
+using Triggernometry.Core;
 
 namespace IINACT.Latihas;
 
@@ -19,10 +20,9 @@ public static partial class LWindow
             Trigger = trigger;
             ConditionPanel = new ConditionPanel(trigger);
             IsOpen = true;
-            TriggernometryProxy.ProxyPlugin.DalamudPlugin.ActionWindow.IsOpen = false;
+            ProxyPlugin.DalamudPlugin.ActionWindow.IsOpen = false;
         }
 
-        private readonly Context fakectx = new();
         private static readonly Vector4 ColorGrey = new(0.5f, 0.5f, 0.5f, 1.0f);
 
         public override void Draw()
@@ -43,7 +43,7 @@ public static partial class LWindow
                 {
                     if (ImGui.Button("+"))
                     {
-                        Trigger.Actions.Add(new Triggernometry.Action { OrderNumber = Trigger.Actions.Count + 1 });
+                        Trigger.Actions.Add(new ActionOld { OrderNumber = Trigger.Actions.Count + 1 });
                         selected = Trigger.Actions.Count - 1;
                     }
                     ImGui.SetNextItemWidth(-1);
@@ -53,10 +53,10 @@ public static partial class LWindow
                         var Enabled = new bool[data.Count];
                         for (var i = 0; i < data.Count; i++)
                         {
-                            var d = data[i].GetDescription(fakectx);
+                            var d = data[i].GetDescription(null);
                             var isSelected = selected == i;
-                            Enabled[i] = Trigger.Actions[i].Enabled == null || bool.Parse(Trigger.Actions[i].Enabled);
-                            if (ImGui.Checkbox($"## Trigger_Action_Enabled_{i}", ref Enabled[i])) Trigger.Actions[i].Enabled = Enabled[i].ToString();
+                            Enabled[i] = Trigger.Actions[i].Enabled == null || Trigger.Actions[i].Enabled;
+                            if (ImGui.Checkbox($"## Trigger_Action_Enabled_{i}", ref Enabled[i])) Trigger.Actions[i].Enabled = Enabled[i];
                             ImGui.SameLine();
                             if (!Enabled[i]) ImGui.PushStyleColor(ImGuiCol.Text, ColorGrey);
                             if (ImGui.Selectable(d, isSelected))

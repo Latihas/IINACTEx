@@ -1,20 +1,22 @@
 ﻿using Dalamud.Bindings.ImGui;
 using Dalamud.Interface.Utility.Raii;
 using Triggernometry;
+using Triggernometry.Core;
+
 
 namespace IINACT.Latihas;
 
 public static partial class LWindow
 {
     private static string TestTriggerId = "", TestCode = "", TestExpression = "", TestTts = "", Sb = "";
-    private static readonly Context TestContext = new();
+    private static readonly Context TestContext = new(null);
 
     internal static void DrawHelpSettings()
     {
         using var tab = ImRaii.TabItem("帮助");
         if (!tab) return;
         ImGui.Text("更新日志");
-        ImGui.Text("由于Triggernometry发生大量变动，而且最近开发者有点忙，目前IINACT内置的Trn仍然为1.2时期的API，并且缓慢更新API使用，期间触发器可能会出现各种问题，部分自动更新的在线依赖库也可能会受到影响。有问题的话尝试测试-清空编译错误历史。");
+        ImGui.Text("由于Triggernometry发生大量变动(2.0)，而且最近开发者有点忙，所以可能并不稳定。不过还是在缓慢更新API使用，期间触发器可能会出现各种问题，部分自动更新的在线依赖库也可能会受到影响。有问题的话尝试测试-清空编译错误历史。");
         ImGui.Separator();
         ImGui.Text("重要提醒！！！请一定要先看完介绍再使用，本插件仍然不是很稳定，有炸游戏风险");
         ImGui.Text("重要提醒！！！请一定要先看完介绍再使用，本插件仍然不是很稳定，有炸游戏风险");
@@ -57,7 +59,7 @@ public static partial class LWindow
         ImGui.Text("!!! 不要在插件加载后立刻卸载插件，否则大概率会线程回收失败，只能重启游戏解决。");
         ImGui.Text("!!! Triggernometry有时会因为宝宝椅的鲇鱼精扩展功能炸游戏/显示异常/...。开发者用Penumbra可以恢复部分图形问题");
         ImGui.SameLine();
-        if (ImGui.Button("/penumbra redraw")) RealPlugin.plug.InvokeNamedCallback("command", "/penumbra redraw");
+        if (ImGui.Button("/penumbra redraw")) RealPlugin.Instance.InvokeNamedCallback("command", "/penumbra redraw");
         ImGui.Text("IActPluginV1仅为不报错存在，不会执行加载等逻辑");
         ImGui.Text("Postnamezu的Preset不可用");
         ImGui.Text("触发器有时候声音比较小，减小游戏音量以调整。");
@@ -95,13 +97,13 @@ public static partial class LWindow
         if (ImGui.Button("打开Log目录"))
             Start(Plugin.Configuration.LogFilePath);
         if (ImGui.Button("打开卫月Log"))
-            RealPlugin._plug.InvokeNamedCallback("command", "/xllog");
+            RealPlugin._instance.InvokeNamedCallback("command", "/xllog");
         ImGui.SameLine();
         if (ImGui.Button("刷新Bw悬浮窗"))
             Plugin.Instance.RefreshBw();
         ImGui.SameLine();
         if (ImGui.Button("打开bw设置"))
-            RealPlugin._plug.InvokeNamedCallback("command", "/bw config");
+            RealPlugin._instance.InvokeNamedCallback("command", "/bw config");
         if (ImGui.Button("打开伤害统计悬浮窗"))
             Plugin.Instance.OverlayWindow.IsOpen = true;
         ImGui.Separator();
@@ -113,20 +115,20 @@ public static partial class LWindow
         ImGui.SameLine();
         if (ImGui.Button("验证触发器"))
         {
-            Sb = $"总量: {RealPlugin.plug.Triggers.Count}";
-            foreach (var t in RealPlugin.plug.Triggers)
+            Sb = $"总量: {RealPlugin.Instance.Triggers.Count}";
+            foreach (var t in RealPlugin.Instance.Triggers)
                 if (t.Id.ToString() == TestTriggerId)
                     Sb += "存活于Triggers.";
-            foreach (var t in RealPlugin.plug.ActiveTextTriggers)
+            foreach (var t in RealPlugin.Instance.ActiveTextTriggers)
                 if (t.Id.ToString() == TestTriggerId)
                     Sb += "存活于ActiveTextTriggers.";
-            foreach (var t in RealPlugin.plug.ActiveACTTriggers)
+            foreach (var t in RealPlugin.Instance.ActiveACTTriggers)
                 if (t.Id.ToString() == TestTriggerId)
                     Sb += "存活于ActiveACTTriggers.";
-            foreach (var t in RealPlugin.plug.ActiveEndpointTriggers)
+            foreach (var t in RealPlugin.Instance.ActiveEndpointTriggers)
                 if (t.Id.ToString() == TestTriggerId)
                     Sb += "存活于ActiveEndpointTriggers.";
-            foreach (var t in RealPlugin.plug.ActiveFFXIVNetworkTriggers)
+            foreach (var t in RealPlugin.Instance.ActiveFFXIVNetworkTriggers)
                 if (t.Id.ToString() == TestTriggerId)
                     Sb += "存活于ActiveFFXIVNetworkTriggers.";
         }
@@ -139,9 +141,9 @@ public static partial class LWindow
                      : "失败，详情见/xllog";
         ImGui.SameLine();
         if (ImGui.Button("编译并运行代码(无反馈)"))
-            RealPlugin._plug.scripting.Evaluate(TestCode, null, null);
+            RealPlugin._instance.scripting.Evaluate(TestCode, null, null);
         ImGui.SameLine();
-        if (ImGui.Button("清空编译错误历史")) RealPlugin.plug.cfg.CompileFailedScripts.Clear();
+        if (ImGui.Button("清空编译错误历史")) RealPlugin.Instance.cfg.CompileFailedScripts.Clear();
         ImGui.Separator();
         ImGui.SetNextItemWidth(-1);
         ImGui.SameLine();

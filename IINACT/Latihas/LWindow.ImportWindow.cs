@@ -1,6 +1,7 @@
 ﻿using System.Numerics;
 using Dalamud.Bindings.ImGui;
 using Dalamud.Interface.Windowing;
+using Triggernometry.UI.CustomControls;
 
 namespace IINACT.Latihas;
 
@@ -28,8 +29,8 @@ public static partial class LWindow
             Tag = tag;
             var content = "";
             if (str.StartsWith("<?xml")) content = str;
-            Triggernometry.CustomControls.UserInterface.ImportResultsFromForm(Tag, content);
-            Triggernometry.CustomControls.UserInterface.BuildTriggerTreeFromConfiguration(null, null);
+            UserInterface.ImportResultsFromForm(Tag, content);
+            UserInterface.BuildTriggerTreeFromConfiguration(null, null);
         }
 
         public void Open(object obj)

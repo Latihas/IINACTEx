@@ -1,6 +1,8 @@
 ﻿using System.Numerics;
 using Dalamud.Bindings.ImGui;
 using Triggernometry;
+using Triggernometry.Core;
+using Triggernometry.Core.Conditions;
 
 namespace IINACT.Latihas;
 
