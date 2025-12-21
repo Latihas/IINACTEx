@@ -99,6 +99,7 @@ public sealed class Plugin : IDalamudPlugin
                 if (overwrite) Directory.Delete(extractDir, recursive: true);
                 else return true;
             ZipFile.ExtractToDirectory(zipFilePath, extractDir);
+            File.Delete(zipFilePath);
             return true;
         }
         catch (Exception ex)
@@ -129,10 +130,6 @@ public sealed class Plugin : IDalamudPlugin
         Advanced_Combat_Tracker.ActGlobals.oFormActMain = new Advanced_Combat_Tracker.FormActMain(Log);
         Configuration = PluginInterface.GetPluginConfig() as Configuration ?? new Configuration();
         Configuration.Initialize(PluginInterface);
-        if (!UnzipWithoutPassword(Path.Combine(PluginInterface.AssemblyLocation.Directory.ToString(), "cactbot.zip"),
-                Path.Combine(PluginInterface.AssemblyLocation.Directory.ToString(), "cactbot")))
-            UnzipWithoutPassword(Path.Combine(PluginInterface.ConfigDirectory.ToString(), "cactbot.zip"),
-                Path.Combine(PluginInterface.ConfigDirectory.ToString(), "cactbot"));
         //TTS
         var tmpdir = Path.Combine(PluginInterface.ConfigDirectory.ToString(), "tmp");
         try {
@@ -224,6 +221,7 @@ public sealed class Plugin : IDalamudPlugin
         });
         PluginInterface.UiBuilder.Draw += DrawUI;
         PluginInterface.UiBuilder.OpenConfigUi += DrawConfigUI;
+        PluginInterface.UiBuilder.OpenMainUi += DrawConfigUI;
         if (ClientState.IsPvP)
             EnterPvP();
         else

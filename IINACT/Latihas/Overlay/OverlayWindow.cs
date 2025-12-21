@@ -22,7 +22,7 @@ public class OverlayWindow() : Window("IINACT Overlay"), IDisposable
         try
         {
             var x = JsonConvert.DeserializeObject<CombatDataWrapper>(data);
-            Plugin.Log.Warning(data);
+            Plugin.Log.Info(data);
             if (x is { Type: "broadcast", MsgType: "CombatData" } && x.Msg.Combatant.Count != 0)
             {
                 currentCombatData = x;
@@ -208,7 +208,7 @@ public class OverlayWindow() : Window("IINACT Overlay"), IDisposable
             ImGui.Text("无有效数据");
             return;
         }
-        var maxDps = combatantList.Max(Catval);
+
         using var table = ImRaii.Table("ValueTable", 4, ImGuiTableFlags.Resizable);
         if (table)
         {
@@ -217,6 +217,9 @@ public class OverlayWindow() : Window("IINACT Overlay"), IDisposable
             ImGui.TableSetupColumn(name, ImGuiTableColumnFlags.WidthFixed, 80f);
             ImGui.TableSetupColumn("占比", ImGuiTableColumnFlags.WidthStretch);
             ImGui.TableHeadersRow();
+            var maxDps = combatantList.Max(Catval);
+            var totalDps = combatantList.Sum(Catval);
+            ;
             foreach (var combatant in combatantList)
             {
                 ImGui.TableNextRow();
@@ -238,7 +241,7 @@ public class OverlayWindow() : Window("IINACT Overlay"), IDisposable
                     X = barWidth * dpsRatio
                 }, combatant.Name == "YOU" ? ImGui.GetColorU32(new Vector4(1, 1, 1, .5f)) : GetProgressColor(dpsRatio));
                 ImGui.SetCursorScreenPos(barPos + new Vector2(5, (barSize.Y - ImGui.GetTextLineHeight()) / 2));
-                ImGui.Text($"{Math.Round(dpsRatio * 100, 1)}%");
+                ImGui.Text($"{Math.Round(dpsRatio * 100, 1)}%({Math.Round(100f * Catval(combatant) / totalDps, 1)}%)");
             }
         }
     }

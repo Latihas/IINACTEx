@@ -18,18 +18,17 @@ public static partial class LWindow
 
     internal static void DrawTriggerSettings()
     {
-        using var tab = ImRaii.TabItem("Trigger");
+        using var tab = ImRaii.TabItem("触发器");
         if (!tab) return;
         using var bar = ImRaii.TabBar("TriggerBar");
         if (!bar) return;
         DrawTriggerTriggerSettings();
         DrawTriggerVarSettings();
-        DrawTriggerSettingsSettings();
     }
 
     internal static void DrawTriggerTriggerSettings()
     {
-        using var tab = ImRaii.TabItem("触发器");
+        using var tab = ImRaii.TabItem("触发器仓库");
         if (!tab) return;
         if (ImGui.Button("刷新触发器")) UserInterface.BuildTriggerTreeFromConfiguration(null, null);
         ImGui.SameLine();
@@ -58,7 +57,7 @@ public static partial class LWindow
         DrawTriggerVarNamedCallbackSettings();
     }
 
-    internal static void DrawTriggerSettingsSettings()
+    internal static void DrawSettings()
     {
         using var tab = ImRaii.TabItem("设置");
         if (!tab) return;

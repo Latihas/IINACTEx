@@ -9,6 +9,7 @@ using System.Net;
 using System.Net.Sockets;
 using System.Numerics;
 using Dalamud.Bindings.ImGui;
+using Dalamud.Interface.ImGuiNotification;
 using Dalamud.Interface.Utility;
 using Dalamud.Interface.Utility.Raii;
 using IINACT.Latihas;
@@ -45,6 +46,7 @@ public class MainWindow : Window, IDisposable
         DrawTTSSettings();
         LWindow.DrawTriggerSettings();
         LWindow.DrawTestSettings();
+        LWindow.DrawSettings();
     }
 
     private void DrawMainWindow()
@@ -102,13 +104,45 @@ public class MainWindow : Window, IDisposable
         ImGui.Text("cactbot.zip可在");
         ImGui.SameLine();
         const string cactboturl = "https://raw.githubusercontent.com/Latihas/dalamud-plugins/main/cactbot.zip";
+        var cactbotDir = Path.Combine(Plugin.PluginInterface.ConfigDirectory.ToString(), "cactbot");
         if (ImGui.Button(cactboturl)) LWindow.Start(cactboturl);
         ImGui.SameLine();
         ImGui.Text("下载");
-        ImGui.Text("下载完成后放在IINACTEx插件的安装目录下，可以选择手动解压，也可以在插件下次加载时自动解压。解压后，即可打开资源文件夹。");
-        var cactbotDir = Path.Combine(Plugin.PluginInterface.AssemblyLocation.Directory.ToString(), "cactbot");
-        if (ImGui.Button("打开资源文件夹")) LWindow.Start(cactbotDir);
-        ImGui.Text("更多网页可见cactbot文件夹。以下是开发者喜欢用的网址，点击复制:");
+        ImGui.Text("也可以尝试");
+        ImGui.SameLine();
+        if (ImGui.Button("一键下载解压"))
+        {
+            if (FileDownloaderCactbot != null)
+            {
+                Plugin.NotificationManager.AddNotification(new Notification
+                {
+                    Type = NotificationType.Warning,
+                    Content = "有未完成的下载任务"
+                });
+            }
+            else
+            {
+                var zipPath = Path.Combine(Plugin.PluginInterface.ConfigDirectory.ToString(), "cactbot.zip");
+                FileDownloaderCactbot = new FileDownloader(cactboturl, zipPath, () =>
+                {
+                    FileDownloaderCactbot = null;
+                    Plugin.UnzipWithoutPassword(zipPath, cactbotDir);
+                });
+                if (File.Exists(zipPath)) File.Delete(zipPath);
+                _ = FileDownloaderCactbot.DownloadFileAsync();
+            }
+        }
+        if (FileDownloaderCactbot != null)
+        {
+            ImGui.SameLine();
+            ImGui.ProgressBar(FileDownloaderCactbot.Progress, new Vector2(300, 24), "下载中");
+        }
+        ImGui.SameLine();
+        ImGui.Text("会强制覆盖旧版，但是受网络影响较大，实在不行只能手动下载。");
+        ImGui.Text("手动下载完成后放在IINACTEx插件的安装目录下，可以选择手动解压，也可以在插件下次加载时自动解压。解压后，即可打开资源文件夹。");
+
+        if (ImGui.Button("打开资源文件夹")) LWindow.Start(Plugin.PluginInterface.ConfigDirectory.ToString());
+        ImGui.Text("更多网页可见cactbot文件夹。以下是开发者喜欢用的网址，点击复制，贴进bw即可:");
         foreach (var url in new[]
                  {
                      ("伤害统计", $"http://overlay.diemoe.net/kagerou/overlay/?HOST_PORT=ws://{Server?.Address}:{Server?.Port}"),
@@ -165,6 +199,8 @@ public class MainWindow : Window, IDisposable
         }
         DrawWebSocketSettings();
     }
+
+    private static FileDownloader? FileDownloaderCactbot;
 
     private void DrawParseSettings()
     {

@@ -43,15 +43,27 @@ IINACTEx也有内置一个原生的伤害统计悬浮窗，输入/iinactoverlay�
 
 # TTS/Cactbot
 
-IINACT CN默认使用了EdgeTTS，如果你EdgeTTS工作正常可以跳过这部分。由于开发者比较喜欢用LatihasTTS(纯本地模型推理)所以也做了接口。
+IINACT CN默认使用了EdgeTTS，如果你EdgeTTS工作正常可以跳过这部分。由于开发者比较喜欢用LatihasTTS(纯本地模型推理)所以也做了接口。由于文件过大放不上Github所以需要联系开发者获取。(其实也没那么必须，只是开发者用着舒服)
 
 cactbot资源可在 https://raw.githubusercontent.com/Latihas/dalamud-plugins/main/cactbot.zip 下载。
 
 仅需将相关文件放入插件安装目录下即可使用，加号代表添加的文件，像这样:
 
-- $(installedPlugins/IINACTEx)
+Cactbot:
+
+- $(pluginConfigs/IINACTEx)
     - Scripts/
     - TriggernometryRepoBackups/
+    - PostNamazu.config.xml
+    - Triggernometry.config.xml
+    - +cactbot.zip
+    - ...
+
+LatihasTTS:
+
+- $(installedPlugins/IINACTEx)
+    - Advanced Combat Tracker.dll
+    - Triggernometry.dll
     - +TtsAssets/
         - +pinyin.txt
         - +symbol.txt
@@ -59,13 +71,9 @@ cactbot资源可在 https://raw.githubusercontent.com/Latihas/dalamud-plugins/ma
         - +a.ort
         - +v.ort
         - +...
-    - Advanced Combat Tracker.dll
-    - Triggernometry.dll
-    - xxx.dll
-    - +cactbot.zip
     - ...
 
-目前支持cactbot.zip与TTS资源放在插件安装目录或者是插件Config目录，优先使用插件安装目录的。cactbot可以选择手动解压，也可以在插件下次加载时自动解压。
+目前支持cactbot.zip一键下载安装，比较依赖网络环境。手动的话资源放在插件Config目录，cactbot可以选择手动解压，也可以在插件下次加载时自动解压。
 
 # 已知限制
 

@@ -45,7 +45,7 @@ public class EdgeTTSManager
     public EdgeTTSManager(IPluginLog log, string configPath)
     {
         _log = log;
-        _configPath = Path.Combine(Path.GetDirectoryName(configPath)!, "IINACT", "Notification", "TextToSpeech.json");
+        _configPath = Path.Combine(Path.GetDirectoryName(configPath)!, "IINACTEx", "Notification", "TextToSpeech.json");
         _config = EdgeTTSConfig.Load(_configPath);
         
         UpdateCachePath(_config.CustomCachePath);
