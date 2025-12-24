@@ -85,27 +85,29 @@ public sealed class Plugin : IDalamudPlugin
     public LWindow.ExportWindow ExportWindow = null!;
     public LWindow.ImportWindow ImportWindow = null!;
     public LWindow.RepoWindow RepoWindow = null!;
+    public LWindow.TriggernometryLogView TriggernometryLogView = null!;
+    public LWindow.ACTLogView ACTLogView = null!;
     public OverlayWindow OverlayWindow = null!;
 
     internal static EdgeTTSWindow EdgeTTSWindow = null!;
     public static Plugin Instance;
     public static dynamic? LatihasTts;
+    public static string PluginAssemblyDirectory => PluginInterface.AssemblyLocation.Directory!.ToString();
+    public static string PluginConfigDirectory => PluginInterface.ConfigDirectory.ToString();
 
-    public static bool UnzipWithoutPassword(string zipFilePath, string extractDir, bool overwrite = false)
+    public static void UnzipWithoutPassword(string zipFilePath, string extractDir, bool overwrite = false)
     {
         try
         {
             if (Directory.Exists(extractDir))
                 if (overwrite) Directory.Delete(extractDir, recursive: true);
-                else return true;
+                else return;
             ZipFile.ExtractToDirectory(zipFilePath, extractDir);
             File.Delete(zipFilePath);
-            return true;
         }
         catch (Exception ex)
         {
             Log.Warning($"解压失败：{ex.Message}");
-            return false;
         }
     }
 
@@ -121,7 +123,7 @@ public sealed class Plugin : IDalamudPlugin
         FileDialogManager = new FileDialogManager();
         HttpClient = new HttpClient();
         var fetchDeps =
-            new FetchDependencies.FetchDependencies(Version, PluginInterface.AssemblyLocation.Directory!.FullName,
+            new FetchDependencies.FetchDependencies(Version, PluginAssemblyDirectory,
                                                     DataManager.Language.ToString() == "ChineseSimplified", HttpClient);
         fetchDeps.GetFfxivPlugin();
         PluginLogTraceListener = new PluginLogTraceListener();
@@ -131,45 +133,27 @@ public sealed class Plugin : IDalamudPlugin
         Configuration = PluginInterface.GetPluginConfig() as Configuration ?? new Configuration();
         Configuration.Initialize(PluginInterface);
         //TTS
-        var tmpdir = Path.Combine(PluginInterface.ConfigDirectory.ToString(), "tmp");
-        try {
-            var text = PluginInterface.AssemblyLocation.Directory.ToString();
-            var assetsdir = text + "/TtsAssets/";
+        try
+        {
+            var tmpdir = Path.Combine(PluginConfigDirectory, "tmp");
+            var text = PluginConfigDirectory;
+            var assetsdir = Path.Combine(text, "TtsAssets");
             Assembly latihasTtsAssembly;
-            using (var memoryStream = new MemoryStream(File.ReadAllBytes(assetsdir + "System.Numerics.Tensors.dll"))) {
+            using (var memoryStream = new MemoryStream(File.ReadAllBytes(Path.Combine(assetsdir, "System.Numerics.Tensors.dll"))))
                 AssemblyLoadContext.GetLoadContext(Assembly.GetExecutingAssembly())!.LoadFromStream(memoryStream);
-            }
-            using (var memoryStream = new MemoryStream(File.ReadAllBytes(assetsdir + "Microsoft.ML.OnnxRuntime.dll"))) {
+            using (var memoryStream = new MemoryStream(File.ReadAllBytes(Path.Combine(assetsdir, "Microsoft.ML.OnnxRuntime.dll"))))
                 AssemblyLoadContext.GetLoadContext(Assembly.GetExecutingAssembly())!.LoadFromStream(memoryStream);
-            }
-            using (var memoryStream = new MemoryStream(File.ReadAllBytes(assetsdir + "LatihasTTS.dll"))) {
+            using (var memoryStream = new MemoryStream(File.ReadAllBytes(Path.Combine(assetsdir, "LatihasTTS.dll"))))
                 latihasTtsAssembly = AssemblyLoadContext.GetLoadContext(Assembly.GetExecutingAssembly())!.LoadFromStream(memoryStream);
-            }
             LatihasTts = Activator.CreateInstance(latihasTtsAssembly.GetType("LatihasTTS.LatihasTts")!)!;
-            LatihasTts.Init(text, tmpdir, Log);
+            LatihasTts.Init(assetsdir, tmpdir, Log);
+            if (!LatihasTts.CheckAssets()) Log.Warning("LatihasTts Assets Lost");
         }
-        catch (Exception e) {
-            Log.Warning(e + " Retry");
-            try {
-                var text = PluginInterface.ConfigDirectory.ToString();
-                var assetsdir = text + "/TtsAssets/";
-                Assembly latihasTtsAssembly;
-                using (var memoryStream = new MemoryStream(File.ReadAllBytes(assetsdir + "System.Numerics.Tensors.dll"))) {
-                    AssemblyLoadContext.GetLoadContext(Assembly.GetExecutingAssembly())!.LoadFromStream(memoryStream);
-                }
-                using (var memoryStream = new MemoryStream(File.ReadAllBytes(assetsdir + "Microsoft.ML.OnnxRuntime.dll"))) {
-                    AssemblyLoadContext.GetLoadContext(Assembly.GetExecutingAssembly())!.LoadFromStream(memoryStream);
-                }
-                using (var memoryStream = new MemoryStream(File.ReadAllBytes(assetsdir + "LatihasTTS.dll"))) {
-                    latihasTtsAssembly = AssemblyLoadContext.GetLoadContext(Assembly.GetExecutingAssembly())!.LoadFromStream(memoryStream);
-                }
-                LatihasTts = Activator.CreateInstance(latihasTtsAssembly.GetType("LatihasTTS.LatihasTts")!)!;
-                LatihasTts.Init(text, tmpdir, Log);
-            }
-            catch (Exception ex) {
-                Log.Warning(ex.ToString());
-            }
+        catch (Exception ex)
+        {
+            Log.Warning(ex.ToString());
         }
+
         TextToSpeechProvider = new TextToSpeechProvider(Log, PluginInterface.ConfigFile.FullName);
         TextToSpeechProvider.SetUseEdgeTTS(Configuration.UseEdgeTTS);
         TextToSpeechProvider.SetUseLatihasTTS(Configuration.UseLatihasTts);
@@ -204,6 +188,8 @@ public sealed class Plugin : IDalamudPlugin
         WindowSystem.AddWindow(ExportWindow = new LWindow.ExportWindow());
         WindowSystem.AddWindow(ImportWindow = new LWindow.ImportWindow());
         WindowSystem.AddWindow(RepoWindow = new LWindow.RepoWindow());
+        WindowSystem.AddWindow(TriggernometryLogView = new LWindow.TriggernometryLogView());
+        WindowSystem.AddWindow(ACTLogView = new LWindow.ACTLogView());
         WindowSystem.AddWindow(OverlayWindow = new OverlayWindow());
 
         CommandManager.AddHandler(MainWindowCommandName, new CommandInfo(OnCommand)
@@ -284,13 +270,13 @@ public sealed class Plugin : IDalamudPlugin
         container.Register(PluginInterface);
 
         var overlayPlugin = new RainbowMage.OverlayPlugin.PluginMain(
-            PluginInterface.AssemblyLocation.Directory!.FullName, logger, container);
+            PluginAssemblyDirectory, logger, container);
         container.Register(overlayPlugin);
         Advanced_Combat_Tracker.ActGlobals.oFormActMain.OverlayPluginContainer = container;
 
         Task.Run(() =>
         {
-            overlayPlugin.InitPlugin(PluginInterface.ConfigDirectory.FullName);
+            overlayPlugin.InitPlugin(PluginConfigDirectory);
 
             var registry = container.Resolve<RainbowMage.OverlayPlugin.Registry>();
             MainWindow.OverlayPresets = registry.OverlayTemplates;
@@ -302,9 +288,8 @@ public sealed class Plugin : IDalamudPlugin
             MainWindow.OverlayPluginConfig = container.Resolve<RainbowMage.OverlayPlugin.IPluginConfig>();
             Triggernometry.PluginBridges.BridgeNamazu.BridgeNamazu.InitializeModules();
             Triggernometry.PluginBridges.BridgeNamazu.BridgeNamazu.RegisterAnnotatedMethods();
-            if(Configuration.PostNamazuAutoStart) Instance.PostNamazuPlugin.ServerStart();
-            if (Directory.Exists(Path.Combine(PluginInterface.AssemblyLocation.Directory.ToString(), "cactbot"))||
-                Directory.Exists(Path.Combine(PluginInterface.ConfigDirectory.ToString(), "cactbot")) )
+            if (Directory.Exists(Path.Combine(PluginAssemblyDirectory, "cactbot")) ||
+                Directory.Exists(Path.Combine(PluginConfigDirectory, "cactbot")))
                 RefreshBw();
         });
         return overlayPlugin;

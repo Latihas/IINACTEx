@@ -24,6 +24,7 @@ public static partial class LWindow
         if (!bar) return;
         DrawTriggerTriggerSettings();
         DrawTriggerVarSettings();
+        DrawTriggerDebug();
     }
 
     internal static void DrawTriggerTriggerSettings()
@@ -57,22 +58,154 @@ public static partial class LWindow
         DrawTriggerVarNamedCallbackSettings();
     }
 
-    internal static void DrawSettings()
+    internal static void DrawTriggerDebug()
     {
-        using var tab = ImRaii.TabItem("设置");
+        using var tab = ImRaii.TabItem("触发器调试");
         if (!tab) return;
-        var DebugLevelItem = (int)RealPlugin.Instance.cfg.DebugLevel;
-        if (ImGui.Combo("DebugLevel", ref DebugLevelItem, Enum.GetValues<RealPlugin.DebugLevelEnum>().Select(i => i.ToString()).ToList()))
-            RealPlugin.Instance.cfg.DebugLevel = (RealPlugin.DebugLevelEnum)DebugLevelItem;
-        var EnableModuleBase = RealPlugin.Instance.cfg.EnableModuleBase;
-        if (ImGui.Checkbox("启用EnableModuleBase(极有可能炸游戏的功能，如绘图等，需要重新加载插件生效)", ref EnableModuleBase))
-            RealPlugin.Instance.cfg.EnableModuleBase = EnableModuleBase;
+        using var bar = ImRaii.TabBar("触发器调试Bar");
+        if (!bar) return;
+        DrawTriggerDebugLog();
+        DrawTriggerDebugTrigger();
+        DrawTriggerDebugEvalTest();
+        DrawTriggerDebugInternalTest();
+        DrawTriggerDebugCommonExpr();
+    }
+
+    internal static void DrawTriggerDebugLog()
+    {
+        using var tab = ImRaii.TabItem("日志");
+        if (!tab) return;
+        var DebugLevel = (int)RealPlugin.Instance.cfg.DebugLevel;
+        if (ImGui.Combo("Trn输出调试日志等级", ref DebugLevel,
+                        Enum.GetValues<RealPlugin.DebugLevelEnum>()
+                            .Select(i => i.ToString()).ToList()))
+            RealPlugin.Instance.cfg.DebugLevel = (RealPlugin.DebugLevelEnum)DebugLevel;
+        var LogFlattenMaxCount = RealPlugin.Instance.cfg.LogFlattenMaxCount.ToString();
+        if (ImGui.InputText("最大日志队列数量", ref LogFlattenMaxCount))
+            RealPlugin.Instance.cfg.LogFlattenMaxCount = int.Parse(LogFlattenMaxCount);
+        if (ImGui.Button("Trn日志")) Plugin.Instance.TriggernometryLogView.Toggle();
+        ImGui.SameLine();
+        if (ImGui.Button("ACT日志")) Plugin.Instance.ACTLogView.Toggle();
+        ImGui.SameLine();
+        if (ImGui.Button("清空日志队列")) RealPlugin.Instance.ClearLog();
+    }
+
+    internal static void DrawTriggerDebugInternalTest()
+    {
+        using var tab = ImRaii.TabItem("内置测试表达式");
+        if (!tab) return;
+        ImGui.Text("内置测试表达式");
+        foreach (var t in Test1.Test().Concat(Test2.Test()))
+        {
+            var ts = t.ToString();
+            if (t.IsCorrect is null or false)
+            {
+                if (ImGui.Button(ts))
+                    ImGui.SetClipboardText(ts);
+            }
+            else ImGui.Text($"{t}");
+        }
+    }
+
+    private static string Sbe = "", Sb = "";
+
+    internal static void DrawTriggerDebugEvalTest()
+    {
+        using var tab = ImRaii.TabItem("评估");
+        if (!tab) return;
+        ImGui.SetNextItemWidth(-1);
+        ImGui.InputTextMultiline("代码", ref TestCode, 1145141);
+        if (ImGui.Button("编译代码"))
+            Sbe = CSharpScriptCompiler.CompileScript(TestCode, [])
+                      ? "成功"
+                      : "失败，详情见/xllog";
+        ImGui.SameLine();
+        if (ImGui.Button("编译并运行代码(无反馈)"))
+            RealPlugin._instance.scripting.Evaluate(TestCode, null, null);
+        ImGui.SameLine();
+        if (ImGui.Button("清空编译错误历史")) RealPlugin.Instance.cfg.CompileFailedScripts.Clear();
+        ImGui.Separator();
+        ImGui.InputText("## 表达式", ref TestExpression);
+        ImGui.SameLine();
+        if (ImGui.Button("评估表达式"))
+            Sbe = TestContext.ExpandVariables(null, null, false, TestExpression);
+        if (!string.IsNullOrEmpty(Sbe)) ImGui.Text(Sbe);
+    }
+
+    internal static void DrawTriggerDebugCommonExpr()
+    {
+        using var tab = ImRaii.TabItem("常用表达式");
+        if (!tab) return;
+        ImGui.Text("${_systemtime} = " + TestContext.ExpandVariables(null, null, false, "${_systemtime}"));
+        ImGui.Text("${_systemtimems} = " + TestContext.ExpandVariables(null, null, false, "${_systemtimems}"));
+        ImGui.Text("${_me}/${_ffxivplayer} = " + TestContext.ExpandVariables(null, null, false, "${_me}"));
+        ImGui.Text("${_me.id} = " + TestContext.ExpandVariables(null, null, false, "${_me.id}"));
+        ImGui.Text("${_ffxivzoneid} = " + TestContext.ExpandVariables(null, null, false, "${_ffxivzoneid}"));
+        // ImGui.Text("${_ffxivpartyorder} = "+testContext.ExpandVariables(null, null, false, "${_ffxivpartyorder}"));
+        ImGui.Text("${_ffxivprocid} = " + TestContext.ExpandVariables(null, null, false, "${_ffxivprocid}"));
+        ImGui.Text("${_ffxivprocname} = " + TestContext.ExpandVariables(null, null, false, "${_ffxivprocname}"));
+        ImGui.Text("${_ffxivversion} = " + TestContext.ExpandVariables(null, null, false, "${_ffxivversion}"));
+        ImGui.Text("${_ffxivlanguage} = " + TestContext.ExpandVariables(null, null, false, "${_ffxivlanguage}"));
+        ImGui.Text("${_ffxivlanguageid} = " + TestContext.ExpandVariables(null, null, false, "${_ffxivlanguageid}"));
+        ImGui.Text("${_ffxivisglobal} = " + TestContext.ExpandVariables(null, null, false, "${_ffxivisglobal}"));
+        ImGui.Text("${_ffxivincombat} = " + TestContext.ExpandVariables(null, null, false, "${_ffxivincombat}"));
+        ImGui.Text("${_incombat} = " + TestContext.ExpandVariables(null, null, false, "${_incombat}"));
+        ImGui.Text("${_duration} = " + TestContext.ExpandVariables(null, null, false, "${_duration}"));
+        ImGui.Text("...蓝笔了不写了");
+    }
+
+    internal static void DrawTriggerDebugTrigger()
+    {
+        using var tab = ImRaii.TabItem("触发器验证");
+        if (!tab) return;
+        ImGui.InputText("触发器Id", ref TestTriggerId);
+        ImGui.SameLine();
+        if (ImGui.Button("验证触发器"))
+        {
+            Sb = $"总量: {RealPlugin.Instance.Triggers.Count}";
+            foreach (var t in RealPlugin.Instance.Triggers)
+                if (t.Id.ToString() == TestTriggerId)
+                    Sb += "存活于Triggers.";
+            foreach (var t in RealPlugin.Instance.ActiveTextTriggers)
+                if (t.Id.ToString() == TestTriggerId)
+                    Sb += "存活于ActiveTextTriggers.";
+            foreach (var t in RealPlugin.Instance.ActiveACTTriggers)
+                if (t.Id.ToString() == TestTriggerId)
+                    Sb += "存活于ActiveACTTriggers.";
+            foreach (var t in RealPlugin.Instance.ActiveEndpointTriggers)
+                if (t.Id.ToString() == TestTriggerId)
+                    Sb += "存活于ActiveEndpointTriggers.";
+            foreach (var t in RealPlugin.Instance.ActiveFFXIVNetworkTriggers)
+                if (t.Id.ToString() == TestTriggerId)
+                    Sb += "存活于ActiveFFXIVNetworkTriggers.";
+        }
+    }
+
+    internal static void DrawSettingsIINACT()
+    {
+        using var tab = ImRaii.TabItem("IINACT设置");
+        if (!tab) return;
         var ShowWindowOnInit = Plugin.Configuration.ShowWindowOnInit;
         if (ImGui.Checkbox("启动时显示界面", ref ShowWindowOnInit))
             Plugin.Configuration.ShowWindowOnInit = ShowWindowOnInit;
         var ShowOverlayOnInit = Plugin.Configuration.ShowOverlayOnInit;
         if (ImGui.Checkbox("启动时显示Overlay", ref ShowOverlayOnInit))
             Plugin.Configuration.ShowOverlayOnInit = ShowOverlayOnInit;
+    }
+
+    internal static void DrawSettingsTrn()
+    {
+        using var tab = ImRaii.TabItem("Trn设置");
+        if (!tab) return;
+        var EnableModuleBase = RealPlugin.Instance.cfg.EnableModuleBase;
+        if (ImGui.Checkbox("启用ModuleBase(极有可能炸游戏的功能，如绘图等，需要重新加载插件生效)", ref EnableModuleBase))
+            RealPlugin.Instance.cfg.EnableModuleBase = EnableModuleBase;
+    }
+
+    internal static void DrawSettingsPostnmz()
+    {
+        using var tab = ImRaii.TabItem("鲇鱼精设置");
+        if (!tab) return;
         var TextPort = Plugin.Instance.PostNamazuPlugin.PluginUi.TextPort.Text;
         if (ImGui.InputText("鲇鱼精端口", ref TextPort))
             Plugin.Instance.PostNamazuPlugin.PluginUi.TextPort.Text = TextPort;
@@ -84,10 +217,23 @@ public static partial class LWindow
             if (ImGui.Button("鲇鱼精停止监听"))
                 Plugin.Instance.PostNamazuPlugin.ServerStop();
         ImGui.SameLine();
-        if(ImGui.Button("清空"))Plugin.Instance.PostNamazuPlugin.PluginUi.lstMessages.Items.Clear();
-        var PostNamazuAutoStart = Plugin.Configuration.PostNamazuAutoStart;
+        if (ImGui.Button("清空")) Plugin.Instance.PostNamazuPlugin.PluginUi.lstMessages.Items.Clear();
+        var PostNamazuAutoStart = Plugin.Instance.PostNamazuPlugin.PluginUi.CheckAutoStart.Checked;
         if (ImGui.Checkbox("鲇鱼精监听自动启动", ref PostNamazuAutoStart))
-            Plugin.Configuration.PostNamazuAutoStart = PostNamazuAutoStart;
+            Plugin.Instance.PostNamazuPlugin.PluginUi.CheckAutoStart.Checked = PostNamazuAutoStart;
+        ImGui.Text("启用功能");
+        var iter = 1;
+        foreach (var c in Plugin.Instance.PostNamazuPlugin.PluginUi.flowLayoutActions.Controls.OfType<CheckBox>())
+        {
+            var cChecked = c.Checked;
+            if (ImGui.Checkbox(c.Text, ref cChecked))
+            {
+                c.Checked = cChecked;
+                Plugin.Instance.PostNamazuPlugin.PluginUi.ActionEnabled[c.Text] = cChecked;
+            }
+            if (iter++ != Plugin.Instance.PostNamazuPlugin.PluginUi.flowLayoutActions.Controls.Count) ImGui.SameLine();
+        }
+        ImGui.Separator();
         var items = Plugin.Instance.PostNamazuPlugin.PluginUi.lstMessages.Items;
         for (var i = 0; i < items.Count; i++)
         {
@@ -102,6 +248,25 @@ public static partial class LWindow
                 });
             }
         }
+    }
+
+    internal static void DrawSettings()
+    {
+        using var tab = ImRaii.TabItem("设置");
+        if (!tab) return;
+        using var bar = ImRaii.TabBar("设置Bar");
+        if (!bar) return;
+        DrawSettingsIINACT();
+        DrawSettingsTrn();
+        DrawSettingsPostnmz();
+        DrawSettingsScripts();
+    }
+
+    internal static void DrawSettingsScripts()
+    {
+        using var tab = ImRaii.TabItem("脚本设置");
+        if (!tab) return;
+        ImGui.Text("脚本一览(待开发)");
     }
 
     private static void TScaler(SerializableDictionary<string, VariableScalar> data) =>
@@ -141,21 +306,21 @@ public static partial class LWindow
 
     private static void DrawTriggerVarESettings(bool persist, TriggerVarType type)
     {
-    //     ImGui.Separator();
-    //     ImGui.InputText("name", ref Ename);
-    //     ImGui.InputText("expr", ref Eexpr);
-    //     var code = $"using Triggernometry;\nRealPlugin._plug.{(persist ? "cfg.PersistentVariables" : "sessionvars")}.{type}[\"{Ename}\"]=new (){{{type switch {
-    //         TriggerVarType.Scalar => "Value = \"",
-    //         TriggerVarType.List => "Values = [",
-    //         TriggerVarType.Dict => "Values = new Dictionary<string, Variable>()\n{",
-    //     }}{Eexpr}{type switch {
-    //     TriggerVarType.Scalar => "\"",
-    //     TriggerVarType.List => "]",
-    //     TriggerVarType.Dict => "}"
-    // }}}};";
-    //     ImGui.Text(code);
-    //     if (ImGui.Button("执行"))
-    //         RealPlugin._plug.scripting.Evaluate(code, null, null);
+        //     ImGui.Separator();
+        //     ImGui.InputText("name", ref Ename);
+        //     ImGui.InputText("expr", ref Eexpr);
+        //     var code = $"using Triggernometry;\nRealPlugin._plug.{(persist ? "cfg.PersistentVariables" : "sessionvars")}.{type}[\"{Ename}\"]=new (){{{type switch {
+        //         TriggerVarType.Scalar => "Value = \"",
+        //         TriggerVarType.List => "Values = [",
+        //         TriggerVarType.Dict => "Values = new Dictionary<string, Variable>()\n{",
+        //     }}{Eexpr}{type switch {
+        //     TriggerVarType.Scalar => "\"",
+        //     TriggerVarType.List => "]",
+        //     TriggerVarType.Dict => "}"
+        // }}}};";
+        //     ImGui.Text(code);
+        //     if (ImGui.Button("执行"))
+        //         RealPlugin._plug.scripting.Evaluate(code, null, null);
     }
 
     private static void TList(SerializableDictionary<string, VariableList> data) =>
@@ -278,7 +443,7 @@ public static partial class LWindow
         UseShellExecute = true
     });
 
-    private static void NewTable<T>(string[] header, T[]? data, Action<T>[] acts)
+    private static void NewTable<T>(string[] header, T[]? data, Action<T>[] acts, Func<T, Vector4>? setColor = null)
     {
         if (data is null || data.Length == 0) return;
         if (ImGui.BeginTable("Table", acts.Length, ImGuiTableFlag))
@@ -288,12 +453,19 @@ public static partial class LWindow
             foreach (var res in data)
             {
                 ImGui.TableNextRow();
+                if (setColor != null)
+                {
+                    var color = setColor(res);
+                    ImGui.PushStyleColor(ImGuiCol.TableRowBg, color);
+                    ImGui.PushStyleColor(ImGuiCol.TableRowBgAlt, color);
+                }
                 for (var i = 0; i < acts.Length; i++)
                 {
                     ImGui.TableSetColumnIndex(i);
                     acts[i](res);
                 }
             }
+            if (setColor != null) ImGui.PopStyleColor(2 * data.Length);
             ImGui.EndTable();
         }
     }

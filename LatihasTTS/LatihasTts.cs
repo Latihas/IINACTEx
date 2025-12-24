@@ -16,7 +16,7 @@ namespace LatihasTTS;
 [SuppressMessage("Usage", "CA2211:非常量字段应当不可见")]
 public class LatihasTts : IDisposable
 {
-    internal static string Rootdir, Tmpdir;
+    internal static string Tmpdir;
     public static string Assetsdir;
     private static string[] AssetsList;
     private static IPluginLog Log;
@@ -32,12 +32,11 @@ public class LatihasTts : IDisposable
     [DllImport("kernel32.dll", SetLastError = true)]
     private static extern IntPtr LoadLibrary(string lpFileName);
 
-    public void Init(string rootDir,string tmpDir, IPluginLog log)
+    public void Init(string assetsDir, string tmpDir, IPluginLog log)
     {
         Log = log;
-        Rootdir = rootDir;
-        Assetsdir = Rootdir + "/TtsAssets/";
-        Tmpdir =tmpDir+"/";
+        Assetsdir = assetsDir;
+        Tmpdir = tmpDir;
         AssetsList =
         [
             Path.Combine(Assetsdir, "vocab.txt"),
@@ -106,7 +105,7 @@ public class LatihasTts : IDisposable
         internal static MemoryStream GetWav(string text)
         {
             if (string.IsNullOrEmpty(text)) return new MemoryStream();
-            var tmpfp = Tmpdir + text + ".wav";
+            var tmpfp = Path.Combine(Tmpdir, text + ".wav");
             if (File.Exists(tmpfp))
             {
                 Log.Info("Cached: " + text);
@@ -203,7 +202,7 @@ public class LatihasTts : IDisposable
 
             static PaddleTextTokenizer()
             {
-                using (var sr = File.OpenText(Assetsdir + "vocab.txt"))
+                using (var sr = File.OpenText(Path.Combine(Assetsdir, "vocab.txt")))
                 {
                     while (sr.ReadLine() is { } nextLine)
                     {
@@ -218,7 +217,7 @@ public class LatihasTts : IDisposable
                         }
                     }
                 }
-                using (var sr = File.OpenText(Assetsdir + "pinyin.txt"))
+                using (var sr = File.OpenText(Path.Combine(Assetsdir, "pinyin.txt")))
                 {
                     while (sr.ReadLine() is { } nextLine)
                     {
@@ -233,7 +232,7 @@ public class LatihasTts : IDisposable
                         }
                     }
                 }
-                using (var sr = File.OpenText(Assetsdir + "symbol.txt"))
+                using (var sr = File.OpenText(Path.Combine(Assetsdir, "symbol.txt")))
                 {
                     while (sr.ReadLine() is { } nextLine)
                     {
@@ -327,8 +326,8 @@ public class LatihasTts : IDisposable
             {
                 var options = new SessionOptions();
                 options.AddSessionConfigEntry("session.load_model_format", "ORT");
-                SessionFastspeech = new InferenceSession(Assetsdir + "a.ort", options);
-                SessionVcoder = new InferenceSession(Assetsdir + "v.ort", options);
+                SessionFastspeech = new InferenceSession(Path.Combine(Assetsdir, "a.ort"), options);
+                SessionVcoder = new InferenceSession(Path.Combine(Assetsdir, "v.ort"), options);
             }
 
             public static float[] Forward(long[] ids)
