@@ -31,7 +31,10 @@ public static partial class LWindow
     {
         using var tab = ImRaii.TabItem("触发器仓库");
         if (!tab) return;
-        if (ImGui.Button("刷新触发器")) UserInterface.BuildTriggerTreeFromConfiguration(null, null);
+        if (ImGui.Button("刷新触发器"))
+        {
+            UserInterface.BuildTriggerTreeFromConfiguration(null, null);
+        }
         ImGui.SameLine();
         if (ImGui.Button("保存设置") && !RealPlugin.Instance.configBroken)
             RealPlugin.Instance.SaveCurrentConfig();
@@ -187,10 +190,16 @@ public static partial class LWindow
         if (!tab) return;
         var ShowWindowOnInit = Plugin.Configuration.ShowWindowOnInit;
         if (ImGui.Checkbox("启动时显示界面", ref ShowWindowOnInit))
+        {
             Plugin.Configuration.ShowWindowOnInit = ShowWindowOnInit;
+            Plugin.Configuration.Save();
+        }
         var ShowOverlayOnInit = Plugin.Configuration.ShowOverlayOnInit;
         if (ImGui.Checkbox("启动时显示Overlay", ref ShowOverlayOnInit))
+        {
             Plugin.Configuration.ShowOverlayOnInit = ShowOverlayOnInit;
+            Plugin.Configuration.Save();
+        }
     }
 
     internal static void DrawSettingsTrn()
