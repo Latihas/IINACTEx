@@ -33,6 +33,12 @@ public static partial class LWindow
         if (!tab) return;
         if (ImGui.Button("刷新触发器"))
         {
+            lock (RealPlugin.Instance.Triggers) RealPlugin.Instance.Triggers.Clear();
+            lock (RealPlugin.Instance.ActiveTextTriggers) RealPlugin.Instance.ActiveTextTriggers.Clear();
+            lock (RealPlugin.Instance.ActiveFFXIVNetworkTriggers) RealPlugin.Instance.ActiveFFXIVNetworkTriggers.Clear();
+            lock (RealPlugin.Instance.ActiveACTTriggers) RealPlugin.Instance.ActiveACTTriggers.Clear();
+            lock (RealPlugin.Instance.ActiveEndpointTriggers) RealPlugin.Instance.ActiveEndpointTriggers.Clear();
+            lock (RealPlugin.Instance.ActionQueue) RealPlugin.Instance.ActionQueue.Clear();
             UserInterface.BuildTriggerTreeFromConfiguration(null, null);
         }
         ImGui.SameLine();
