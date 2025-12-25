@@ -160,6 +160,22 @@ public static partial class LWindow
         ImGui.Text("${_ffxivincombat} = " + TestContext.ExpandVariables(null, null, false, "${_ffxivincombat}"));
         ImGui.Text("${_incombat} = " + TestContext.ExpandVariables(null, null, false, "${_incombat}"));
         ImGui.Text("${_duration} = " + TestContext.ExpandVariables(null, null, false, "${_duration}"));
+        ImGui.Separator();
+        ImGui.Text("目标信息");
+        var targ = Plugin.TargetManager.Target;
+        if (targ == null)
+            if (Plugin.ClientState.LocalPlayer != null)
+                targ = Plugin.ClientState.LocalPlayer;
+        if (targ != null)
+        {
+            ImGui.Text("Target.Name: " + targ.Name);
+            ImGui.Text("Target.Address: 0x" + targ.Address.ToString("X"));
+            ImGui.Text("Target.BaseId: 0x" + targ.BaseId.ToString("X"));
+            ImGui.Text("Target.EntityId: 0x" + targ.EntityId.ToString("X"));
+            ImGui.Text("Target.GameObjectId: 0x" + targ.GameObjectId.ToString("X"));
+            ImGui.Text("Target.OwnerId: 0x" + targ.OwnerId.ToString("X"));
+        }
+        ImGui.Separator();
         ImGui.Text("...蓝笔了不写了");
     }
 

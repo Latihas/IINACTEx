@@ -61,7 +61,9 @@ public sealed class Plugin : IDalamudPlugin
     public static IPluginLog Log { get; private set; }
     [PluginService]
     public static IGameGui GameGui { get; private set; }
-    public Configuration GetConfiguration => Configuration;
+    [PluginService]
+    public static ITargetManager TargetManager  { get; private set; }
+    // public Configuration GetConfiguration => Configuration;
     internal static Configuration Configuration { get; private set; }
     internal static TextToSpeechProvider TextToSpeechProvider { get; private set; }
     private static MainWindow MainWindow = null!;
