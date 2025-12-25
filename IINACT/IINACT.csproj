@@ -74,35 +74,27 @@
     <ItemGroup>
         <Reference Include="FFXIV_ACT_Plugin">
             <HintPath>..\external_dependencies\FFXIV_ACT_Plugin.dll</HintPath>
-            <Private>False</Private>
         </Reference>
         <Reference Include="FFXIV_ACT_Plugin.Common">
             <HintPath>..\external_dependencies\SDK\FFXIV_ACT_Plugin.Common.dll</HintPath>
-            <Private>False</Private>
         </Reference>
         <Reference Include="FFXIV_ACT_Plugin.Config">
             <HintPath>..\external_dependencies\SDK\FFXIV_ACT_Plugin.Config.dll</HintPath>
-            <Private>False</Private>
         </Reference>
         <Reference Include="FFXIV_ACT_Plugin.Logfile">
             <HintPath>..\external_dependencies\SDK\FFXIV_ACT_Plugin.Logfile.dll</HintPath>
-            <Private>False</Private>
         </Reference>
         <Reference Include="FFXIV_ACT_Plugin.Memory">
             <HintPath>..\external_dependencies\SDK\FFXIV_ACT_Plugin.Memory.dll</HintPath>
-            <Private>False</Private>
         </Reference>
         <Reference Include="FFXIV_ACT_Plugin.Network">
             <HintPath>..\external_dependencies\SDK\FFXIV_ACT_Plugin.Network.dll</HintPath>
-            <Private>False</Private>
         </Reference>
         <Reference Include="FFXIV_ACT_Plugin.Parse">
             <HintPath>..\external_dependencies\SDK\FFXIV_ACT_Plugin.Parse.dll</HintPath>
-            <Private>False</Private>
         </Reference>
         <Reference Include="FFXIV_ACT_Plugin.Resource">
             <HintPath>..\external_dependencies\SDK\FFXIV_ACT_Plugin.Resource.dll</HintPath>
-            <Private>False</Private>
         </Reference>
     </ItemGroup>
     <ItemGroup>
