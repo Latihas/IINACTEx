@@ -18,9 +18,9 @@ namespace RainbowMage.OverlayPlugin.NetworkProcessors
 
     class OverlayPluginLogLines
     {
-        public OverlayPluginLogLines(TinyIoCContainer container)
+        public OverlayPluginLogLines(TinyIoCContainer container,string extraOpcodes=null)
         {
-            container.Register(new OverlayPluginLogLineConfig(container));
+            container.Register(new OverlayPluginLogLineConfig(container,extraOpcodes));
             container.Register(new LineMapEffect(container));
             container.Register(new LineFateControl(container));
             container.Register(new LineCEDirector(container));
@@ -52,20 +52,24 @@ namespace RainbowMage.OverlayPlugin.NetworkProcessors
         private int exceptionCount = 0;
         private const int maxExceptionsLogged = 3;
 
-        public OverlayPluginLogLineConfig(TinyIoCContainer container)
+        public OverlayPluginLogLineConfig(TinyIoCContainer container,string extraOpcodes=null)
         {
             logger = container.Resolve<ILogger>();
             repository = container.Resolve<FFXIVRepository>();
 
             try
             {
-                var assembly = Assembly.GetExecutingAssembly();
-                var resourceName = assembly.GetManifestResourceNames().Single(str => str.EndsWith("opcodes.jsonc"));
                 string jsonData;
-                using (var stream = assembly.GetManifestResourceStream(resourceName))
-                using (var reader = new StreamReader(stream))
+                if(extraOpcodes!=null) jsonData = extraOpcodes;
+                else
                 {
-                    jsonData = reader.ReadToEnd();
+                    var assembly = Assembly.GetExecutingAssembly();
+                    var resourceName = assembly.GetManifestResourceNames().Single(str => str.EndsWith("opcodes.jsonc"));
+                    using (var stream = assembly.GetManifestResourceStream(resourceName))
+                    using (var reader = new StreamReader(stream))
+                    {
+                        jsonData = reader.ReadToEnd();
+                    }
                 }
 
                 config = JsonConvert.DeserializeAnonymousType(jsonData, config);

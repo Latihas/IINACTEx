@@ -1,6 +1,8 @@
 ﻿using System.Diagnostics;
 using System.IO;
+using System.IO.Compression;
 using System.Numerics;
+using System.Runtime.Loader;
 using Dalamud.Bindings.ImGui;
 using Dalamud.Interface.ImGuiNotification;
 using Dalamud.Interface.Utility.Raii;
@@ -121,7 +123,7 @@ public static partial class LWindow
         ImGui.SetNextItemWidth(-1);
         ImGui.InputTextMultiline("代码", ref TestCode, 1145141);
         if (ImGui.Button("编译代码"))
-            Sbe = CSharpScriptCompiler.CompileScript(TestCode, [])
+            Sbe = CSharpScriptCompiler.CompileScript(TestCode)
                       ? "成功"
                       : "失败，详情见/xllog";
         ImGui.SameLine();
@@ -287,6 +289,7 @@ public static partial class LWindow
         DrawSettingsTrn();
         DrawSettingsPostnmz();
         DrawSettingsScripts();
+        DrawSettingsOpCodes();
     }
 
     internal static void DrawSettingsScripts()
@@ -320,12 +323,129 @@ public static partial class LWindow
                     if (ImGui.Button("启用"))
                     {
                         RealPlugin.LoadedScripts[i].Enabled = true;
-                        RealPlugin.Instance.cfg.PScriptsDisabled.RemoveAll(x=>x==i);
+                        RealPlugin.Instance.cfg.PScriptsDisabled.RemoveAll(x => x == i);
                     }
                 }
             }
         ]);
     }
+
+    internal static void DrawSettingsOpCodes()
+    {
+        using var tab = ImRaii.TabItem("OpCodes设置");
+        if (!tab) return;
+        ImGui.PushStyleColor(ImGuiCol.Text, Color.LRed);
+        ImGui.Text("警告: 该功能十分甚至九分危险，如果你不知道你在干什么请不要擅动。该功能未经充分验证。");
+        ImGui.PopStyleColor(1);
+        ImGui.Text("IINACTEx支持外部文件替换Opcode。");
+        ImGui.Text("在插件安装目录下如果存在opcodes.txt，则会在加载插件的时候替换掉解析插件的OpCode。");
+        ImGui.Text("在插件安装目录下如果存在opcodes.jsonc，则会在加载插件的时候替换掉Overlay插件的OpCode。");
+        ImGui.Separator();
+        ImGui.PushStyleColor(ImGuiCol.Text, Color.LPurple);
+        ImGui.Text("当前状态:");
+        ImGui.PopStyleColor(1);
+        if (Plugin.Instance.opcodestxtReplaced)
+        {
+            ImGui.PushStyleColor(ImGuiCol.Text, Color.LRed);
+            ImGui.Text("opcodes.txt已替换");
+            ImGui.PopStyleColor(1);
+            ImGui.SameLine();
+            if (Plugin.Instance.opcodestxtCanReplace)
+            {
+                if (ImGui.Button("删除opcodes.txt")) File.Delete(Plugin.Instance.opcodestxtPath);
+            }
+            else ImGui.Text("(文件缺失，将在下次加载恢复内置)");
+        }
+        else if (Plugin.Instance.opcodestxtCanReplace)
+        {
+            ImGui.PushStyleColor(ImGuiCol.Text, Color.LYellow);
+            ImGui.Text("opcodes.txt将在下次加载插件时替换");
+            ImGui.PopStyleColor(1);
+            ImGui.SameLine();
+            if (ImGui.Button("删除opcodes.txt")) File.Delete(Plugin.Instance.opcodestxtPath);
+        }
+        else ImGui.Text("opcodes.txt为内置版本");
+        if (Plugin.Instance.opcodesjsoncReplaced)
+        {
+            ImGui.PushStyleColor(ImGuiCol.Text, Color.LRed);
+            ImGui.Text("opcodes.jsonc已替换");
+            ImGui.PopStyleColor(1);
+            ImGui.SameLine();
+            if (Plugin.Instance.opcodesjsoncCanReplace)
+            {
+                if (ImGui.Button("删除opcodes.jsonc")) File.Delete(Plugin.Instance.opcodesjsoncPath);
+            }
+            else ImGui.Text("(文件缺失，将在下次加载恢复内置)");
+        }
+        else if (Plugin.Instance.opcodesjsoncCanReplace)
+        {
+            ImGui.PushStyleColor(ImGuiCol.Text, Color.LYellow);
+            ImGui.Text("opcodes.jsonc将在下次加载插件时替换");
+            ImGui.PopStyleColor(1);
+            ImGui.SameLine();
+            if (ImGui.Button("删除opcodes.jsonc")) File.Delete(Plugin.Instance.opcodesjsoncPath);
+        }
+        else ImGui.Text("opcodes.jsonc为内置版本");
+        ImGui.Separator();
+        ImGui.Text("这里可以从呆萌源获取两个文件");
+        if (FileDownloaderOpcodestxt == null)
+        {
+            if (ImGui.Button("自动下载生成opcodes.txt"))
+            {
+                var dp = Path.Combine(Plugin.Instance.PluginAssemblyDirectory, "chinese.zip");
+                FileDownloaderOpcodestxt = new FileDownloader("https://cdn.diemoe.net/files/ACT.DieMoe/Packs/FFXIV_ACT_Plugin/chinese.zip", dp, () =>
+                {
+                    FileDownloaderOpcodestxt = null;
+                    try
+                    {
+                        var exp = Path.Combine(Plugin.Instance.PluginAssemblyDirectory, "chinese");
+                        Plugin.UnzipWithoutPassword(dp, exp, true);
+                        var alc = new AssemblyLoadContext(null, isCollectible: true);
+                        var dllAssembly = alc.LoadFromAssemblyPath(Path.Combine(exp, "FFXIV_ACT_Plugin.dll"));
+                        var dllp = Path.Combine(exp, "machina.ffxiv.dll");
+                        using (var stream = dllAssembly.GetManifestResourceStream("costura.machina.ffxiv.dll.compressed")!)
+                        using (var destination = new FileStream(dllp, FileMode.Create))
+                        using (var deflateStream = new DeflateStream(stream, CompressionMode.Decompress))
+                            deflateStream.CopyTo(destination);
+                        dllAssembly = alc.LoadFromAssemblyPath(dllp);
+                        var outputPath = Path.Combine(Plugin.Instance.PluginAssemblyDirectory, "opcodes.txt");
+                        using (var resourceStream2 = dllAssembly.GetManifestResourceStream("Machina.FFXIV.Headers.Opcodes.Chinese.txt")!)
+                        using (var fileStream2 = new FileStream(outputPath, FileMode.Create, FileAccess.Write))
+                            resourceStream2.CopyTo(fileStream2);
+                    }
+                    catch (Exception e)
+                    {
+                        Plugin.Log.Error(e.ToString());
+                    }
+                });
+                FileDownloaderOpcodestxt.DownloadFileAsync();
+            }
+        }
+        else ImGui.Text("处理中");
+
+        ImGui.SameLine();
+        if (FileDownloaderOpcodesjsonc == null)
+        {
+            if (ImGui.Button("自动下载生成opcodes.jsonc"))
+            {
+                FileDownloaderOpcodesjsonc = new FileDownloader("https://assets.diemoe.net/OverlayPlugin/OverlayPlugin.Core/resources/opcodes.jsonc", Path.Combine(Plugin.Instance.PluginAssemblyDirectory, "opcodes.jsonc"),
+                                                                () => { FileDownloaderOpcodesjsonc = null; });
+                FileDownloaderOpcodesjsonc.DownloadFileAsync();
+            }
+        }
+        else ImGui.Text("处理中");
+    }
+
+    private static byte[] DecompressGzip(byte[] compressedData)
+    {
+        using var compressedStream = new MemoryStream(compressedData);
+        using var gzipStream = new GZipStream(compressedStream, CompressionMode.Decompress);
+        using var resultStream = new MemoryStream();
+        gzipStream.CopyTo(resultStream);
+        return resultStream.ToArray();
+    }
+
+    private static FileDownloader? FileDownloaderOpcodestxt, FileDownloaderOpcodesjsonc;
 
     private static void TScaler(SerializableDictionary<string, VariableScalar> data) =>
         NewTable(["名称", "值", "时间", "源"], data.ToArray(), [

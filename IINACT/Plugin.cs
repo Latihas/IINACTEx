@@ -97,7 +97,12 @@ public sealed class Plugin : IDalamudPlugin
     public string PluginAssemblyDirectory => PluginInterface.AssemblyLocation.Directory!.ToString();
     public string PluginConfigDirectory => PluginInterface.ConfigDirectory.ToString();
     public string PluginPScriptDirectory =>Path.Combine(PluginConfigDirectory,"PScript");
-
+    public bool opcodestxtReplaced = false;
+    public bool opcodestxtCanReplace => File.Exists(opcodestxtPath);
+    public string opcodestxtPath => Path.Combine(PluginAssemblyDirectory, "opcodes.txt");
+    public bool opcodesjsoncReplaced = false;
+    public bool opcodesjsoncCanReplace => File.Exists(opcodesjsoncPath);
+    public string opcodesjsoncPath => Path.Combine(PluginAssemblyDirectory, "opcodes.jsonc");
     public static void UnzipWithoutPassword(string zipFilePath, string extractDir, bool overwrite = false)
     {
         try
@@ -118,9 +123,11 @@ public sealed class Plugin : IDalamudPlugin
     {
         Instance = this;
         if (!Directory.Exists(PluginPScriptDirectory)) Directory.CreateDirectory(PluginPScriptDirectory);
+        opcodestxtReplaced = opcodestxtCanReplace;
         OpcodeManager.Instance.SetRegion(DataManager.Language.ToString() == "ChineseSimplified"
                                              ? GameRegion.Chinese
-                                             : GameRegion.Global);
+                                             : GameRegion.Global, opcodestxtCanReplace? File.ReadAllText(opcodestxtPath) : null);
+        
         var createZoneDownHookManager = Task.Run(()
                                                      => new ZoneDownHookManager(NotificationManager, GameInteropProvider));
         Version = Assembly.GetExecutingAssembly().GetName().Version!;
@@ -279,7 +286,8 @@ public sealed class Plugin : IDalamudPlugin
 
         Task.Run(() =>
         {
-            overlayPlugin.InitPlugin(PluginConfigDirectory);
+            opcodesjsoncReplaced = opcodesjsoncCanReplace;
+            overlayPlugin.InitPlugin(PluginConfigDirectory ,opcodesjsoncCanReplace? File.ReadAllText(opcodesjsoncPath) : null);
 
             var registry = container.Resolve<RainbowMage.OverlayPlugin.Registry>();
             MainWindow.OverlayPresets = registry.OverlayTemplates;

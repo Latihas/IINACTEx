@@ -57,7 +57,7 @@ namespace RainbowMage.OverlayPlugin
         /// プラグインが有効化されたときに呼び出されます。
         /// </summary>
         /// <param name="configPath"></param>
-        public void InitPlugin(string configPath)
+        public void InitPlugin(string configPath,string extraOpcodes=null)
         {
             try
             {
@@ -215,7 +215,7 @@ namespace RainbowMage.OverlayPlugin
                     Container.Register<IPartyMemory, PartyMemoryManager>();
                     Container.Register<IJobGaugeMemory, JobGaugeMemoryManager>();
 
-                    Container.Register(new OverlayPluginLogLines(Container));
+                    Container.Register(new OverlayPluginLogLines(Container,extraOpcodes));
                     
                     Status = @"初始化阶段2：附加组件";
                     LoadAddons();

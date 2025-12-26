@@ -43,14 +43,14 @@ public partial class LWindow
                         i => ImGui.TextWrapped(i.Message)
                     ], i => i.Level switch
                     {
-                        RealPlugin.DebugLevelEnum.None => White,
-                        RealPlugin.DebugLevelEnum.Error => Red,
-                        RealPlugin.DebugLevelEnum.Warning => Yellow,
-                        RealPlugin.DebugLevelEnum.Custom => Cyan,
-                        RealPlugin.DebugLevelEnum.Custom2 => Purple,
-                        RealPlugin.DebugLevelEnum.Info => Blue,
-                        RealPlugin.DebugLevelEnum.Verbose => LightGray,
-                        RealPlugin.DebugLevelEnum.Inherit => White,
+                        RealPlugin.DebugLevelEnum.None => TWhite,
+                        RealPlugin.DebugLevelEnum.Error => TRed,
+                        RealPlugin.DebugLevelEnum.Warning => TYellow,
+                        RealPlugin.DebugLevelEnum.Custom => TCyan,
+                        RealPlugin.DebugLevelEnum.Custom2 => TPurple,
+                        RealPlugin.DebugLevelEnum.Info => TBlue,
+                        RealPlugin.DebugLevelEnum.Verbose => TGray,
+                        RealPlugin.DebugLevelEnum.Inherit => TWhite,
                         _ => Black
                     }
                 );
@@ -121,8 +121,8 @@ public partial class LWindow
                     }
                 ], i =>
                 {
-                    if (regexChatLog.IsMatch(i)) return White;
-                    if (regexOverlay.IsMatch(i)) return Yellow;
+                    if (regexChatLog.IsMatch(i)) return TWhite;
+                    if (regexOverlay.IsMatch(i)) return TYellow;
                     return Black;
                 });
             }
