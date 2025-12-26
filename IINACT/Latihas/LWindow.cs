@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using System.IO;
 using System.Numerics;
 using Dalamud.Bindings.ImGui;
 using Dalamud.Interface.ImGuiNotification;
@@ -7,6 +8,7 @@ using Triggernometry;
 using Triggernometry.Core;
 using Triggernometry.Core.Serialization;
 using Triggernometry.Core.Variables;
+using Triggernometry.PScript;
 using Triggernometry.UI.CustomControls;
 using Triggernometry.Utilities;
 
@@ -33,12 +35,6 @@ public static partial class LWindow
         if (!tab) return;
         if (ImGui.Button("刷新触发器"))
         {
-            lock (RealPlugin.Instance.Triggers) RealPlugin.Instance.Triggers.Clear();
-            lock (RealPlugin.Instance.ActiveTextTriggers) RealPlugin.Instance.ActiveTextTriggers.Clear();
-            lock (RealPlugin.Instance.ActiveFFXIVNetworkTriggers) RealPlugin.Instance.ActiveFFXIVNetworkTriggers.Clear();
-            lock (RealPlugin.Instance.ActiveACTTriggers) RealPlugin.Instance.ActiveACTTriggers.Clear();
-            lock (RealPlugin.Instance.ActiveEndpointTriggers) RealPlugin.Instance.ActiveEndpointTriggers.Clear();
-            lock (RealPlugin.Instance.ActionQueue) RealPlugin.Instance.ActionQueue.Clear();
             UserInterface.BuildTriggerTreeFromConfiguration(null, null);
         }
         ImGui.SameLine();
@@ -298,6 +294,37 @@ public static partial class LWindow
         using var tab = ImRaii.TabItem("脚本设置");
         if (!tab) return;
         ImGui.Text("脚本一览(待开发)");
+        ImGui.SameLine();
+        if (ImGui.Button("打开脚本文件夹")) Start(Plugin.Instance.PluginPScriptDirectory);
+        var names = Directory.GetFiles(Plugin.Instance.PluginPScriptDirectory, "*.cs", SearchOption.TopDirectoryOnly).Select(Path.GetFileNameWithoutExtension).Cast<string>().ToArray();
+        NewTable(["名称", "状态", "操作"], names, [
+            i => ImGui.Text(i),
+            i => ImGui.Text(RealPlugin.LoadedScripts.TryGetValue(i, out var script) ? script.Enabled ? "已启用" : "已禁用" : "未载入"),
+            i =>
+            {
+                if (!RealPlugin.LoadedScripts.TryGetValue(i, out var value))
+                {
+                    if (ImGui.Button("载入"))
+                        ProxyPlugin.LoadPScript(Path.GetFileNameWithoutExtension(i));
+                }
+                else if (value.Enabled)
+                {
+                    if (ImGui.Button("禁用"))
+                    {
+                        RealPlugin.LoadedScripts[i].Enabled = false;
+                        RealPlugin.Instance.cfg.PScriptsDisabled.Add(i);
+                    }
+                }
+                else
+                {
+                    if (ImGui.Button("启用"))
+                    {
+                        RealPlugin.LoadedScripts[i].Enabled = true;
+                        RealPlugin.Instance.cfg.PScriptsDisabled.RemoveAll(x=>x==i);
+                    }
+                }
+            }
+        ]);
     }
 
     private static void TScaler(SerializableDictionary<string, VariableScalar> data) =>

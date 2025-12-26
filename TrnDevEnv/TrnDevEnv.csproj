@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
     <PropertyGroup>
-        <OutputType>Exe</OutputType>
+        <OutputType>library</OutputType>
     </PropertyGroup>
     <ItemGroup>
         <ProjectReference Include="../IINACT/IINACT.csproj"/>

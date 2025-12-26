@@ -94,8 +94,9 @@ public sealed class Plugin : IDalamudPlugin
     internal static EdgeTTSWindow EdgeTTSWindow = null!;
     public static Plugin Instance;
     public static dynamic? LatihasTts;
-    public static string PluginAssemblyDirectory => PluginInterface.AssemblyLocation.Directory!.ToString();
-    public static string PluginConfigDirectory => PluginInterface.ConfigDirectory.ToString();
+    public string PluginAssemblyDirectory => PluginInterface.AssemblyLocation.Directory!.ToString();
+    public string PluginConfigDirectory => PluginInterface.ConfigDirectory.ToString();
+    public string PluginPScriptDirectory =>Path.Combine(PluginConfigDirectory,"PScript");
 
     public static void UnzipWithoutPassword(string zipFilePath, string extractDir, bool overwrite = false)
     {
@@ -116,6 +117,7 @@ public sealed class Plugin : IDalamudPlugin
     public Plugin()
     {
         Instance = this;
+        if (!Directory.Exists(PluginPScriptDirectory)) Directory.CreateDirectory(PluginPScriptDirectory);
         OpcodeManager.Instance.SetRegion(DataManager.Language.ToString() == "ChineseSimplified"
                                              ? GameRegion.Chinese
                                              : GameRegion.Global);
@@ -155,8 +157,7 @@ public sealed class Plugin : IDalamudPlugin
         {
             Log.Warning(ex.ToString());
         }
-
-        TextToSpeechProvider = new TextToSpeechProvider(Log, PluginInterface.ConfigFile.FullName);
+        TextToSpeechProvider = new TextToSpeechProvider(Log,PluginConfigDirectory);
         TextToSpeechProvider.SetUseEdgeTTS(Configuration.UseEdgeTTS);
         TextToSpeechProvider.SetUseLatihasTTS(Configuration.UseLatihasTts);
         EdgeTTSWindow = new EdgeTTSWindow(TextToSpeechProvider.GetEdgeTTSManager()!);
@@ -168,7 +169,7 @@ public sealed class Plugin : IDalamudPlugin
         try
         {
             var info = PluginInterface.GetType().Assembly.GetType("Dalamud.Service`1", true).MakeGenericType(PluginInterface.GetType().Assembly.GetType("Dalamud.Dalamud", true)).GetMethod("Get")
-                                      .Invoke(null, BindingFlags.Default, null, Array.Empty<object>(), null);
+                                      .Invoke(null, BindingFlags.Default, null, [], null);
             DalamudStartInfo = info!.GetType().GetField("StartInfo", AllFlags)?.GetValue(info)
                                ?? info.GetType().GetProperty("StartInfo", AllFlags)?.GetValue(info);
             Log.Info(DalamudStartInfo?.ToString());
@@ -182,7 +183,7 @@ public sealed class Plugin : IDalamudPlugin
         Advanced_Combat_Tracker.ActGlobals.oFormActMain.PostNamazuPlugin = PostNamazuPlugin = new PostNamazu.PostNamazu();
         PostNamazuPlugin.InitPlugin(PluginInterface, Log, SigScanner);
         IpcProviders = new IpcProviders(PluginInterface);
-        LWindow.WindowPrefix = "IINACT ";
+        LWindow.WindowPrefix = "IINACTEx ";
         WindowSystem.AddWindow(MainWindow = new MainWindow());
         WindowSystem.AddWindow(TriggerWindow = new LWindow.TriggerWindow());
         WindowSystem.AddWindow(FolderWindow = new LWindow.FolderWindow());

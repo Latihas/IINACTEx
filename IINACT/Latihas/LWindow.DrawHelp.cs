@@ -108,10 +108,10 @@ public static partial class LWindow
         using var tab = ImRaii.TabItem("测试");
         if (!tab) return;
         if (ImGui.Button("打开插件目录"))
-            Start(Plugin.PluginAssemblyDirectory);
+            Start(Plugin.Instance.PluginAssemblyDirectory);
         ImGui.SameLine();
         if (ImGui.Button("打开配置目录"))
-            Start(Plugin.PluginConfigDirectory);
+            Start(Plugin.Instance.PluginConfigDirectory);
         ImGui.SameLine();
         if (ImGui.Button("打开Log目录"))
             Start(Plugin.Configuration.LogFilePath);

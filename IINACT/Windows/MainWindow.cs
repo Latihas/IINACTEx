@@ -104,7 +104,7 @@ public class MainWindow : Window, IDisposable
         ImGui.Text("cactbot.zip可在");
         ImGui.SameLine();
         const string cactboturl = "https://raw.githubusercontent.com/Latihas/dalamud-plugins/main/cactbot.zip";
-        var cactbotDir = Path.Combine(Plugin.PluginConfigDirectory, "cactbot");
+        var cactbotDir = Path.Combine(Plugin.Instance.PluginConfigDirectory, "cactbot");
         if (ImGui.Button(cactboturl)) LWindow.Start(cactboturl);
         ImGui.SameLine();
         ImGui.Text("下载");
@@ -122,7 +122,7 @@ public class MainWindow : Window, IDisposable
             }
             else
             {
-                var zipPath = Path.Combine(Plugin.PluginConfigDirectory, "cactbot.zip");
+                var zipPath = Path.Combine(Plugin.Instance.PluginConfigDirectory, "cactbot.zip");
                 FileDownloaderCactbot = new FileDownloader(cactboturl, zipPath, () =>
                 {
                     FileDownloaderCactbot = null;
@@ -141,7 +141,7 @@ public class MainWindow : Window, IDisposable
         ImGui.Text("会强制覆盖旧版，但是受网络影响较大，实在不行只能手动下载。");
         ImGui.Text("手动下载完成后放在IINACTEx插件的安装目录下，可以选择手动解压，也可以在插件下次加载时自动解压。解压后，即可打开资源文件夹。");
 
-        if (ImGui.Button("打开资源文件夹")) LWindow.Start(Plugin.PluginConfigDirectory);
+        if (ImGui.Button("打开资源文件夹")) LWindow.Start(Plugin.Instance.PluginConfigDirectory);
         ImGui.Text("更多网页可见cactbot文件夹。以下是开发者喜欢用的网址，点击复制，贴进bw即可:");
         foreach (var url in new[]
                  {

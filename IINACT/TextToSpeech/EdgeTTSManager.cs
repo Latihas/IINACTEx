@@ -22,7 +22,7 @@ public class EdgeTTSManager
         try
         {
             var assembly = typeof(EdgeTTSManager).Assembly;
-            using var stream = assembly.GetManifestResourceStream("IINACT.Resources.voices.json");
+            using var stream = assembly.GetManifestResourceStream("IINACTEx.Resources.voices.json");
             if (stream == null)
             {
                 _log.Error("EdgeTTSManager: voices.json embedded resource not found");

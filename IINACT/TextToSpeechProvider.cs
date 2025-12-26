@@ -14,7 +14,7 @@ internal class TextToSpeechProvider
 {
     private readonly object speechLock = new();
     private readonly HttpClient client = new();
-    private readonly SpeechSynthesizer? speechSynthesizer;
+    private SpeechSynthesizer? speechSynthesizer;
     private readonly EdgeTTSManager? edgeTTSManager;
     private bool useEdgeTTS;
     private bool useLatihasTTS;
@@ -31,21 +31,6 @@ internal class TextToSpeechProvider
         {
             _log.Warning(ex, "Failed to initialize EdgeTTS engine");
         }
-
-        if (!Dalamud.Utility.Util.IsWine())
-        {
-            try
-            {
-                speechSynthesizer = new SpeechSynthesizer();
-                speechSynthesizer?.SetOutputToDefaultAudioDevice();
-            }
-            catch (Exception ex)
-            {
-                _log.Warning(ex, "Failed to initialize SAPI TTS engine");
-                speechSynthesizer = null;
-            }
-        }
-
         Advanced_Combat_Tracker.ActGlobals.oFormActMain.TextToSpeech += Speak;
     }
 
@@ -103,6 +88,19 @@ internal class TextToSpeechProvider
 
         Task.Run(() =>
         {
+            if (speechSynthesizer == null && !Dalamud.Utility.Util.IsWine())
+            {
+                try
+                {
+                    speechSynthesizer = new SpeechSynthesizer();
+                    speechSynthesizer?.SetOutputToDefaultAudioDevice();
+                }
+                catch (Exception ex)
+                {
+                    _log.Warning(ex, "Failed to initialize SAPI TTS engine");
+                    speechSynthesizer = null;
+                }
+            }
             try
             {
                 if (speechSynthesizer == null)
