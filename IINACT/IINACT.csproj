@@ -5,6 +5,7 @@
         <Version>7.4.0.3</Version>
         <Description>A parsing plugin.</Description>
         <AssemblyName>IINACTEx</AssemblyName>
+        <OutputPath>bin/</OutputPath>
         <Copyright></Copyright>
         <PackageProjectUrl>https://github.com/marzent/IINACT</PackageProjectUrl>
     </PropertyGroup>
