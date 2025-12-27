@@ -23,8 +23,8 @@ public static partial class LWindow
         ImGui.Separator();
         ImGui.Text("TODO");
         ImGui.Text("模拟原版插件Panel");
-        ImGui.Text("修复伤害统计问题");
         ImGui.Text("触发器生成器");
+        ImGui.Text("Trn日志写入文件");
         ImGui.Separator();
         ImGui.Text("重要提醒！！！请一定要先看完介绍再使用，本插件仍然不是很稳定，有炸游戏风险");
         ImGui.Text("重要提醒！！！请一定要先看完介绍再使用，本插件仍然不是很稳定，有炸游戏风险");

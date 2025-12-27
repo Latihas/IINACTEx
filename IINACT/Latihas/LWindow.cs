@@ -225,7 +225,7 @@ public static partial class LWindow
         using var tab = ImRaii.TabItem("Trn设置");
         if (!tab) return;
         var EnableModuleBase = RealPlugin.Instance.cfg.EnableModuleBase;
-        if (ImGui.Checkbox("启用ModuleBase(极有可能炸游戏的功能，如绘图等，需要重新加载插件生效)", ref EnableModuleBase))
+        if (ImGui.Checkbox("启用ModuleBase(极有可能炸游戏的功能，如绘图等)", ref EnableModuleBase))
             RealPlugin.Instance.cfg.EnableModuleBase = EnableModuleBase;
     }
 

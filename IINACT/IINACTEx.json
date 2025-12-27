@@ -2,7 +2,7 @@
     "Author": "Usagi, Latihas",
     "Name": "IINACTEx",
     "Punchline": "一个解析插件",
-    "AssemblyVersion": "7.4.0.17",
+    "AssemblyVersion": "7.4.0.19",
     "RepoUrl": "https://github.com/Latihas/IINACTEx",
     "Description": "该插件会在一个类ACT的环境下运行FFXIV_ACT_Plugin与大量修改的Overlay Plugin以适配现代.NET。与此同时，也添加了大量修改的Triggernometry与Postnamazu。包括类ACT、Triggernometry、Postnamazu在内，这些并非完整的代码移植，并且仍在开发完善中，可能缺少部分原版的函数，开发时请注意。",
     "InternalName": "IINACTEx",
@@ -22,5 +22,5 @@
     "LoadSync": false,
     "CanUnloadAsync": false,
     "LoadPriority": 0,
-    "ChangeLog": "伤害统计的值可能错误，上游IINACT CN也有这个问题，请暂时不要使用IINACT进行出警或上传logs等涉及伤害数值的操作。\n修复了潜在的Overlay不能正确初始化的问题。"
+    "ChangeLog": "修复了伤害统计错误的问题。"
 }

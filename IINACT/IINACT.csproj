@@ -26,7 +26,7 @@
         </PackageReference>
         <PackageReference Include="NAudio" Version="2.2.1" />
         <PackageReference Include="System.Speech" Version="10.0.1" />
-        <PackageReference Include="Unscrambler.XIV" Version="7.40.2" />
+<!--        <PackageReference Include="Unscrambler.XIV" Version="7.40.2" />-->
         <Reference Include="FFXIVClientStructs">
             <HintPath>$(DalamudLibPath)FFXIVClientStructs.dll</HintPath>
             <Private>false</Private>
@@ -96,6 +96,9 @@
         </Reference>
         <Reference Include="FFXIV_ACT_Plugin.Resource">
             <HintPath>..\external_dependencies\SDK\FFXIV_ACT_Plugin.Resource.dll</HintPath>
+        </Reference>
+        <Reference Include="Unscrambler.XIV">
+            <HintPath>..\Unscrambler.dll</HintPath>
         </Reference>
     </ItemGroup>
     <ItemGroup>
