@@ -4,9 +4,7 @@ using System.IO;
 using System.IO.Compression;
 using System.Net.Http;
 using System.Reflection;
-using System.Runtime.InteropServices;
 using System.Runtime.Loader;
-using Dalamud.Game;
 using Dalamud.Game.Command;
 using Dalamud.Interface.ImGuiFileDialog;
 using Dalamud.Interface.Windowing;
@@ -23,14 +21,13 @@ using Machina.FFXIV.Headers.Opcodes;
 using Triggernometry;
 using Triggernometry.Core;
 
-
 namespace IINACT;
 
 // ReSharper disable once ClassNeverInstantiated.Global
 [SuppressMessage("ReSharper", "UnusedAutoPropertyAccessor.Local")]
 public sealed class Plugin : IDalamudPlugin
 {
-    public string Name => "IINACT";
+    public string Name => "IINACTEx";
     public Version Version { get; }
 
     private const string MainWindowCommandName = "/iinact";
@@ -62,8 +59,7 @@ public sealed class Plugin : IDalamudPlugin
     [PluginService]
     public static IGameGui GameGui { get; private set; }
     [PluginService]
-    public static ITargetManager TargetManager  { get; private set; }
-    // public Configuration GetConfiguration => Configuration;
+    public static ITargetManager TargetManager { get; private set; }
     internal static Configuration Configuration { get; private set; }
     internal static TextToSpeechProvider TextToSpeechProvider { get; private set; }
     private static MainWindow MainWindow = null!;
@@ -96,13 +92,14 @@ public sealed class Plugin : IDalamudPlugin
     public static dynamic? LatihasTts;
     public string PluginAssemblyDirectory => PluginInterface.AssemblyLocation.Directory!.ToString();
     public string PluginConfigDirectory => PluginInterface.ConfigDirectory.ToString();
-    public string PluginPScriptDirectory =>Path.Combine(PluginConfigDirectory,"PScript");
+    public string PluginPScriptDirectory => Path.Combine(PluginConfigDirectory, "PScript");
     public bool opcodestxtReplaced = false;
     public bool opcodestxtCanReplace => File.Exists(opcodestxtPath);
     public string opcodestxtPath => Path.Combine(PluginAssemblyDirectory, "opcodes.txt");
     public bool opcodesjsoncReplaced = false;
     public bool opcodesjsoncCanReplace => File.Exists(opcodesjsoncPath);
     public string opcodesjsoncPath => Path.Combine(PluginAssemblyDirectory, "opcodes.jsonc");
+
     public static void UnzipWithoutPassword(string zipFilePath, string extractDir, bool overwrite = false)
     {
         try
@@ -121,13 +118,14 @@ public sealed class Plugin : IDalamudPlugin
 
     public Plugin()
     {
+        Log.Warning("IINACTEx Start Init...");
         Instance = this;
         if (!Directory.Exists(PluginPScriptDirectory)) Directory.CreateDirectory(PluginPScriptDirectory);
         opcodestxtReplaced = opcodestxtCanReplace;
         OpcodeManager.Instance.SetRegion(DataManager.Language.ToString() == "ChineseSimplified"
                                              ? GameRegion.Chinese
-                                             : GameRegion.Global, opcodestxtCanReplace? File.ReadAllText(opcodestxtPath) : null);
-        
+                                             : GameRegion.Global, opcodestxtCanReplace ? File.ReadAllText(opcodestxtPath) : null);
+
         var createZoneDownHookManager = Task.Run(()
                                                      => new ZoneDownHookManager(NotificationManager, GameInteropProvider));
         Version = Assembly.GetExecutingAssembly().GetName().Version!;
@@ -137,6 +135,7 @@ public sealed class Plugin : IDalamudPlugin
             new FetchDependencies.FetchDependencies(Version, PluginAssemblyDirectory,
                                                     DataManager.Language.ToString() == "ChineseSimplified", HttpClient);
         fetchDeps.GetFfxivPlugin();
+        Log.Warning("Depedencies Fetched");
         PluginLogTraceListener = new PluginLogTraceListener();
         Trace.Listeners.Add(PluginLogTraceListener);
         Advanced_Combat_Tracker.ActGlobals.Init();
@@ -164,11 +163,11 @@ public sealed class Plugin : IDalamudPlugin
         {
             Log.Warning(ex.ToString());
         }
-        TextToSpeechProvider = new TextToSpeechProvider(Log,PluginConfigDirectory);
+        TextToSpeechProvider = new TextToSpeechProvider(Log, PluginConfigDirectory);
         TextToSpeechProvider.SetUseEdgeTTS(Configuration.UseEdgeTTS);
         TextToSpeechProvider.SetUseLatihasTTS(Configuration.UseLatihasTts);
-        EdgeTTSWindow = new EdgeTTSWindow(TextToSpeechProvider.GetEdgeTTSManager()!);
-        WindowSystem.AddWindow(EdgeTTSWindow);
+        Log.Warning("TTS Inited");
+        WindowSystem.AddWindow(EdgeTTSWindow = new EdgeTTSWindow(TextToSpeechProvider.GetEdgeTTSManager()!));
         Advanced_Combat_Tracker.ActGlobals.oFormActMain.LogFilePath = Configuration.LogFilePath;
         FfxivActPluginWrapper = new FfxivActPluginWrapper(Configuration, DataManager.Language, ChatGui, Framework, Condition);
         OverlayPlugin = InitOverlayPluginTrn();
@@ -187,8 +186,10 @@ public sealed class Plugin : IDalamudPlugin
         }
         Advanced_Combat_Tracker.ActGlobals.oFormActMain.TriggernometryPlugin = TriggernometryProxyPlugin = new ProxyPlugin();
         TriggernometryProxyPlugin.InitPlugin(this, PluginInterface, Log, ClientState, Framework, GameInteropProvider);
+        Log.Warning("Triggernometry Inited");
         Advanced_Combat_Tracker.ActGlobals.oFormActMain.PostNamazuPlugin = PostNamazuPlugin = new PostNamazu.PostNamazu();
         PostNamazuPlugin.InitPlugin(PluginInterface, Log, SigScanner);
+        Log.Warning("PostNamazu Inited");
         IpcProviders = new IpcProviders(PluginInterface);
         LWindow.WindowPrefix = "IINACTEx ";
         WindowSystem.AddWindow(MainWindow = new MainWindow());
@@ -231,6 +232,7 @@ public sealed class Plugin : IDalamudPlugin
         if (Configuration.ShowWindowOnInit) MainWindow.Toggle();
         if (Configuration.ShowOverlayOnInit) OverlayWindow.Toggle();
         RealPlugin.Instance.InitAura();
+        Log.Warning("IINACTEx Inited");
     }
 
     public const BindingFlags AllFlags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static;
@@ -287,7 +289,7 @@ public sealed class Plugin : IDalamudPlugin
         Task.Run(() =>
         {
             opcodesjsoncReplaced = opcodesjsoncCanReplace;
-            overlayPlugin.InitPlugin(PluginConfigDirectory ,opcodesjsoncCanReplace? File.ReadAllText(opcodesjsoncPath) : null);
+            overlayPlugin.InitPlugin(PluginConfigDirectory, opcodesjsoncCanReplace ? File.ReadAllText(opcodesjsoncPath) : null);
 
             var registry = container.Resolve<RainbowMage.OverlayPlugin.Registry>();
             MainWindow.OverlayPresets = registry.OverlayTemplates;

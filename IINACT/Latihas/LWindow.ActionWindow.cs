@@ -1,7 +1,6 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using Dalamud.Interface.Windowing;
 using Dalamud.Bindings.ImGui;
-using Triggernometry;
 using Triggernometry.Core;
 using Triggernometry.Localization;
 using static Triggernometry.Core.ActionOld;

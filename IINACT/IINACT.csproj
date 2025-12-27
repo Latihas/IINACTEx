@@ -23,8 +23,8 @@
           <PrivateAssets>all</PrivateAssets>
           <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="System.Speech" Version="10.0.1" />
         <PackageReference Include="NAudio" Version="2.2.1" />
+        <PackageReference Include="System.Speech" Version="10.0.1" />
         <PackageReference Include="Unscrambler.XIV" Version="7.40.2" />
         <Reference Include="FFXIVClientStructs">
             <HintPath>$(DalamudLibPath)FFXIVClientStructs.dll</HintPath>

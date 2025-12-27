@@ -35,13 +35,6 @@ public class Configuration : IPluginConfiguration
     public bool UseLatihasTts { get; set; } = true;
     public bool ShowWindowOnInit { get; set; } = true;
     public bool ShowOverlayOnInit { get; set; } = true;
-    // public bool PostNamazuAutoStart { get; set; }
-    // public string MyNamedCallbackPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), "MyNamedCallback");
-    // public Dictionary<string,NamedCallbackInfo>MyNamedCallbackInfo  = new();
-    public class NamedCallbackInfo {
-        public bool Enabled;
-        public bool Loaded;
-    }
 
     public string LogFilePath
     {

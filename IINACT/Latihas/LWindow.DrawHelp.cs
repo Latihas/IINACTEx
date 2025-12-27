@@ -1,6 +1,5 @@
 ﻿using Dalamud.Bindings.ImGui;
 using Dalamud.Interface.Utility.Raii;
-using Dalamud.Utility;
 using Triggernometry;
 using Triggernometry.Core;
 using Triggernometry.Expressions.Tests;

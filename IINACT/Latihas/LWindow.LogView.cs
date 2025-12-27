@@ -1,16 +1,12 @@
-﻿using System.Collections;
-using System.Diagnostics;
-using System.IO;
+﻿using System.IO;
 using System.Text.RegularExpressions;
 using Dalamud.Bindings.ImGui;
 using Dalamud.Interface.ImGuiFileDialog;
 using Dalamud.Interface.ImGuiNotification;
 using Dalamud.Interface.Windowing;
-using SharpDX.Direct2D1;
 using Triggernometry.Core;
 using WebSocketSharp;
 using static IINACT.Latihas.Color;
-using FileDialog = Dalamud.Interface.ImGuiFileDialog.FileDialog;
 
 namespace IINACT.Latihas;
 

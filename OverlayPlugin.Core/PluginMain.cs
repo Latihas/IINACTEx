@@ -27,7 +27,7 @@ namespace RainbowMage.OverlayPlugin
 {
     public class PluginMain
     {
-        public readonly TinyIoCContainer Container;
+        public readonly TinyIoCContainer _container;
         private ILogger _logger;
         public string Status { get; private set; }
 
@@ -42,7 +42,7 @@ namespace RainbowMage.OverlayPlugin
 
         public PluginMain(string pluginDirectory, ILogger logger, TinyIoCContainer container)
         {
-            Container = container;
+            _container = container;
             PluginDirectory = pluginDirectory;
             _logger = logger;
 
@@ -50,7 +50,7 @@ namespace RainbowMage.OverlayPlugin
             _configSaveTimer.Interval = 300000; // 5 minutes
             _configSaveTimer.Tick += (o, e) => SaveConfig();
 
-            Container.Register(this);
+            _container.Register(this);
         }
 
         /// <summary>
@@ -85,10 +85,10 @@ namespace RainbowMage.OverlayPlugin
                 FFXIVExportVariables.Init();
 
                 // 1.b Stuff with state
-                Container.Register(new NativeMethods(Container));
-                Container.Register(new EventDispatcher(Container));
-                Container.Register(new Registry(Container));
-                Container.Register(new KeyboardHook(Container));
+                _container.Register(new NativeMethods(_container));
+                _container.Register(new EventDispatcher(_container));
+                _container.Register(new Registry(_container));
+                _container.Register(new KeyboardHook(_container));
 
                 Status = @"初始化阶段1：配置";
                 if (!LoadConfig())
@@ -106,7 +106,7 @@ namespace RainbowMage.OverlayPlugin
                 SaveConfig();
 
                 Status = @"初始化阶段1：WebSocket服务";
-                Container.Register(new ServerController(Container));
+                _container.Register(new ServerController(_container));
 
 #if DEBUG
                 _logger.Log(LogLevel.Debug, "Component init and config load took {0}s.", watch.Elapsed.TotalSeconds);
@@ -174,7 +174,7 @@ namespace RainbowMage.OverlayPlugin
                     }
 
                     var overlayTemplates = JsonConvert.DeserializeObject<OverlayTemplateConfig>(overlayTemplateData);
-                    var registry = Container.Resolve<Registry>();
+                    var registry = _container.Resolve<Registry>();
                     foreach (var pair in overlayTemplates.Overlays)
                     {
                         registry.RegisterOverlayPreset2(pair);
@@ -194,28 +194,28 @@ namespace RainbowMage.OverlayPlugin
                     // Initialize the parser in the second phase since it needs the FFXIV plugin.
                     // If OverlayPlugin is placed above the FFXIV plugin, it won't be available in the first
                     // phase but it'll be loaded by the time we enter the second phase.
-                    Container.Register(new FFXIVRepository(Container));
-                    Container.Register(new NetworkParser(Container));
-                    Container.Register(new TriggIntegration(Container));
-                    Container.Register(new FFXIVCustomLogLines(Container));
+                    _container.Register(new FFXIVRepository(_container));
+                    _container.Register(new NetworkParser(_container));
+                    _container.Register(new TriggIntegration(_container));
+                    _container.Register(new FFXIVCustomLogLines(_container));
 
                     // Register FFXIV memory reading subcomponents.
                     // Must be done before loading addons.
-                    Container.Register(new FFXIVMemory(Container));
+                    _container.Register(new FFXIVMemory(_container));
 
                     // These are registered to be lazy-loaded. Use interface to force TinyIoC to use singleton pattern.
-                    Container.Register<ICombatantMemory, CombatantMemoryManager>();
-                    Container.Register<ITargetMemory, TargetMemoryManager>();
-                    Container.Register<IContentFinderSettingsMemory, ContentFinderSettingsMemoryManager>();
-                    Container.Register<IAggroMemory, AggroMemoryManager>();
-                    Container.Register<IEnmityMemory, EnmityMemoryManager>();
-                    Container.Register<IEnmityHudMemory, EnmityHudMemoryManager>();
-                    Container.Register<IInCombatMemory, InCombatMemoryManager>();
-                    Container.Register<IAtkStageMemory, AtkStageMemoryManager>();
-                    Container.Register<IPartyMemory, PartyMemoryManager>();
-                    Container.Register<IJobGaugeMemory, JobGaugeMemoryManager>();
+                    _container.Register<ICombatantMemory, CombatantMemoryManager>();
+                    _container.Register<ITargetMemory, TargetMemoryManager>();
+                    _container.Register<IContentFinderSettingsMemory, ContentFinderSettingsMemoryManager>();
+                    _container.Register<IAggroMemory, AggroMemoryManager>();
+                    _container.Register<IEnmityMemory, EnmityMemoryManager>();
+                    _container.Register<IEnmityHudMemory, EnmityHudMemoryManager>();
+                    _container.Register<IInCombatMemory, InCombatMemoryManager>();
+                    _container.Register<IAtkStageMemory, AtkStageMemoryManager>();
+                    _container.Register<IPartyMemory, PartyMemoryManager>();
+                    _container.Register<IJobGaugeMemory, JobGaugeMemoryManager>();
 
-                    Container.Register(new OverlayPluginLogLines(Container,extraOpcodes));
+                    _container.Register(new OverlayPluginLogLines(_container,extraOpcodes));
                     
                     Status = @"初始化阶段2：附加组件";
                     LoadAddons();
@@ -230,14 +230,14 @@ namespace RainbowMage.OverlayPlugin
 
                         Status = @"初始化阶段2：Dalamud IPC";
                         
-                        Container.Register(new IpcHandlerController(Container));
+                        _container.Register(new IpcHandlerController(_container));
 
                         // WSServer has to start after the LoadAddons() call because clients can connect immediately
                         // after it's initialized and that requires the event sources to be initialized.
                         if (Config.WSServerRunning)
                         {
                             Status = @"初始化阶段2：WebSocket 服务";
-                            Container.Resolve<ServerController>().Start();
+                            _container.Resolve<ServerController>().Start();
                         }
 
                         Status = @"初始化阶段2：保存计时器";
@@ -283,7 +283,7 @@ namespace RainbowMage.OverlayPlugin
                 parameters["config"] = overlayConfig;
                 parameters["name"] = overlayConfig.Name;
 
-                var overlay = (IOverlay)Container.Resolve(overlayConfig.OverlayType, parameters);
+                var overlay = (IOverlay)_container.Resolve(overlayConfig.OverlayType, parameters);
                 if (overlay != null)
                 {
                     RegisterOverlay(overlay);
@@ -338,7 +338,7 @@ namespace RainbowMage.OverlayPlugin
             
             try
             {
-                Container.Resolve<LineCombatant>().Dispose();
+                _container.Resolve<LineCombatant>().Dispose();
             }
             catch (Exception ex)
             {
@@ -347,7 +347,7 @@ namespace RainbowMage.OverlayPlugin
 
             try
             {
-                var registry = Container.Resolve<Registry>();
+                var registry = _container.Resolve<Registry>();
                 foreach (var source in registry.EventSources)
                 {
                     source.Stop();
@@ -361,7 +361,7 @@ namespace RainbowMage.OverlayPlugin
 
             try
             {
-                Container.Resolve<ServerController>().Stop();
+                _container.Resolve<ServerController>().Stop();
             }
             catch (Exception ex)
             {
@@ -370,7 +370,7 @@ namespace RainbowMage.OverlayPlugin
             
             try
             {
-                Container.Resolve<IpcHandlerController>().Dispose();
+                _container.Resolve<IpcHandlerController>().Dispose();
             }
             catch (Exception ex)
             {
@@ -385,18 +385,18 @@ namespace RainbowMage.OverlayPlugin
         {
             try
             {
-                var registry = Container.Resolve<Registry>();
-                Container.Register(BuiltinEventConfig.LoadConfig(Config));
+                var registry = _container.Resolve<Registry>();
+                _container.Register(BuiltinEventConfig.LoadConfig(Config));
 
                 // Make sure the event sources are ready before we load any overlays.
-                registry.StartEventSource(new MiniParseEventSource(Container));
-                registry.StartEventSource(new FFXIVOptionalEventSource(Container));
-                registry.StartEventSource(new FFXIVRequiredEventSource(Container));
-                registry.StartEventSource(new EnmityEventSource(Container));
-                registry.StartEventSource(new FFXIVClientStructsEventSource(Container));
+                registry.StartEventSource(new MiniParseEventSource(_container));
+                registry.StartEventSource(new FFXIVOptionalEventSource(_container));
+                registry.StartEventSource(new FFXIVRequiredEventSource(_container));
+                registry.StartEventSource(new EnmityEventSource(_container));
+                registry.StartEventSource(new FFXIVClientStructsEventSource(_container));
 
                 _logger.Log(LogLevel.Info, "LoadAddons: Enabling builtin Cactbot event source.");
-                registry.StartEventSource(new CactbotEventSource(Container));
+                registry.StartEventSource(new CactbotEventSource(_container));
 
                 registry.StartEventSources();
             }
@@ -413,7 +413,7 @@ namespace RainbowMage.OverlayPlugin
 
             try
             {
-                Config = new PluginConfig(GetConfigPath(), Container);
+                Config = new PluginConfig(GetConfigPath(), _container);
             }
             catch (Exception e)
             {
@@ -422,8 +422,8 @@ namespace RainbowMage.OverlayPlugin
                 return false;
             }
 
-            Container.Register(Config);
-            Container.Register<IPluginConfig>(Config);
+            _container.Register(Config);
+            _container.Register<IPluginConfig>(Config);
             return true;
         }
 
@@ -432,7 +432,7 @@ namespace RainbowMage.OverlayPlugin
         /// </summary>
         private void SaveConfig(bool force = false)
         {
-            if (!Container.TryResolve(out Registry registry)) return;
+            if (!_container.TryResolve(out Registry registry)) return;
             if (Config == null || Overlays == null || registry.EventSources == null) return;
 
             try
@@ -448,7 +448,7 @@ namespace RainbowMage.OverlayPlugin
                         es.SaveConfig(Config);
                 }
 
-                Container.Resolve<BuiltinEventConfig>().SaveConfig(Config);
+                _container.Resolve<BuiltinEventConfig>().SaveConfig(Config);
                 Config.SaveJson(force);
             }
             catch (Exception e)

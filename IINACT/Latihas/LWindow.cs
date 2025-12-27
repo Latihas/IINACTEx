@@ -10,9 +10,7 @@ using Triggernometry;
 using Triggernometry.Core;
 using Triggernometry.Core.Serialization;
 using Triggernometry.Core.Variables;
-using Triggernometry.PScript;
 using Triggernometry.UI.CustomControls;
-using Triggernometry.Utilities;
 
 namespace IINACT.Latihas;
 
