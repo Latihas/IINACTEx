@@ -39,7 +39,7 @@ Plugin以适配现代.NET。与此同时，也添加了大量修改的Triggernom
 
 IINACTEx也有内置一个原生的伤害统计悬浮窗，输入/iinactoverlay可打开。提供最基础的统计功能:
 
-![](./pic/overlay.jpg)
+![](pic/overlay.jpg)
 
 # TTS/Cactbot
 
@@ -129,6 +129,8 @@ Triggernometry的绝大部分Form或Control因兼容性被移除，可能误伤�
 4. [小贴士] 由于客户端结构相似，在示例版本中，所有TableOffset都满足: 国际服-CN=(0x21EF370-0x21EC900)=0x2A70，所以理论上你找到第一个偏差之后，其余的只要在国际服基础上-0x2A70就可以了
 5. [可选] 其实到这里就基本可以结束了，如果想要更精确一些，可以修改TableSize。只需要右键点击dword_BBBBBBBBB，点击Array，就可以看到Array Size了。不过一般不需要改，因为客户端结构相似。
 6. 然后就是编译了。在这之前，请确保ConstantsXX.cs已被正确修改。首先构建Unscrambler.DataGenerator，然后运行的时候需要两个参数(游戏路径，生成路径)，cd到编译后的目录，执行(Unscrambler.DataGenerator.exe "C:\Program Files (x86)\上海数龙科技有限公司\最终幻想XIV\game\ffxiv_dx11.exe" .)就行了。然后会在生成路径(.)中找到当前游戏版本号的文件夹，将文件夹复制到Unscrambler\Data文件夹，如果你使用的是支持Git的IDE，可以看到tableX.bin有修改。然后再构建Unscrambler，将生成的dll直接替换掉IINACT编译目录下的Unscrambler就可以完成修复。
+
+![unscrambler.jpg](pic/unscrambler.jpg)
 
 ## 笔记
 

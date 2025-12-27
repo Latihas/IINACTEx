@@ -18,7 +18,6 @@ public static partial class LWindow
         if (!tab) return;
         ImGui.Text("更新日志");
         ImGui.Text("由于Triggernometry发生大量变动(2.0)，而且最近开发者有点忙，所以可能并不稳定。不过还是在缓慢更新API使用，期间触发器可能会出现各种问题，部分自动更新的在线依赖库也可能会受到影响。有问题的话尝试测试-清空编译错误历史。");
-        ImGui.Text("伤害统计的值可能错误，上游IINACT CN也有这个问题，请暂时不要使用IINACT进行出警或上传logs等涉及伤害数值的操作。");
         ImGui.Text("添加了鲇鱼精单独功能开关，日志查看器");
         ImGui.Separator();
         ImGui.Text("TODO");
