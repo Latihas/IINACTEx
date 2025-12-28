@@ -24,6 +24,8 @@ public static partial class LWindow
         ImGui.Text("模拟原版插件Panel");
         ImGui.Text("触发器生成器");
         ImGui.Text("Trn日志写入文件");
+        ImGui.Text("Trn编译错误写入文件");
+        ImGui.Text("各鲇鱼精扩展模块单独开关");
         ImGui.Separator();
         ImGui.Text("重要提醒！！！请一定要先看完介绍再使用，本插件仍然不是很稳定，有炸游戏风险");
         ImGui.Text("重要提醒！！！请一定要先看完介绍再使用，本插件仍然不是很稳定，有炸游戏风险");

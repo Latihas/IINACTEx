@@ -167,7 +167,6 @@ public sealed class Plugin : IDalamudPlugin
         TextToSpeechProvider.SetUseEdgeTTS(Configuration.UseEdgeTTS);
         TextToSpeechProvider.SetUseLatihasTTS(Configuration.UseLatihasTts);
         Log.Warning("TTS Inited");
-        LWindow.WindowPrefix = "IINACTEx ";
         WindowSystem.AddWindow(MainWindow = new MainWindow());
         WindowSystem.AddWindow(EdgeTTSWindow = new EdgeTTSWindow(TextToSpeechProvider.GetEdgeTTSManager()!));
         WindowSystem.AddWindow(TriggerWindow = new LWindow.TriggerWindow());
@@ -203,7 +202,6 @@ public sealed class Plugin : IDalamudPlugin
         {
             HelpMessage = "显示IINACT主窗口"
         });
-
         CommandManager.AddHandler(EndEncCommandName, new CommandInfo(OnCommand)
         {
             HelpMessage = "终止IINACT正在处理的战斗"
@@ -222,7 +220,7 @@ public sealed class Plugin : IDalamudPlugin
         ClientState.EnterPvP += EnterPvP;
         ClientState.LeavePvP += LeavePvP;
         ZoneDownHookManager = createZoneDownHookManager.Result;
-
+        Task.Run(() => OverlayWindow.Init(WebSocketServer)); 
         if (Directory.Exists(Path.Combine(PluginConfigDirectory, "cactbot"))) RefreshBw();
         if (Configuration.ShowWindowOnInit) MainWindow.Toggle();
         if (Configuration.ShowOverlayOnInit) OverlayWindow.Toggle();
@@ -287,7 +285,6 @@ public sealed class Plugin : IDalamudPlugin
         MainWindow.OverlayPresets = registry.OverlayTemplates;
         WebSocketServer = container.Resolve<RainbowMage.OverlayPlugin.WebSocket.ServerController>();
         MainWindow.Server = WebSocketServer;
-        OverlayWindow.Init(WebSocketServer);
         IpcProviders.Server = WebSocketServer;
         IpcProviders.OverlayIpcHandler = container.Resolve<RainbowMage.OverlayPlugin.Handlers.Ipc.IpcHandlerController>();
         MainWindow.OverlayPluginConfig = container.Resolve<RainbowMage.OverlayPlugin.IPluginConfig>();

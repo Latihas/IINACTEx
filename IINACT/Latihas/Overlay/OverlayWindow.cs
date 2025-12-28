@@ -40,10 +40,15 @@ public class OverlayWindow() : Window("IINACT Overlay"), IDisposable
 
     public async void Init(ServerController? server)
     {
-        webSocketClient?.Dispose();
-        webSocketClient = new WebSocketClient();
-        await webSocketClient.Connect($"ws://{server?.Address}:{server?.Port}/MiniParse");
-        webSocketClient.OnDataReceived += Parse;
+        try {
+            webSocketClient?.Dispose();
+            webSocketClient = new WebSocketClient();
+            await webSocketClient.Connect($"ws://{server?.Address}:{server?.Port}/MiniParse");
+            webSocketClient.OnDataReceived += Parse;
+        }
+        catch (Exception e) {
+           Plugin. Log.Error(e.ToString());
+        }
     }
 
     private void AddHistoricalRecord(CombatDataWrapper combatData)

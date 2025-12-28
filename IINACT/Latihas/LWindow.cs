@@ -16,7 +16,7 @@ namespace IINACT.Latihas;
 
 public static partial class LWindow
 {
-    internal static string WindowPrefix = "";
+    internal static string WindowPrefix = "IINACTEx ";
 
     internal static void DrawTriggerSettings()
     {
@@ -225,8 +225,23 @@ public static partial class LWindow
         using var tab = ImRaii.TabItem("Trn设置");
         if (!tab) return;
         var EnableModuleBase = RealPlugin.Instance.cfg.EnableModuleBase;
-        if (ImGui.Checkbox("启用ModuleBase(极有可能炸游戏的功能，如绘图等)", ref EnableModuleBase))
+        if (ImGui.Checkbox("启用ModuleBase(极有可能炸游戏的功能，如绘图等。尤其是VfxModule，用于管理绘图极其容易爆炸，禁用掉可以大幅提升稳定性)", ref EnableModuleBase))
             RealPlugin.Instance.cfg.EnableModuleBase = EnableModuleBase;
+        if (EnableModuleBase)
+        {
+            var modules = Triggernometry.PluginBridges.BridgeNamazu.BridgeNamazu.Modules.Concat(Triggernometry.PluginBridges.BridgeNamazu.BridgeNamazu.SideloadModules).Select(i => i.Key.Name.ToString()).ToArray();
+            foreach (var name in modules)
+            {
+                ImGui.Indent();
+                var cChecked = !RealPlugin.Instance.cfg.PModuleDisabled.Contains(name);
+                if (ImGui.Checkbox(name, ref cChecked))
+                {
+                    if (cChecked) RealPlugin.Instance.cfg.PModuleDisabled.Remove(name);
+                    else RealPlugin.Instance.cfg.PModuleDisabled.Add(name);
+                }
+                ImGui.Unindent();
+            }
+        }
     }
 
     internal static void DrawSettingsPostnmz()
