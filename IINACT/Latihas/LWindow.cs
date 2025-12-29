@@ -219,7 +219,7 @@ public static partial class LWindow
             Plugin.Configuration.Save();
         }
         var TtsOnInit = Plugin.Configuration.TtsOnInit;
-        if (ImGui.Checkbox("启动时显示Overlay", ref TtsOnInit))
+        if (ImGui.Checkbox("启动时TTS提示加载完成", ref TtsOnInit))
         {
             Plugin.Configuration.TtsOnInit = TtsOnInit;
             Plugin.Configuration.Save();
