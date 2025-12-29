@@ -224,7 +224,7 @@ public sealed class Plugin : IDalamudPlugin
         if (Directory.Exists(Path.Combine(PluginConfigDirectory, "cactbot"))) RefreshBw();
         if (Configuration.ShowWindowOnInit) MainWindow.Toggle();
         if (Configuration.ShowOverlayOnInit) OverlayWindow.Toggle();
-        Advanced_Combat_Tracker.ActGlobals.oFormActMain.TTS("插件加载完成");
+        if (Configuration.TtsOnInit) Advanced_Combat_Tracker.ActGlobals.oFormActMain.TTS("插件加载完成");
         Log.Warning("IINACTEx Inited");
     }
 

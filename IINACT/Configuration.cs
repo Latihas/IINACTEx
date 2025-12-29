@@ -35,6 +35,7 @@ public class Configuration : IPluginConfiguration
     public bool UseLatihasTts { get; set; } = true;
     public bool ShowWindowOnInit { get; set; } = true;
     public bool ShowOverlayOnInit { get; set; } = true;
+    public bool TtsOnInit { get; set; } = true;
 
     public string LogFilePath
     {

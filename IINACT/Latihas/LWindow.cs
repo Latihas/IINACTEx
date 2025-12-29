@@ -218,6 +218,12 @@ public static partial class LWindow
             Plugin.Configuration.ShowOverlayOnInit = ShowOverlayOnInit;
             Plugin.Configuration.Save();
         }
+        var TtsOnInit = Plugin.Configuration.TtsOnInit;
+        if (ImGui.Checkbox("启动时显示Overlay", ref TtsOnInit))
+        {
+            Plugin.Configuration.TtsOnInit = TtsOnInit;
+            Plugin.Configuration.Save();
+        }
     }
 
     internal static void DrawSettingsTrn()
