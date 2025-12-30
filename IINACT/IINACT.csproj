@@ -26,7 +26,6 @@
         </PackageReference>
         <PackageReference Include="NAudio" Version="2.2.1" />
         <PackageReference Include="System.Speech" Version="10.0.1" />
-<!--        <PackageReference Include="Unscrambler.XIV" Version="7.40.2" />-->
         <Reference Include="FFXIVClientStructs">
             <HintPath>$(DalamudLibPath)FFXIVClientStructs.dll</HintPath>
             <Private>false</Private>
@@ -57,14 +56,15 @@
         </Reference>
     </ItemGroup>
     <ItemGroup>
-        <ProjectReference Include="..\EdgeTTS\EdgeTTS.csproj" />
-        <ProjectReference Include="..\FetchDependencies\FetchDependencies.csproj" />
-        <ProjectReference Include="..\machina\Machina.FFXIV\Machina.FFXIV.csproj" />
-        <ProjectReference Include="..\machina\Machina\Machina.csproj" />
-        <ProjectReference Include="..\NotACT\NotACT.csproj" />
-        <ProjectReference Include="..\OverlayPlugin.Core\OverlayPlugin.Core.csproj" />
-        <ProjectReference Include="..\Triggernometry\Source\Triggernometry\TriggernometryPlugin.csproj"/>
-        <ProjectReference Include="..\PostNamazu/PostNamazu/PostNamazu.csproj"/>
+        <ProjectReference Include="../EdgeTTS/EdgeTTS.csproj" />
+        <ProjectReference Include="../FetchDependencies/FetchDependencies.csproj" />
+        <ProjectReference Include="../machina/Machina.FFXIV/Machina.FFXIV.csproj" />
+        <ProjectReference Include="../machina/Machina/Machina.csproj" />
+        <ProjectReference Include="../NotACT/NotACT.csproj" />
+        <ProjectReference Include="../OverlayPlugin.Core/OverlayPlugin.Core.csproj" />
+        <ProjectReference Include="../Triggernometry/Source/Triggernometry/TriggernometryPlugin.csproj"/>
+        <ProjectReference Include="../PostNamazu/PostNamazu/PostNamazu.csproj"/>
+        <ProjectReference Include="../Unscrambler/Unscrambler/Unscrambler.csproj"/>
     </ItemGroup>
     <ItemGroup>
         <EmbeddedResource Include="..\EdgeTTS\voices.json">
@@ -96,9 +96,6 @@
         </Reference>
         <Reference Include="FFXIV_ACT_Plugin.Resource">
             <HintPath>..\external_dependencies\SDK\FFXIV_ACT_Plugin.Resource.dll</HintPath>
-        </Reference>
-        <Reference Include="Unscrambler.XIV">
-            <HintPath>..\Unscrambler.dll</HintPath>
         </Reference>
     </ItemGroup>
     <ItemGroup>
