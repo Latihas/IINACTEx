@@ -2,7 +2,7 @@
 
 namespace RainbowMage.OverlayPlugin
 {
-    internal interface IEventReceiver
+    public interface IEventReceiver
     {
         string Name { get; }
 

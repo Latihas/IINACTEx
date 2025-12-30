@@ -30,7 +30,7 @@ public partial class FfxivActPluginWrapper : IDisposable
     private readonly IFramework framework;
     private readonly ICondition condition;
 
-    private readonly FFXIV_ACT_Plugin.FFXIV_ACT_Plugin ffxivActPlugin;
+    public readonly FFXIV_ACT_Plugin.FFXIV_ACT_Plugin ffxivActPlugin;
     private readonly Container iocContainer;
     private ISettingsMediator settingsMediator = null!;
     private readonly ParseMediator parseMediator;

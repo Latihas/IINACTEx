@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Buffers;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Runtime.InteropServices;
 using Microsoft.Extensions.ObjectPool;
 
@@ -9,15 +8,15 @@ namespace RainbowMage.OverlayPlugin.MemoryProcessors.Combatant
 {
     public abstract class CombatantMemory : ICombatantMemory
     {
-        private FFXIVMemory memory;
+        public FFXIVMemory memory;
         private ILogger logger;
 
-        private IntPtr charmapAddress = IntPtr.Zero;
+        public IntPtr charmapAddress = IntPtr.Zero;
 
         private string charmapSignature;
 
-        private int numMemoryCombatants;
-        private int combatantSize;
+        public int numMemoryCombatants;
+        public int combatantSize;
         private int effectSize;
         
         protected ObjectPool<Combatant> combatantPool;
@@ -173,7 +172,7 @@ namespace RainbowMage.OverlayPlugin.MemoryProcessors.Combatant
         }
 
         // Returns a combatant if the combatant is a mob or a PC.
-        protected abstract unsafe Combatant GetMobFromByteArray(byte[] source, uint mycharID);
+        public abstract unsafe Combatant GetMobFromByteArray(byte[] source, uint mycharID);
 
         // Will return any kind of combatant, even if not a mob.
         // This function always returns a combatant object, even if empty.

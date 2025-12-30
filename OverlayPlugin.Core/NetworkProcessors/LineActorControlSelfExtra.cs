@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Globalization;
-using System.Linq;
 using RainbowMage.OverlayPlugin.NetworkProcessors.PacketHelper;
 
 // To test `DisplayLogMessage`, you can:

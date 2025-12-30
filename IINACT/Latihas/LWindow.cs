@@ -3,6 +3,7 @@ using System.IO;
 using System.IO.Compression;
 using System.Numerics;
 using System.Runtime.Loader;
+using Advanced_Combat_Tracker;
 using Dalamud.Bindings.ImGui;
 using Dalamud.Interface.ImGuiNotification;
 using Dalamud.Interface.Utility.Raii;
@@ -121,7 +122,7 @@ public static partial class LWindow
         ImGui.SetNextItemWidth(-1);
         ImGui.InputTextMultiline("代码", ref TestCode, 1145141);
         if (ImGui.Button("编译代码"))
-            Sbe = CSharpScriptCompiler.CompileScript(TestCode)
+            Sbe = CSharpScriptCompiler.CompileScript(TestCode, true)
                       ? "成功"
                       : "失败，详情见/xllog";
         ImGui.SameLine();
@@ -239,11 +240,11 @@ public static partial class LWindow
             foreach (var name in modules)
             {
                 ImGui.Indent();
-                var cChecked = !RealPlugin.Instance.cfg.PModuleDisabled.Contains(name);
+                var cChecked = !RealPlugin.Instance.cfg.PostnamazuModuleDisabled.Contains(name);
                 if (ImGui.Checkbox(name, ref cChecked))
                 {
-                    if (cChecked) RealPlugin.Instance.cfg.PModuleDisabled.Remove(name);
-                    else RealPlugin.Instance.cfg.PModuleDisabled.Add(name);
+                    if (cChecked) RealPlugin.Instance.cfg.PostnamazuModuleDisabled.Remove(name);
+                    else RealPlugin.Instance.cfg.PostnamazuModuleDisabled.Add(name);
                 }
                 ImGui.Unindent();
             }
@@ -316,34 +317,45 @@ public static partial class LWindow
         using var tab = ImRaii.TabItem("脚本设置");
         if (!tab) return;
         ImGui.Text("脚本一览(待开发)");
+        ImGui.Text(string.Join(",",ActGlobals.oFormActMain.ActPlugins.Select(x => x.pluginFileName)));
         ImGui.SameLine();
-        if (ImGui.Button("打开脚本文件夹")) Start(Plugin.Instance.PluginPScriptDirectory);
-        var names = Directory.GetFiles(Plugin.Instance.PluginPScriptDirectory, "*.cs", SearchOption.TopDirectoryOnly).Select(Path.GetFileNameWithoutExtension).Cast<string>().ToArray();
-        NewTable(["名称", "状态", "操作"], names, [
+        if (ImGui.Button("打开脚本文件夹")) Start(Plugin.Instance.PluginActScriptDirectory);
+        //TODO 检测重复 GetFileNameWithoutExtension
+        NewTable(["名称", "状态", "操作"], Directory.GetFiles(Plugin.Instance.PluginActScriptDirectory, "*.cs", SearchOption.TopDirectoryOnly)
+                                              .Concat(Directory.GetFiles(Plugin.Instance.PluginActScriptDirectory, "*.dll", SearchOption.TopDirectoryOnly))
+                                              .Select(Path.GetFileName).Cast<string>().ToArray(), [
             i => ImGui.Text(i),
-            i => ImGui.Text(RealPlugin.LoadedScripts.TryGetValue(i, out var script) ? script.Enabled ? "已启用" : "已禁用" : "未载入"),
             i =>
             {
-                if (!RealPlugin.LoadedScripts.TryGetValue(i, out var value))
+                if (i.StartsWith('_'))
                 {
-                    if (ImGui.Button("载入"))
-                        ProxyPlugin.LoadPScript(Path.GetFileNameWithoutExtension(i));
+                    ImGui.Text("内置插件");
+                    return;
                 }
-                else if (value.Enabled)
+                var plugins = ActGlobals.oFormActMain.ActPlugins.Select(x => x.pluginFileName).Where(x => x == i).ToList();
+                if (plugins.Count == 0) ImGui.Text("未载入");
+                else ImGui.Text(ActGlobals.oFormActMain.ActPlugins.First(x => x.pluginFileName == i).cbEnabled.Enabled ? "已启用" : "已禁用");
+            },
+            i =>
+            {
+                if (i.StartsWith('_')) return;
+                var plugins = ActGlobals.oFormActMain.ActPlugins.Select(x => x.pluginFileName).Where(x => x == i).ToList();
+                if (plugins.Count == 0)
                 {
-                    if (ImGui.Button("禁用"))
-                    {
-                        RealPlugin.LoadedScripts[i].Enabled = false;
-                        RealPlugin.Instance.cfg.PScriptsDisabled.Add(i);
-                    }
+                    if (ImGui.Button($"载入##{i}"))
+                        if (i.EndsWith(".cs"))
+                            Plugin.LoadPScript(i);
+                        else 
+                            Plugin.LoadIActPluginV1(i);
                 }
                 else
                 {
-                    if (ImGui.Button("启用"))
-                    {
-                        RealPlugin.LoadedScripts[i].Enabled = true;
-                        RealPlugin.Instance.cfg.PScriptsDisabled.RemoveAll(x => x == i);
-                    }
+                    var plugin = ActGlobals.oFormActMain.ActPlugins.First(x => x.pluginFileName == i);
+                    if (ImGui.Button($"禁用##{i}"))
+                        Plugin.DeInitIActPluginV1(plugin);
+                    ImGui.SameLine();
+                    if (ImGui.Button($"打开界面##{i}"))
+                        plugin.PluginForm.Show();
                 }
             }
         ]);

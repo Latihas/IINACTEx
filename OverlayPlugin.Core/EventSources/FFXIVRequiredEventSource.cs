@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.IO;
 using System.Linq;
 // For some reason this using is required by the github build?
 using System.Runtime.CompilerServices;

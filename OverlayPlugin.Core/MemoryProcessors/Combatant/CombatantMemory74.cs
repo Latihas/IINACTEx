@@ -23,7 +23,7 @@ namespace RainbowMage.OverlayPlugin.MemoryProcessors.Combatant
         }
 
         // Returns a combatant if the combatant is a mob or a PC.
-        protected override unsafe Combatant GetMobFromByteArray(byte[] source, uint mycharID)
+        public override unsafe Combatant GetMobFromByteArray(byte[] source, uint mycharID)
         {
             fixed (byte* p = source)
             {

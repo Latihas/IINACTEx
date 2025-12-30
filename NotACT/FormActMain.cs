@@ -13,6 +13,7 @@ public partial class FormActMain : Form, ISynchronizeInvoke
 {
     public delegate DateTime DateTimeLogParser(string logLine);
     public IPluginLog PluginLog { get; }
+    public dynamic DalamudPlugin { get; }
 
     private readonly ConcurrentQueue<MasterSwing> afterActionsQueue = new();
     private Thread afterActionQueueThread;
@@ -29,8 +30,9 @@ public partial class FormActMain : Form, ISynchronizeInvoke
 
     internal volatile bool refreshTree;
 
-    public FormActMain(IPluginLog pluginLog)
+    public FormActMain(dynamic dalamudPlugin,IPluginLog pluginLog)
     {
+        DalamudPlugin = dalamudPlugin;
         PluginLog = pluginLog;
         InitializeComponent();
         AppDataFolder = new DirectoryInfo(".");
@@ -46,7 +48,9 @@ public partial class FormActMain : Form, ISynchronizeInvoke
     [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
     public bool WriteLogFile { get; set; } = true;
     [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-    public bool WriteActLogFile { get; set; } = true;
+    public bool WriteActLogFile { get; set; } = true;   
+    [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+    public bool WriteTrnLogFile { get; set; } = true;
     [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
     public bool DisableWritingPvpLogFile { get; set; }
     [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
@@ -65,6 +69,8 @@ public partial class FormActMain : Form, ISynchronizeInvoke
     public ConcurrentQueue<string> LogQueue { get; private set; } = new();
     [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
     public ConcurrentQueue<string> ActLogQueue { get; private set; } = new();
+    [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+    public ConcurrentQueue<string> TrnLogQueue { get; private set; } = new();
     [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
     public string CurrentZone { get; set; }
     [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
@@ -384,6 +390,8 @@ public partial class FormActMain : Form, ISynchronizeInvoke
             using var outputWriter = new StreamWriter(stream);
             using var streamAct = new FileStream(LogFilePath+".actxt", FileMode.Append, FileAccess.Write, FileShare.ReadWrite);
             using var outputWriterAct = new StreamWriter(streamAct);
+            using var streamTrn = new FileStream(LogFilePath+".trnxt", FileMode.Append, FileAccess.Write, FileShare.ReadWrite);
+            using var outputWriterTrn = new StreamWriter(streamTrn);
             while (pluginActive)
             {
                 if (!WriteLogFile || DisableWritingPvpLogFile)
@@ -396,9 +404,11 @@ public partial class FormActMain : Form, ISynchronizeInvoke
                     outputWriter.WriteLine(line); 
                 while (ActLogQueue.TryDequeue(out var line))
                     outputWriterAct.WriteLine(line);
-
+                while (TrnLogQueue.TryDequeue(out var line))
+                    outputWriterTrn.WriteLine(line);
                 outputWriter.Flush();
                 outputWriterAct.Flush();
+                outputWriterTrn.Flush();
                 Thread.Sleep(500);
             }
         }

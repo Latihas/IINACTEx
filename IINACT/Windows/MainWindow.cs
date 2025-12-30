@@ -239,16 +239,22 @@ public class MainWindow : Window, IDisposable
         }
 
         ImGui.Spacing();
-        var writeLogFile = Plugin.Configuration.WriteLogFile;
-        var writeActLogFile = Plugin.Configuration.WriteActLogFile;
-        if (ImGui.Checkbox("写入网络日志文件", ref writeLogFile))
+        var WriteLogFile = Plugin.Configuration.WriteLogFile;
+        if (ImGui.Checkbox("写入网络日志文件", ref WriteLogFile))
         {
-            Plugin.Configuration.WriteLogFile = writeLogFile;
+            Plugin.Configuration.WriteLogFile = WriteLogFile;
             Plugin.Configuration.Save();
         }
-        if (Plugin.Configuration.WriteLogFile && ImGui.Checkbox("写入ACT日志文件(.actxt)", ref writeActLogFile))
+        var WriteActLogFile = Plugin.Configuration.WriteActLogFile;
+        if (Plugin.Configuration.WriteLogFile && ImGui.Checkbox("写入ACT日志文件(.actxt)", ref WriteActLogFile))
         {
-            Plugin.Configuration.WriteActLogFile = writeActLogFile;
+            Plugin.Configuration.WriteActLogFile = WriteActLogFile;
+            Plugin.Configuration.Save();
+        }
+        var WriteTrnLogFile = Plugin.Configuration.WriteTrnLogFile;
+        if (Plugin.Configuration.WriteLogFile && ImGui.Checkbox("写入Trn日志文件(.trnxt)", ref WriteTrnLogFile))
+        {
+            Plugin.Configuration.WriteTrnLogFile = WriteTrnLogFile;
             Plugin.Configuration.Save();
         }
         var disablePvp = Plugin.Configuration.DisablePvp;

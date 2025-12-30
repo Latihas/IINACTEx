@@ -1,5 +1,4 @@
 #nullable enable
-using System;
 using Dalamud.Plugin.Ipc;
 using Newtonsoft.Json.Linq;
 

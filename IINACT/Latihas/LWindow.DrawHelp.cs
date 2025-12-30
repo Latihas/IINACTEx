@@ -18,14 +18,9 @@ public static partial class LWindow
         if (!tab) return;
         ImGui.Text("更新日志");
         ImGui.Text("由于Triggernometry发生大量变动(2.0)，而且最近开发者有点忙，所以可能并不稳定。不过还是在缓慢更新API使用，期间触发器可能会出现各种问题，部分自动更新的在线依赖库也可能会受到影响。有问题的话尝试测试-清空编译错误历史。");
-        ImGui.Text("添加了鲇鱼精单独功能开关，日志查看器");
         ImGui.Separator();
         ImGui.Text("TODO");
-        ImGui.Text("模拟原版插件Panel");
         ImGui.Text("触发器生成器");
-        ImGui.Text("Trn日志写入文件");
-        ImGui.Text("Trn编译错误写入文件");
-        ImGui.Text("各鲇鱼精扩展模块单独开关");
         ImGui.Separator();
         ImGui.Text("重要提醒！！！请一定要先看完介绍再使用，本插件仍然不是很稳定，有炸游戏风险");
         ImGui.Text("重要提醒！！！请一定要先看完介绍再使用，本插件仍然不是很稳定，有炸游戏风险");
@@ -50,7 +45,7 @@ public static partial class LWindow
         ImGui.Text("IINACT CN默认使用了EdgeTTS，如果你EdgeTTS工作正常可以跳过这部分。由于开发者比较喜欢用LatihasTTS(纯本地模型推理)所以也做了接口。由于文件过大放不上Github所以需要联系开发者获取。(其实也没那么必须，只是开发者用着舒服)");
         ImGui.Text("cactbot资源可在·运行状态·栏找到链接并下载。");
         ImGui.Text("仅需将相关文件放入插件安装目录下即可使用，加号代表添加的文件，像这样:");
-        ImGui.Text("$Cactbot:");
+        ImGui.Text("Cactbot:");
         ImGui.Text("$(pluginConfigs/IINACTEx)");
         ImGui.Text("    Scripts/");
         ImGui.Text("    TriggernometryRepoBackups/");

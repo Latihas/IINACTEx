@@ -5,6 +5,7 @@ using System.IO.Compression;
 using System.Net.Http;
 using System.Reflection;
 using System.Runtime.Loader;
+using Advanced_Combat_Tracker;
 using Dalamud.Game.Command;
 using Dalamud.Interface.ImGuiFileDialog;
 using Dalamud.Interface.Windowing;
@@ -18,8 +19,10 @@ using IINACT.Network;
 using IINACT.Windows;
 using Machina.FFXIV;
 using Machina.FFXIV.Headers.Opcodes;
+using RainbowMage.OverlayPlugin;
 using Triggernometry;
 using Triggernometry.Core;
+using Triggernometry.PScript;
 
 namespace IINACT;
 
@@ -60,15 +63,15 @@ public sealed class Plugin : IDalamudPlugin
     public static IGameGui GameGui { get; private set; }
     [PluginService]
     public static ITargetManager TargetManager { get; private set; }
-    internal static Configuration Configuration { get; private set; }
+    public static Configuration Configuration { get; private set; }
     internal static TextToSpeechProvider TextToSpeechProvider { get; private set; }
     private static MainWindow MainWindow = null!;
     internal static FileDialogManager FileDialogManager { get; private set; }
     private ZoneDownHookManager ZoneDownHookManager { get; }
     private IpcProviders IpcProviders { get; }
 
-    private FfxivActPluginWrapper FfxivActPluginWrapper { get; }
-    public RainbowMage.OverlayPlugin.PluginMain OverlayPlugin { get; set; }
+    public FfxivActPluginWrapper FfxivActPluginWrapper { get; set; }
+    public PluginMain OverlayPlugin { get; set; }
     private RainbowMage.OverlayPlugin.WebSocket.ServerController? WebSocketServer { get; set; }
     internal string OverlayPluginStatus => OverlayPlugin.Status;
     public ProxyPlugin TriggernometryProxyPlugin;
@@ -92,11 +95,11 @@ public sealed class Plugin : IDalamudPlugin
     public static dynamic? LatihasTts;
     public string PluginAssemblyDirectory => PluginInterface.AssemblyLocation.Directory!.ToString();
     public string PluginConfigDirectory => PluginInterface.ConfigDirectory.ToString();
-    public string PluginPScriptDirectory => Path.Combine(PluginConfigDirectory, "PScript");
-    public bool opcodestxtReplaced = false;
+    public string PluginActScriptDirectory => Path.Combine(PluginConfigDirectory, "ActScript");
+    public bool opcodestxtReplaced;
     public bool opcodestxtCanReplace => File.Exists(opcodestxtPath);
     public string opcodestxtPath => Path.Combine(PluginAssemblyDirectory, "opcodes.txt");
-    public bool opcodesjsoncReplaced = false;
+    public bool opcodesjsoncReplaced;
     public bool opcodesjsoncCanReplace => File.Exists(opcodesjsoncPath);
     public string opcodesjsoncPath => Path.Combine(PluginAssemblyDirectory, "opcodes.jsonc");
 
@@ -120,7 +123,7 @@ public sealed class Plugin : IDalamudPlugin
     {
         Log.Warning("IINACTEx Start Init...");
         Instance = this;
-        if (!Directory.Exists(PluginPScriptDirectory)) Directory.CreateDirectory(PluginPScriptDirectory);
+        if (!Directory.Exists(PluginActScriptDirectory)) Directory.CreateDirectory(PluginActScriptDirectory);
         opcodestxtReplaced = opcodestxtCanReplace;
         OpcodeManager.Instance.SetRegion(DataManager.Language.ToString() == "ChineseSimplified"
                                              ? GameRegion.Chinese
@@ -138,8 +141,8 @@ public sealed class Plugin : IDalamudPlugin
         Log.Warning("Depedencies Fetched");
         PluginLogTraceListener = new PluginLogTraceListener();
         Trace.Listeners.Add(PluginLogTraceListener);
-        Advanced_Combat_Tracker.ActGlobals.Init();
-        Advanced_Combat_Tracker.ActGlobals.oFormActMain = new Advanced_Combat_Tracker.FormActMain(Log);
+        ActGlobals.Init();
+        ActGlobals.oFormActMain = new FormActMain(this, Log);
         Configuration = PluginInterface.GetPluginConfig() as Configuration ?? new Configuration();
         Configuration.Initialize(PluginInterface);
         //TTS
@@ -179,21 +182,22 @@ public sealed class Plugin : IDalamudPlugin
         WindowSystem.AddWindow(ACTLogView = new LWindow.ACTLogView());
         WindowSystem.AddWindow(OverlayWindow = new OverlayWindow());
         Log.Warning("Windows Inited");
-        Advanced_Combat_Tracker.ActGlobals.oFormActMain.LogFilePath = Configuration.LogFilePath;
+        ActGlobals.oFormActMain.LogFilePath = Configuration.LogFilePath;
         FfxivActPluginWrapper = new FfxivActPluginWrapper(Configuration, DataManager.Language, ChatGui, Framework, Condition);
         IpcProviders = new IpcProviders(PluginInterface);
+        Log.Warning("OverlayPlugin Initializing");
         OverlayPlugin = InitOverlayPluginTrn();
         Log.Warning("OverlayPlugin Inited");
-        var info = PluginInterface.GetType().Assembly.GetType("Dalamud.Service`1", true).MakeGenericType(PluginInterface.GetType().Assembly.GetType("Dalamud.Dalamud", true)).GetMethod("Get")
+        var info = PluginInterface.GetType().Assembly.GetType("Dalamud.Service`1", true)!.MakeGenericType(PluginInterface.GetType().Assembly.GetType("Dalamud.Dalamud", true)!).GetMethod("Get")!
                                   .Invoke(null, BindingFlags.Default, null, [], null);
         DalamudStartInfo = info!.GetType().GetField("StartInfo", AllFlags)?.GetValue(info)
                            ?? info.GetType().GetProperty("StartInfo", AllFlags)?.GetValue(info);
         Log.Info(DalamudStartInfo?.ToString());
         Log.Warning("DalamudStartInfo Inited");
-        Advanced_Combat_Tracker.ActGlobals.oFormActMain.TriggernometryPlugin = TriggernometryProxyPlugin = new ProxyPlugin();
+        ActGlobals.oFormActMain.TriggernometryPlugin = TriggernometryProxyPlugin = new ProxyPlugin();
         TriggernometryProxyPlugin.InitPlugin(this, PluginInterface, Log, ClientState, Framework, GameInteropProvider);
         RealPlugin.Instance.InitAura();
-        Advanced_Combat_Tracker.ActGlobals.oFormActMain.PostNamazuPlugin = PostNamazuPlugin = new PostNamazu.PostNamazu();
+        ActGlobals.oFormActMain.PostNamazuPlugin = PostNamazuPlugin = new PostNamazu.PostNamazu();
         PostNamazuPlugin.InitPlugin(PluginInterface, Log, SigScanner);
         Triggernometry.PluginBridges.BridgeNamazu.BridgeNamazu.InitializeModules();
         Triggernometry.PluginBridges.BridgeNamazu.BridgeNamazu.RegisterAnnotatedMethods();
@@ -220,12 +224,85 @@ public sealed class Plugin : IDalamudPlugin
         ClientState.EnterPvP += EnterPvP;
         ClientState.LeavePvP += LeavePvP;
         ZoneDownHookManager = createZoneDownHookManager.Result;
-        Task.Run(() => OverlayWindow.Init(WebSocketServer)); 
+        ActGlobals.oFormActMain.ActPlugins.Add(new ActPluginData("_FFXIV_ACT_Plugin", FfxivActPluginWrapper.ffxivActPlugin, false));
+        ActGlobals.oFormActMain.ActPlugins.Add(new ActPluginData("_OverlayPlugin", new PluginLoader(OverlayPlugin), false));
+        ActGlobals.oFormActMain.ActPlugins.Add(new ActPluginData("_PostNamazu", PostNamazuPlugin, false));
+        foreach (var rt in Directory.GetFiles(PluginActScriptDirectory, "*.cs", SearchOption.TopDirectoryOnly).Select(Path.GetFileName).Cast<string>())
+            if (Configuration.ActScriptsEnabled.Contains(rt))
+                LoadPScript(rt);
+        foreach (var rt in Directory.GetFiles(PluginActScriptDirectory, "*.dll", SearchOption.TopDirectoryOnly).Select(Path.GetFileName).Cast<string>())
+            if (Configuration.ActScriptsEnabled.Contains(rt))
+                LoadIActPluginV1(rt);
+        Log.Warning("ACT Plugin Inited");
+        Task.Run(() => OverlayWindow.Init(WebSocketServer));
         if (Directory.Exists(Path.Combine(PluginConfigDirectory, "cactbot"))) RefreshBw();
         if (Configuration.ShowWindowOnInit) MainWindow.Toggle();
         if (Configuration.ShowOverlayOnInit) OverlayWindow.Toggle();
-        if (Configuration.TtsOnInit) Advanced_Combat_Tracker.ActGlobals.oFormActMain.TTS("插件加载完成");
+        if (Configuration.TtsOnInit) ActGlobals.oFormActMain.TTS("插件加载完成");
         Log.Warning("IINACTEx Inited");
+    }
+
+    public static void InitIActPluginV1(ActPluginData plugin)
+    {
+        try
+        {
+            ActGlobals.oFormActMain.ActPlugins.Add(plugin);
+            plugin.pluginObj.InitPlugin(plugin.tpPluginSpace, plugin.lblPluginStatus);
+        }
+        catch (Exception e)
+        {
+            Log.Error(e.ToString());
+        }
+    }
+
+    public static void DeInitIActPluginV1(ActPluginData plugin)
+    {
+        try
+        {
+            plugin.pluginObj.DeInitPlugin();
+            ActGlobals.oFormActMain.ActPlugins.Remove(plugin);
+        }
+        catch (Exception e)
+        {
+            Log.Error(e.ToString());
+        }
+    }
+
+    public static void LoadIActPluginV1(string name)
+    {
+        try
+        {
+            Assembly asm;
+            using (var memoryStream = new MemoryStream(File.ReadAllBytes(Path.Combine(Instance.PluginActScriptDirectory, name))))
+                asm = AssemblyLoadContext.GetLoadContext(Assembly.GetExecutingAssembly())!.LoadFromStream(memoryStream);
+            Log.Warning($"Loading IActPluginV1 {asm.FullName}");
+            var scriptTypes = asm.GetTypes()
+                                 .Where(type => type is { IsAbstract: false, IsInterface: false }
+                                                && typeof(IActPluginV1).IsAssignableFrom(type))
+                                 .ToList();
+            var isIScriptBase = scriptTypes.Any(type => typeof(IScriptBase).IsAssignableFrom(type));
+            foreach (var type in scriptTypes)
+                if (Activator.CreateInstance(type) is IActPluginV1 scriptInstance)
+                    InitIActPluginV1(new ActPluginData(name, scriptInstance, isIScriptBase));
+        }
+        catch (Exception ex)
+        {
+            Log.Warning($"ActScript {name} 载入失败: {ex}");
+        }
+    }
+
+    public static void LoadPScript(string name)
+    {
+        try
+        {
+            var rs = File.ReadAllText(Path.Combine(Instance.PluginActScriptDirectory, name));
+            if (CSharpScriptCompiler.CompileScript(rs, false))
+                LoadIActPluginV1(name);
+        }
+        catch (Exception ex)
+        {
+            Log.Warning($"ActScript {name} 载入失败: {ex}");
+        }
     }
 
     public const BindingFlags AllFlags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static;
@@ -237,9 +314,7 @@ public sealed class Plugin : IDalamudPlugin
         ClientState.LeavePvP -= LeavePvP;
         IpcProviders.Dispose();
         ZoneDownHookManager.Dispose();
-
         FfxivActPluginWrapper.Dispose();
-        OverlayPlugin.DeInitPlugin();
         Trace.Listeners.Remove(PluginLogTraceListener);
         WindowSystem.RemoveAllWindows();
         MainWindow.Dispose();
@@ -248,12 +323,9 @@ public sealed class Plugin : IDalamudPlugin
         CommandManager.RemoveHandler(EndEncCommandName);
         CommandManager.RemoveHandler(OverlayCommandName);
         RealPlugin.Instance.DeInitAura();
-        PostNamazuPlugin.DeInitPlugin();
-        TriggernometryProxyPlugin.DeInitPlugin();
-        OverlayPlugin.DeInitPlugin();
-        PostNamazuPlugin.DeInitPlugin();
-
-        Advanced_Combat_Tracker.ActGlobals.Dispose();
+        while (ActGlobals.oFormActMain.ActPlugins.Count > 0)
+            DeInitIActPluginV1(ActGlobals.oFormActMain.ActPlugins.Last());
+        ActGlobals.Dispose();
     }
 
     internal void RefreshBw()
@@ -262,32 +334,31 @@ public sealed class Plugin : IDalamudPlugin
         PostNamazuPlugin.DoAction("command", "/bw overlay 设置 reload");
     }
 
-    private RainbowMage.OverlayPlugin.PluginMain InitOverlayPluginTrn()
+    private PluginMain InitOverlayPluginTrn()
     {
-        var container = new RainbowMage.OverlayPlugin.TinyIoCContainer();
+        var container = new TinyIoCContainer();
 
-        var logger = new RainbowMage.OverlayPlugin.Logger(Log);
+        var logger = new Logger(Log);
         container.Register(logger);
-        container.Register<RainbowMage.OverlayPlugin.ILogger>(logger);
+        container.Register<ILogger>(logger);
 
         container.Register(HttpClient);
         container.Register(FileDialogManager);
         container.Register(PluginInterface);
 
-        var overlayPlugin = new RainbowMage.OverlayPlugin.PluginMain(
-            PluginAssemblyDirectory, logger, container);
+        var overlayPlugin = new PluginMain(PluginAssemblyDirectory, logger, container);
         container.Register(overlayPlugin);
-        Advanced_Combat_Tracker.ActGlobals.oFormActMain.OverlayPluginContainer = container;
+        ActGlobals.oFormActMain.OverlayPluginContainer = container;
 
         opcodesjsoncReplaced = opcodesjsoncCanReplace;
         overlayPlugin.InitPlugin(PluginConfigDirectory, opcodesjsoncCanReplace ? File.ReadAllText(opcodesjsoncPath) : null);
-        var registry = container.Resolve<RainbowMage.OverlayPlugin.Registry>();
+        var registry = container.Resolve<Registry>();
         MainWindow.OverlayPresets = registry.OverlayTemplates;
         WebSocketServer = container.Resolve<RainbowMage.OverlayPlugin.WebSocket.ServerController>();
         MainWindow.Server = WebSocketServer;
         IpcProviders.Server = WebSocketServer;
         IpcProviders.OverlayIpcHandler = container.Resolve<RainbowMage.OverlayPlugin.Handlers.Ipc.IpcHandlerController>();
-        MainWindow.OverlayPluginConfig = container.Resolve<RainbowMage.OverlayPlugin.IPluginConfig>();
+        MainWindow.OverlayPluginConfig = container.Resolve<IPluginConfig>();
         return overlayPlugin;
     }
 
@@ -300,7 +371,7 @@ public sealed class Plugin : IDalamudPlugin
         }
         if (command == EndEncCommandName)
         {
-            Advanced_Combat_Tracker.ActGlobals.oFormActMain.EndCombat(false);
+            ActGlobals.oFormActMain.EndCombat(false);
             return;
         }
 

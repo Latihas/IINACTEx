@@ -5,7 +5,7 @@ using System.Linq;
 
 namespace RainbowMage.OverlayPlugin
 {
-    internal class EventDispatcher
+    public class EventDispatcher
     {
         private ILogger _logger;
         private Dictionary<string, Func<JObject, JToken>> handlers;

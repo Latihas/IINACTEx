@@ -54,13 +54,19 @@ public class Configuration : IPluginConfiguration
 		get => Advanced_Combat_Tracker.ActGlobals.oFormActMain.WriteActLogFile;
 		set => Advanced_Combat_Tracker.ActGlobals.oFormActMain.WriteActLogFile = value;
 	}
+    
+    public bool WriteTrnLogFile
+    {
+        get => Advanced_Combat_Tracker.ActGlobals.oFormActMain.WriteTrnLogFile;
+        set => Advanced_Combat_Tracker.ActGlobals.oFormActMain.WriteTrnLogFile = value;
+    }
 
     public bool DisableWritingPvpLogFile
     {
         get => Advanced_Combat_Tracker.ActGlobals.oFormActMain.DisableWritingPvpLogFile;
         set => Advanced_Combat_Tracker.ActGlobals.oFormActMain.DisableWritingPvpLogFile = value;
     }
-
+    public List<string> ActScriptsEnabled { get; set; } = [];
     public int Version { get; set; } = 1;
     
     public string? SelectedOverlay { get; set; }

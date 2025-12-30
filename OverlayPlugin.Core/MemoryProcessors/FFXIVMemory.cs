@@ -20,13 +20,13 @@ namespace RainbowMage.OverlayPlugin.MemoryProcessors
         private event EventHandler<Process> OnProcessChange;
 
         private ILogger logger;
-        private Process process;
-        private IntPtr processHandle;
+        private Process process=>Process.GetCurrentProcess();
+        private IntPtr processHandle=>process.Handle;
         private FFXIVRepository repository;
 
         // The "international" version always uses the most recent.
         private static Version globalVersion = new Version(99, 0);
-        private static Version cnVersion = new Version(99, 0);
+        private static Version cnVersion = new Version(7, 4);
         private static Version koVersion = new Version(6, 1);
 
         public FFXIVMemory(TinyIoCContainer container)
@@ -70,15 +70,15 @@ namespace RainbowMage.OverlayPlugin.MemoryProcessors
 
             try
             {
-                process = proc;
-                processHandle = -1;
+                // process = proc;
+                // processHandle = -1;
             }
             catch (Exception e)
             {
                 logger.Log(LogLevel.Error, "Failed to open FFXIV process: {0}", e);
 
-                process = null;
-                processHandle = IntPtr.Zero;
+                // process = null;
+                // processHandle = IntPtr.Zero;
             }
 
             OnProcessChange?.Invoke(this, process);
@@ -91,8 +91,8 @@ namespace RainbowMage.OverlayPlugin.MemoryProcessors
 
         private void CloseProcessHandle()
         {
-            processHandle = IntPtr.Zero;
-            process = null;
+            // processHandle = IntPtr.Zero;
+            // process = null;
         }
 
         public bool IsValid()

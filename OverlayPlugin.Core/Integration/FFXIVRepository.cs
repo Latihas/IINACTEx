@@ -436,7 +436,7 @@ namespace RainbowMage.OverlayPlugin
                 var repo = GetRepository();
                 if (repo != null)
                 {
-                    var process = repo.GetCurrentFFXIVProcess();
+                    var process = Process.GetCurrentProcess();
                     if (process != null) handler(process);
                 }
             }

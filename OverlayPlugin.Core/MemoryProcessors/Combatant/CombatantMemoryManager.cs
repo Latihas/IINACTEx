@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using RainbowMage.OverlayPlugin.MemoryProcessors.Aggro;
 
 namespace RainbowMage.OverlayPlugin.MemoryProcessors.Combatant
 {
@@ -17,7 +16,7 @@ namespace RainbowMage.OverlayPlugin.MemoryProcessors.Combatant
     {
         private readonly TinyIoCContainer container;
         private readonly FFXIVRepository repository;
-        private ICombatantMemory memory = null;
+        public ICombatantMemory memory = null;
 
         public CombatantMemoryManager(TinyIoCContainer container)
         {

@@ -16,15 +16,25 @@ using RainbowMage.OverlayPlugin.NetworkProcessors;
 using RainbowMage.OverlayPlugin.WebSocket;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using Advanced_Combat_Tracker;
 
 namespace RainbowMage.OverlayPlugin
 {
+    public class PluginLoader : IActPluginV1
+    {
+        private readonly RainbowMage.OverlayPlugin.PluginMain overlayPlugin;
+
+        public PluginLoader(RainbowMage.OverlayPlugin.PluginMain overlayPlugin) => this.overlayPlugin = overlayPlugin;
+
+        public void InitPlugin(TabPage pluginScreenSpace, Label pluginStatusText) { }
+
+        public void DeInitPlugin() => overlayPlugin.DeInitPlugin();
+    }
     public class PluginMain
     {
         public readonly TinyIoCContainer _container;
