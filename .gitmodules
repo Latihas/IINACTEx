@@ -18,3 +18,7 @@
 	path = PostNamazu
 	url = https://github.com/Latihas/PostNamazu
 	branch = master
+[submodule "Unscrambler"]
+	path = Unscrambler
+	url = https://github.com/perchbirdd/Unscrambler
+	branch = main

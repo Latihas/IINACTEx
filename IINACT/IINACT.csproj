@@ -2,7 +2,7 @@
     <PropertyGroup>
         <Authors>Usagi</Authors>
         <Company>Dezent</Company>
-        <Version>7.4.0.3</Version>
+        <Version>7.4.0.0</Version>
         <Description>A parsing plugin.</Description>
         <AssemblyName>IINACTEx</AssemblyName>
         <OutputPath>bin/</OutputPath>
