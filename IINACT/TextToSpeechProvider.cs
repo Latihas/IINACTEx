@@ -80,7 +80,7 @@ internal class TextToSpeechProvider
             }
             catch (Exception ex)
             {
-                _log.Error(ex, $"EdgeTTS failed to play back {message}");
+                _log.Error(ex, $"LatihasTTS failed to play back {message}");
             }
             return;
         }
