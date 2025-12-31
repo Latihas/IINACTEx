@@ -17,6 +17,8 @@ using FFXIV_ACT_Plugin.Memory.Models;
 using FFXIV_ACT_Plugin.Parse;
 using FFXIV_ACT_Plugin.Resource;
 using IINACT.Network;
+using Machina.FFXIV;
+using Machina.FFXIV.Headers.Opcodes;
 using Microsoft.MinIoC;
 using ACTWrapper = FFXIV_ACT_Plugin.Common.ACTWrapper;
 
@@ -24,13 +26,7 @@ namespace IINACT;
 
 public partial class FfxivActPluginWrapper : IDisposable
 {
-    private readonly Configuration configuration;
-    private readonly ClientLanguage dalamudClientLanguage;
-    private readonly IChatGui chatGui;
-    private readonly IFramework framework;
-    private readonly ICondition condition;
-
-    public readonly FFXIV_ACT_Plugin.FFXIV_ACT_Plugin ffxivActPlugin;
+    private readonly FFXIV_ACT_Plugin.FFXIV_ACT_Plugin ffxivActPlugin;
     private readonly Container iocContainer;
     private ISettingsMediator settingsMediator = null!;
     private readonly ParseMediator parseMediator;
@@ -62,16 +58,8 @@ public partial class FfxivActPluginWrapper : IDisposable
     public readonly IDataRepository Repository;
     public readonly IDataSubscription Subscription;
 
-    public unsafe FfxivActPluginWrapper(
-        Configuration configuration, ClientLanguage dalamudClientLanguage, IChatGui chatGui, IFramework framework,
-        ICondition condition)
+    public unsafe FfxivActPluginWrapper()
     {
-        this.configuration = configuration;
-        this.dalamudClientLanguage = dalamudClientLanguage;
-        this.chatGui = chatGui;
-        this.framework = framework;
-        this.condition = condition;
-
         ffxivActPlugin = new FFXIV_ACT_Plugin.FFXIV_ACT_Plugin();
         Plugin.Log.Information($"Initializing FFXIV_ACT_Plugin version {typeof(FFXIV_ACT_Plugin.FFXIV_ACT_Plugin).Assembly.GetName().Version}");
         ffxivActPlugin.ConfigureIOC();
@@ -110,7 +98,7 @@ public partial class FfxivActPluginWrapper : IDisposable
 
         ffxivActPlugin._dataCollection.StartMemory();
 
-        this.chatGui.ChatMessage += OnChatMessage;
+        Plugin.ChatGui.ChatMessage += OnChatMessage;
         ActGlobals.oFormActMain.BeforeLogLineRead += OFormActMain_BeforeLogLineRead;
         serverTimeProcessor.ServerTime = DateTime.Now;
 
@@ -130,25 +118,25 @@ public partial class FfxivActPluginWrapper : IDisposable
         for (var i = 0; i < mobArraySize; i++)
             mobDataOffsets[i] = mobData + (i * combatantSize);
 
-        this.framework.Update += MobDataRefresh;
+        Plugin.Framework.Update += MobDataRefresh;
     }
 
     private Language ClientLanguage =>
-        dalamudClientLanguage switch
+        Plugin.DataManager.Language switch
         {
             Dalamud.Game.ClientLanguage.Japanese => Language.Japanese,
             Dalamud.Game.ClientLanguage.English => Language.English,
             Dalamud.Game.ClientLanguage.German => Language.German,
             Dalamud.Game.ClientLanguage.French => Language.French,
-            _ => dalamudClientLanguage.ToString() == "ChineseSimplified" ? Language.Chinese : Language.English
+            _ =>  Plugin.DataManager.Language.ToString() == "ChineseSimplified" ? Language.Chinese : Language.English
         };
 
     public void Dispose()
     {
         cancellationTokenSource.Cancel();
         cancellationTokenSource.Dispose();
-        framework.Update -= MobDataRefresh;
-        chatGui.ChatMessage -= OnChatMessage;
+        Plugin.Framework.Update -= MobDataRefresh;
+        Plugin.ChatGui.ChatMessage -= OnChatMessage;
         ActGlobals.oFormActMain.BeforeLogLineRead -= OFormActMain_BeforeLogLineRead;
         ffxivActPlugin.DeInitPlugin();
         ffxivActPlugin.Dispose();
@@ -171,13 +159,13 @@ public partial class FfxivActPluginWrapper : IDisposable
 
         ParseSettings = new ParseSettings
         {
-            DisableDamageShield = configuration.DisableDamageShield,
-            DisableCombinePets = configuration.DisableCombinePets,
+            DisableDamageShield = Plugin.Configuration.DisableDamageShield,
+            DisableCombinePets = Plugin.Configuration.DisableCombinePets,
             LanguageID = ClientLanguage,
-            ParseFilter = (ParseFilterMode)configuration.ParseFilterMode,
-            SimulateIndividualDoTCrits = configuration.SimulateIndividualDoTCrits,
-            ShowRealDoTTicks = configuration.ShowRealDoTTicks,
-            ShowDebug = configuration.ShowDebug,
+            ParseFilter = (ParseFilterMode)Plugin.Configuration.ParseFilterMode,
+            SimulateIndividualDoTCrits = Plugin.Configuration.SimulateIndividualDoTCrits,
+            ShowRealDoTTicks = Plugin.Configuration.ShowRealDoTTicks,
+            ShowDebug = Plugin.Configuration.ShowDebug,
             EnableBenchmarks = false
         };
         settingsMediator.ParseSettings = ParseSettings;
@@ -258,7 +246,7 @@ public partial class FfxivActPluginWrapper : IDisposable
         if (settingsMediator.DataCollectionSettings == null)
             return;
 
-        if (mobDataAge < 3 || (!condition[ConditionFlag.BoundByDuty56] && mobDataAge < 10))
+        if (mobDataAge < 3 || (!Plugin.Condition[ConditionFlag.BoundByDuty56] && mobDataAge < 10))
         {
             mobDataAge++;
             if (mobArrayProcessor.PrimaryPlayerPointer == nint.Zero)

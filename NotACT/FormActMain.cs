@@ -13,7 +13,7 @@ public partial class FormActMain : Form, ISynchronizeInvoke
 {
     public delegate DateTime DateTimeLogParser(string logLine);
     public IPluginLog PluginLog { get; }
-    public dynamic DalamudPlugin { get; }
+    public dynamic DalamudPlugin;
 
     private readonly ConcurrentQueue<MasterSwing> afterActionsQueue = new();
     private Thread afterActionQueueThread;
@@ -30,9 +30,8 @@ public partial class FormActMain : Form, ISynchronizeInvoke
 
     internal volatile bool refreshTree;
 
-    public FormActMain(dynamic dalamudPlugin,IPluginLog pluginLog)
+    public FormActMain(IPluginLog pluginLog)
     {
-        DalamudPlugin = dalamudPlugin;
         PluginLog = pluginLog;
         InitializeComponent();
         AppDataFolder = new DirectoryInfo(".");

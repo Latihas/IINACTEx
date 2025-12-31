@@ -153,7 +153,7 @@ namespace RainbowMage.OverlayPlugin
         {
             return GetRepository() != null;
         }
-        
+
         [MethodImpl(MethodImplOptions.NoInlining)]
         private uint? GetCurrentTerritoryIDImpl()
         {
@@ -332,17 +332,15 @@ namespace RainbowMage.OverlayPlugin
                     return null;
             }
         }
-        
-        public static Dictionary<GameRegion, Dictionary<string, ushort>> GetMachinaOpcodes() =>
-            (Dictionary<GameRegion, Dictionary<string, ushort>>)typeof(OpcodeManager).GetField(
-                "_opcodes", BindingFlags.NonPublic | BindingFlags.Instance)!.GetValue(OpcodeManager.Instance);
+
+        public static Dictionary<GameRegion, Dictionary<string, ushort>> GetMachinaOpcodes() => OpcodeManager.Instance._opcodes;
 
         public GameRegion GetMachinaRegion() =>
             Machina.FFXIV.Headers.Opcodes.OpcodeManager.Instance.GameRegion;
 
         public DateTime EpochToDateTime(long epoch) =>
             Machina.Infrastructure.ConversionUtility.EpochToDateTime(epoch).ToLocalTime();
-        
+
         /**
          * Convert a coordinate expressed as a uint16 to a float.
          *
@@ -441,14 +439,14 @@ namespace RainbowMage.OverlayPlugin
                 }
             }
         }
-        
+
         public void RegisterZoneChangeDelegate(Action<uint, string> handler)
         {
             var sub = GetSubscription();
             if (sub != null)
                 sub.ZoneChanged += new ZoneChangedDelegate(handler);
         }
-        
+
         public DateTime GetServerTimestamp()
         {
             return GetRepository()?.GetServerTimestamp() ?? DateTime.Now;

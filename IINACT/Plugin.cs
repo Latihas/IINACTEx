@@ -96,6 +96,7 @@ public sealed class Plugin : IDalamudPlugin
     public string PluginAssemblyDirectory => PluginInterface.AssemblyLocation.Directory!.ToString();
     public string PluginConfigDirectory => PluginInterface.ConfigDirectory.ToString();
     public string PluginActScriptDirectory => Path.Combine(PluginConfigDirectory, "ActScript");
+    public (string, ushort, ushort)[] opcodestxtDiff = [];
     public bool opcodestxtReplaced;
     public bool opcodestxtCanReplace => File.Exists(opcodestxtPath);
     public string opcodestxtPath => Path.Combine(PluginAssemblyDirectory, "opcodes.txt");
@@ -124,13 +125,29 @@ public sealed class Plugin : IDalamudPlugin
         Log.Warning("IINACTEx Start Init...");
         Instance = this;
         if (!Directory.Exists(PluginActScriptDirectory)) Directory.CreateDirectory(PluginActScriptDirectory);
-        opcodestxtReplaced = opcodestxtCanReplace;
-        OpcodeManager.Instance.SetRegion(DataManager.Language.ToString() == "ChineseSimplified"
-                                             ? GameRegion.Chinese
-                                             : GameRegion.Global, opcodestxtCanReplace ? File.ReadAllText(opcodestxtPath) : null);
-
-        var createZoneDownHookManager = Task.Run(()
-                                                     => new ZoneDownHookManager(NotificationManager, GameInteropProvider));
+        var region = DataManager.Language.ToString() == "ChineseSimplified" ? GameRegion.Chinese : GameRegion.Global;
+        if (opcodestxtCanReplace)
+        {
+            try
+            {
+                var d1 = OpcodeManager.Instance._opcodes[region];
+                var d2 = OpcodeManager.ConvertOpCode(File.ReadAllText(opcodestxtPath));
+                OpcodeManager.Instance.SetRegion(region, d2);
+                opcodestxtDiff = d2
+                                 .Where(kvp => !d1.ContainsKey(kvp.Key) || !Equals(d1[kvp.Key], kvp.Value))
+                                 .Select(kvp => (kvp.Key, d1.GetValueOrDefault(kvp.Key, (ushort)0), kvp.Value))
+                                 .ToArray();
+                opcodestxtReplaced = true;
+                Log.Warning("opcodestxt Replaced");
+            }
+            catch (Exception ex)
+            {
+                Log.Error($"opcodestxt Replace Failed: {ex}");
+                OpcodeManager.Instance.SetRegion(region);
+            }
+        }
+        else
+            OpcodeManager.Instance.SetRegion(region);
         Version = Assembly.GetExecutingAssembly().GetName().Version!;
         FileDialogManager = new FileDialogManager();
         HttpClient = new HttpClient();
@@ -142,7 +159,8 @@ public sealed class Plugin : IDalamudPlugin
         PluginLogTraceListener = new PluginLogTraceListener();
         Trace.Listeners.Add(PluginLogTraceListener);
         ActGlobals.Init();
-        ActGlobals.oFormActMain = new FormActMain(this, Log);
+        ActGlobals.oFormActMain = new FormActMain(Log);
+        ActGlobals.oFormActMain.DalamudPlugin = this;
         Configuration = PluginInterface.GetPluginConfig() as Configuration ?? new Configuration();
         Configuration.Initialize(PluginInterface);
         //TTS
@@ -170,7 +188,9 @@ public sealed class Plugin : IDalamudPlugin
         TextToSpeechProvider.SetUseEdgeTTS(Configuration.UseEdgeTTS);
         TextToSpeechProvider.SetUseLatihasTTS(Configuration.UseLatihasTts);
         Log.Warning("TTS Inited");
+        ActGlobals.oFormActMain.LogFilePath = Configuration.LogFilePath;
         WindowSystem.AddWindow(MainWindow = new MainWindow());
+        WindowSystem.AddWindow(OverlayWindow = new OverlayWindow());
         WindowSystem.AddWindow(EdgeTTSWindow = new EdgeTTSWindow(TextToSpeechProvider.GetEdgeTTSManager()!));
         WindowSystem.AddWindow(TriggerWindow = new LWindow.TriggerWindow());
         WindowSystem.AddWindow(FolderWindow = new LWindow.FolderWindow());
@@ -180,20 +200,18 @@ public sealed class Plugin : IDalamudPlugin
         WindowSystem.AddWindow(RepoWindow = new LWindow.RepoWindow());
         WindowSystem.AddWindow(TriggernometryLogView = new LWindow.TriggernometryLogView());
         WindowSystem.AddWindow(ACTLogView = new LWindow.ACTLogView());
-        WindowSystem.AddWindow(OverlayWindow = new OverlayWindow());
         Log.Warning("Windows Inited");
-        ActGlobals.oFormActMain.LogFilePath = Configuration.LogFilePath;
-        FfxivActPluginWrapper = new FfxivActPluginWrapper(Configuration, DataManager.Language, ChatGui, Framework, Condition);
-        IpcProviders = new IpcProviders(PluginInterface);
-        Log.Warning("OverlayPlugin Initializing");
-        OverlayPlugin = InitOverlayPluginTrn();
-        Log.Warning("OverlayPlugin Inited");
         var info = PluginInterface.GetType().Assembly.GetType("Dalamud.Service`1", true)!.MakeGenericType(PluginInterface.GetType().Assembly.GetType("Dalamud.Dalamud", true)!).GetMethod("Get")!
                                   .Invoke(null, BindingFlags.Default, null, [], null);
         DalamudStartInfo = info!.GetType().GetField("StartInfo", AllFlags)?.GetValue(info)
                            ?? info.GetType().GetProperty("StartInfo", AllFlags)?.GetValue(info);
         Log.Info(DalamudStartInfo?.ToString());
         Log.Warning("DalamudStartInfo Inited");
+        FfxivActPluginWrapper = new FfxivActPluginWrapper();
+        Log.Warning("FfxivActPlugin Inited");
+        OverlayPlugin = InitOverlayPluginTrn();
+        Log.Warning("OverlayPlugin Inited");
+        IpcProviders = new IpcProviders(PluginInterface);
         ActGlobals.oFormActMain.TriggernometryPlugin = TriggernometryProxyPlugin = new ProxyPlugin();
         TriggernometryProxyPlugin.InitPlugin(this, PluginInterface, Log, ClientState, Framework, GameInteropProvider);
         RealPlugin.Instance.InitAura();
@@ -223,8 +241,8 @@ public sealed class Plugin : IDalamudPlugin
             LeavePvP();
         ClientState.EnterPvP += EnterPvP;
         ClientState.LeavePvP += LeavePvP;
-        ZoneDownHookManager = createZoneDownHookManager.Result;
-        ActGlobals.oFormActMain.ActPlugins.Add(new ActPluginData("_FFXIV_ACT_Plugin", FfxivActPluginWrapper.ffxivActPlugin, false));
+        ZoneDownHookManager = new ZoneDownHookManager();
+        ActGlobals.oFormActMain.ActPlugins.Add(new ActPluginData("_FFXIV_ACT_Plugin", ActGlobals.oFormActMain.FfxivPlugin, false));
         ActGlobals.oFormActMain.ActPlugins.Add(new ActPluginData("_OverlayPlugin", new PluginLoader(OverlayPlugin), false));
         ActGlobals.oFormActMain.ActPlugins.Add(new ActPluginData("_PostNamazu", PostNamazuPlugin, false));
         foreach (var rt in Directory.GetFiles(PluginActScriptDirectory, "*.cs", SearchOption.TopDirectoryOnly).Select(Path.GetFileName).Cast<string>())
@@ -234,7 +252,6 @@ public sealed class Plugin : IDalamudPlugin
             if (Configuration.ActScriptsEnabled.Contains(rt))
                 LoadIActPluginV1(rt);
         Log.Warning("ACT Plugin Inited");
-        Task.Run(() => OverlayWindow.Init(WebSocketServer));
         if (Directory.Exists(Path.Combine(PluginConfigDirectory, "cactbot"))) RefreshBw();
         if (Configuration.ShowWindowOnInit) MainWindow.Toggle();
         if (Configuration.ShowOverlayOnInit) OverlayWindow.Toggle();
@@ -349,16 +366,16 @@ public sealed class Plugin : IDalamudPlugin
         var overlayPlugin = new PluginMain(PluginAssemblyDirectory, logger, container);
         container.Register(overlayPlugin);
         ActGlobals.oFormActMain.OverlayPluginContainer = container;
-
         opcodesjsoncReplaced = opcodesjsoncCanReplace;
         overlayPlugin.InitPlugin(PluginConfigDirectory, opcodesjsoncCanReplace ? File.ReadAllText(opcodesjsoncPath) : null);
+        if (opcodesjsoncReplaced) Log.Warning("opcodesjsonc Replaced");
         var registry = container.Resolve<Registry>();
         MainWindow.OverlayPresets = registry.OverlayTemplates;
-        WebSocketServer = container.Resolve<RainbowMage.OverlayPlugin.WebSocket.ServerController>();
-        MainWindow.Server = WebSocketServer;
+        MainWindow.Server = WebSocketServer = container.Resolve<RainbowMage.OverlayPlugin.WebSocket.ServerController>();
         IpcProviders.Server = WebSocketServer;
-        IpcProviders.OverlayIpcHandler = container.Resolve<RainbowMage.OverlayPlugin.Handlers.Ipc.IpcHandlerController>();
+        IpcProviders.OverlayIpcHandler = OverlayPlugin._container.Resolve<RainbowMage.OverlayPlugin.Handlers.Ipc.IpcHandlerController>();
         MainWindow.OverlayPluginConfig = container.Resolve<IPluginConfig>();
+        OverlayWindow.Init(WebSocketServer);
         return overlayPlugin;
     }
 

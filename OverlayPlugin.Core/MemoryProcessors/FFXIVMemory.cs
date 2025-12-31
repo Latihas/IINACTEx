@@ -97,10 +97,7 @@ namespace RainbowMage.OverlayPlugin.MemoryProcessors
 
         public bool IsValid()
         {
-            if (processHandle != IntPtr.Zero)
-                return true;
-
-            return false;
+            return processHandle != IntPtr.Zero;
         }
 
         public static unsafe string GetStringFromBytes(byte* source, int size, int realSize = 0)

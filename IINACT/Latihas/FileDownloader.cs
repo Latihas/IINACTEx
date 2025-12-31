@@ -18,6 +18,7 @@ public class FileDownloader
 
     public async Task DownloadFileAsync()
     {
+        if(File.Exists(savePath))File.Delete(savePath);
         using (var httpClient = new HttpClient())
         {
             httpClient.Timeout = TimeSpan.FromMinutes(10);

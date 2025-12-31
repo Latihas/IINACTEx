@@ -9,14 +9,7 @@ public class WebSocketClient : IDisposable
 {
     private readonly CancellationTokenSource _cts = new();
     private readonly ClientWebSocket _ws = new();
-    private bool _disposed;
-
-
-    public void Dispose()
-    {
-        Dispose(true);
-        GC.SuppressFinalize(this);
-    }
+    public bool Ready;
 
     public event DataReceivedHandler? OnDataReceived;
 
@@ -27,6 +20,7 @@ public class WebSocketClient : IDisposable
             await _ws.ConnectAsync(new Uri(url), _cts.Token).ConfigureAwait(false);
             Plugin.Log.Warning("WebSocket连接成功");
             _ = ReceiveLoop();
+            Ready=true;
         }
         catch (Exception ex)
         {
@@ -43,7 +37,7 @@ public class WebSocketClient : IDisposable
 
         try
         {
-            while (!_disposed && _ws.State == WebSocketState.Open && !_cts.Token.IsCancellationRequested)
+            while (_ws.State == WebSocketState.Open && !_cts.Token.IsCancellationRequested)
             {
                 var result = await _ws.ReceiveAsync(
                                  new ArraySegment<byte>(buffer),
@@ -75,56 +69,36 @@ public class WebSocketClient : IDisposable
             Plugin.Log.Warning(ex.ToString());
         } finally
         {
-            if (!_disposed) Dispose();
+            _ws.Dispose();
         }
     }
 
 
-    protected virtual void Dispose(bool disposing)
+    public void Dispose()
     {
-        if (_disposed) return;
-        if (disposing)
+        try
+        {
+            _cts.Cancel();
+            _cts.Dispose();
+        }
+        catch (Exception)
+        {
+            //
+        }
+        if (_ws.State is WebSocketState.Open or WebSocketState.Connecting)
         {
             try
             {
-                _cts.Cancel();
-                _cts.Dispose();
+                _ws.CloseOutputAsync(
+                    WebSocketCloseStatus.NormalClosure,
+                    "Dispose关闭",
+                    CancellationToken.None
+                ).ConfigureAwait(false).GetAwaiter().GetResult();
             }
-            catch (Exception)
-            {
-                //
-            }
-            if (_ws.State is WebSocketState.Open or WebSocketState.Connecting)
-            {
-                try
-                {
-                    _ws.CloseOutputAsync(
-                        WebSocketCloseStatus.NormalClosure,
-                        "Dispose关闭",
-                        CancellationToken.None
-                    ).ConfigureAwait(false).GetAwaiter().GetResult();
-                }
-                catch
-                {
-                    //
-                }
-            }
-            try
-            {
-                _ws.Dispose();
-            }
-            catch (Exception)
+            catch
             {
                 //
             }
         }
-
-        _disposed = true;
-    }
-
-
-    ~WebSocketClient()
-    {
-        Dispose(false);
     }
 }

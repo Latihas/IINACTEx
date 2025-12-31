@@ -128,7 +128,6 @@ public class MainWindow : Window, IDisposable
                     FileDownloaderCactbot = null;
                     Plugin.UnzipWithoutPassword(zipPath, cactbotDir);
                 });
-                if (File.Exists(zipPath)) File.Delete(zipPath);
                 _ = FileDownloaderCactbot.DownloadFileAsync();
             }
         }

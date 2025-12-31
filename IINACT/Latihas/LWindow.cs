@@ -3,6 +3,8 @@ using System.IO;
 using System.IO.Compression;
 using System.Numerics;
 using System.Runtime.Loader;
+using System.Text;
+using System.Text.Json.Nodes;
 using Advanced_Combat_Tracker;
 using Dalamud.Bindings.ImGui;
 using Dalamud.Interface.ImGuiNotification;
@@ -317,7 +319,7 @@ public static partial class LWindow
         using var tab = ImRaii.TabItem("脚本设置");
         if (!tab) return;
         ImGui.Text("脚本一览(待开发)");
-        ImGui.Text(string.Join(",",ActGlobals.oFormActMain.ActPlugins.Select(x => x.pluginFileName)));
+        ImGui.Text(string.Join(",", ActGlobals.oFormActMain.ActPlugins.Select(x => x.pluginFileName)));
         ImGui.SameLine();
         if (ImGui.Button("打开脚本文件夹")) Start(Plugin.Instance.PluginActScriptDirectory);
         //TODO 检测重复 GetFileNameWithoutExtension
@@ -345,7 +347,7 @@ public static partial class LWindow
                     if (ImGui.Button($"载入##{i}"))
                         if (i.EndsWith(".cs"))
                             Plugin.LoadPScript(i);
-                        else 
+                        else
                             Plugin.LoadIActPluginV1(i);
                 }
                 else
@@ -370,6 +372,7 @@ public static partial class LWindow
         ImGui.PopStyleColor(1);
         ImGui.Text("IINACTEx支持外部文件替换Opcode。");
         ImGui.Text("在插件安装目录下如果存在opcodes.txt，则会在加载插件的时候替换掉解析插件的OpCode。");
+        ImGui.Text("opcodes.txt支持从Karashiiro的在线库获取扩展包，其包含未在ACT解析插件内的数值，可以作为Unscrambler解析插件在版本初期的替代。");
         ImGui.Text("在插件安装目录下如果存在opcodes.jsonc，则会在加载插件的时候替换掉Overlay插件的OpCode。");
         ImGui.Separator();
         ImGui.PushStyleColor(ImGuiCol.Text, Color.LPurple);
@@ -418,10 +421,10 @@ public static partial class LWindow
         }
         else ImGui.Text("opcodes.jsonc为内置版本");
         ImGui.Separator();
-        ImGui.Text("这里可以从呆萌源获取两个文件");
+        ImGui.Text("这里可以在线获取两个文件");
         if (FileDownloaderOpcodestxt == null)
         {
-            if (ImGui.Button("自动下载生成opcodes.txt"))
+            if (ImGui.Button("[Diemoe]opcodes.txt"))
             {
                 var dp = Path.Combine(Plugin.Instance.PluginAssemblyDirectory, "chinese.zip");
                 FileDownloaderOpcodestxt = new FileDownloader("https://cdn.diemoe.net/files/ACT.DieMoe/Packs/FFXIV_ACT_Plugin/chinese.zip", dp, () =>
@@ -453,30 +456,69 @@ public static partial class LWindow
             }
         }
         else ImGui.Text("处理中");
-
+        ImGui.SameLine();
+        if (FileDownloaderKarashiiro == null)
+        {
+            if (ImGui.Button("[Karashiiro]扩展的opcodes.txt"))
+            {
+                var dp = Path.Combine(Plugin.Instance.PluginAssemblyDirectory, "opcodes.txt.json");
+                FileDownloaderKarashiiro = new FileDownloader("https://cdn.jsdelivr.net/gh/karashiiro/FFXIVOpcodes@latest/opcodes.min.json", dp, () =>
+                {
+                    FileDownloaderKarashiiro = null;
+                    try
+                    {
+                        var sb = new StringBuilder();
+                        foreach (var a in JsonNode.Parse(File.ReadAllText(dp))!.AsArray())
+                        {
+                            if (a!["region"]!.ToString() == "CN")
+                            {
+                                var jo = a["lists"]!.AsObject();
+                                foreach (var p in jo)
+                                {
+                                    foreach (var p2 in p.Value!.AsArray())
+                                    {
+                                        var o = p2!.AsObject();
+                                        sb.Append(o["name"]).Append('|').Append(o["opcode"]).Append(Environment.NewLine);
+                                    }
+                                }
+                            }
+                        }
+                        File.WriteAllText( Path.Combine(Plugin.Instance.PluginAssemblyDirectory, "opcodes.txt"), sb.ToString());
+                    }
+                    catch (Exception e)
+                    {
+                        Plugin.Log.Error(e.ToString());
+                    }
+                });
+                FileDownloaderKarashiiro.DownloadFileAsync();
+            }
+        }
+        else ImGui.Text("处理中");
         ImGui.SameLine();
         if (FileDownloaderOpcodesjsonc == null)
         {
-            if (ImGui.Button("自动下载生成opcodes.jsonc"))
+            if (ImGui.Button("[Diemoe]opcodes.jsonc"))
             {
                 FileDownloaderOpcodesjsonc = new FileDownloader("https://assets.diemoe.net/OverlayPlugin/OverlayPlugin.Core/resources/opcodes.jsonc", Path.Combine(Plugin.Instance.PluginAssemblyDirectory, "opcodes.jsonc"),
-                                                                () => { FileDownloaderOpcodesjsonc = null; });
+                                                                () => FileDownloaderOpcodesjsonc = null);
                 FileDownloaderOpcodesjsonc.DownloadFileAsync();
             }
         }
         else ImGui.Text("处理中");
+        ImGui.Separator();
+        if (Plugin.Instance.opcodestxtDiff.Length == 0) ImGui.Text("opcodes.txt无差异");
+        else
+        {
+            ImGui.Text("opcodes.txt有差异");
+            NewTable(["项目", "原始", "替换"], Plugin.Instance.opcodestxtDiff, [
+                i => ImGui.Text(i.Item1),
+                i => ImGui.Text("0x" + i.Item2.ToString("X")),
+                i => ImGui.Text("0x" + i.Item3.ToString("X")),
+            ]);
+        }
     }
 
-    private static byte[] DecompressGzip(byte[] compressedData)
-    {
-        using var compressedStream = new MemoryStream(compressedData);
-        using var gzipStream = new GZipStream(compressedStream, CompressionMode.Decompress);
-        using var resultStream = new MemoryStream();
-        gzipStream.CopyTo(resultStream);
-        return resultStream.ToArray();
-    }
-
-    private static FileDownloader? FileDownloaderOpcodestxt, FileDownloaderOpcodesjsonc;
+    private static FileDownloader? FileDownloaderOpcodestxt, FileDownloaderOpcodesjsonc, FileDownloaderKarashiiro;
 
     private static void TScaler(SerializableDictionary<string, VariableScalar> data) =>
         NewTable(["名称", "值", "时间", "源"], data.ToArray(), [

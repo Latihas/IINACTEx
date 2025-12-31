@@ -19,6 +19,7 @@ public class OverlayWindow() : Window("IINACT Overlay"), IDisposable
 
     public void Parse(string data)
     {
+        if (webSocketClient is not { Ready: true }) return;
         try
         {
             var x = JsonConvert.DeserializeObject<CombatDataWrapper>(data);
@@ -38,16 +39,17 @@ public class OverlayWindow() : Window("IINACT Overlay"), IDisposable
         }
     }
 
-    public async void Init(ServerController? server)
+    public void Init(ServerController? server)
     {
-        try {
-            webSocketClient?.Dispose();
+        try
+        {
             webSocketClient = new WebSocketClient();
-            await webSocketClient.Connect($"ws://{server?.Address}:{server?.Port}/MiniParse");
+            _ = webSocketClient.Connect($"ws://{server?.Address}:{server?.Port}/MiniParse");
             webSocketClient.OnDataReceived += Parse;
         }
-        catch (Exception e) {
-           Plugin. Log.Error(e.ToString());
+        catch (Exception e)
+        {
+            Plugin.Log.Error(e.ToString());
         }
     }
 

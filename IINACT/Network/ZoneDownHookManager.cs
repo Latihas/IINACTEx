@@ -18,7 +18,6 @@ public unsafe class ZoneDownHookManager : IDisposable
     private readonly int[] opcodeKeyTable;
     private readonly byte[] keys = new byte[3];
     
-    private readonly INotificationManager notificationManager;
 	private delegate nuint DownPrototype(byte* data, byte* a2, nuint a3, nuint a4, nuint a5);
 	
 	private readonly Hook<DownPrototype> zoneDownHook;
@@ -28,11 +27,8 @@ public unsafe class ZoneDownHookManager : IDisposable
     private readonly VersionConstants versionConstants;
     private readonly IUnscrambler unscrambler;
 
-	public ZoneDownHookManager(
-        INotificationManager notificationManager,
-		IGameInteropProvider hooks)
+	public ZoneDownHookManager()
     {
-        this.notificationManager = notificationManager;
 		buffer = new SimpleBuffer(1024 * 1024);
         var multiScanner = new MultiSigScanner();
         var moduleBase = multiScanner.Module.BaseAddress;
@@ -83,7 +79,7 @@ public unsafe class ZoneDownHookManager : IDisposable
             opcodeKeyTable[i / 4] = BitConverter.ToInt32(rawOpcodeKeyTable, i);
 
         var rxPtrs = multiScanner.ScanText(GenericDownSignature, 3);
-		zoneDownHook = hooks.HookFromAddress<DownPrototype>(rxPtrs[2], ZoneDownDetour);
+		zoneDownHook = Plugin.GameInteropProvider.HookFromAddress<DownPrototype>(rxPtrs[2], ZoneDownDetour);
 
 		Enable();
     }
@@ -160,7 +156,7 @@ public unsafe class ZoneDownHookManager : IDisposable
     
     private void SendNotification(string content)
     {
-        notificationManager.AddNotification(new Notification
+        Plugin.NotificationManager.AddNotification(new Notification
         {
             Content = content,
             Title = "IINACT", 
@@ -282,16 +278,16 @@ public unsafe class ZoneDownHookManager : IDisposable
                 { "StatusEffectList", opcodes["StatusEffectList"] },
                 { "StatusEffectList3", opcodes["StatusEffectList3"] },
 
-                { "Examine", 0x0 },
-                { "UpdateGearset", 0x0 },
-                { "UpdateParty", 0x0 },
+                { "Examine", opcodes.TryGetValue("Examine", out var opcodeExamine) ? opcodeExamine : 0x0 },
+                { "UpdateGearset", opcodes.TryGetValue("UpdateGearset", out var opcodeUpdateGearset) ? opcodeUpdateGearset : 0x0 },
+                { "UpdateParty", opcodes.TryGetValue("UpdateParty", out var opcodeUpdateParty) ? opcodeUpdateParty : 0x0 },
                 { "ActorControl", opcodes["ActorControl"] },
                 { "ActorCast", opcodes["ActorCast"] },
 
-                { "UnknownEffect01", 0x0 },
-                { "UnknownEffect16", 0x0 },
-                { "ActionEffect02", 0x0 },
-                { "ActionEffect04", 0x0 }
+                { "UnknownEffect01", opcodes.TryGetValue("UnknownEffect01", out var opcodeUnknownEffect01) ? opcodeUnknownEffect01 : 0x0 },
+                { "UnknownEffect16", opcodes.TryGetValue("UnknownEffect16", out var opcodeUnknownEffect16) ? opcodeUnknownEffect16 : 0x0 },
+                { "ActionEffect02", opcodes.TryGetValue("ActionEffect02", out var opcodeActionEffect02) ? opcodeActionEffect02 : 0x0 },
+                { "ActionEffect04", opcodes.TryGetValue("ActionEffect04", out var opcodeActionEffect04) ? opcodeActionEffect04 : 0x0 }
             }
         };
     }
