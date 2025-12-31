@@ -209,9 +209,9 @@ public sealed class Plugin : IDalamudPlugin
         Log.Warning("DalamudStartInfo Inited");
         FfxivActPluginWrapper = new FfxivActPluginWrapper();
         Log.Warning("FfxivActPlugin Inited");
+        IpcProviders = new IpcProviders(PluginInterface);
         OverlayPlugin = InitOverlayPluginTrn();
         Log.Warning("OverlayPlugin Inited");
-        IpcProviders = new IpcProviders(PluginInterface);
         ActGlobals.oFormActMain.TriggernometryPlugin = TriggernometryProxyPlugin = new ProxyPlugin();
         TriggernometryProxyPlugin.InitPlugin(this, PluginInterface, Log, ClientState, Framework, GameInteropProvider);
         RealPlugin.Instance.InitAura();
@@ -373,7 +373,7 @@ public sealed class Plugin : IDalamudPlugin
         MainWindow.OverlayPresets = registry.OverlayTemplates;
         MainWindow.Server = WebSocketServer = container.Resolve<RainbowMage.OverlayPlugin.WebSocket.ServerController>();
         IpcProviders.Server = WebSocketServer;
-        IpcProviders.OverlayIpcHandler = OverlayPlugin._container.Resolve<RainbowMage.OverlayPlugin.Handlers.Ipc.IpcHandlerController>();
+        IpcProviders.OverlayIpcHandler = container.Resolve<RainbowMage.OverlayPlugin.Handlers.Ipc.IpcHandlerController>();
         MainWindow.OverlayPluginConfig = container.Resolve<IPluginConfig>();
         OverlayWindow.Init(WebSocketServer);
         return overlayPlugin;
