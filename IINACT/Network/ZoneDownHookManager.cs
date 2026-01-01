@@ -142,16 +142,11 @@ public unsafe class ZoneDownHookManager : IDisposable
             Plugin.Log.Warning("[UpdateKeys] Dispatcher was null, so not initializing keys");
         }
     }
-	
-	public void Disable()
-	{
-		zoneDownHook?.Disable();
-	}
-	
+    
 	public void Dispose()
 	{
-		Disable();
-		zoneDownHook?.Dispose();
+        zoneDownHook.Disable();
+		zoneDownHook.Dispose();
 	}
     
     private void SendNotification(string content)

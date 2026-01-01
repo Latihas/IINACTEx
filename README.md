@@ -2,7 +2,7 @@
 
 ![](https://socialify.git.ci/Latihas/IINACTEx/image?description=1&forks=1&issues=1&language=1&name=1&owner=1&pattern=Transparent&pulls=1&stargazers=1&theme=Auto)
 
-## IINACT改版，整合了CN、Triggernometry、PostNamazu
+## IINACT改版，整合了CN、Triggernometry、PostNamazu等
 
 # 重要提醒！！！请一定要先看完介绍再使用，本插件仍然不是很稳定，有炸游戏风险
 
@@ -16,6 +16,7 @@
 Plugin以适配现代.NET。与此同时，也添加了大量修改的Triggernometry与Postnamazu。包括类ACT、Triggernometry、Postnamazu在内，这些并非完整的代码移植，并且仍在开发完善中，可能缺少部分原版的函数，开发时请注意。
 
 相关参考文献如下：
+
 > IINACT官方: https://github.com/marzent/IINACT
 >
 > IINACT CN: https://github.com/MeowZWR/IINACT
@@ -28,86 +29,7 @@ Plugin以适配现代.NET。与此同时，也添加了大量修改的Triggernom
 >
 > PostNamazu: https://github.com/Natsukage/PostNamazu
 
-# 悬浮窗
-
-开发者偏好使用Browsingway，但是IINACT原版的URL生成器指向的在线页面可能不是最新版，建议指向本地ACT的目录
-
-比如开发者的ACT装在D盘，那么URL就类似于 file:///D:
-/ACT.DieMoe/Plugins/ACT.OverlayPlugin/cactbot/ui/raidboss/raidboss.html?timeline=1&alerts=1
-
-有时候bw会不显示东西（如时间轴），需要手动在bw里面刷新一下。每次插件加载会自动刷新bw的(时间轴,设置)悬浮窗。
-
-IINACTEx也有内置一个原生的伤害统计悬浮窗，输入/iinactoverlay可打开。提供最基础的统计功能:
-
-![](pic/overlay.jpg)
-
-# TTS/Cactbot
-
-IINACT CN默认使用了EdgeTTS，如果你EdgeTTS工作正常可以跳过这部分。由于开发者比较喜欢用LatihasTTS(纯本地模型推理)
-所以也做了接口。由于文件过大放不上Github所以需要联系开发者获取。(其实也没那么必须，只是开发者用着舒服)
-
-cactbot资源可在 https://raw.githubusercontent.com/Latihas/dalamud-plugins/main/cactbot.zip 下载。
-
-仅需将相关文件放入插件安装目录下即可使用，加号代表添加的文件，像这样:
-
-Cactbot:
-
-- $(pluginConfigs/IINACTEx)
-    - Scripts/
-    - TriggernometryRepoBackups/
-    - PostNamazu.config.xml
-    - Triggernometry.config.xml
-    - +cactbot.zip
-    - ...
-
-LatihasTTS:
-
-- $(installedPlugins/IINACTEx)
-    - Advanced Combat Tracker.dll
-    - Triggernometry.dll
-    - +TtsAssets/
-        - +pinyin.txt
-        - +symbol.txt
-        - +vocab.txt
-        - +a.ort
-        - +v.ort
-        - +...
-    - ...
-
-目前支持cactbot.zip一键下载安装，比较依赖网络环境。手动的话资源放在插件Config目录，cactbot可以选择手动解压，也可以在插件下次加载时自动解压。
-
-# 已知限制
-
-不要在插件加载后立刻卸载插件，否则大概率会线程回收失败，只能重启游戏解决。
-
-Triggernometry有时会因为宝宝椅的鲇鱼精扩展功能炸游戏/显示异常/...。开发者用Penumbra可以恢复部分图形问题。
-
-IActPluginV1仅为不报错存在，不会执行加载等逻辑。
-
-Postnamezu的Preset不可用。
-
-触发器有时候声音比较小，减小游戏音量以调整。
-
-Triggernometry的配置文件与ACT版本完全兼容，可以直接把act的配置文件复制到插件配置目录下。
-
-Triggernometry的触发器不支持导入文件，过大的触发器建议分批导入。
-
-Triggernometry保存配置逻辑与原版一致，即每5分钟或是卸载时，所以游戏崩溃可能会丢失配置。请导入或修改过任何触发器/配置/...后点击`保存
-配置`按钮手动保存。
-
-Triggernometry的部分高级内存操作与回调不可用。
-
-Triggernometry的重复触发器导入重命名可能有问题，请尽量不要二次导入相同的触发器。
-
-Triggernometry的部分编辑器还没写。
-
-Triggernometry的绝大部分Form或Control因兼容性被移除，可能误伤配置弹出框，一般报错中可以看出来。
-
-# 常见问题
-
-问题太多了。如果出现bug，试着关开一下插件，说不定就自己会好了。
-
-可以提issue让我写进来。
+我不想维护两遍文档，请第一次使用的时候或者遇到什么问题的时候优先查看插件的`帮助`栏目。
 
 # 开发相关
 

@@ -138,8 +138,6 @@ public partial class FfxivActPluginWrapper : IDisposable
         Plugin.Framework.Update -= MobDataRefresh;
         Plugin.ChatGui.ChatMessage -= OnChatMessage;
         ActGlobals.oFormActMain.BeforeLogLineRead -= OFormActMain_BeforeLogLineRead;
-        ffxivActPlugin.DeInitPlugin();
-        ffxivActPlugin.Dispose();
         Marshal.FreeHGlobal(mobData);
     }
 

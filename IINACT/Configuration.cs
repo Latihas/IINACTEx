@@ -12,9 +12,6 @@ public class Configuration : IPluginConfiguration
     public string DefaultLogFilePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "IINACT");
     private string? logFilePath;
 
-    [JsonIgnore]
-    private IDalamudPluginInterface? PluginInterface { get; set; }
-
     public int ParseFilterMode { get; set; }
 
     public bool DisableDamageShield { get; set; }
@@ -22,7 +19,7 @@ public class Configuration : IPluginConfiguration
     public bool DisableCombinePets { get; set; }
 
     public bool DisablePvp { get; set; }
-    
+
     public bool SimulateIndividualDoTCrits { get; set; }
 
     public bool ShowRealDoTTicks { get; set; }
@@ -30,7 +27,7 @@ public class Configuration : IPluginConfiguration
     public bool ShowDebug { get; set; }
 
     [JsonProperty("useEdgeTTS")]
-    public bool UseEdgeTTS { get; set; } = true;
+    public bool UseEdgeTts { get; set; } = true;
     [JsonProperty("useLatihasTTS")]
     public bool UseLatihasTts { get; set; } = true;
     public bool ShowWindowOnInit { get; set; } = true;
@@ -48,13 +45,13 @@ public class Configuration : IPluginConfiguration
         get => Advanced_Combat_Tracker.ActGlobals.oFormActMain.WriteLogFile;
         set => Advanced_Combat_Tracker.ActGlobals.oFormActMain.WriteLogFile = value;
     }
-    
-	public bool WriteActLogFile
-	{
-		get => Advanced_Combat_Tracker.ActGlobals.oFormActMain.WriteActLogFile;
-		set => Advanced_Combat_Tracker.ActGlobals.oFormActMain.WriteActLogFile = value;
-	}
-    
+
+    public bool WriteActLogFile
+    {
+        get => Advanced_Combat_Tracker.ActGlobals.oFormActMain.WriteActLogFile;
+        set => Advanced_Combat_Tracker.ActGlobals.oFormActMain.WriteActLogFile = value;
+    }
+
     public bool WriteTrnLogFile
     {
         get => Advanced_Combat_Tracker.ActGlobals.oFormActMain.WriteTrnLogFile;
@@ -68,17 +65,11 @@ public class Configuration : IPluginConfiguration
     }
     public List<string> ActScriptsEnabled { get; set; } = [];
     public int Version { get; set; } = 1;
-    
-    public string? SelectedOverlay { get; set; }
 
-    public void Initialize(IDalamudPluginInterface pluginInterface)
-    {
-        PluginInterface = pluginInterface;
-    }
+    public string? SelectedOverlay { get; set; }
 
     public void Save()
     {
-        PluginInterface?.SavePluginConfig(this);
+        Plugin.PluginInterface.SavePluginConfig(this);
     }
-    
 }

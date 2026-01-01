@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.IO.Compression;
 using System.Numerics;
@@ -163,8 +164,8 @@ public static partial class LWindow
         ImGui.Text("目标信息");
         var targ = Plugin.TargetManager.Target;
         if (targ == null)
-            if (Plugin.ClientState.LocalPlayer != null)
-                targ = Plugin.ClientState.LocalPlayer;
+            if (Plugin.ObjectTable.LocalPlayer != null)
+                targ = Plugin.ObjectTable.LocalPlayer;
         if (targ != null)
         {
             ImGui.Text("Target.Name: " + targ.Name);
@@ -452,7 +453,7 @@ public static partial class LWindow
                         Plugin.Log.Error(e.ToString());
                     }
                 });
-                FileDownloaderOpcodestxt.DownloadFileAsync();
+                _ = FileDownloaderOpcodestxt.DownloadFileAsync();
             }
         }
         else ImGui.Text("处理中");
@@ -478,19 +479,19 @@ public static partial class LWindow
                                     foreach (var p2 in p.Value!.AsArray())
                                     {
                                         var o = p2!.AsObject();
-                                        sb.Append(o["name"]).Append('|').Append(o["opcode"]).Append(Environment.NewLine);
+                                        sb.Append(o["name"]).Append('|').Append(int.Parse(o["opcode"]!.ToString()).ToString("X")).Append(Environment.NewLine);
                                     }
                                 }
                             }
                         }
-                        File.WriteAllText( Path.Combine(Plugin.Instance.PluginAssemblyDirectory, "opcodes.txt"), sb.ToString());
+                        File.WriteAllText(Path.Combine(Plugin.Instance.PluginAssemblyDirectory, "opcodes.txt"), sb.ToString());
                     }
                     catch (Exception e)
                     {
                         Plugin.Log.Error(e.ToString());
                     }
                 });
-                FileDownloaderKarashiiro.DownloadFileAsync();
+                _ = FileDownloaderKarashiiro.DownloadFileAsync();
             }
         }
         else ImGui.Text("处理中");
@@ -501,7 +502,7 @@ public static partial class LWindow
             {
                 FileDownloaderOpcodesjsonc = new FileDownloader("https://assets.diemoe.net/OverlayPlugin/OverlayPlugin.Core/resources/opcodes.jsonc", Path.Combine(Plugin.Instance.PluginAssemblyDirectory, "opcodes.jsonc"),
                                                                 () => FileDownloaderOpcodesjsonc = null);
-                FileDownloaderOpcodesjsonc.DownloadFileAsync();
+                _ = FileDownloaderOpcodesjsonc.DownloadFileAsync();
             }
         }
         else ImGui.Text("处理中");
@@ -509,7 +510,7 @@ public static partial class LWindow
         if (Plugin.Instance.opcodestxtDiff.Length == 0) ImGui.Text("opcodes.txt无差异");
         else
         {
-            ImGui.Text("opcodes.txt有差异");
+            ImGui.Text($"opcodes.txt有差异({Plugin.Instance.opcodestxtDiff.Length}个)");
             NewTable(["项目", "原始", "替换"], Plugin.Instance.opcodestxtDiff, [
                 i => ImGui.Text(i.Item1),
                 i => ImGui.Text("0x" + i.Item2.ToString("X")),

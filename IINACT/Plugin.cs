@@ -60,9 +60,9 @@ public sealed class Plugin : IDalamudPlugin
     [PluginService]
     public static IPluginLog Log { get; private set; }
     [PluginService]
-    public static IGameGui GameGui { get; private set; }
-    [PluginService]
     public static ITargetManager TargetManager { get; private set; }
+    [PluginService]
+    public static IObjectTable ObjectTable { get; private set; }
     public static Configuration Configuration { get; private set; }
     internal static TextToSpeechProvider TextToSpeechProvider { get; private set; }
     private static MainWindow MainWindow = null!;
@@ -92,7 +92,7 @@ public sealed class Plugin : IDalamudPlugin
 
     internal static EdgeTTSWindow EdgeTTSWindow = null!;
     public static Plugin Instance;
-    public static dynamic? LatihasTts;
+
     public string PluginAssemblyDirectory => PluginInterface.AssemblyLocation.Directory!.ToString();
     public string PluginConfigDirectory => PluginInterface.ConfigDirectory.ToString();
     public string PluginActScriptDirectory => Path.Combine(PluginConfigDirectory, "ActScript");
@@ -130,7 +130,7 @@ public sealed class Plugin : IDalamudPlugin
         {
             try
             {
-                var d1 = OpcodeManager.Instance._opcodes[region];
+                var d1 = OpcodeManager.Instance._opcodes[region].ToDictionary(kvp => kvp.Key, kvp => kvp.Value);;
                 var d2 = OpcodeManager.ConvertOpCode(File.ReadAllText(opcodestxtPath));
                 OpcodeManager.Instance.SetRegion(region, d2);
                 opcodestxtDiff = d2
@@ -162,31 +162,7 @@ public sealed class Plugin : IDalamudPlugin
         ActGlobals.oFormActMain = new FormActMain(Log);
         ActGlobals.oFormActMain.DalamudPlugin = this;
         Configuration = PluginInterface.GetPluginConfig() as Configuration ?? new Configuration();
-        Configuration.Initialize(PluginInterface);
-        //TTS
-        try
-        {
-            var tmpdir = Path.Combine(PluginConfigDirectory, "tmp");
-            var text = PluginConfigDirectory;
-            var assetsdir = Path.Combine(text, "TtsAssets");
-            Assembly latihasTtsAssembly;
-            using (var memoryStream = new MemoryStream(File.ReadAllBytes(Path.Combine(assetsdir, "System.Numerics.Tensors.dll"))))
-                AssemblyLoadContext.GetLoadContext(Assembly.GetExecutingAssembly())!.LoadFromStream(memoryStream);
-            using (var memoryStream = new MemoryStream(File.ReadAllBytes(Path.Combine(assetsdir, "Microsoft.ML.OnnxRuntime.dll"))))
-                AssemblyLoadContext.GetLoadContext(Assembly.GetExecutingAssembly())!.LoadFromStream(memoryStream);
-            using (var memoryStream = new MemoryStream(File.ReadAllBytes(Path.Combine(assetsdir, "LatihasTTS.dll"))))
-                latihasTtsAssembly = AssemblyLoadContext.GetLoadContext(Assembly.GetExecutingAssembly())!.LoadFromStream(memoryStream);
-            LatihasTts = Activator.CreateInstance(latihasTtsAssembly.GetType("LatihasTTS.LatihasTts")!)!;
-            LatihasTts.Init(assetsdir, tmpdir, Log);
-            if (!LatihasTts.CheckAssets()) Log.Warning("LatihasTts Assets Lost");
-        }
-        catch (Exception ex)
-        {
-            Log.Warning(ex.ToString());
-        }
-        TextToSpeechProvider = new TextToSpeechProvider(Log, PluginConfigDirectory);
-        TextToSpeechProvider.SetUseEdgeTTS(Configuration.UseEdgeTTS);
-        TextToSpeechProvider.SetUseLatihasTTS(Configuration.UseLatihasTts);
+        TextToSpeechProvider = new TextToSpeechProvider();
         Log.Warning("TTS Inited");
         ActGlobals.oFormActMain.LogFilePath = Configuration.LogFilePath;
         WindowSystem.AddWindow(MainWindow = new MainWindow());
@@ -245,6 +221,7 @@ public sealed class Plugin : IDalamudPlugin
         ActGlobals.oFormActMain.ActPlugins.Add(new ActPluginData("_FFXIV_ACT_Plugin", ActGlobals.oFormActMain.FfxivPlugin, false));
         ActGlobals.oFormActMain.ActPlugins.Add(new ActPluginData("_OverlayPlugin", new PluginLoader(OverlayPlugin), false));
         ActGlobals.oFormActMain.ActPlugins.Add(new ActPluginData("_PostNamazu", PostNamazuPlugin, false));
+        ActGlobals.oFormActMain.ActPlugins.Add(new ActPluginData("_Triggernometry", TriggernometryProxyPlugin, false));
         foreach (var rt in Directory.GetFiles(PluginActScriptDirectory, "*.cs", SearchOption.TopDirectoryOnly).Select(Path.GetFileName).Cast<string>())
             if (Configuration.ActScriptsEnabled.Contains(rt))
                 LoadPScript(rt);
@@ -263,6 +240,7 @@ public sealed class Plugin : IDalamudPlugin
     {
         try
         {
+            Log.Warning($"正在加载IActPluginV1 {plugin.pluginFileName}");
             ActGlobals.oFormActMain.ActPlugins.Add(plugin);
             plugin.pluginObj.InitPlugin(plugin.tpPluginSpace, plugin.lblPluginStatus);
         }
@@ -276,6 +254,7 @@ public sealed class Plugin : IDalamudPlugin
     {
         try
         {
+            Log.Warning($"正在卸载IActPluginV1 {plugin.pluginFileName}");
             plugin.pluginObj.DeInitPlugin();
             ActGlobals.oFormActMain.ActPlugins.Remove(plugin);
         }
@@ -326,7 +305,7 @@ public sealed class Plugin : IDalamudPlugin
 
     public void Dispose()
     {
-        LatihasTts?.Dispose();
+        TextToSpeechProvider.Dispose();
         ClientState.EnterPvP -= EnterPvP;
         ClientState.LeavePvP -= LeavePvP;
         IpcProviders.Dispose();
@@ -334,7 +313,6 @@ public sealed class Plugin : IDalamudPlugin
         FfxivActPluginWrapper.Dispose();
         Trace.Listeners.Remove(PluginLogTraceListener);
         WindowSystem.RemoveAllWindows();
-        MainWindow.Dispose();
         OverlayWindow.Dispose();
         CommandManager.RemoveHandler(MainWindowCommandName);
         CommandManager.RemoveHandler(EndEncCommandName);

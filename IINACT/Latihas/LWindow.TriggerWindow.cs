@@ -55,7 +55,7 @@ public static partial class LWindow
                         {
                             var d = data[i].GetDescription(null);
                             var isSelected = selected == i;
-                            Enabled[i] = Trigger.Actions[i].Enabled == null || Trigger.Actions[i].Enabled;
+                            Enabled[i] = Trigger.Actions[i].Enabled;
                             if (ImGui.Checkbox($"## Trigger_Action_Enabled_{i}", ref Enabled[i])) Trigger.Actions[i].Enabled = Enabled[i];
                             ImGui.SameLine();
                             if (!Enabled[i]) ImGui.PushStyleColor(ImGuiCol.Text, ColorGrey);

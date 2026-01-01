@@ -28,7 +28,7 @@ public static partial class LWindow
             str = s;
             Tag = tag;
             var content = "";
-            if (str.StartsWith("<?xml")) content = str;
+            if (s.StartsWith("<?xml")) content = s;
             UserInterface.ImportResultsFromForm(Tag, content);
             UserInterface.BuildTriggerTreeFromConfiguration(null, null);
         }

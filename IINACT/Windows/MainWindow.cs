@@ -16,7 +16,7 @@ using IINACT.Latihas;
 
 namespace IINACT.Windows;
 
-public class MainWindow : Window, IDisposable
+public class MainWindow : Window
 {
     private int selectedOverlayIndex;
 
@@ -33,8 +33,6 @@ public class MainWindow : Window, IDisposable
     public IReadOnlyList<RainbowMage.OverlayPlugin.IOverlayTemplate>? OverlayPresets { get; set; }
     private string[]? OverlayNames => OverlayPresets?.Select(x => x.Name).ToArray();
     public RainbowMage.OverlayPlugin.WebSocket.ServerController? Server { get; set; }
-
-    public void Dispose() { }
 
     public override void Draw()
     {
@@ -345,7 +343,7 @@ public class MainWindow : Window, IDisposable
         if (!tab) return;
 
         ImGui.Spacing();
-        var useEdgeTTS = Plugin.Configuration.UseEdgeTTS;
+        var useEdgeTTS = Plugin.Configuration.UseEdgeTts;
         if (ImGui.Checkbox("使用EdgeTTS（不勾选则使用本地TTS）", ref useEdgeTTS))
             Plugin.TextToSpeechProvider.SetUseEdgeTTS(useEdgeTTS);
         if (useEdgeTTS)

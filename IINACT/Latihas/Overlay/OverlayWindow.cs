@@ -354,9 +354,9 @@ public class OverlayWindow() : Window("IINACT Overlay"), IDisposable
 
         public string Duration { get; set; } = string.Empty;
 
-        public Encounter? EncounterData { get; set; }
+        public Encounter EncounterData { get; set; }
 
-        public Dictionary<string, Combatant>? CombatantData { get; set; }
+        public Dictionary<string, Combatant> CombatantData { get; set; }
     }
 
     public record Cat(
