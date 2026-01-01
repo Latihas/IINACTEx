@@ -30,6 +30,7 @@ public static partial class LWindow
         if (s)
         {
             ImGui.Text("插件加载的第一次有会加载失败，类似于下面，涉及解析插件的初始化，重新加载即可。");
+            ImGui.Indent();
             if (s && ImGui.CollapsingHeader("展开堆栈信息"))
             {
                 ImGui.Text("11:28:52.526 | 警告 | [IINACTEx] DalamudStartInfo Inited");
@@ -64,6 +65,7 @@ public static partial class LWindow
                     "	   at Dalamud.Plugin.Internal.Types.LocalPlugin.CreatePluginInstance(LocalPluginManifest manifest, IServiceScope scope, Type type, DalamudPluginInterface dalamudInterface) in /_/Dalamud/Plugin/Internal/Types/LocalPlugin.cs:line 599");
                 ImGui.Text("	   at Dalamud.Plugin.Internal.Types.LocalPlugin.LoadAsync(PluginLoadReason reason, Boolean reloading) in /_/Dalamud/Plugin/Internal/Types/LocalPlugin.cs:line 399");
             }
+            ImGui.Unindent();
         }
         if (ImGui.CollapsingHeader("TODO", ImGuiTreeNodeFlags.DefaultOpen))
         {
@@ -120,7 +122,6 @@ public static partial class LWindow
             ImGui.Text("!!! Triggernometry有时会因为宝宝椅的鲇鱼精扩展功能炸游戏/显示异常/...。开发者用Penumbra可以恢复部分图形问题");
             ImGui.SameLine();
             if (ImGui.Button("/penumbra redraw")) RealPlugin.Instance.InvokeNamedCallback("command", "/penumbra redraw");
-            ImGui.Text("Postnamezu的Preset不可用");
             ImGui.Text("触发器有时候声音比较小，减小游戏音量以调整。");
             ImGui.Text("Triggernometry的配置文件完全兼容ACT版本，可以直接把act的配置文件复制到插件配置目录下");
             ImGui.Text("Triggernometry的触发器导入窗口不支持导入文件，且有长度限制，过大的触发器建议右键从剪切板导入。");

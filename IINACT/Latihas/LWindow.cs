@@ -354,11 +354,8 @@ public static partial class LWindow
                 else
                 {
                     var plugin = ActGlobals.oFormActMain.ActPlugins.First(x => x.pluginFileName == i);
-                    if (ImGui.Button($"禁用##{i}"))
-                        Plugin.DeInitIActPluginV1(plugin);
+                    if (ImGui.Button($"禁用##{i}")) Plugin.DeInitIActPluginV1(plugin);
                     ImGui.SameLine();
-                    if (ImGui.Button($"打开界面##{i}"))
-                        plugin.PluginForm.Show();
                 }
             }
         ]);

@@ -7,7 +7,7 @@ using RainbowMage.OverlayPlugin.WebSocket;
 
 namespace IINACT.Latihas.Overlay;
 
-public class OverlayWindow() : Window("IINACT Overlay"), IDisposable
+public class OverlayWindow() : Window("IINACTEx Overlay###IINACTEx Overlay"), IDisposable
 {
     private const ImGuiTableFlags ImGuiTableFlag = ImGuiTableFlags.Borders | ImGuiTableFlags.Resizable | ImGuiTableFlags.RowBg;
     private WebSocketClient? webSocketClient;
@@ -79,6 +79,8 @@ public class OverlayWindow() : Window("IINACT Overlay"), IDisposable
             ImGui.Text("等待战斗数据...");
             return;
         }
+        
+        WindowName = $"IINACTEx Overlay ({currentCombatData.Msg.Encounter.duration})###IINACTEx Overlay";
         using var combatDataTabs = ImRaii.TabBar("CombatDataTabs");
         if (combatDataTabs)
         {
@@ -168,7 +170,7 @@ public class OverlayWindow() : Window("IINACT Overlay"), IDisposable
         }
     }
 
-    private static void DrawEncounterOverview(CombatDataWrapper combatData)
+    private void DrawEncounterOverview(CombatDataWrapper combatData)
     {
         if (combatData?.Msg.Encounter == null) return;
         var encounter = combatData.Msg.Encounter;

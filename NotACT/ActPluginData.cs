@@ -41,7 +41,6 @@ public class ActPluginData(string pluginFile, IActPluginV1 pluginObj, bool isISc
     public string pluginVersion;
 
     public IActPluginV1 pluginObj = pluginObj;
-    public PluginForm PluginForm => new(pluginFileName, tpPluginSpace, lblPluginStatus);
     public bool isIScriptBase = isIScriptBase;
     public string pluginFileName = pluginFile;
 

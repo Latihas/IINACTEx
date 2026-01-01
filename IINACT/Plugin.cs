@@ -256,20 +256,20 @@ public sealed class Plugin : IDalamudPlugin
         {
             Log.Warning($"正在卸载IActPluginV1 {plugin.pluginFileName}");
             plugin.pluginObj.DeInitPlugin();
-            ActGlobals.oFormActMain.ActPlugins.Remove(plugin);
         }
         catch (Exception e)
         {
             Log.Error(e.ToString());
         }
+        ActGlobals.oFormActMain.ActPlugins.Remove(plugin);
     }
 
-    public static void LoadIActPluginV1(string name)
+    public static void LoadIActPluginV1(string name, string? dllPath = null)
     {
         try
         {
             Assembly asm;
-            using (var memoryStream = new MemoryStream(File.ReadAllBytes(Path.Combine(Instance.PluginActScriptDirectory, name))))
+            using (var memoryStream = new MemoryStream(File.ReadAllBytes(dllPath ??Path.Combine(Instance.PluginActScriptDirectory, name))))
                 asm = AssemblyLoadContext.GetLoadContext(Assembly.GetExecutingAssembly())!.LoadFromStream(memoryStream);
             Log.Warning($"Loading IActPluginV1 {asm.FullName}");
             var scriptTypes = asm.GetTypes()
@@ -293,7 +293,7 @@ public sealed class Plugin : IDalamudPlugin
         {
             var rs = File.ReadAllText(Path.Combine(Instance.PluginActScriptDirectory, name));
             if (CSharpScriptCompiler.CompileScript(rs, false))
-                LoadIActPluginV1(name);
+                LoadIActPluginV1(name,Path.Combine(Instance.PluginConfigDirectory,"Scripts", Path.GetFileName(CSharpScriptCompiler.GetScriptDllPath(rs))) );
         }
         catch (Exception ex)
         {

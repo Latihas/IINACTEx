@@ -20,7 +20,7 @@ public class WebSocketClient : IDisposable
             await _ws.ConnectAsync(new Uri(url), _cts.Token).ConfigureAwait(false);
             Plugin.Log.Warning("WebSocket连接成功");
             _ = ReceiveLoop();
-            Ready=true;
+            Ready = true;
         }
         catch (Exception ex)
         {
@@ -79,15 +79,7 @@ public class WebSocketClient : IDisposable
         try
         {
             _cts.Cancel();
-            _cts.Dispose();
-        }
-        catch (Exception)
-        {
-            //
-        }
-        if (_ws.State is WebSocketState.Open or WebSocketState.Connecting)
-        {
-            try
+            if (_ws.State is WebSocketState.Open or WebSocketState.Connecting)
             {
                 _ws.CloseOutputAsync(
                     WebSocketCloseStatus.NormalClosure,
@@ -95,10 +87,11 @@ public class WebSocketClient : IDisposable
                     CancellationToken.None
                 ).ConfigureAwait(false).GetAwaiter().GetResult();
             }
-            catch
-            {
-                //
-            }
+            _cts.Dispose();
+        }
+        catch (Exception)
+        {
+            //
         }
     }
 }
