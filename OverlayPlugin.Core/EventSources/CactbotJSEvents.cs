@@ -22,9 +22,9 @@ namespace RainbowMage.OverlayPlugin.EventSources
                 this.z = z;
             }
 
-            public float x = 0;
-            public float y = 0;
-            public float z = 0;
+            public float x;
+            public float y;
+            public float z;
         }
 
         public class ForceReloadEvent : JSEvent
@@ -216,20 +216,20 @@ namespace RainbowMage.OverlayPlugin.EventSources
                 }
             }
 
-            public uint id = 0;
-            public int level = 0;
-            public string name = null;
-            public string job = null;
+            public uint id;
+            public int level;
+            public string name;
+            public string job;
 
-            public int currentHP = 0;
-            public int maxHP = 0;
-            public int currentMP = 0;
-            public int maxMP = 0;
+            public int currentHP;
+            public int maxHP;
+            public int currentMP;
+            public int maxMP;
             public int currentTP = 0;
             public int maxTP = 0;
 
             public Point3F pos;
-            public int distance = 0;
+            public int distance;
         }
 
         public class SendSaveData : JSEvent

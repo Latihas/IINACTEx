@@ -13,7 +13,7 @@ namespace RainbowMage.OverlayPlugin
         private TinyIoCContainer _container;
 
         [JsonIgnore]
-        private bool isDirty = false;
+        private bool isDirty;
 
         [JsonIgnore]
         private string filePath;

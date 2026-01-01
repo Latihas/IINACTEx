@@ -10,7 +10,7 @@ namespace RainbowMage.OverlayPlugin
         public string Name { get; protected set; }
         protected TinyIoCContainer container;
         private EventDispatcher dispatcher;
-        private bool updateRunning = false;
+        private bool updateRunning;
 
         protected Timer timer;
         protected ILogger logger;

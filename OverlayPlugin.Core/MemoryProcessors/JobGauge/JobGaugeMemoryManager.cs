@@ -73,7 +73,7 @@ namespace RainbowMage.OverlayPlugin.MemoryProcessors.JobGauge
         private readonly TinyIoCContainer container;
         private readonly FFXIVRepository repository;
         protected readonly ILogger logger;
-        private IJobGaugeMemory memory = null;
+        private IJobGaugeMemory memory;
 
         public JobGaugeMemoryManager(TinyIoCContainer container)
         {

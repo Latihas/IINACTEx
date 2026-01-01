@@ -40,8 +40,8 @@ namespace RainbowMage.OverlayPlugin.EventSources
         internal class InCombatDataObject
         {
             public string type = InCombatEvent;
-            public bool inACTCombat = false;
-            public bool inGameCombat = false;
+            public bool inACTCombat;
+            public bool inGameCombat;
         };
 
         private const int endEncounterOutOfCombatDelayMs = 5000;

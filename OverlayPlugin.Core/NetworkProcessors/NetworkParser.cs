@@ -8,13 +8,13 @@ namespace RainbowMage.OverlayPlugin.NetworkProcessors
     {
         public event EventHandler<OnlineStatusChangedArgs> OnOnlineStatusChanged;
 
-        private Type MessageType = null;
-        private int ActorControl142_Size = 0;
-        private int MessageType_Offset = 0;
-        private int ActorID_Offset = 0;
-        private int Category_Offset = 0;
-        private int Param1_Offset = 0;
-        private ushort ActorControl142_Opcode = 0;
+        private Type MessageType;
+        private int ActorControl142_Size;
+        private int MessageType_Offset;
+        private int ActorID_Offset;
+        private int Category_Offset;
+        private int Param1_Offset;
+        private ushort ActorControl142_Opcode;
 
         /**
          * We use reflection to calculate the field offsets since there's no public Machina DLL we could link

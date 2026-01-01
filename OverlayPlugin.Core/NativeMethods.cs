@@ -8,7 +8,7 @@ namespace RainbowMage.OverlayPlugin
     /// </summary>
     internal class NativeMethods
     {
-        private WinEventDelegate dele = null;
+        private WinEventDelegate dele;
 
         public NativeMethods(TinyIoCContainer container)
         {

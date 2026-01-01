@@ -17,7 +17,7 @@ namespace RainbowMage.OverlayPlugin.MemoryProcessors.Target
     {
         private readonly TinyIoCContainer container;
         private readonly FFXIVRepository repository;
-        private ITargetMemory memory = null;
+        private ITargetMemory memory;
 
         public TargetMemoryManager(TinyIoCContainer container)
         {

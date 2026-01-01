@@ -27,7 +27,7 @@ namespace RainbowMage.OverlayPlugin.MemoryProcessors.ContentFinderSettings
     {
         private readonly TinyIoCContainer container;
         private readonly FFXIVRepository repository;
-        private IContentFinderSettingsMemory memory = null;
+        private IContentFinderSettingsMemory memory;
 
         public ContentFinderSettingsMemoryManager(TinyIoCContainer container)
         {

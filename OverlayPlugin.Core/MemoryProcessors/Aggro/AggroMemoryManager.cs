@@ -13,7 +13,7 @@ namespace RainbowMage.OverlayPlugin.MemoryProcessors.Aggro
     {
         private readonly TinyIoCContainer container;
         private readonly FFXIVRepository repository;
-        private IAggroMemory memory = null;
+        private IAggroMemory memory;
 
         public AggroMemoryManager(TinyIoCContainer container)
         {

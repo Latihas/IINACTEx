@@ -97,7 +97,7 @@ internal class TextToSpeechProvider : IDisposable
         {
             try
             {
-                LatihasTts.Speak(message);
+                LatihasTts!.Speak(message);
             }
             catch (Exception ex)
             {

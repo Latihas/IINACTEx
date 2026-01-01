@@ -13,7 +13,7 @@ namespace RainbowMage.OverlayPlugin.MemoryProcessors.Party
     {
         private readonly TinyIoCContainer container;
         private readonly FFXIVRepository repository;
-        private IPartyMemory memory = null;
+        private IPartyMemory memory;
 
         public PartyMemoryManager(TinyIoCContainer container)
         {

@@ -3,7 +3,7 @@
 internal class SimpleBuffer(int size)
 {
 	private readonly byte[] buffer = new byte[size];
-	private int offset = 0;
+	private int offset;
     
     public int Size => offset;
 

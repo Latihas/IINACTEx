@@ -13,7 +13,7 @@ namespace RainbowMage.OverlayPlugin.MemoryProcessors.EnmityHud
     {
         private readonly TinyIoCContainer container;
         private readonly FFXIVRepository repository;
-        private IEnmityHudMemory memory = null;
+        private IEnmityHudMemory memory;
 
         public EnmityHudMemoryManager(TinyIoCContainer container)
         {

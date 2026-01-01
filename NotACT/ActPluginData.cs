@@ -28,7 +28,7 @@ public class ActPluginData(string pluginFile, IActPluginV1 pluginObj, bool isISc
 
     public TabPage tpPluginSpace = new();
 
-    public FileInfo pluginFile = new FileInfo(Path.Combine(ActGlobals.oFormActMain.DalamudPlugin.PluginActScriptDirectory, pluginFile)) ;
+    public FileInfo pluginFile = new FileInfo(Path.Combine(ActGlobals.oFormActMain.DalamudPlugin.PluginActScriptDirectory, pluginFile));
 
     public Label lblPluginTitle = new();
 
@@ -44,8 +44,8 @@ public class ActPluginData(string pluginFile, IActPluginV1 pluginObj, bool isISc
     public bool isIScriptBase = isIScriptBase;
     public string pluginFileName = pluginFile;
 
-    public override bool Equals(object other)
+    public override bool Equals(object? other)
     {
-        return pluginFileName == ((ActPluginData)other).pluginFileName;
+        return other != null && pluginFileName == ((ActPluginData)other).pluginFileName;
     }
 }

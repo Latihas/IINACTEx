@@ -1,8 +1,9 @@
 ﻿<Project>
     <PropertyGroup>
-        <NoWarn>NU1701;CS8618;CS8765;CS8625</NoWarn>
+        <NoWarn>NU1701;CS8618;CS8765;CS8625;EnableGenerateDocumentationFile;CS0659</NoWarn>
         <!--NU1701是framework与core的版本不匹配警告，CS8618是退出构造函数时null!字段警告，CS8765、CS8625是无法将null字面量转换为非null的引用类型-->
-        <TargetFramework>net10.0-windows</TargetFramework>
+        <!--CS0659重写Object.Equals(object o) 但不重写 Object.GetHashCode()-->
+        <TargetFramework>net10.0-windows8.0</TargetFramework>
         <RuntimeIdentifier>win-x64</RuntimeIdentifier>
         <SatelliteResourceLanguages>None</SatelliteResourceLanguages>
         <PlatformTarget>x64</PlatformTarget>
@@ -13,8 +14,6 @@
         <Optimize>true</Optimize>
         <DebugType>none</DebugType>
         <DebugSymbols>false</DebugSymbols>
-    </PropertyGroup>
-    <PropertyGroup>
         <DalamudLibPath>$(appdata)\XIVLauncherCN\addon\Hooks\dev\</DalamudLibPath>
         <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
     </PropertyGroup>

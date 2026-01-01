@@ -15,7 +15,7 @@ namespace RainbowMage.OverlayPlugin.MemoryProcessors.AtkStage
     {
         private readonly TinyIoCContainer container;
         private readonly FFXIVRepository repository;
-        private IAtkStageMemory memory = null;
+        private IAtkStageMemory memory;
 
         public AtkStageMemoryManager(TinyIoCContainer container)
         {

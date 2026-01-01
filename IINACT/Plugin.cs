@@ -189,7 +189,7 @@ public sealed class Plugin : IDalamudPlugin
         OverlayPlugin = InitOverlayPluginTrn();
         Log.Warning("OverlayPlugin Inited");
         ActGlobals.oFormActMain.TriggernometryPlugin = TriggernometryProxyPlugin = new ProxyPlugin();
-        TriggernometryProxyPlugin.InitPlugin(this, PluginInterface, Log, ClientState, Framework, GameInteropProvider);
+        TriggernometryProxyPlugin.InitPlugin(this, PluginInterface, Log, ClientState, Framework, GameInteropProvider,ObjectTable);
         RealPlugin.Instance.InitAura();
         ActGlobals.oFormActMain.PostNamazuPlugin = PostNamazuPlugin = new PostNamazu.PostNamazu();
         PostNamazuPlugin.InitPlugin(PluginInterface, Log, SigScanner);

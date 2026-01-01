@@ -280,7 +280,7 @@ namespace RainbowMage.OverlayPlugin.NetworkProcessors.PacketHelper
 
         private static Dictionary<Type, Dictionary<string, FieldInfo>> typePropertyMap = new Dictionary<Type, Dictionary<string, FieldInfo>>();
 
-        private Dictionary<string, FieldInfo> propMap = null;
+        private Dictionary<string, FieldInfo> propMap;
 
         public MachinaHeaderWrapper(object header, Type headerType = null)
         {
@@ -321,7 +321,7 @@ namespace RainbowMage.OverlayPlugin.NetworkProcessors.PacketHelper
 
         private static Dictionary<Type, Dictionary<string, FieldInfo>> typePropertyMap = new Dictionary<Type, Dictionary<string, FieldInfo>>();
 
-        private Dictionary<string, FieldInfo> propMap = null;
+        private Dictionary<string, FieldInfo> propMap;
 
         public static void InitTypePropertyMap(Type type)
         {

@@ -13,7 +13,7 @@ namespace RainbowMage.OverlayPlugin.MemoryProcessors.InCombat
     {
         private readonly TinyIoCContainer container;
         private readonly FFXIVRepository repository;
-        private IInCombatMemory memory = null;
+        private IInCombatMemory memory;
 
         public InCombatMemoryManager(TinyIoCContainer container)
         {

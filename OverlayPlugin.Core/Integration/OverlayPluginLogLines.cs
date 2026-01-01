@@ -49,7 +49,7 @@ namespace RainbowMage.OverlayPlugin.NetworkProcessors
         private ILogger logger;
         private FFXIVRepository repository;
 
-        private int exceptionCount = 0;
+        private int exceptionCount;
         private const int maxExceptionsLogged = 3;
 
         public OverlayPluginLogLineConfig(TinyIoCContainer container,string extraOpcodes=null)

@@ -28,13 +28,13 @@ namespace RainbowMage.OverlayPlugin
 {
     public class PluginLoader : IActPluginV1
     {
-        private readonly RainbowMage.OverlayPlugin.PluginMain overlayPlugin;
+        public readonly RainbowMage.OverlayPlugin.PluginMain pluginMain;
 
-        public PluginLoader(RainbowMage.OverlayPlugin.PluginMain overlayPlugin) => this.overlayPlugin = overlayPlugin;
+        public PluginLoader(RainbowMage.OverlayPlugin.PluginMain pluginMain) => this.pluginMain = pluginMain;
 
         public void InitPlugin(TabPage pluginScreenSpace, Label pluginStatusText) { }
 
-        public void DeInitPlugin() => overlayPlugin.DeInitPlugin();
+        public void DeInitPlugin() => pluginMain.DeInitPlugin();
     }
     public class PluginMain
     {

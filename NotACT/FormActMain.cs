@@ -75,7 +75,7 @@ public partial class FormActMain : Form, ISynchronizeInvoke
     [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
     public FFXIV_ACT_Plugin.FFXIV_ACT_Plugin FfxivPlugin { get; set; }
     [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-    public object OverlayPluginContainer { get; set; }
+    public dynamic OverlayPluginContainer { get; set; }
 
     [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
     public dynamic TriggernometryPlugin { get; set; }

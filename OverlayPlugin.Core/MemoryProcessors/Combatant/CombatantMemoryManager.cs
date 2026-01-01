@@ -16,7 +16,7 @@ namespace RainbowMage.OverlayPlugin.MemoryProcessors.Combatant
     {
         private readonly TinyIoCContainer container;
         private readonly FFXIVRepository repository;
-        public ICombatantMemory memory = null;
+        public ICombatantMemory memory;
 
         public CombatantMemoryManager(TinyIoCContainer container)
         {

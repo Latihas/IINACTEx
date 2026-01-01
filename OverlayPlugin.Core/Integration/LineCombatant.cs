@@ -18,7 +18,7 @@ namespace RainbowMage.OverlayPlugin.MemoryProcessors.Combatant
         private ILogger logger;
         private readonly FFXIVRepository ffxiv;
         private ICombatantMemory combatantMemoryManager;
-        private bool inCombat = false;
+        private bool inCombat;
         private ConcurrentDictionary<uint, CombatantStateInfo> combatantStateMap = new ConcurrentDictionary<uint, CombatantStateInfo>();
 
         int offsetHeaderActorID;

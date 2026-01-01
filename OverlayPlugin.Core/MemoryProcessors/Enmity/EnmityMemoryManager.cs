@@ -13,7 +13,7 @@ namespace RainbowMage.OverlayPlugin.MemoryProcessors.Enmity
     {
         private readonly TinyIoCContainer container;
         private readonly FFXIVRepository repository;
-        private IEnmityMemory memory = null;
+        private IEnmityMemory memory;
 
         public EnmityMemoryManager(TinyIoCContainer container)
         {

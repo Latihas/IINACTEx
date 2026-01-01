@@ -68,7 +68,7 @@ namespace RainbowMage.OverlayPlugin.EventSources
             _pluginConfig.Save();
         }
 
-        public Dictionary<string, JToken> OverlayData = null;
+        public Dictionary<string, JToken> OverlayData;
 
         public DateTime LastUpdateCheck;
 
@@ -107,7 +107,7 @@ namespace RainbowMage.OverlayPlugin.EventSources
         }
 
         [JsonIgnore]
-        private bool watchFileChanges = false;
+        private bool watchFileChanges;
 
         [JsonIgnore]
         public bool WatchFileChanges

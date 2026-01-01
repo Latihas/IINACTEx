@@ -3903,7 +3903,7 @@ namespace RainbowMage.OverlayPlugin
 
         #region IDisposable Members
 
-        private bool disposed = false;
+        private bool disposed;
 
         public void Dispose()
         {

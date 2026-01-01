@@ -157,7 +157,7 @@ namespace RainbowMage.OverlayPlugin
             public List<Action> Callbacks { get; private set; }
             public int Id { get; private set; }
 
-            private static int _idCounter = 0;
+            private static int _idCounter;
 
             public HotKeyInfo()
             {

@@ -550,8 +550,8 @@ public static partial class LWindow
         Dict
     }
 
-    private static string Ename = "";
-    private static string Eexpr = "";
+    // private static string Ename = "";
+    // private static string Eexpr = "";
 
     private static void DrawTriggerVarESettings(bool persist, TriggerVarType type)
     {

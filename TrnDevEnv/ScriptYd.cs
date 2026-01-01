@@ -5,7 +5,7 @@ using static Triggernometry.PScript.ScriptUtils;
 
 public class ScriptYd : IScriptBase
 {
-    public override string[] RegionIdRegex() => ["779","1318"];
+    public override string[] TerritoryIds() => ["779","1318"];
     private string ydStatus = "";
     public override List<TargetIcon> TargetIconList =>
     [
