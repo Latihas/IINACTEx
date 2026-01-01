@@ -3,7 +3,7 @@ using System;
 
 namespace RainbowMage.OverlayPlugin
 {
-    internal class ConfigCreationConverter : CustomCreationConverter<IOverlayConfig>
+    class ConfigCreationConverter : CustomCreationConverter<IOverlayConfig>
     {
         private TinyIoCContainer _container;
 

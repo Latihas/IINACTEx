@@ -1,10 +1,12 @@
 ﻿using Advanced_Combat_Tracker;
 using System;
+using System.IO;
+using System.Reflection;
 using System.Threading.Tasks;
 
 namespace RainbowMage.OverlayPlugin
 {
-    internal class OverlayApi
+    class OverlayApi
     {
         public static event EventHandler<BroadcastMessageEventArgs> BroadcastMessage;
         public static event EventHandler<SendMessageEventArgs> SendMessage;

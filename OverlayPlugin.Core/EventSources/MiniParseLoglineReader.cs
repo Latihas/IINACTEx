@@ -4,7 +4,7 @@ using System;
 
 namespace RainbowMage.OverlayPlugin.EventSources
 {
-    internal partial class MiniParseEventSource : EventSourceBase
+    partial class MiniParseEventSource : EventSourceBase
     {
         // Part of ACTWebSocket
         // Copyright (c) 2016 ZCube; Licensed under MIT license.

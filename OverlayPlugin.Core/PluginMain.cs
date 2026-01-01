@@ -43,7 +43,7 @@ namespace RainbowMage.OverlayPlugin
         public string Status { get; private set; }
 
         internal string ConfigPath { get; private set; }
-        private Timer _configSaveTimer;
+        private Timer configSaveTimer;
 
         internal PluginConfig Config { get; private set; }
         internal List<IOverlay> Overlays { get; private set; }
@@ -57,9 +57,9 @@ namespace RainbowMage.OverlayPlugin
             PluginDirectory = pluginDirectory;
             _logger = logger;
 
-            _configSaveTimer = new Timer();
-            _configSaveTimer.Interval = 300000; // 5 minutes
-            _configSaveTimer.Tick += (o, e) => SaveConfig();
+            configSaveTimer = new Timer();
+            configSaveTimer.Interval = 300000; // 5 minutes
+            configSaveTimer.Tick += (o, e) => SaveConfig();
 
             _container.Register(this);
         }
@@ -252,7 +252,7 @@ namespace RainbowMage.OverlayPlugin
                         }
 
                         Status = @"初始化阶段2：保存计时器";
-                        _configSaveTimer.Start();
+                        configSaveTimer.Start();
 
                         Status = @"就绪";
                         // Make the log small; startup was successful and there shouldn't be any error message to show.

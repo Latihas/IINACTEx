@@ -1,21 +1,22 @@
-﻿using Advanced_Combat_Tracker;
-using System;
+﻿using System;
 using System.Collections.Generic;
+using Advanced_Combat_Tracker;
 
 namespace RainbowMage.OverlayPlugin
 {
     public class Registry
     {
-        private readonly TinyIoCContainer _container;
-        private readonly List<Type> _overlays;
-        private readonly List<IEventSource> _eventSources;
-        private readonly List<IOverlayTemplate> _overlayTemplates;
+        private TinyIoCContainer _container;
+        private List<Type> _overlays;
+        private List<IEventSource> _eventSources;
+        private List<Type> _esQueue;
+        private List<IOverlayPreset> _overlayPresets;
 
         public IEnumerable<Type> Overlays => _overlays;
 
         public IEnumerable<IEventSource> EventSources => _eventSources;
 
-        public IReadOnlyList<IOverlayTemplate> OverlayTemplates => _overlayTemplates;
+        public IReadOnlyList<IOverlayPreset> OverlayPresets => _overlayPresets;
 
         public event EventHandler<EventSourceRegisteredEventArgs> EventSourceRegistered;
         public event EventHandler EventSourcesStarted;
@@ -25,7 +26,8 @@ namespace RainbowMage.OverlayPlugin
             _container = container;
             _overlays = new List<Type>();
             _eventSources = new List<IEventSource>();
-            _overlayTemplates = new List<IOverlayTemplate>();
+            _esQueue = new List<Type>();
+            _overlayPresets = new List<IOverlayPreset>();
         }
 
         public void RegisterOverlay<T>()
@@ -60,26 +62,24 @@ namespace RainbowMage.OverlayPlugin
         {
             var container = GetContainer();
             var logger = container.Resolve<ILogger>();
-            var obj = (T)typeof(T).GetConstructor(new Type[] { typeof(ILogger) })?.Invoke(new object[] { logger });
+            var obj = (T)typeof(T).GetConstructor(new Type[] { typeof(ILogger) }).Invoke(new object[] { logger });
             container.Resolve<Registry>().StartEventSource(obj);
         }
 
-        public void RegisterOverlayPreset2(IOverlayTemplate preset)
+        public void RegisterOverlayPreset2(IOverlayPreset preset)
         {
-            _overlayTemplates.Add(preset);
+            _overlayPresets.Add(preset);
         }
 
         [Obsolete("Please call RegisterOverlayPreset2() on the Registry object instead.")]
-        public static void RegisterOverlayPreset(IOverlayTemplate preset)
+        public static void RegisterOverlayPreset(IOverlayPreset preset)
         {
             GetContainer().Resolve<Registry>().RegisterOverlayPreset2(preset);
         }
 
         public void StartEventSources()
         {
-            if (EventSourcesStarted == null)
-                return;
-            EventSourcesStarted(null, null);
+            EventSourcesStarted?.Invoke(null, null);
         }
 
         // For backwards compat only!!

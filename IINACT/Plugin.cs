@@ -348,7 +348,7 @@ public sealed class Plugin : IDalamudPlugin
         overlayPlugin.InitPlugin(PluginConfigDirectory, opcodesjsoncCanReplace ? File.ReadAllText(opcodesjsoncPath) : null);
         if (opcodesjsoncReplaced) Log.Warning("opcodesjsonc Replaced");
         var registry = container.Resolve<Registry>();
-        MainWindow.OverlayPresets = registry.OverlayTemplates;
+        MainWindow.OverlayPresets = registry.OverlayPresets;
         MainWindow.Server = WebSocketServer = container.Resolve<RainbowMage.OverlayPlugin.WebSocket.ServerController>();
         IpcProviders.Server = WebSocketServer;
         IpcProviders.OverlayIpcHandler = container.Resolve<RainbowMage.OverlayPlugin.Handlers.Ipc.IpcHandlerController>();

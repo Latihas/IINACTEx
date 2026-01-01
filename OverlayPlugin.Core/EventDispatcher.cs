@@ -7,10 +7,10 @@ namespace RainbowMage.OverlayPlugin
 {
     public class EventDispatcher
     {
-        private ILogger _logger;
-        private Dictionary<string, Func<JObject, JToken>> handlers;
-        private Dictionary<string, List<IEventReceiver>> eventFilter;
-        private Dictionary<string, Func<JObject>> stateCallbacks;
+        ILogger _logger;
+        Dictionary<string, Func<JObject, JToken>> handlers;
+        Dictionary<string, List<IEventReceiver>> eventFilter;
+        Dictionary<string, Func<JObject>> stateCallbacks;
 
         public EventDispatcher(TinyIoCContainer container)
         {

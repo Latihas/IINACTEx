@@ -33,7 +33,7 @@ namespace RainbowMage.OverlayPlugin.EventSources
 
     public class FFXIVClientStructsEventSource : EventSourceBase
     {
-        private readonly IAtkStageMemory atkStageMemory;
+        private IAtkStageMemory atkStageMemory;
 
         public BuiltinEventConfig Config { get; set; }
 

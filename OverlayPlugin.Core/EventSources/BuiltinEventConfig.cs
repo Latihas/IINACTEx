@@ -16,93 +16,93 @@ namespace RainbowMage.OverlayPlugin.EventSources
         public event EventHandler EndEncounterOutOfCombatChanged;
         public event EventHandler LogLinesChanged;
 
-        private int _updateInterval;
+        private int updateInterval;
 
         public int UpdateInterval
         {
-            get => this._updateInterval;
+            get => this.updateInterval;
             set
             {
-                if (this._updateInterval == value) return;
-                this._updateInterval = value;
+                if (this.updateInterval == value) return;
+                this.updateInterval = value;
                 UpdateIntervalChanged?.Invoke(this, EventArgs.Empty);
             }
         }
 
-        private int _enmityIntervalMs;
+        private int enmityIntervalMs;
 
         public int EnmityIntervalMs
         {
-            get => this._enmityIntervalMs;
+            get => this.enmityIntervalMs;
             set
             {
-                if (this._enmityIntervalMs == value) return;
-                this._enmityIntervalMs = value;
+                if (this.enmityIntervalMs == value) return;
+                this.enmityIntervalMs = value;
                 EnmityIntervalChanged?.Invoke(this, EventArgs.Empty);
             }
         }
 
-        private string _sortKey;
+        private string sortKey;
 
         public string SortKey
         {
-            get => this._sortKey;
+            get => this.sortKey;
             set
             {
-                if (this._sortKey == value) return;
-                this._sortKey = value;
+                if (this.sortKey == value) return;
+                this.sortKey = value;
                 SortKeyChanged?.Invoke(this, EventArgs.Empty);
             }
         }
 
-        private bool _sortDesc;
+        private bool sortDesc;
 
         public bool SortDesc
         {
-            get => this._sortDesc;
+            get => this.sortDesc;
             set
             {
-                if (this._sortDesc == value) return;
-                this._sortDesc = value;
+                if (this.sortDesc == value) return;
+                this.sortDesc = value;
                 SortDescChanged?.Invoke(this, EventArgs.Empty);
             }
         }
 
-        private bool _updateDpsDuringImport;
+        private bool updateDpsDuringImport;
 
         public bool UpdateDpsDuringImport
         {
-            get => this._updateDpsDuringImport;
+            get => this.updateDpsDuringImport;
             set
             {
-                if (this._updateDpsDuringImport == value) return;
-                this._updateDpsDuringImport = value;
+                if (this.updateDpsDuringImport == value) return;
+                this.updateDpsDuringImport = value;
                 UpdateDpsDuringImportChanged?.Invoke(this, EventArgs.Empty);
             }
         }
 
-        private bool _endEncounterAfterWipe;
+        private bool endEncounterAfterWipe;
 
         public bool EndEncounterAfterWipe
         {
-            get => this._endEncounterAfterWipe;
+            get => this.endEncounterAfterWipe;
             set
             {
-                if (this._endEncounterAfterWipe == value) return;
-                this._endEncounterAfterWipe = value;
+                if (this.endEncounterAfterWipe == value) return;
+                this.endEncounterAfterWipe = value;
                 EndEncounterAfterWipeChanged?.Invoke(this, EventArgs.Empty);
             }
         }
 
-        private bool _endEncounterOutOfCombat;
+        private bool endEncounterOutOfCombat;
 
         public bool EndEncounterOutOfCombat
         {
-            get => this._endEncounterOutOfCombat;
+            get => this.endEncounterOutOfCombat;
             set
             {
-                if (this._endEncounterOutOfCombat == value) return;
-                this._endEncounterOutOfCombat = value;
+                if (this.endEncounterOutOfCombat == value) return;
+                this.endEncounterOutOfCombat = value;
                 EndEncounterOutOfCombatChanged?.Invoke(this, EventArgs.Empty);
             }
         }
@@ -125,13 +125,13 @@ namespace RainbowMage.OverlayPlugin.EventSources
 
         public BuiltinEventConfig()
         {
-            this._updateInterval = 1;
-            this._enmityIntervalMs = 100;
-            this._sortKey = "encdps";
-            this._sortDesc = true;
-            this._updateDpsDuringImport = false;
-            this._endEncounterAfterWipe = true;
-            this._endEncounterOutOfCombat = true;
+            this.updateInterval = 1;
+            this.enmityIntervalMs = 100;
+            this.sortKey = "encdps";
+            this.sortDesc = true;
+            this.updateDpsDuringImport = false;
+            this.endEncounterAfterWipe = true;
+            this.endEncounterOutOfCombat = true;
             this._logLines = false;
         }
 
@@ -144,37 +144,37 @@ namespace RainbowMage.OverlayPlugin.EventSources
 
             if (obj.TryGetValue("UpdateInterval", out var value))
             {
-                result._updateInterval = value.ToObject<int>();
+                result.updateInterval = value.ToObject<int>();
             }
 
             if (obj.TryGetValue("EnmityIntervalMs", out value))
             {
-                result._enmityIntervalMs = value.ToObject<int>();
+                result.enmityIntervalMs = value.ToObject<int>();
             }
 
             if (obj.TryGetValue("SortKey", out value))
             {
-                result._sortKey = value.ToString();
+                result.sortKey = value.ToString();
             }
 
             if (obj.TryGetValue("SortDesc", out value))
             {
-                result._sortDesc = value.ToObject<bool>();
+                result.sortDesc = value.ToObject<bool>();
             }
 
             if (obj.TryGetValue("UpdateDpsDuringImport", out value))
             {
-                result._updateDpsDuringImport = value.ToObject<bool>();
+                result.updateDpsDuringImport = value.ToObject<bool>();
             }
 
             if (obj.TryGetValue("EndEncounterAfterWipe", out value))
             {
-                result._endEncounterAfterWipe = value.ToObject<bool>();
+                result.endEncounterAfterWipe = value.ToObject<bool>();
             }
 
             if (obj.TryGetValue("EndEncounterOutOfCombat", out value))
             {
-                result._endEncounterOutOfCombat = value.ToObject<bool>();
+                result.endEncounterOutOfCombat = value.ToObject<bool>();
             }
 
             if (obj.TryGetValue("OverlayData", out value))
@@ -190,13 +190,13 @@ namespace RainbowMage.OverlayPlugin.EventSources
             return result;
         }
 
-        public void SaveConfig(IPluginConfig config)
+        public void SaveConfig(IPluginConfig Config)
         {
             var newObj = JObject.FromObject(this);
-            if (config.EventSourceConfigs.ContainsKey("MiniParse") &&
-                JToken.DeepEquals(config.EventSourceConfigs["MiniParse"], newObj)) return;
-            config.EventSourceConfigs["MiniParse"] = newObj;
-            config.MarkDirty();
+            if (Config.EventSourceConfigs.ContainsKey("MiniParse") &&
+                JToken.DeepEquals(Config.EventSourceConfigs["MiniParse"], newObj)) return;
+            Config.EventSourceConfigs["MiniParse"] = newObj;
+            Config.MarkDirty();
         }
     }
 

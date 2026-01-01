@@ -3,9 +3,9 @@ using System;
 
 namespace RainbowMage.OverlayPlugin
 {
-    internal class FFXIVExportVariables
+    class FFXIVExportVariables
     {
-        private static string outH = CombatantData.DamageTypeDataOutgoingHealing;
+        static string outH = CombatantData.DamageTypeDataOutgoingHealing;
 
         public static void Init()
         {

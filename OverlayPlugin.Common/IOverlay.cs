@@ -7,6 +7,7 @@ namespace RainbowMage.OverlayPlugin
     /// </summary>
     /// <remarks>
     /// アドオンを作成する場合はこのインターフェイスを実装するのではなく、
+    /// <see cref="RainbowMage.OverlayPlugin.OverlayBase"/> 抽象クラスを継承してください。
     /// </remarks>
     public interface IOverlay : IDisposable
     {
@@ -57,5 +58,9 @@ namespace RainbowMage.OverlayPlugin
         /// </summary>
         /// <param name="message">A string message created by the plugin javascript.</param>
         void OverlayMessage(string message);
+
+        void InitModernAPI();
+
+        void SetAcceptFocus(bool accept);
     }
 }

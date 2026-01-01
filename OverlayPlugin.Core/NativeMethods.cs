@@ -6,7 +6,7 @@ namespace RainbowMage.OverlayPlugin
     /// <summary>
     /// ネイティブ関数を提供します。
     /// </summary>
-    internal class NativeMethods
+    class NativeMethods
     {
         private WinEventDelegate dele;
 

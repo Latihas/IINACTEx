@@ -30,7 +30,7 @@ public class MainWindow : Window
     }
 
     public IPluginConfig? OverlayPluginConfig { get; set; }
-    public IReadOnlyList<RainbowMage.OverlayPlugin.IOverlayTemplate>? OverlayPresets { get; set; }
+    public IReadOnlyList<RainbowMage.OverlayPlugin.IOverlayPreset>? OverlayPresets { get; set; }
     private string[]? OverlayNames => OverlayPresets?.Select(x => x.Name).ToArray();
     public RainbowMage.OverlayPlugin.WebSocket.ServerController? Server { get; set; }
 

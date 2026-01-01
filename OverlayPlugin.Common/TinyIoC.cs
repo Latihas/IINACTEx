@@ -757,6 +757,9 @@ namespace RainbowMage.OverlayPlugin
         sealed class ResolveOptions
     {
         private static readonly ResolveOptions _Default = new ResolveOptions();
+        private static readonly ResolveOptions _FailUnregisteredAndNameNotFound = new ResolveOptions() { NamedResolutionFailureAction = NamedResolutionFailureActions.Fail, UnregisteredResolutionAction = UnregisteredResolutionActions.Fail };
+        private static readonly ResolveOptions _FailUnregisteredOnly = new ResolveOptions() { NamedResolutionFailureAction = NamedResolutionFailureActions.AttemptUnnamedResolution, UnregisteredResolutionAction = UnregisteredResolutionActions.Fail };
+        private static readonly ResolveOptions _FailNameNotFoundOnly = new ResolveOptions() { NamedResolutionFailureAction = NamedResolutionFailureActions.Fail, UnregisteredResolutionAction = UnregisteredResolutionActions.AttemptResolve };
 
         public UnregisteredResolutionActions UnregisteredResolutionAction { get; set; } =
             UnregisteredResolutionActions.AttemptResolve;
@@ -3902,9 +3905,7 @@ namespace RainbowMage.OverlayPlugin
         #endregion
 
         #region IDisposable Members
-
-        private bool disposed;
-
+        bool disposed = false;
         public void Dispose()
         {
             if (!disposed)

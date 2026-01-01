@@ -8,11 +8,11 @@ namespace RainbowMage.OverlayPlugin
     public class OverlayTemplateConfig
     {
         public int Version { get; set; }
-        public List<OverlayTemplate> Overlays { get; set; }
+        public List<OverlayPreset> Overlays { get; set; }
 
     }
 
-    public class OverlayTemplate : IOverlayTemplate
+    public class OverlayPreset : IOverlayPreset
     {
         public string Name { get; set; }
         public string Uri { get; set; }

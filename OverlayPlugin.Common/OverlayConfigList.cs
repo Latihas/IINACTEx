@@ -38,7 +38,7 @@ namespace RainbowMage.OverlayPlugin
             reader.ReadToDescendant("Overlay");
             do
             {
-                var typeName = reader.GetAttribute("Type");
+                string typeName = reader.GetAttribute("Type");
 
                 reader.Read();
 
@@ -54,6 +54,7 @@ namespace RainbowMage.OverlayPlugin
                     }
                     catch (Exception e)
                     {
+                        System.Diagnostics.Trace.WriteLine(e);
                         _logger.Log(LogLevel.Error, e.ToString());
                     }
                 }
@@ -68,9 +69,18 @@ namespace RainbowMage.OverlayPlugin
             reader.ReadEndElement();
         }
 
-        private Type GetType(string fullName) => AppDomain.CurrentDomain.GetAssemblies()
-                                                          .Select(asm => asm.GetType(fullName, false))
-                                                          .FirstOrDefault(type => type != null);
+        private Type GetType(string fullName)
+        {
+            foreach (var asm in AppDomain.CurrentDomain.GetAssemblies())
+            {
+                var type = asm.GetType(fullName, false);
+                if (type != null)
+                {
+                    return type;
+                }
+            }
+            return null;
+        }
 
         public void WriteXml(System.Xml.XmlWriter writer)
         {

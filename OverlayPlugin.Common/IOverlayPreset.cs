@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace RainbowMage.OverlayPlugin
 {
-    public interface IOverlayTemplate
+    public interface IOverlayPreset
     {
         public string Name { get; }
         public string Uri { get; }

@@ -1,13 +1,13 @@
-using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using Newtonsoft.Json;
 
 namespace RainbowMage.OverlayPlugin
 {
-    class FFXIVCustomLogLines
+    public class FFXIVCustomLogLines
     {
         private ILogger logger;
         private FFXIVRepository repository;
@@ -92,7 +92,6 @@ namespace RainbowMage.OverlayPlugin
                                 logger.Log(LogLevel.Error, $"Reserved log line entry already registered ({ID}).");
                                 continue;
                             }
-                            continue;
                         }
 
                         if (Name == null)
@@ -103,11 +102,11 @@ namespace RainbowMage.OverlayPlugin
 
                         var Source = reservedDataEntry.Source;
                         var Version = reservedDataEntry.Version.Value;
-                        logger.Log(LogLevel.Debug,
-                                   $"Reserving log line entry for ID {ID}, Source {Source}, Version {Version}.");
+                        logger.Log(LogLevel.Debug, $"Reserving log line entry for ID {ID}, Source {Source}, Name {Name}, Version {Version}.");
                         registry[ID] = new LogLineRegistryEntry()
                         {
                             ID = ID,
+                            Name = Name,
                             Source = Source,
                             Version = Version,
                             Range = false,
@@ -119,7 +118,7 @@ namespace RainbowMage.OverlayPlugin
                 {
                     var entry = registry[registeredCustomLogLineID];
                     var Source = entry.Source.Replace("\r", "\\r").Replace("\n", "\\n");
-                    var Name = entry.Name?.Replace("\r", "\\r").Replace("\n", "\\n") ?? Source;
+                    var Name = entry.Name.Replace("\r", "\\r").Replace("\n", "\\n");
                     repository.WriteLogLineImpl(registeredCustomLogLineID, DateTime.Now,
                                                 $"{registeredCustomLogLineID}|{Source}|{Name}|{entry.Version}");
                 }
@@ -172,7 +171,7 @@ namespace RainbowMage.OverlayPlugin
         }
     }
 
-    interface ILogLineRegistryEntry
+    public interface ILogLineRegistryEntry
     {
         uint ID { get; }
         string Name { get; }
@@ -181,7 +180,7 @@ namespace RainbowMage.OverlayPlugin
         bool Range { get; }
     }
 
-    class LogLineRegistryEntry : ILogLineRegistryEntry
+    public class LogLineRegistryEntry : ILogLineRegistryEntry
     {
         public uint ID { get; set; }
         public string Name { get; set; }

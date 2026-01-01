@@ -29,7 +29,8 @@ public static partial class LWindow
         var s = ImGui.CollapsingHeader("已知问题(没定位到问题所在，可以提Pr之类的协助我修复。)", ImGuiTreeNodeFlags.DefaultOpen);
         if (s)
         {
-            ImGui.Text("插件加载的第一次有时会加载失败，类似于下面，涉及解析插件的初始化，重新加载即可。");
+            ImGui.Text("插件加载的第一次有时会加载失败，类似于下面，涉及解析插件的初始化，重新加载即可。彻底解决需要重启XIVLauncher。");
+            ImGui.Text("这个问题有时候在更新的时候(也会卸载)触发，且再次载入大概率会炸游戏，请注意。");
             ImGui.Indent();
             if (s && ImGui.CollapsingHeader("展开堆栈信息"))
             {

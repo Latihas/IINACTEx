@@ -420,14 +420,14 @@ public static partial class LWindow
         else ImGui.Text("opcodes.jsonc为内置版本");
         ImGui.Separator();
         ImGui.Text("这里可以在线获取两个文件");
-        if (FileDownloaderOpcodestxt == null)
+        if (!FileDownloaderOpcodes.ContainsKey("[CN][Diemoe]opcodes.txt"))
         {
-            if (ImGui.Button("[Diemoe]opcodes.txt"))
+            if (ImGui.Button("[CN][Diemoe]opcodes.txt"))
             {
                 var dp = Path.Combine(Plugin.Instance.PluginAssemblyDirectory, "chinese.zip");
-                FileDownloaderOpcodestxt = new FileDownloader("https://cdn.diemoe.net/files/ACT.DieMoe/Packs/FFXIV_ACT_Plugin/chinese.zip", dp, () =>
+                FileDownloaderOpcodes["[CN][Diemoe]opcodes.txt"] = new FileDownloader("https://cdn.diemoe.net/files/ACT.DieMoe/Packs/FFXIV_ACT_Plugin/chinese.zip", dp, () =>
                 {
-                    FileDownloaderOpcodestxt = null;
+                    FileDownloaderOpcodes.Remove("[CN][Diemoe]opcodes.txt");
                     try
                     {
                         var exp = Path.Combine(Plugin.Instance.PluginAssemblyDirectory, "chinese");
@@ -450,19 +450,19 @@ public static partial class LWindow
                         Plugin.Log.Error(e.ToString());
                     }
                 });
-                _ = FileDownloaderOpcodestxt.DownloadFileAsync();
+                _ = FileDownloaderOpcodes["[CN][Diemoe]opcodes.txt"].DownloadFileAsync();
             }
         }
         else ImGui.Text("处理中");
         ImGui.SameLine();
-        if (FileDownloaderKarashiiro == null)
+        if (!FileDownloaderOpcodes.ContainsKey("[CN][Karashiiro]扩展的opcodes.txt"))
         {
-            if (ImGui.Button("[Karashiiro]扩展的opcodes.txt"))
+            if (ImGui.Button("[CN][Karashiiro]扩展的opcodes.txt"))
             {
                 var dp = Path.Combine(Plugin.Instance.PluginAssemblyDirectory, "opcodes.txt.json");
-                FileDownloaderKarashiiro = new FileDownloader("https://cdn.jsdelivr.net/gh/karashiiro/FFXIVOpcodes@latest/opcodes.min.json", dp, () =>
+                FileDownloaderOpcodes["[CN][Karashiiro]扩展的opcodes.txt"] = new FileDownloader("https://cdn.jsdelivr.net/gh/karashiiro/FFXIVOpcodes@latest/opcodes.min.json", dp, () =>
                 {
-                    FileDownloaderKarashiiro = null;
+                    FileDownloaderOpcodes.Remove("[CN][Karashiiro]扩展的opcodes.txt");
                     try
                     {
                         var sb = new StringBuilder();
@@ -488,18 +488,27 @@ public static partial class LWindow
                         Plugin.Log.Error(e.ToString());
                     }
                 });
-                _ = FileDownloaderKarashiiro.DownloadFileAsync();
+                _ = FileDownloaderOpcodes["[CN][Karashiiro]扩展的opcodes.txt"].DownloadFileAsync();
             }
         }
         else ImGui.Text("处理中");
-        ImGui.SameLine();
-        if (FileDownloaderOpcodesjsonc == null)
+        if (!FileDownloaderOpcodes.ContainsKey("[Diemoe]opcodes.jsonc"))
         {
             if (ImGui.Button("[Diemoe]opcodes.jsonc"))
             {
-                FileDownloaderOpcodesjsonc = new FileDownloader("https://assets.diemoe.net/OverlayPlugin/OverlayPlugin.Core/resources/opcodes.jsonc", Path.Combine(Plugin.Instance.PluginAssemblyDirectory, "opcodes.jsonc"),
-                                                                () => FileDownloaderOpcodesjsonc = null);
-                _ = FileDownloaderOpcodesjsonc.DownloadFileAsync();
+                FileDownloaderOpcodes["[Diemoe]opcodes.jsonc"] = new FileDownloader("https://assets.diemoe.net/OverlayPlugin/OverlayPlugin.Core/resources/opcodes.jsonc", Path.Combine(Plugin.Instance.PluginAssemblyDirectory, "opcodes.jsonc"),
+                                                                                        () =>FileDownloaderOpcodes.Remove("[Diemoe]opcodes.jsonc"));
+                _ = FileDownloaderOpcodes["[Diemoe]opcodes.jsonc"].DownloadFileAsync();
+            }
+        }
+        else ImGui.Text("处理中");
+        if (!FileDownloaderOpcodes.ContainsKey("[OverlayPlugin]opcodes.jsonc"))
+        {
+            if (ImGui.Button("[OverlayPlugin]opcodes.jsonc"))
+            {
+                FileDownloaderOpcodes["[OverlayPlugin]opcodes.jsonc"] = new FileDownloader("https://raw.githubusercontent.com/OverlayPlugin/OverlayPlugin/main/OverlayPlugin.Core/resources/opcodes.jsonc", Path.Combine(Plugin.Instance.PluginAssemblyDirectory, "opcodes.jsonc"),
+                                                                                        () =>FileDownloaderOpcodes.Remove("[OverlayPlugin]opcodes.jsonc"));
+                _ = FileDownloaderOpcodes["[OverlayPlugin]opcodes.jsonc"].DownloadFileAsync();
             }
         }
         else ImGui.Text("处理中");
@@ -516,7 +525,8 @@ public static partial class LWindow
         }
     }
 
-    private static FileDownloader? FileDownloaderOpcodestxt, FileDownloaderOpcodesjsonc, FileDownloaderKarashiiro;
+    private static readonly Dictionary<string, FileDownloader> FileDownloaderOpcodes = new();
+    // private static FileDownloader? FileDownloaderOpcodestxt, FileDownloaderOpcodesjsonc, FileDownloaderKarashiiro;
 
     private static void TScaler(SerializableDictionary<string, VariableScalar> data) =>
         NewTable(["名称", "值", "时间", "源"], data.ToArray(), [

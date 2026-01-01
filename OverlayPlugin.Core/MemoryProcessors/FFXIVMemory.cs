@@ -26,8 +26,9 @@ namespace RainbowMage.OverlayPlugin.MemoryProcessors
 
         // The "international" version always uses the most recent.
         private static Version globalVersion = new Version(99, 0);
-        private static Version cnVersion = new Version(7, 4);
-        private static Version koVersion = new Version(6, 1);
+        private static Version cnVersion = new Version(99, 0);
+        private static Version koVersion = new Version(7, 3, 5);
+        private static Version tcVersion = new Version(7, 2);
 
         public FFXIVMemory(TinyIoCContainer container)
         {
@@ -53,10 +54,6 @@ namespace RainbowMage.OverlayPlugin.MemoryProcessors
             {
                 CloseProcessHandle();
             }
-
-            if (proc == null)
-                return;
-
             if (proc.ProcessName == "ffxiv")
             {
                 logger.Log(LogLevel.Error, "{0}", "DX9 is not supported.");
@@ -67,20 +64,6 @@ namespace RainbowMage.OverlayPlugin.MemoryProcessors
                 logger.Log(LogLevel.Error, "{0}", "Unknown ffxiv process.");
                 return;
             }
-
-            try
-            {
-                // process = proc;
-                // processHandle = -1;
-            }
-            catch (Exception e)
-            {
-                logger.Log(LogLevel.Error, "Failed to open FFXIV process: {0}", e);
-
-                // process = null;
-                // processHandle = IntPtr.Zero;
-            }
-
             OnProcessChange?.Invoke(this, process);
         }
 
@@ -91,8 +74,6 @@ namespace RainbowMage.OverlayPlugin.MemoryProcessors
 
         private void CloseProcessHandle()
         {
-            // processHandle = IntPtr.Zero;
-            // process = null;
         }
 
         public bool IsValid()
@@ -198,7 +179,7 @@ namespace RainbowMage.OverlayPlugin.MemoryProcessors
         {
             int ret;
             var value = new byte[4];
-            Peek(nint.Add(address, offset), value);
+            Peek(IntPtr.Add(address, offset), value);
             fixed (byte* p = &value[0]) ret = *(int*)p;
             return ret;
         }
@@ -207,7 +188,7 @@ namespace RainbowMage.OverlayPlugin.MemoryProcessors
         {
             long ret;
             var value = new byte[8];
-            Peek(nint.Add(address, offset), value);
+            Peek(IntPtr.Add(address, offset), value);
             fixed (byte* p = &value[0]) ret = *(long*)p;
             return ret;
         }
@@ -280,7 +261,7 @@ namespace RainbowMage.OverlayPlugin.MemoryProcessors
         }
 
         /// Reads |addr| in the |process| and returns it as a 64bit pointer. Returns 0 on error.
-        public unsafe IntPtr ReadIntPtr(IntPtr addr)
+        public IntPtr ReadIntPtr(IntPtr addr)
         {
             var buffer = Read8(addr, 8);
             if (buffer == null)
@@ -425,6 +406,8 @@ namespace RainbowMage.OverlayPlugin.MemoryProcessors
                 target = cnVersion;
             else if (region == GameRegion.Korean)
                 target = koVersion;
+            else if (region == GameRegion.Tc)
+                target = tcVersion;
             else
                 target = globalVersion;
 
