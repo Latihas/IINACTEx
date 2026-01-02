@@ -61,7 +61,6 @@ namespace RainbowMage.OverlayPlugin.MemoryProcessors.ContentFinderSettings
             }
 
             logger.Log(LogLevel.Error, $"Failed to find content finder settings memory via {GetType().Name}: {string.Join(", ", fail)}.");
-            return;
         }
 
         public override Version GetVersion()

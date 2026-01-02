@@ -272,7 +272,7 @@ namespace RainbowMage.OverlayPlugin.MemoryProcessors.Combatant
             {
                 EffectMemory73 mem = *(EffectMemory73*)&p[num * EffectMemory73.Size];
 
-                EffectEntry effectEntry = new EffectEntry()
+                EffectEntry effectEntry = new EffectEntry
                 {
                     BuffID = mem.BuffID,
                     Stack = mem.Stack,

@@ -1,4 +1,5 @@
 ﻿using System;
+using RainbowMage.OverlayPlugin.MemoryProcessors.Enmity;
 
 namespace RainbowMage.OverlayPlugin.MemoryProcessors.Aggro
 {
@@ -10,7 +11,7 @@ namespace RainbowMage.OverlayPlugin.MemoryProcessors.Aggro
 
         // Aggro uses the same signature as Enmity
         public AggroMemory60(TinyIoCContainer container)
-            : base(container, Enmity.EnmityMemory60.enmitySignature, aggroEnmityOffset) { }
+            : base(container, EnmityMemory60.enmitySignature, aggroEnmityOffset) { }
 
         public override Version GetVersion()
         {

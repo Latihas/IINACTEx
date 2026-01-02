@@ -1,9 +1,9 @@
-using Newtonsoft.Json.Linq;
 using System;
 using System.Buffers;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
+using Newtonsoft.Json.Linq;
 
 namespace RainbowMage.OverlayPlugin.MemoryProcessors
 {
@@ -51,7 +51,7 @@ namespace RainbowMage.OverlayPlugin.MemoryProcessors
             ClickableObject = 7,
             Minion = 9,
             Mailbox = 12
-        };
+        }
 
         // Values found in the EntityStruct's job field.
         public enum EntityJob : byte
@@ -99,7 +99,7 @@ namespace RainbowMage.OverlayPlugin.MemoryProcessors
             SGE = 40,
             VPR = 41,
             PCT = 42
-        };
+        }
 
         static internal bool IsGatherer(EntityJob job)
         {
@@ -191,7 +191,7 @@ namespace RainbowMage.OverlayPlugin.MemoryProcessors
                 hash = hash * 31 + debug_job.GetHashCode();
                 return hash;
             }
-        };
+        }
 
         // The op before the pointer wildcard in the signature reads a pointer-to-a-pointer
         // to the job-specific data structure. We call it |outer| below:
@@ -252,7 +252,7 @@ namespace RainbowMage.OverlayPlugin.MemoryProcessors
             return active_process_id == process_.Id;
         }
 
-        public unsafe abstract EntityData GetEntityDataFromByteArray(byte[] source);
+        public abstract EntityData GetEntityDataFromByteArray(byte[] source);
 
         public bool GetInGameCombat()
         {
@@ -376,7 +376,7 @@ namespace RainbowMage.OverlayPlugin.MemoryProcessors
         }
 
         /// Reads |addr| in the |process_| and returns it as a 64bit pointer. Returns 0 on error.
-        internal unsafe IntPtr ReadIntPtr(IntPtr addr)
+        internal IntPtr ReadIntPtr(IntPtr addr)
         {
             var buffer = Read8Pooled(addr, 8);
             if (buffer == null)
@@ -422,7 +422,7 @@ namespace RainbowMage.OverlayPlugin.MemoryProcessors
                 }
                 else
                 {
-                    pattern_array[i] = new byte?(Convert.ToByte(text, 16));
+                    pattern_array[i] = Convert.ToByte(text, 16);
                 }
             }
 

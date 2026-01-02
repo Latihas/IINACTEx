@@ -1,4 +1,5 @@
 using System;
+using System.ComponentModel;
 using System.Runtime.InteropServices;
 
 namespace RainbowMage.OverlayPlugin
@@ -14,7 +15,7 @@ namespace RainbowMage.OverlayPlugin
         {
             ActiveWindowHandle = GetForegroundWindow();
 
-            dele = new WinEventDelegate(WinEventProc);
+            dele = WinEventProc;
             var result = SetWinEventHook(EVENT_SYSTEM_FOREGROUND, EVENT_SYSTEM_FOREGROUND, IntPtr.Zero, dele, 0, 0,
                                          WINEVENT_OUTOFCONTEXT);
             if (result == IntPtr.Zero)
@@ -223,7 +224,7 @@ namespace RainbowMage.OverlayPlugin
 
             if ((result == IntPtr.Zero) && (error != 0))
             {
-                throw new System.ComponentModel.Win32Exception(error);
+                throw new Win32Exception(error);
             }
 
             return result;

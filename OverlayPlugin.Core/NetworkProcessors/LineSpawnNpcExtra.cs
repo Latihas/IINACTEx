@@ -58,7 +58,7 @@ namespace RainbowMage.OverlayPlugin.NetworkProcessors
         public const string MachinaPacketName = "NpcSpawn";
 
         [StructLayout(LayoutKind.Explicit)]
-        public unsafe struct Server_NpcSpawn_Global_6_51 : IPacketStruct
+        public struct Server_NpcSpawn_Global_6_51 : IPacketStruct
         {
             [FieldOffset(0x58)]
             public uint parentActorId;

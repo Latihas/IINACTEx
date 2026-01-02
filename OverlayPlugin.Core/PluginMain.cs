@@ -1,6 +1,15 @@
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Reflection;
+using System.Threading.Tasks;
+using System.Windows.Forms;
+using Advanced_Combat_Tracker;
 using Newtonsoft.Json;
 using RainbowMage.OverlayPlugin.EventSources;
 using RainbowMage.OverlayPlugin.Handlers.Ipc;
+using RainbowMage.OverlayPlugin.MemoryProcessors;
 using RainbowMage.OverlayPlugin.MemoryProcessors.Aggro;
 using RainbowMage.OverlayPlugin.MemoryProcessors.AtkStage;
 using RainbowMage.OverlayPlugin.MemoryProcessors.Combatant;
@@ -11,25 +20,16 @@ using RainbowMage.OverlayPlugin.MemoryProcessors.InCombat;
 using RainbowMage.OverlayPlugin.MemoryProcessors.JobGauge;
 using RainbowMage.OverlayPlugin.MemoryProcessors.Party;
 using RainbowMage.OverlayPlugin.MemoryProcessors.Target;
-using RainbowMage.OverlayPlugin.MemoryProcessors;
 using RainbowMage.OverlayPlugin.NetworkProcessors;
 using RainbowMage.OverlayPlugin.WebSocket;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Reflection;
-using System.Threading.Tasks;
-using System.Windows.Forms;
-using Advanced_Combat_Tracker;
 
 namespace RainbowMage.OverlayPlugin
 {
     public class PluginLoader : IActPluginV1
     {
-        public readonly RainbowMage.OverlayPlugin.PluginMain pluginMain;
+        public readonly PluginMain pluginMain;
 
-        public PluginLoader(RainbowMage.OverlayPlugin.PluginMain pluginMain) => this.pluginMain = pluginMain;
+        public PluginLoader(PluginMain pluginMain) => this.pluginMain = pluginMain;
 
         public void InitPlugin(TabPage pluginScreenSpace, Label pluginStatusText) { }
 

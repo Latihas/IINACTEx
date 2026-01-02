@@ -65,7 +65,7 @@ namespace RainbowMage.OverlayPlugin.MemoryProcessors.Combatant
     // appear on the map in an immune state, although it's finicky to make that happen consistently.
     // 
     // FFXIVClientStructs calls this `RenderFlags`
-    public enum ModelStatus : int
+    public enum ModelStatus
     {
         Visible = 0,
 
@@ -161,9 +161,9 @@ namespace RainbowMage.OverlayPlugin.MemoryProcessors.Combatant
 
         private Single GetDistance(Combatant target)
         {
-            var distanceX = (float)Math.Abs(PosX - target.PosX);
-            var distanceY = (float)Math.Abs(PosY - target.PosY);
-            var distanceZ = (float)Math.Abs(PosZ - target.PosZ);
+            var distanceX = Math.Abs(PosX - target.PosX);
+            var distanceY = Math.Abs(PosY - target.PosY);
+            var distanceZ = Math.Abs(PosZ - target.PosZ);
             return (Single)Math.Sqrt((distanceX * distanceX) + (distanceY * distanceY) + (distanceZ * distanceZ));
         }
 

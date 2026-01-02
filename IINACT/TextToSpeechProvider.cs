@@ -1,11 +1,13 @@
-using System.Speech.Synthesis;
-using IINACT.TextToSpeech;
-using System.Net;
-using NAudio.Wave;
 using System.IO;
+using System.Net;
 using System.Net.Http;
 using System.Reflection;
 using System.Runtime.Loader;
+using System.Speech.Synthesis;
+using Advanced_Combat_Tracker;
+using Dalamud.Utility;
+using IINACT.TextToSpeech;
+using NAudio.Wave;
 using static IINACT.Plugin;
 
 namespace IINACT;
@@ -48,7 +50,7 @@ internal class TextToSpeechProvider : IDisposable
         {
             Log.Warning(ex, "Failed to initialize EdgeTTS engine");
         }
-        Advanced_Combat_Tracker.ActGlobals.oFormActMain.TextToSpeech += Speak;
+        ActGlobals.oFormActMain.TextToSpeech += Speak;
         SetUseEdgeTTS(Plugin.Configuration.UseEdgeTts);
         SetUseLatihasTTS(Plugin.Configuration.UseLatihasTts);
     }
@@ -107,7 +109,7 @@ internal class TextToSpeechProvider : IDisposable
 
         Task.Run(() =>
         {
-            if (speechSynthesizer == null && !Dalamud.Utility.Util.IsWine())
+            if (speechSynthesizer == null && !Util.IsWine())
             {
                 try
                 {

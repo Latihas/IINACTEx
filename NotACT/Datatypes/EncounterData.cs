@@ -556,7 +556,7 @@ public class EncounterData
                            .Where(c => !allies.Contains(c))
                            .Select(c => new
                            {
-                               Name = c.Name,
+                               c.Name,
                                DamagePerDeath = c.Deaths > 0 ? c.DamageTaken / c.Deaths : c.DamageTaken
                            })
                            .OrderByDescending(c => c.DamagePerDeath)

@@ -8,7 +8,7 @@ namespace RainbowMage.OverlayPlugin.MemoryProcessors.EnmityHud
     class EnmityHudMemory70 : EnmityHudMemory, IEnmityHudMemory70
     {
         private const string enmityHudSignature = "488B8F????????488B01FF50??4C8B1D";
-        private static readonly int[] enmityHudPointerPath = new int[] { 0x30, 0x58, 0xA8, 0x20 };
+        private static readonly int[] enmityHudPointerPath = new[] { 0x30, 0x58, 0xA8, 0x20 };
 
         // Offsets from the enmityHudAddress to find various enmity HUD data structures.
         private const int enmityHudCountOffset = 4;
@@ -57,7 +57,7 @@ namespace RainbowMage.OverlayPlugin.MemoryProcessors.EnmityHud
             {
                 EnmityHudEntryMemory mem = *(EnmityHudEntryMemory*)&p[num * EnmityHudEntryMemory.Size];
 
-                EnmityHudEntry enmityHudEntry = new EnmityHudEntry()
+                EnmityHudEntry enmityHudEntry = new EnmityHudEntry
                 {
                     Order = num,
                     ID = mem.ID,

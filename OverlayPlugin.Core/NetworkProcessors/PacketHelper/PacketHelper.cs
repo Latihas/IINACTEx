@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using Machina.FFXIV;
 
@@ -71,7 +72,7 @@ namespace RainbowMage.OverlayPlugin.NetworkProcessors.PacketHelper
             if (!opcodes.TryGetValue(GameRegion.Tc, out var tcOpcodes))
             {
                 // @TODO: Once FFXIV_ACT_Plugin has TC opcodes for global release, remove this default
-                tcOpcodes = new System.Collections.Generic.Dictionary<string, ushort>();
+                tcOpcodes = new Dictionary<string, ushort>();
                 // return null;
             }
 
@@ -142,7 +143,7 @@ namespace RainbowMage.OverlayPlugin.NetworkProcessors.PacketHelper
         /// <returns>null for invalid packet, otherwise a constructed packet</returns>
         public string ToString(long epoch, byte[] message)
         {
-            if (ToStructs(message, out var header, out var packet) == false)
+            if (!ToStructs(message, out var header, out var packet))
             {
                 return null;
             }

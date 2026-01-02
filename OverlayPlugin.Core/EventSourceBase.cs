@@ -1,7 +1,7 @@
-﻿using Newtonsoft.Json.Linq;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Threading;
+using Newtonsoft.Json.Linq;
 
 namespace RainbowMage.OverlayPlugin
 {

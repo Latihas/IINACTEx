@@ -1,9 +1,11 @@
-﻿namespace Advanced_Combat_Tracker {
+﻿using System.ComponentModel;
+
+namespace Advanced_Combat_Tracker {
     partial class FormActMain {
         /// <summary>
         ///  Required designer variable.
         /// </summary>
-        private System.ComponentModel.IContainer components = null;
+        private IContainer components = null;
 
         /// <summary>
         ///  Clean up any resources being used.
@@ -27,9 +29,9 @@
             // 
             // FormActMain
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
-            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(345, 250);
+            this.AutoScaleDimensions = new SizeF(7F, 15F);
+            this.AutoScaleMode = AutoScaleMode.Font;
+            this.ClientSize = new Size(345, 250);
             this.MaximizeBox = false;
             this.MinimizeBox = false;
             this.Name = "FormActMain";

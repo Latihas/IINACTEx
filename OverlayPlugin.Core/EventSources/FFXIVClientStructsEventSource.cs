@@ -1,10 +1,11 @@
 using System;
 using System.Collections.Generic;
-using Newtonsoft.Json.Linq;
-using RainbowMage.OverlayPlugin.MemoryProcessors.AtkStage;
 using FFXIVClientStructs.FFXIV.Client.UI;
 using FFXIVClientStructs.FFXIV.Component.GUI;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using Newtonsoft.Json.Serialization;
+using RainbowMage.OverlayPlugin.MemoryProcessors.AtkStage;
 
 namespace RainbowMage.OverlayPlugin.EventSources
 {
@@ -41,13 +42,13 @@ namespace RainbowMage.OverlayPlugin.EventSources
         {
             atkStageMemory = container.Resolve<IAtkStageMemory>();
             
-            RegisterEventHandler("getFFXIVCSAddonSlow", (msg) =>
+            RegisterEventHandler("getFFXIVCSAddonSlow", msg =>
             {
                 var key = msg["name"]?.ToString();
                 return key == null ? null : GetAddon(key);
             });
 
-            RegisterEventHandler("getSortedPartyList", (_) => GetSortedPartyList());
+            RegisterEventHandler("getSortedPartyList", _ => GetSortedPartyList());
         }
 
         private unsafe JObject GetSortedPartyList()
@@ -139,12 +140,12 @@ namespace RainbowMage.OverlayPlugin.EventSources
             static void HandleDeserializationError(object sender, ErrorEventArgs errorArgs) => 
                 errorArgs.ErrorContext.Handled = true;
 
-            var settings = new Newtonsoft.Json.JsonSerializerSettings
+            var settings = new JsonSerializerSettings
             {
-                ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore,
+                ReferenceLoopHandling = ReferenceLoopHandling.Ignore,
                 Error = HandleDeserializationError
             };
-            var serializer = Newtonsoft.Json.JsonSerializer.CreateDefault(settings);
+            var serializer = JsonSerializer.CreateDefault(settings);
 
             var jObject = JObject.FromObject(addon, serializer);
 

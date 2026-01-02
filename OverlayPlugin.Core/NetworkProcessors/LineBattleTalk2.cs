@@ -10,7 +10,7 @@ namespace RainbowMage.OverlayPlugin.NetworkProcessors
             Server_MessageHeader_TC, LineBattleTalk2.BattleTalk2_v655>
     {
         [StructLayout(LayoutKind.Explicit, Size = structSize, Pack = 1)]
-        internal unsafe struct BattleTalk2_v655 : IPacketStruct
+        internal struct BattleTalk2_v655 : IPacketStruct
         {
             // 00|2024-02-25T15:13:29.0000000-05:00|0044|Whiskerwall Kupdi Koop|Mogglesguard, assemble! We must drive them out together, kupo!|e9f836e9767bed2e
             // Pre-processed data from packet (sorry, no raw packet for this one, instead it's my scuffed debugging packet dump's data)

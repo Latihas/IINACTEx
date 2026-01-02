@@ -79,7 +79,6 @@ namespace RainbowMage.OverlayPlugin.MemoryProcessors.InCombat
 
             logger.Log(LogLevel.Error,
                        $"Failed to find in combat memory via {GetType().Name}: {string.Join(", ", fail)}.");
-            return;
         }
 
         public abstract Version GetVersion();

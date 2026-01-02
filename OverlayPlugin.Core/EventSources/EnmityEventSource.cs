@@ -1,18 +1,18 @@
-using Advanced_Combat_Tracker;
-using Newtonsoft.Json.Linq;
-using System;
-using System.Collections.Generic;
 #if TRACEPERF
 using System.Diagnostics;
 #endif
+using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using RainbowMage.OverlayPlugin.MemoryProcessors.Combatant;
-using RainbowMage.OverlayPlugin.MemoryProcessors.InCombat;
-using RainbowMage.OverlayPlugin.MemoryProcessors.Enmity;
+using Advanced_Combat_Tracker;
+using Newtonsoft.Json.Linq;
 using RainbowMage.OverlayPlugin.MemoryProcessors.Aggro;
+using RainbowMage.OverlayPlugin.MemoryProcessors.Combatant;
+using RainbowMage.OverlayPlugin.MemoryProcessors.Enmity;
 using RainbowMage.OverlayPlugin.MemoryProcessors.EnmityHud;
+using RainbowMage.OverlayPlugin.MemoryProcessors.InCombat;
 using RainbowMage.OverlayPlugin.MemoryProcessors.Target;
 using static RainbowMage.OverlayPlugin.MemoryProcessors.InCombat.LineInCombat;
 
@@ -42,7 +42,7 @@ namespace RainbowMage.OverlayPlugin.EventSources
             public string type = InCombatEvent;
             public bool inACTCombat;
             public bool inGameCombat;
-        };
+        }
 
         private const int endEncounterOutOfCombatDelayMs = 5000;
         CancellationTokenSource endEncounterToken;
@@ -280,7 +280,7 @@ namespace RainbowMage.OverlayPlugin.EventSources
                 {
                     if (enmity.Target.TargetID > 0)
                     {
-                        enmity.TargetOfTarget = combatants.FirstOrDefault((Combatant x) => x.ID == (enmity.Target.TargetID));
+                        enmity.TargetOfTarget = combatants.FirstOrDefault(x => x.ID == (enmity.Target.TargetID));
                     }
                     enmity.Target.Distance = mychar.DistanceString(enmity.Target);
                     enmity.Target.EffectiveDistance = mychar.EffectiveDistanceString(enmity.Target);

@@ -47,7 +47,7 @@ namespace RainbowMage.OverlayPlugin.MemoryProcessors.Combatant
                     mycharID = mem.ID;
                 }
 
-                Combatant combatant = new Combatant()
+                Combatant combatant = new Combatant
                 {
                     Name = FFXIVMemory.GetStringFromBytes(mem.Name, CombatantMemory.NameBytes),
                     Job = mem.Job,

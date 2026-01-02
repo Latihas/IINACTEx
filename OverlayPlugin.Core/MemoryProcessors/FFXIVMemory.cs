@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Text;
 using Machina.FFXIV;
 
 namespace RainbowMage.OverlayPlugin.MemoryProcessors
@@ -59,7 +60,7 @@ namespace RainbowMage.OverlayPlugin.MemoryProcessors
                 logger.Log(LogLevel.Error, "{0}", "DX9 is not supported.");
                 return;
             }
-            else if (proc.ProcessName != "ffxiv_dx11")
+            if (proc.ProcessName != "ffxiv_dx11")
             {
                 logger.Log(LogLevel.Error, "{0}", "Unknown ffxiv process.");
                 return;
@@ -105,7 +106,7 @@ namespace RainbowMage.OverlayPlugin.MemoryProcessors
                 break;
             }
             
-            var ret = System.Text.Encoding.UTF8.GetString(bytes, 0, realSize);
+            var ret = Encoding.UTF8.GetString(bytes, 0, realSize);
             ArrayPool<byte>.Shared.Return(bytes);
             return ret;
         }
@@ -126,7 +127,7 @@ namespace RainbowMage.OverlayPlugin.MemoryProcessors
                 break;
             }
 
-            var ret = System.Text.Encoding.UTF8.GetString(bytes, 0, realSize);
+            var ret = Encoding.UTF8.GetString(bytes, 0, realSize);
             ArrayPool<byte>.Shared.Return(bytes);
             return ret;
         }
@@ -305,7 +306,7 @@ namespace RainbowMage.OverlayPlugin.MemoryProcessors
                 }
                 else
                 {
-                    pattern_array[i] = new byte?(Convert.ToByte(text, 16));
+                    pattern_array[i] = Convert.ToByte(text, 16);
                 }
             }
 
@@ -368,7 +369,7 @@ namespace RainbowMage.OverlayPlugin.MemoryProcessors
                                 // In RIP addressing, the pointer from the executable is 32bits which we stored as |rip_ptr_offset|. The pointer
                                 // is then added to the address of the byte following the pointer, making it relative to that address, which we
                                 // stored as |rip_ptr_base|.
-                                pointer = new IntPtr((Int64)rip_ptr_offset + rip_ptr_base);
+                                pointer = new IntPtr(rip_ptr_offset + rip_ptr_base);
                             }
                             else
                             {

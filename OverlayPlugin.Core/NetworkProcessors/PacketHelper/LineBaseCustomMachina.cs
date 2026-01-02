@@ -48,7 +48,7 @@ namespace RainbowMage.OverlayPlugin.NetworkProcessors.PacketHelper
             }
 
             var customLogLines = container.Resolve<FFXIVCustomLogLines>();
-            logWriter = customLogLines.RegisterCustomLogLine(new LogLineRegistryEntry()
+            logWriter = customLogLines.RegisterCustomLogLine(new LogLineRegistryEntry
             {
                 Name = logLineName,
                 Source = "OverlayPlugin",
@@ -65,7 +65,7 @@ namespace RainbowMage.OverlayPlugin.NetworkProcessors.PacketHelper
             currentRegion = null;
         }
 
-        protected virtual unsafe void MessageReceived(string id, long epoch, byte[] message)
+        protected virtual void MessageReceived(string id, long epoch, byte[] message)
         {
             if (packetHelper == null)
                 return;

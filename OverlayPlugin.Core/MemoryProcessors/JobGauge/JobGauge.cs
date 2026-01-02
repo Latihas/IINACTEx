@@ -20,7 +20,7 @@ namespace RainbowMage.OverlayPlugin.MemoryProcessors.JobGauge
 
             public JobGaugeJob Job => job;
             public IBaseJobGauge Data => data;
-            public int[] RawData => rawData.Select((b) => (int)b).ToArray();
+            public int[] RawData => rawData.Select(b => (int)b).ToArray();
             public object BaseObject => baseObject;
 
             public bool Equals(IJobGauge obj)
@@ -111,7 +111,6 @@ namespace RainbowMage.OverlayPlugin.MemoryProcessors.JobGauge
             }
 
             logger.Log(LogLevel.Error, $"Failed to find job Gauge memory via {GetType().Name}: {string.Join(", ", fail)}.");
-            return;
         }
 
         public abstract Version GetVersion();

@@ -14,14 +14,17 @@ using Dalamud.Plugin;
 using Dalamud.Plugin.Services;
 using IINACT.Latihas;
 using IINACT.Latihas.Overlay;
-using IINACT.TextToSpeech;
 using IINACT.Network;
+using IINACT.TextToSpeech;
 using IINACT.Windows;
 using Machina.FFXIV;
 using Machina.FFXIV.Headers.Opcodes;
 using RainbowMage.OverlayPlugin;
+using RainbowMage.OverlayPlugin.Handlers.Ipc;
+using RainbowMage.OverlayPlugin.WebSocket;
 using Triggernometry;
 using Triggernometry.Core;
+using Triggernometry.PluginBridges.BridgeNamazu;
 using Triggernometry.PScript;
 
 namespace IINACT;
@@ -74,7 +77,7 @@ public sealed class Plugin : IDalamudPlugin
 
     public FfxivActPluginWrapper FfxivActPluginWrapper { get; set; }
     public PluginMain OverlayPlugin { get; set; }
-    private RainbowMage.OverlayPlugin.WebSocket.ServerController? WebSocketServer { get; set; }
+    private ServerController? WebSocketServer { get; set; }
     internal string OverlayPluginStatus => OverlayPlugin.Status;
     public ProxyPlugin TriggernometryProxyPlugin;
     public PostNamazu.PostNamazu PostNamazuPlugin;
@@ -195,8 +198,8 @@ public sealed class Plugin : IDalamudPlugin
         RealPlugin.Instance.InitAura();
         ActGlobals.oFormActMain.PostNamazuPlugin = PostNamazuPlugin = new PostNamazu.PostNamazu();
         PostNamazuPlugin.InitPlugin(PluginInterface, Log, SigScanner);
-        Triggernometry.PluginBridges.BridgeNamazu.BridgeNamazu.InitializeModules();
-        Triggernometry.PluginBridges.BridgeNamazu.BridgeNamazu.RegisterAnnotatedMethods();
+        BridgeNamazu.InitializeModules();
+        BridgeNamazu.RegisterAnnotatedMethods();
         Log.Warning("Triggernometry & PostNamazu Inited");
         CommandManager.AddHandler(MainWindowCommandName, new CommandInfo(OnCommand)
         {
@@ -351,9 +354,9 @@ public sealed class Plugin : IDalamudPlugin
         if (opcodesjsoncReplaced) Log.Warning("opcodesjsonc Replaced");
         var registry = container.Resolve<Registry>();
         MainWindow.OverlayPresets = registry.OverlayPresets;
-        MainWindow.Server = WebSocketServer = container.Resolve<RainbowMage.OverlayPlugin.WebSocket.ServerController>();
+        MainWindow.Server = WebSocketServer = container.Resolve<ServerController>();
         IpcProviders.Server = WebSocketServer;
-        IpcProviders.OverlayIpcHandler = container.Resolve<RainbowMage.OverlayPlugin.Handlers.Ipc.IpcHandlerController>();
+        IpcProviders.OverlayIpcHandler = container.Resolve<IpcHandlerController>();
         MainWindow.OverlayPluginConfig = container.Resolve<IPluginConfig>();
         OverlayWindow.Init(WebSocketServer);
         return overlayPlugin;

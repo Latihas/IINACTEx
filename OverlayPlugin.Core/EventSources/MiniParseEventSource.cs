@@ -31,7 +31,7 @@ namespace RainbowMage.OverlayPlugin.EventSources
                 BroadcastMessageEvent
             });
 
-            RegisterEventHandler("saveData", (msg) =>
+            RegisterEventHandler("saveData", msg =>
             {
                 var key = msg["key"]?.ToString();
                 if (key == null)
@@ -41,7 +41,7 @@ namespace RainbowMage.OverlayPlugin.EventSources
                 return null;
             });
 
-            RegisterEventHandler("loadData", (msg) =>
+            RegisterEventHandler("loadData", msg =>
             {
                 var key = msg["key"]?.ToString();
                 if (key == null)
@@ -56,7 +56,7 @@ namespace RainbowMage.OverlayPlugin.EventSources
                 return ret;
             });
 
-            RegisterEventHandler("say", (msg) =>
+            RegisterEventHandler("say", msg =>
             {
                 var text = msg["text"]?.ToString();
                 if (text == null)
@@ -66,7 +66,7 @@ namespace RainbowMage.OverlayPlugin.EventSources
                 return null;
             });
 
-            RegisterEventHandler("playSound", (msg) =>
+            RegisterEventHandler("playSound", msg =>
             {
                 var file = msg["file"]?.ToString();
                 if (file == null)
@@ -76,7 +76,7 @@ namespace RainbowMage.OverlayPlugin.EventSources
                 return null;
             });
 
-            RegisterEventHandler("broadcast", (msg) =>
+            RegisterEventHandler("broadcast", msg =>
             {
                 if (!msg.ContainsKey("msg") || !msg.ContainsKey("source"))
                 {
@@ -101,7 +101,7 @@ namespace RainbowMage.OverlayPlugin.EventSources
                 return null;
             });
 
-            RegisterEventHandler("openWebsiteWithWS", (msg) =>
+            RegisterEventHandler("openWebsiteWithWS", msg =>
             {
                 var result = new JObject();
 
@@ -142,7 +142,7 @@ namespace RainbowMage.OverlayPlugin.EventSources
             });
 
             ActGlobals.oFormActMain.BeforeLogLineRead +=
-                (bool isImport, LogLineEventArgs logInfo) =>
+                (isImport, logInfo) =>
                 {
                     if (isImport)
                     {
@@ -378,7 +378,7 @@ namespace RainbowMage.OverlayPlugin.EventSources
                         exportValuePair.Key == "Last60DPS" ||
                         exportValuePair.Key == "Last180DPS")
                     {
-                        if (!allies.All((ally) => ally.Items[CombatantData.DamageTypeDataOutgoingDamage].Items
+                        if (!allies.All(ally => ally.Items[CombatantData.DamageTypeDataOutgoingDamage].Items
                                                       .ContainsKey("All")))
                         {
                             encounterDict.Add(exportValuePair.Key, "");
@@ -414,10 +414,7 @@ namespace RainbowMage.OverlayPlugin.EventSources
             {
                 return true;
             }
-            else
-            {
-                return false;
-            }
+            return false;
         }
     }
 }

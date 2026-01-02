@@ -1,12 +1,13 @@
-﻿using Newtonsoft.Json;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using RainbowMage.OverlayPlugin.MemoryProcessors.InCombat;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Serialization;
 using RainbowMage.OverlayPlugin.MemoryProcessors.Combatant;
 using RainbowMage.OverlayPlugin.MemoryProcessors.ContentFinderSettings;
+using RainbowMage.OverlayPlugin.MemoryProcessors.InCombat;
 using MachinaRegion = System.String;
 using OpcodeName = System.String;
 using OpcodeVersion = System.String;
@@ -157,7 +158,7 @@ namespace RainbowMage.OverlayPlugin.NetworkProcessors
         uint size { get; }
     }
 
-    [JsonObject(NamingStrategyType = typeof(Newtonsoft.Json.Serialization.DefaultNamingStrategy))]
+    [JsonObject(NamingStrategyType = typeof(DefaultNamingStrategy))]
     class OpcodeConfigEntry : IOpcodeConfigEntry
     {
         public uint opcode { get; set; }

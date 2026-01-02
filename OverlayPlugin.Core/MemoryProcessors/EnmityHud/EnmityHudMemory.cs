@@ -89,7 +89,6 @@ namespace RainbowMage.OverlayPlugin.MemoryProcessors.EnmityHud
 
             logger.Log(LogLevel.Error,
                        $"Failed to find enmity HUD memory via {GetType().Name}: {string.Join(", ", fail)}.");
-            return;
         }
 
         public abstract Version GetVersion();
@@ -151,6 +150,6 @@ namespace RainbowMage.OverlayPlugin.MemoryProcessors.EnmityHud
             return entries;
         }
 
-        protected abstract unsafe EnmityHudEntry GetEnmityHudEntryFromBytes(byte[] source, int num);
+        protected abstract EnmityHudEntry GetEnmityHudEntryFromBytes(byte[] source, int num);
     }
 }

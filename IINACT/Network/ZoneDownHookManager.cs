@@ -3,6 +3,8 @@ using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using Dalamud.Hooking;
 using Dalamud.Interface.ImGuiNotification;
+using Machina.FFXIV.Dalamud;
+using Machina.FFXIV.Headers.Opcodes;
 using Unscrambler;
 using Unscrambler.Constants;
 using Unscrambler.Unscramble;
@@ -194,7 +196,7 @@ public unsafe class ZoneDownHookManager : IDisposable
         // Compression
         if (header.Compression != CompressionType.None)
         {
-            SendNotification($"A frame was compressed.");
+            SendNotification("A frame was compressed.");
             return;
         }
         
@@ -235,7 +237,7 @@ public unsafe class ZoneDownHookManager : IDisposable
 
     private static void EnqueueToMachina(ReadOnlySpan<byte> data)
     {
-        var queue = Machina.FFXIV.Dalamud.DalamudClient.MessageQueue;
+        var queue = DalamudClient.MessageQueue;
         queue?.Enqueue((GameServerTime.LastSeverTimestamp, data.ToArray()));
     }
     
@@ -249,7 +251,7 @@ public unsafe class ZoneDownHookManager : IDisposable
     
     public static VersionConstants GetFallbackVersionConstant(uint opcodeKeyTableOffset, int opcodeKeyTableSize)
     {
-        var opcodes = Machina.FFXIV.Headers.Opcodes.OpcodeManager.Instance.CurrentOpcodes;
+        var opcodes = OpcodeManager.Instance.CurrentOpcodes;
         return new VersionConstants
         {
             GameVersion = GetRunningGameVersion(),

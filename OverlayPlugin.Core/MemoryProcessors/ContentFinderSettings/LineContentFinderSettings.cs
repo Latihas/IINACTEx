@@ -19,7 +19,7 @@ namespace RainbowMage.OverlayPlugin.MemoryProcessors.ContentFinderSettings
                 return;
             contentFinderSettingsMemory = container.Resolve<IContentFinderSettingsMemory>();
             var customLogLines = container.Resolve<FFXIVCustomLogLines>();
-            this.logWriter = customLogLines.RegisterCustomLogLine(new LogLineRegistryEntry()
+            this.logWriter = customLogLines.RegisterCustomLogLine(new LogLineRegistryEntry
             {
                 Name = "ContentFinderSettings",
                 Source = "OverlayPlugin",

@@ -105,7 +105,7 @@ public partial class LWindow
         private static readonly Dictionary<long, bool> _nodeConditionExpandedStates = new();
         private static readonly Vector4 ColorGrey = new(0.5f, 0.5f, 0.5f, 1.0f);
 
-        private void RenderConditionNode(string text, ConditionComponent condition, bool parentDisabled, System.Action? renderChildren)
+        private void RenderConditionNode(string text, ConditionComponent condition, bool parentDisabled, Action? renderChildren)
         {
             var nodeId = condition.Id;
             _nodeConditionExpandedStates.TryAdd(nodeId, false);

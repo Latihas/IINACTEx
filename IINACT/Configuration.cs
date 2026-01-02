@@ -1,4 +1,5 @@
 using System.IO;
+using Advanced_Combat_Tracker;
 using Dalamud.Configuration;
 using Newtonsoft.Json;
 
@@ -41,26 +42,26 @@ public class Configuration : IPluginConfiguration
 
     public bool WriteLogFile
     {
-        get => Advanced_Combat_Tracker.ActGlobals.oFormActMain.WriteLogFile;
-        set => Advanced_Combat_Tracker.ActGlobals.oFormActMain.WriteLogFile = value;
+        get => ActGlobals.oFormActMain.WriteLogFile;
+        set => ActGlobals.oFormActMain.WriteLogFile = value;
     }
 
     public bool WriteActLogFile
     {
-        get => Advanced_Combat_Tracker.ActGlobals.oFormActMain.WriteActLogFile;
-        set => Advanced_Combat_Tracker.ActGlobals.oFormActMain.WriteActLogFile = value;
+        get => ActGlobals.oFormActMain.WriteActLogFile;
+        set => ActGlobals.oFormActMain.WriteActLogFile = value;
     }
 
     public bool WriteTrnLogFile
     {
-        get => Advanced_Combat_Tracker.ActGlobals.oFormActMain.WriteTrnLogFile;
-        set => Advanced_Combat_Tracker.ActGlobals.oFormActMain.WriteTrnLogFile = value;
+        get => ActGlobals.oFormActMain.WriteTrnLogFile;
+        set => ActGlobals.oFormActMain.WriteTrnLogFile = value;
     }
 
     public bool DisableWritingPvpLogFile
     {
-        get => Advanced_Combat_Tracker.ActGlobals.oFormActMain.DisableWritingPvpLogFile;
-        set => Advanced_Combat_Tracker.ActGlobals.oFormActMain.DisableWritingPvpLogFile = value;
+        get => ActGlobals.oFormActMain.DisableWritingPvpLogFile;
+        set => ActGlobals.oFormActMain.DisableWritingPvpLogFile = value;
     }
     public List<string> ActScriptsEnabled { get; set; } = [];
     public int Version { get; set; } = 1;

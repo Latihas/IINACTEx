@@ -1,3 +1,4 @@
+using System.Runtime.InteropServices;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 
@@ -110,7 +111,7 @@ internal class Patcher
             ilProcessor.Replace(0, Instruction.Create(OpCodes.Ret));
         }
         
-        var marshallType = memory.Assembly.MainModule.ImportReference(typeof(System.Runtime.InteropServices.Marshal)).Resolve();
+        var marshallType = memory.Assembly.MainModule.ImportReference(typeof(Marshal)).Resolve();
         var marshallCopyBuffer = marshallType.Methods.First(
             m => m.FullName ==
                  "System.Void System.Runtime.InteropServices.Marshal::Copy(System.IntPtr,System.Byte[],System.Int32,System.Int32)");

@@ -511,8 +511,7 @@ public class MultiSigScanner : IDisposable
                 FILE_SHARE_MODE.FILE_SHARE_READ, 
                 null,
                 FILE_CREATION_DISPOSITION.OPEN_EXISTING,
-                FILE_FLAGS_AND_ATTRIBUTES.FILE_ATTRIBUTE_NORMAL,
-                null);
+                FILE_FLAGS_AND_ATTRIBUTES.FILE_ATTRIBUTE_NORMAL);
 
         if (handle.IsInvalid)
         {
@@ -524,8 +523,7 @@ public class MultiSigScanner : IDisposable
             null,
             PAGE_PROTECTION_FLAGS.PAGE_READONLY | PAGE_PROTECTION_FLAGS.SEC_IMAGE,
             0,
-            0,
-            null);
+            0);
         
         if (map.IsInvalid)
         {

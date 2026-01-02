@@ -1,13 +1,17 @@
-﻿using Advanced_Combat_Tracker;
-using Newtonsoft.Json.Linq;
-using RainbowMage.OverlayPlugin.MemoryProcessors;
-using System;
+﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Net.Http;
+using System.Text.RegularExpressions;
 using System.Threading;
+using Advanced_Combat_Tracker;
 using Dalamud.Interface.ImGuiFileDialog;
+using Newtonsoft.Json.Linq;
+using RainbowMage.OverlayPlugin.MemoryProcessors;
+using Timer = System.Timers.Timer;
 
 namespace RainbowMage.OverlayPlugin.EventSources;
 
@@ -33,7 +37,7 @@ public class CactbotEventSource : EventSourceBase
     // When true, the update function should reset notify state back to defaults.
     private bool resetNotifyState;
 
-    private System.Timers.Timer fastUpdateTimer;
+    private Timer fastUpdateTimer;
 
     // Held while the |fast_update_timer_| is running.
     private FFXIVProcess ffxiv;
@@ -66,7 +70,7 @@ public class CactbotEventSource : EventSourceBase
     {
         Name = "Cactbot";
 
-        RegisterEventTypes(new List<string>()
+        RegisterEventTypes(new List<string>
         {
             "onForceReload",
             "onGameExistsEvent",
@@ -82,35 +86,35 @@ public class CactbotEventSource : EventSourceBase
         });
 
         // Broadcast onConfigChanged when a cactbotNotifyConfigChanged message occurs.
-        RegisterEventHandler("cactbotReloadOverlays", (_) =>
+        RegisterEventHandler("cactbotReloadOverlays", _ =>
         {
             DispatchToJs(new JSEvents.ForceReloadEvent());
             return null;
         });
         RegisterEventHandler("cactbotLoadUser", FetchUserFiles);
         RegisterEventHandler("cactbotReadDataFiles", FetchDataFiles);
-        RegisterEventHandler("cactbotRequestPlayerUpdate", (_) =>
+        RegisterEventHandler("cactbotRequestPlayerUpdate", _ =>
         {
             notifyState.Player = null;
             return null;
         });
-        RegisterEventHandler("cactbotRequestState", (_) =>
+        RegisterEventHandler("cactbotRequestState", _ =>
         {
             resetNotifyState = true;
             return null;
         });
-        RegisterEventHandler("cactbotSay", (msg) =>
+        RegisterEventHandler("cactbotSay", msg =>
         {
             ActGlobals.oFormActMain.TTS(msg["text"].ToString());
             return null;
         });
-        RegisterEventHandler("cactbotSaveData", (msg) =>
+        RegisterEventHandler("cactbotSaveData", msg =>
         {
             Config.OverlayData[msg["overlay"].ToString()] = msg["data"];
             Config.OnUpdateConfig();
             return null;
         });
-        RegisterEventHandler("cactbotLoadData", (msg) =>
+        RegisterEventHandler("cactbotLoadData", msg =>
         {
             if (Config.OverlayData.ContainsKey(msg["overlay"].ToString()))
             {
@@ -120,12 +124,9 @@ public class CactbotEventSource : EventSourceBase
                 };
                 return ret;
             }
-            else
-            {
-                return null;
-            }
+            return null;
         });
-        RegisterEventHandler("cactbotChooseDirectory", (_) =>
+        RegisterEventHandler("cactbotChooseDirectory", _ =>
         {
             var ret = new JObject();
             var data = ChooseDirectory();
@@ -187,7 +188,7 @@ public class CactbotEventSource : EventSourceBase
         //   MemoryProcessor classes which raise events.
         //   Everything else should be handled through events to avoid unnecessary polling.
         //   -- ngld
-        fastUpdateTimer = new System.Timers.Timer();
+        fastUpdateTimer = new Timer();
         fastUpdateTimer.Elapsed += (_, _) =>
         {
             var timerInterval = KSlowTimerMilli;
@@ -208,7 +209,7 @@ public class CactbotEventSource : EventSourceBase
         fastUpdateTimer.AutoReset = false;
 
         language = ffxivRepository.GetLocaleString();
-        pcLocale = System.Globalization.CultureInfo.CurrentUICulture.Name;
+        pcLocale = CultureInfo.CurrentUICulture.Name;
         
         var actVersion = typeof(ActGlobals).Assembly.GetName().Version!;
 
@@ -452,7 +453,7 @@ public class CactbotEventSource : EventSourceBase
         if (url.StartsWith("file:///"))
         {
             var html = File.ReadAllText(new Uri(url).LocalPath);
-            var match = System.Text.RegularExpressions.Regex.Match(
+            var match = Regex.Match(
                 html, @"<meta http-equiv=""refresh"" content=""0; url=(.*)?""\/?>");
             if (match.Groups.Count > 1)
             {
@@ -477,11 +478,11 @@ public class CactbotEventSource : EventSourceBase
                     dataFilePaths.Add(line);
             }
         }
-        catch (System.Net.WebException e)
+        catch (WebException e)
         {
-            if (e.Status == System.Net.WebExceptionStatus.ProtocolError &&
-                e.Response is System.Net.HttpWebResponse &&
-                ((System.Net.HttpWebResponse)e.Response).StatusCode == System.Net.HttpStatusCode.NotFound)
+            if (e.Status == WebExceptionStatus.ProtocolError &&
+                e.Response is HttpWebResponse &&
+                ((HttpWebResponse)e.Response).StatusCode == HttpStatusCode.NotFound)
             {
                 // Ignore file not found.
             }
@@ -701,7 +702,7 @@ public class CactbotEventSource : EventSourceBase
             if (!Directory.Exists(watchDir))
                 continue;
 
-            var watcher = new FileSystemWatcher()
+            var watcher = new FileSystemWatcher
             {
                 Path = watchDir,
                 NotifyFilter = NotifyFilters.LastWrite | NotifyFilters.FileName,

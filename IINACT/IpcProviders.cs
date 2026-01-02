@@ -1,6 +1,8 @@
 using System.Reflection;
 using Dalamud.Plugin;
 using Dalamud.Plugin.Ipc;
+using RainbowMage.OverlayPlugin.Handlers.Ipc;
+using RainbowMage.OverlayPlugin.WebSocket;
 
 namespace IINACT;
 
@@ -10,8 +12,8 @@ internal class IpcProviders : IDisposable
     internal readonly ICallGateProvider<Version> GetVersion;
     internal readonly ICallGateProvider<Version> GetIpcVersion;
 
-    public RainbowMage.OverlayPlugin.WebSocket.ServerController? Server { get; set; }
-    public RainbowMage.OverlayPlugin.Handlers.Ipc.IpcHandlerController? OverlayIpcHandler { get; set; }
+    public ServerController? Server { get; set; }
+    public IpcHandlerController? OverlayIpcHandler { get; set; }
 
     internal readonly ICallGateProvider<string, bool> CreateSubscriber;
     internal readonly ICallGateProvider<string, bool> CreateLegacySubscriber;

@@ -1,9 +1,9 @@
-﻿using Dalamud.Bindings.ImGui;
+﻿using Advanced_Combat_Tracker;
+using Dalamud.Bindings.ImGui;
 using Dalamud.Interface.Utility.Raii;
 using Triggernometry;
 using Triggernometry.Core;
 using Triggernometry.Expressions.Tests;
-
 
 namespace IINACT.Latihas;
 
@@ -178,6 +178,6 @@ public static partial class LWindow
         ImGui.Separator();
         ImGui.InputText("## 测试TTS", ref TestTts);
         ImGui.SameLine();
-        if (ImGui.Button("测试TTS")) Advanced_Combat_Tracker.ActGlobals.oFormActMain.TTS(TestTts);
+        if (ImGui.Button("测试TTS")) ActGlobals.oFormActMain.TTS(TestTts);
     }
 }

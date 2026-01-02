@@ -1,5 +1,5 @@
-﻿using Newtonsoft.Json.Converters;
-using System;
+﻿using System;
+using Newtonsoft.Json.Converters;
 
 namespace RainbowMage.OverlayPlugin
 {
@@ -7,28 +7,25 @@ namespace RainbowMage.OverlayPlugin
     {
         private TinyIoCContainer _container;
 
-        public ConfigCreationConverter(TinyIoCContainer container) : base()
+        public ConfigCreationConverter(TinyIoCContainer container)
         {
             _container = container;
         }
 
         public override IOverlayConfig Create(Type objectType)
         {
-            var construct = objectType.GetConstructor(new Type[] { typeof(TinyIoCContainer), typeof(string) });
+            var construct = objectType.GetConstructor(new[] { typeof(TinyIoCContainer), typeof(string) });
             if (construct == null)
             {
-                construct = objectType.GetConstructor(new Type[] { typeof(string) });
+                construct = objectType.GetConstructor(new[] { typeof(string) });
                 if (construct == null)
                 {
-                    throw new Exception("No valid constructor found for config type " + objectType.ToString() + "!");
+                    throw new Exception("No valid constructor found for config type " + objectType + "!");
                 }
 
                 return (IOverlayConfig)construct.Invoke(new object[] { null });
             }
-            else
-            {
-                return (IOverlayConfig)construct.Invoke(new object[] { _container, null });
-            }
+            return (IOverlayConfig)construct.Invoke(new object[] { _container, null });
         }
     }
 }

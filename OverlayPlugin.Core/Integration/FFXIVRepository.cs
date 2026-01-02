@@ -1,7 +1,3 @@
-using Advanced_Combat_Tracker;
-using FFXIV_ACT_Plugin.Common;
-using FFXIV_ACT_Plugin.Logfile;
-using Machina.FFXIV;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -10,7 +6,13 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
+using Advanced_Combat_Tracker;
+using FFXIV_ACT_Plugin.Common;
+using FFXIV_ACT_Plugin.Common.Models;
+using FFXIV_ACT_Plugin.Logfile;
+using Machina.FFXIV;
 using Machina.FFXIV.Headers.Opcodes;
+using Machina.Infrastructure;
 
 namespace RainbowMage.OverlayPlugin
 {
@@ -295,7 +297,7 @@ namespace RainbowMage.OverlayPlugin
             }
         }
 
-        public ReadOnlyCollection<FFXIV_ACT_Plugin.Common.Models.Combatant> GetCombatants()
+        public ReadOnlyCollection<Combatant> GetCombatants()
         {
             var repo = GetRepository();
             if (repo == null) return null;
@@ -336,10 +338,10 @@ namespace RainbowMage.OverlayPlugin
         public static Dictionary<GameRegion, Dictionary<string, ushort>> GetMachinaOpcodes() => OpcodeManager.Instance._opcodes;
 
         public GameRegion GetMachinaRegion() =>
-            Machina.FFXIV.Headers.Opcodes.OpcodeManager.Instance.GameRegion;
+            OpcodeManager.Instance.GameRegion;
 
         public DateTime EpochToDateTime(long epoch) =>
-            Machina.Infrastructure.ConversionUtility.EpochToDateTime(epoch).ToLocalTime();
+            ConversionUtility.EpochToDateTime(epoch).ToLocalTime();
 
         /**
          * Convert a coordinate expressed as a uint16 to a float.

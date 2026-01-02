@@ -13,6 +13,7 @@ using Triggernometry;
 using Triggernometry.Core;
 using Triggernometry.Core.Serialization;
 using Triggernometry.Core.Variables;
+using Triggernometry.PluginBridges.BridgeNamazu;
 using Triggernometry.UI.CustomControls;
 
 namespace IINACT.Latihas;
@@ -236,7 +237,7 @@ public static partial class LWindow
             RealPlugin.Instance.cfg.EnableModuleBase = EnableModuleBase;
         if (EnableModuleBase)
         {
-            var modules = Triggernometry.PluginBridges.BridgeNamazu.BridgeNamazu.Modules.Concat(Triggernometry.PluginBridges.BridgeNamazu.BridgeNamazu.SideloadModules).Select(i => i.Key.Name.ToString()).ToArray();
+            var modules = BridgeNamazu.Modules.Concat(BridgeNamazu.SideloadModules).Select(i => i.Key.Name.ToString()).ToArray();
             foreach (var name in modules)
             {
                 ImGui.Indent();

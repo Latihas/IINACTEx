@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Serialization;
 
 namespace RainbowMage.OverlayPlugin
 {
@@ -38,7 +39,7 @@ namespace RainbowMage.OverlayPlugin
                 {
                     if (reservedDataEntry.Source == null || reservedDataEntry.Version == null)
                     {
-                        logger.Log(LogLevel.Warning, $"Reserved log line entry missing Source or Version.");
+                        logger.Log(LogLevel.Warning, "Reserved log line entry missing Source or Version.");
                         continue;
                     }
 
@@ -70,7 +71,7 @@ namespace RainbowMage.OverlayPlugin
                                 continue;
                             }
 
-                            registry[ID] = new LogLineRegistryEntry()
+                            registry[ID] = new LogLineRegistryEntry
                             {
                                 ID = ID,
                                 Name = Name,
@@ -87,7 +88,7 @@ namespace RainbowMage.OverlayPlugin
                         if (registry.ContainsKey(ID))
                         {
                             var entry = registry[ID];
-                            if (entry.Source != reservedDataEntry.Source || entry.Range == false)
+                            if (entry.Source != reservedDataEntry.Source || !entry.Range)
                             {
                                 logger.Log(LogLevel.Error, $"Reserved log line entry already registered ({ID}).");
                                 continue;
@@ -96,14 +97,14 @@ namespace RainbowMage.OverlayPlugin
 
                         if (Name == null)
                         {
-                            logger.Log(LogLevel.Error, $"Reserved log line entry missing Name property");
+                            logger.Log(LogLevel.Error, "Reserved log line entry missing Name property");
                             continue;
                         }
 
                         var Source = reservedDataEntry.Source;
                         var Version = reservedDataEntry.Version.Value;
                         logger.Log(LogLevel.Debug, $"Reserving log line entry for ID {ID}, Source {Source}, Name {Name}, Version {Version}.");
-                        registry[ID] = new LogLineRegistryEntry()
+                        registry[ID] = new LogLineRegistryEntry
                         {
                             ID = ID,
                             Name = Name,
@@ -135,7 +136,7 @@ namespace RainbowMage.OverlayPlugin
             // This prevents a downstream plugin from attempting to register e.g. `00` lines by just pretending to be FFXIV_ACT_Plugin.
             if (entry.Source == "FFXIV_ACT_Plugin")
             {
-                logger.Log(LogLevel.Warning, $"Attempted to register custom log line with reserved source.");
+                logger.Log(LogLevel.Warning, "Attempted to register custom log line with reserved source.");
                 return null;
             }
 
@@ -224,7 +225,7 @@ namespace RainbowMage.OverlayPlugin
         uint? Version { get; }
     }
 
-    [JsonObject(NamingStrategyType = typeof(Newtonsoft.Json.Serialization.DefaultNamingStrategy))]
+    [JsonObject(NamingStrategyType = typeof(DefaultNamingStrategy))]
     internal class ConfigReservedLogLine : IConfigReservedLogLine
     {
         public uint? ID { get; set; }

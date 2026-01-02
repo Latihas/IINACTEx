@@ -96,7 +96,6 @@ namespace RainbowMage.OverlayPlugin.MemoryProcessors.Combatant
 
             logger.Log(LogLevel.Error,
                        $"Failed to find combatant memory via {GetType().Name}: {string.Join(",", fail)}.");
-            return;
         }
 
         public abstract Version GetVersion();
@@ -172,11 +171,11 @@ namespace RainbowMage.OverlayPlugin.MemoryProcessors.Combatant
         }
 
         // Returns a combatant if the combatant is a mob or a PC.
-        public abstract unsafe Combatant GetMobFromByteArray(byte[] source, uint mycharID);
+        public abstract Combatant GetMobFromByteArray(byte[] source, uint mycharID);
 
         // Will return any kind of combatant, even if not a mob.
         // This function always returns a combatant object, even if empty.
-        protected abstract unsafe Combatant GetCombatantFromByteArray(
+        protected abstract Combatant GetCombatantFromByteArray(
             byte[] source, uint mycharID, bool isPlayer, bool exceptEffects = false);
 
         protected unsafe List<EffectEntry> GetEffectEntries(byte* source, ObjectType type, uint mycharID)
@@ -213,7 +212,7 @@ namespace RainbowMage.OverlayPlugin.MemoryProcessors.Combatant
             {
                 EffectMemory mem = *(EffectMemory*)&p[num * EffectMemory.Size];
 
-                EffectEntry effectEntry = new EffectEntry()
+                EffectEntry effectEntry = new EffectEntry
                 {
                     BuffID = mem.BuffID,
                     Stack = mem.Stack,

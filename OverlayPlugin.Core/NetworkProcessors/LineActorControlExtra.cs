@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Globalization;
+using System.IO;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using Machina.FFXIV;
@@ -74,7 +75,7 @@ namespace RainbowMage.OverlayPlugin.NetworkProcessors
             ffxiv.RegisterProcessChangedHandler(ProcessChanged);
 
             var customLogLines = container.Resolve<FFXIVCustomLogLines>();
-            logWriter = customLogLines.RegisterCustomLogLine(new LogLineRegistryEntry()
+            logWriter = customLogLines.RegisterCustomLogLine(new LogLineRegistryEntry
             {
                 Name = "ActorControlExtra",
                 Source = "OverlayPlugin",
@@ -120,7 +121,7 @@ namespace RainbowMage.OverlayPlugin.NetworkProcessors
                 RegionalizedInfo info = new RegionalizedInfo(headerType, actorControlType, netHelper);
                 regionalized = info;
             }
-            catch (System.IO.FileNotFoundException)
+            catch (FileNotFoundException)
             {
                 logger.Log(LogLevel.Error, Resources.NetworkParserNoFfxiv);
             }

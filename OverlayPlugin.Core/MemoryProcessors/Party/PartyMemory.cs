@@ -82,7 +82,7 @@ namespace RainbowMage.OverlayPlugin.MemoryProcessors.Party
             List<string> fail = new List<string>();
 
             // These addresses aren't pointers, they're static memory structures. Therefore we don't need to resolve nested pointers.
-            long instanceAddress = (long)GetGroupManagerAddress();
+            long instanceAddress = GetGroupManagerAddress();
 
             if (instanceAddress != 0)
             {
@@ -107,7 +107,6 @@ namespace RainbowMage.OverlayPlugin.MemoryProcessors.Party
 
             // @TODO: Change this from Debug to Error once we're actually using party
             logger.Log(LogLevel.Debug, $"Failed to find party memory via {GetType().Name}: {string.Join(", ", fail)}.");
-            return;
         }
 
         public abstract Version GetVersion();

@@ -84,7 +84,6 @@ namespace RainbowMage.OverlayPlugin.MemoryProcessors.Target
 
             logger.Log(LogLevel.Error,
                        $"Failed to find target memory via {GetType().Name}: {string.Join(", ", fail)}.");
-            return;
         }
 
         public abstract Version GetVersion();

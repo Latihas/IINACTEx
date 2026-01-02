@@ -1,7 +1,7 @@
-using Dalamud.Plugin.Services;
-using EdgeTTS;
 using System.Diagnostics;
 using System.IO;
+using Dalamud.Plugin.Services;
+using EdgeTTS;
 using EdgeTTS.Models;
 
 namespace IINACT.TextToSpeech;

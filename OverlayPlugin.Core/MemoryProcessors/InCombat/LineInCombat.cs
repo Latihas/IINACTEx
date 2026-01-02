@@ -1,4 +1,5 @@
 ﻿using System;
+using Advanced_Combat_Tracker;
 
 namespace RainbowMage.OverlayPlugin.MemoryProcessors.InCombat
 {
@@ -33,7 +34,7 @@ namespace RainbowMage.OverlayPlugin.MemoryProcessors.InCombat
             ffxiv = container.Resolve<FFXIVRepository>();
             inCombatMemory = container.Resolve<IInCombatMemory>();
             var customLogLines = container.Resolve<FFXIVCustomLogLines>();
-            this.logWriter = customLogLines.RegisterCustomLogLine(new LogLineRegistryEntry()
+            this.logWriter = customLogLines.RegisterCustomLogLine(new LogLineRegistryEntry
             {
                 Name = "InCombat",
                 Source = "OverlayPlugin",
@@ -47,7 +48,7 @@ namespace RainbowMage.OverlayPlugin.MemoryProcessors.InCombat
             if (!inCombatMemory.IsValid())
                 return;
 
-            bool inACTCombat = Advanced_Combat_Tracker.ActGlobals.oFormActMain.InCombat;
+            bool inACTCombat = ActGlobals.oFormActMain.InCombat;
             bool inGameCombat = inCombatMemory.GetInCombat();
 
             if (lastEventArgs != null && lastEventArgs.InACTCombat == inACTCombat && lastEventArgs.InGameCombat == inGameCombat)

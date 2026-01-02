@@ -12,6 +12,6 @@ namespace RainbowMage.OverlayPlugin
         public int? SuggestedHeight { get; }
         public List<string> Features { get; }
 
-        public abstract Uri ToOverlayUri(Uri webSocketServer);
+        public Uri ToOverlayUri(Uri webSocketServer);
     }
 }

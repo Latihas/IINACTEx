@@ -1,18 +1,19 @@
 using System.IO;
-using Dalamud.Interface;
-using Dalamud.Interface.Colors;
-using Dalamud.Interface.Components;
-using Dalamud.Interface.Windowing;
-using FFXIV_ACT_Plugin.Config;
-using RainbowMage.OverlayPlugin;
 using System.Net;
 using System.Net.Sockets;
 using System.Numerics;
 using Dalamud.Bindings.ImGui;
+using Dalamud.Interface;
+using Dalamud.Interface.Colors;
+using Dalamud.Interface.Components;
 using Dalamud.Interface.ImGuiNotification;
 using Dalamud.Interface.Utility;
 using Dalamud.Interface.Utility.Raii;
+using Dalamud.Interface.Windowing;
+using FFXIV_ACT_Plugin.Config;
 using IINACT.Latihas;
+using RainbowMage.OverlayPlugin;
+using RainbowMage.OverlayPlugin.WebSocket;
 
 namespace IINACT.Windows;
 
@@ -30,9 +31,9 @@ public class MainWindow : Window
     }
 
     public IPluginConfig? OverlayPluginConfig { get; set; }
-    public IReadOnlyList<RainbowMage.OverlayPlugin.IOverlayPreset>? OverlayPresets { get; set; }
+    public IReadOnlyList<IOverlayPreset>? OverlayPresets { get; set; }
     private string[]? OverlayNames => OverlayPresets?.Select(x => x.Name).ToArray();
-    public RainbowMage.OverlayPlugin.WebSocket.ServerController? Server { get; set; }
+    public ServerController? Server { get; set; }
 
     public override void Draw()
     {
@@ -312,7 +313,7 @@ public class MainWindow : Window
 
         ImGui.Spacing();
         var wsServerIp = OverlayPluginConfig?.WSServerIP ?? "";
-        ImGui.InputText("IP地址", ref wsServerIp, 100, ImGuiInputTextFlags.None);
+        ImGui.InputText("IP地址", ref wsServerIp, 100);
 
         if (IPAddress.TryParse(wsServerIp, out var address))
         {
@@ -326,7 +327,7 @@ public class MainWindow : Window
         }
 
         var wsServerPort = OverlayPluginConfig?.WSServerPort.ToString() ?? "";
-        ImGui.InputText("端口", ref wsServerPort, 100, ImGuiInputTextFlags.None);
+        ImGui.InputText("端口", ref wsServerPort, 100);
 
         if (int.TryParse(wsServerPort, out var port))
         {

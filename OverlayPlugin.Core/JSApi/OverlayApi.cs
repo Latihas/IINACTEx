@@ -1,6 +1,6 @@
-﻿using Advanced_Combat_Tracker;
-using System;
+﻿using System;
 using System.Threading.Tasks;
+using Advanced_Combat_Tracker;
 
 namespace RainbowMage.OverlayPlugin
 {
@@ -94,7 +94,5 @@ namespace RainbowMage.OverlayPlugin
     }
 
     public class EndEncounterEventArgs : EventArgs
-    {
-        public EndEncounterEventArgs() { }
-    }
+    { }
 }

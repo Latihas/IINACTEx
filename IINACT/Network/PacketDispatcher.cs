@@ -1,4 +1,6 @@
-﻿#pragma warning disable CS0169 // Field is never used
+﻿using FFXIVClientStructs.FFXIV.Client.System.Framework;
+
+#pragma warning disable CS0169 // Field is never used
 namespace IINACT.Network;
 
 public unsafe struct PacketDispatcher
@@ -16,7 +18,7 @@ public unsafe struct PacketDispatcher
 
     public static PacketDispatcher* GetInstance()
     {
-        var framework = FFXIVClientStructs.FFXIV.Client.System.Framework.Framework.Instance();
+        var framework = Framework.Instance();
         if (framework == null) return null;
         var nmp = framework->NetworkModuleProxy;
         if (nmp == null) return null;

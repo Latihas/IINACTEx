@@ -1,7 +1,8 @@
 ﻿using System;
-using System.Linq;
 using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.InteropServices;
+using System.Text;
 using Newtonsoft.Json.Linq;
 
 namespace RainbowMage.OverlayPlugin.MemoryProcessors {
@@ -154,9 +155,9 @@ namespace RainbowMage.OverlayPlugin.MemoryProcessors {
         EntityMemory mem = *(EntityMemory*)&p[0];
 
         // dump '\0' string terminators
-        var memoryName = System.Text.Encoding.UTF8.GetString(mem.Name, EntityMemory.nameBytes).Split(new[] { '\0' }, 2)[0];
+        var memoryName = Encoding.UTF8.GetString(mem.Name, EntityMemory.nameBytes).Split(new[] { '\0' }, 2)[0];
 
-        EntityData entity = new EntityData() {
+        EntityData entity = new EntityData {
           name = memoryName,
           id = mem.id,
           type = mem.type,
@@ -228,60 +229,60 @@ namespace RainbowMage.OverlayPlugin.MemoryProcessors {
       }
       job_inner_ptr = IntPtr.Add(job_inner_ptr, kJobDataInnerStructOffset);
 
-      fixed (byte* p = Read8(job_inner_ptr, kJobDataInnerStructSize)) {
-        if (p == null) {
-          return null;
-        } else {
-          switch (job) {
-            case EntityJob.RDM:
-                return JObject.FromObject(*(RedMageJobMemory*)&p[0]);
-            case EntityJob.WAR:
-                return JObject.FromObject(*(WarriorJobMemory*)&p[0]);
-            case EntityJob.DRK:
-                return JObject.FromObject(*(DarkKnightJobMemory*)&p[0]);
-            case EntityJob.PLD:
-                return JObject.FromObject(*(PaladinJobMemory*)&p[0]);
-            case EntityJob.GNB:
-                return JObject.FromObject(*(GunbreakerJobMemory*)&p[0]);
-            case EntityJob.BRD:
-                return JObject.FromObject(*(BardJobMemory*)&p[0]);
-            case EntityJob.DNC:
-                return JObject.FromObject(*(DancerJobMemory*)&p[0]);
-            case EntityJob.DRG:
-                return JObject.FromObject(*(DragoonJobMemory*)&p[0]);
-            case EntityJob.NIN:
-                return JObject.FromObject(*(NinjaJobMemory*)&p[0]);
-            case EntityJob.THM:
-                return JObject.FromObject(*(ThaumaturgeJobMemory*)&p[0]);
-            case EntityJob.BLM:
-                return JObject.FromObject(*(BlackMageJobMemory*)&p[0]);
-            case EntityJob.WHM:
-                return JObject.FromObject(*(WhiteMageJobMemory*)&p[0]);
-            case EntityJob.ACN:
-                return JObject.FromObject(*(ArcanistJobMemory*)&p[0]);
-            case EntityJob.SMN:
-                return JObject.FromObject(*(SummonerJobMemory*)&p[0]);
-            case EntityJob.SCH:
-                return JObject.FromObject(*(ScholarJobMemory*)&p[0]);
-            case EntityJob.MNK:
-                return JObject.FromObject(*(MonkJobMemory*)&p[0]);
-            case EntityJob.MCH:
-                return JObject.FromObject(*(MachinistJobMemory*)&p[0]);
-            case EntityJob.AST:
-                return JObject.FromObject(*(AstrologianJobMemory*)&p[0]);
-            case EntityJob.SAM:
-                return JObject.FromObject(*(SamuraiJobMemory*)&p[0]);
-            case EntityJob.SGE:
-                return JObject.FromObject(*(SageJobMemory*)&p[0]);
-            case EntityJob.RPR:
-                return JObject.FromObject(*(ReaperJobMemory*)&p[0]);
-            case EntityJob.VPR:
-                return JObject.FromObject(*(ViperJobMemory*)&p[0]);
-            case EntityJob.PCT:
-                return JObject.FromObject(*(PictomancerJobMemory*)&p[0]);
-          }
+      fixed (byte* p = Read8(job_inner_ptr, kJobDataInnerStructSize))
+      {
+          if (p == null) {
           return null;
         }
+          switch (job) {
+              case EntityJob.RDM:
+                  return JObject.FromObject(*(RedMageJobMemory*)&p[0]);
+              case EntityJob.WAR:
+                  return JObject.FromObject(*(WarriorJobMemory*)&p[0]);
+              case EntityJob.DRK:
+                  return JObject.FromObject(*(DarkKnightJobMemory*)&p[0]);
+              case EntityJob.PLD:
+                  return JObject.FromObject(*(PaladinJobMemory*)&p[0]);
+              case EntityJob.GNB:
+                  return JObject.FromObject(*(GunbreakerJobMemory*)&p[0]);
+              case EntityJob.BRD:
+                  return JObject.FromObject(*(BardJobMemory*)&p[0]);
+              case EntityJob.DNC:
+                  return JObject.FromObject(*(DancerJobMemory*)&p[0]);
+              case EntityJob.DRG:
+                  return JObject.FromObject(*(DragoonJobMemory*)&p[0]);
+              case EntityJob.NIN:
+                  return JObject.FromObject(*(NinjaJobMemory*)&p[0]);
+              case EntityJob.THM:
+                  return JObject.FromObject(*(ThaumaturgeJobMemory*)&p[0]);
+              case EntityJob.BLM:
+                  return JObject.FromObject(*(BlackMageJobMemory*)&p[0]);
+              case EntityJob.WHM:
+                  return JObject.FromObject(*(WhiteMageJobMemory*)&p[0]);
+              case EntityJob.ACN:
+                  return JObject.FromObject(*(ArcanistJobMemory*)&p[0]);
+              case EntityJob.SMN:
+                  return JObject.FromObject(*(SummonerJobMemory*)&p[0]);
+              case EntityJob.SCH:
+                  return JObject.FromObject(*(ScholarJobMemory*)&p[0]);
+              case EntityJob.MNK:
+                  return JObject.FromObject(*(MonkJobMemory*)&p[0]);
+              case EntityJob.MCH:
+                  return JObject.FromObject(*(MachinistJobMemory*)&p[0]);
+              case EntityJob.AST:
+                  return JObject.FromObject(*(AstrologianJobMemory*)&p[0]);
+              case EntityJob.SAM:
+                  return JObject.FromObject(*(SamuraiJobMemory*)&p[0]);
+              case EntityJob.SGE:
+                  return JObject.FromObject(*(SageJobMemory*)&p[0]);
+              case EntityJob.RPR:
+                  return JObject.FromObject(*(ReaperJobMemory*)&p[0]);
+              case EntityJob.VPR:
+                  return JObject.FromObject(*(ViperJobMemory*)&p[0]);
+              case EntityJob.PCT:
+                  return JObject.FromObject(*(PictomancerJobMemory*)&p[0]);
+          }
+          return null;
       }
     }
 
@@ -296,14 +297,14 @@ namespace RainbowMage.OverlayPlugin.MemoryProcessors {
 
       [FieldOffset(0x02)]
       public byte manaStacks;
-    };
+    }
 
     [Serializable]
     [StructLayout(LayoutKind.Explicit)]
     public struct WarriorJobMemory {
       [FieldOffset(0x00)]
       public byte beast;
-    };
+    }
 
     [Serializable]
     [StructLayout(LayoutKind.Explicit)]
@@ -319,14 +320,14 @@ namespace RainbowMage.OverlayPlugin.MemoryProcessors {
 
       [FieldOffset(0x06)]
       public ushort livingShadowMilliseconds;
-    };
+    }
 
     [Serializable]
     [StructLayout(LayoutKind.Explicit)]
     public struct PaladinJobMemory {
       [FieldOffset(0x00)]
       public byte oath;
-    };
+    }
 
     [Serializable]
     [StructLayout(LayoutKind.Explicit)]
@@ -339,7 +340,7 @@ namespace RainbowMage.OverlayPlugin.MemoryProcessors {
 
       [FieldOffset(0x04)]
       public byte continuationState;
-    };
+    }
 
     [Serializable]
     [StructLayout(LayoutKind.Explicit)]
@@ -411,7 +412,7 @@ namespace RainbowMage.OverlayPlugin.MemoryProcessors {
           };
         }
       }
-    };
+    }
 
     [StructLayout(LayoutKind.Explicit)]
     public struct DancerJobMemory {
@@ -454,7 +455,7 @@ namespace RainbowMage.OverlayPlugin.MemoryProcessors {
           return _steps.Select(s => s.ToString()).Where(s => s != "None").ToArray();
         }
       }
-    };
+    }
 
     [Serializable]
     [StructLayout(LayoutKind.Explicit)]
@@ -471,25 +472,25 @@ namespace RainbowMage.OverlayPlugin.MemoryProcessors {
       public byte eyesAmount;
 
       public uint bloodMilliseconds {
-        get {
-          if (stance == 1)
+        get
+        {
+            if (stance == 1)
             return blood_or_life_ms;
-          else
             return 0;
         }
       }
       public uint lifeMilliseconds {
-        get {
-          if (stance == 2)
+        get
+        {
+            if (stance == 2)
             return blood_or_life_ms;
-          else
             return 0;
         }
       }
 
       [FieldOffset(0x04)]
       public byte firstmindsFocus;
-    };
+    }
 
     [Serializable]
     [StructLayout(LayoutKind.Explicit)]
@@ -499,13 +500,13 @@ namespace RainbowMage.OverlayPlugin.MemoryProcessors {
 
       [FieldOffset(0x02)]
       public byte kazematoi;
-    };
+    }
 
     [StructLayout(LayoutKind.Explicit)]
     public struct ThaumaturgeJobMemory {
       [FieldOffset(0x02)]
       public sbyte umbralStacks; // Positive = Umbral Fire Stacks, Negative = Umbral Ice Stacks.
-    };
+    }
 
     [StructLayout(LayoutKind.Explicit)]
     public struct BlackMageJobMemory {
@@ -548,7 +549,7 @@ namespace RainbowMage.OverlayPlugin.MemoryProcessors {
           return ((int)enochian_state >> 2) & 0x7; // = 0b111, to get the last 3 bits.
         }
       }
-    };
+    }
 
     [StructLayout(LayoutKind.Explicit)]
     public struct WhiteMageJobMemory {
@@ -560,13 +561,13 @@ namespace RainbowMage.OverlayPlugin.MemoryProcessors {
 
       [FieldOffset(0x05)]
       public byte bloodlilyStacks;
-    };
+    }
 
     [StructLayout(LayoutKind.Explicit)]
     public struct ArcanistJobMemory {
       [FieldOffset(0x04)]
       public byte aetherflowStacks;
-    };
+    }
 
     [StructLayout(LayoutKind.Explicit)]
     public struct SummonerJobMemory {
@@ -669,7 +670,7 @@ namespace RainbowMage.OverlayPlugin.MemoryProcessors {
                  0;
         }
       }
-    };
+    }
 
     [StructLayout(LayoutKind.Explicit)]
     public struct ScholarJobMemory {
@@ -684,7 +685,7 @@ namespace RainbowMage.OverlayPlugin.MemoryProcessors {
 
       [FieldOffset(0x04)]
       public byte fairyStatus; // Seraph: 6, else 0.
-    };
+    }
 
 
     [StructLayout(LayoutKind.Explicit)]
@@ -730,19 +731,19 @@ namespace RainbowMage.OverlayPlugin.MemoryProcessors {
       }
 
       public bool solarNadi {
-        get {
-          if ((Nadi & 0x2) == 0x2)
+        get
+        {
+            if ((Nadi & 0x2) == 0x2)
             return true;
-          else
             return false;
         }
       }
 
       public bool lunarNadi {
-        get {
-          if ((Nadi & 0x1) == 0x1)
+        get
+        {
+            if ((Nadi & 0x1) == 0x1)
             return true;
-          else
             return false;
         }
       }
@@ -764,7 +765,7 @@ namespace RainbowMage.OverlayPlugin.MemoryProcessors {
           return (Fury >> 4) & 0x3;
         }
       }
-    };
+    }
 
     [StructLayout(LayoutKind.Explicit)]
     public struct MachinistJobMemory {
@@ -798,7 +799,7 @@ namespace RainbowMage.OverlayPlugin.MemoryProcessors {
           return (chargeTimerState & 0x2) == 1;
         }
       }
-    };
+    }
 
     [StructLayout(LayoutKind.Explicit)]
     public struct AstrologianJobMemory {
@@ -847,18 +848,17 @@ namespace RainbowMage.OverlayPlugin.MemoryProcessors {
       }
 
       public string nextdraw {
-        get {
-          if (_nextdraw == 0)
+        get
+        {
+            if (_nextdraw == 0)
           {
             return "Astral";
-          } else
-          {
-            return "Umbral";
           }
+            return "Umbral";
 
         }
       }
-    };
+    }
 
     [StructLayout(LayoutKind.Explicit)]
     public struct SamuraiJobMemory {

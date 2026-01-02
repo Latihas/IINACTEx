@@ -11,7 +11,7 @@ namespace RainbowMage.OverlayPlugin.MemoryProcessors.Party
         // We use FFXIVClientStructs versions of the structs because they have more required details than FFXIV_ACT_Plugin's struct definitions
         #region FFXIVClientStructs structs
         [StructLayout(LayoutKind.Explicit, Size = 0x2F0)]
-        public unsafe partial struct StatusManager
+        public unsafe struct StatusManager
         {
             [FieldOffset(0x0)]
             public void* Owner;
@@ -61,7 +61,7 @@ namespace RainbowMage.OverlayPlugin.MemoryProcessors.Party
             [FieldOffset(0x394)] public byte Flags;
         }
         [StructLayout(LayoutKind.Explicit, Size = 0x65B0)]
-        public unsafe partial struct GroupManager
+        public unsafe struct GroupManager
         {
             [FieldOffset(0x0)]
             public fixed byte PartyMembers[0x3A0 * 8]; // PartyMember type
@@ -126,7 +126,7 @@ namespace RainbowMage.OverlayPlugin.MemoryProcessors.Party
             var alliance4Members = extractAllianceMembers(groupManager.groupManager2.AllianceMembers, 20, 0, 8);
             var alliance5Members = extractAllianceMembers(groupManager.groupManager2.AllianceMembers, 20, 8, 8);
 
-            return new PartyListsStruct()
+            return new PartyListsStruct
             {
                 partyId = groupManager.groupManager1.PartyId,
                 partyId_2 = groupManager.groupManager1.PartyId_2,
@@ -168,7 +168,7 @@ namespace RainbowMage.OverlayPlugin.MemoryProcessors.Party
             for (int i = 0; i < count; ++i)
             {
                 var member = Marshal.PtrToStructure<PartyMember>(new IntPtr(ptr + (i * sizeof(PartyMember))));
-                ret[i] = new PartyListEntry()
+                ret[i] = new PartyListEntry
                 {
                     x = member.X,
                     y = member.Y,

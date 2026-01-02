@@ -217,7 +217,6 @@ namespace RainbowMage.OverlayPlugin.NetworkProcessors
             if (!MachinaRegionalizedPacketHelper<AbilityExtraPacket<Server_ActionEffect32_Extra>>.Create("ActionEffect32", out packetHelper_32, "Ability32"))
             {
                 logger.Log(LogLevel.Error, "Failed to initialize LineAbilityExtra: Creating ActionEffect32 failed");
-                return;
             }
         }
 
@@ -228,7 +227,7 @@ namespace RainbowMage.OverlayPlugin.NetworkProcessors
             staticRegion = null;
         }
 
-        protected override unsafe void MessageReceived(string id, long epoch, byte[] message)
+        protected override void MessageReceived(string id, long epoch, byte[] message)
         {
             if (packetHelper_32 == null)
                 return;
@@ -265,8 +264,6 @@ namespace RainbowMage.OverlayPlugin.NetworkProcessors
             {
                 DateTime serverTime = ffxiv.EpochToDateTime(epoch);
                 logWriter(line, serverTime);
-
-                return;
             }
         }
     }

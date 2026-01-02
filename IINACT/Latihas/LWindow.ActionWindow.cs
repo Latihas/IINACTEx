@@ -1,6 +1,7 @@
-﻿using System.Diagnostics.CodeAnalysis;
-using Dalamud.Interface.Windowing;
+﻿using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using Dalamud.Bindings.ImGui;
+using Dalamud.Interface.Windowing;
 using Triggernometry.Core;
 using Triggernometry.Localization;
 using static Triggernometry.Core.ActionOld;
@@ -419,12 +420,12 @@ public partial class LWindow
                             if (ImGui.InputText("工作目录", ref LaunchProcessWorkingDirExpression))
                                 Action.LaunchProcessWorkingDirExpression = LaunchProcessWorkingDirExpression;
                             var currenProcessWindowStyleItem = 0;
-                            if (Enum.TryParse(typeof(System.Diagnostics.ProcessWindowStyle), Action.LaunchProcessWindowStyle, out var ProcessWindowStyle))
+                            if (Enum.TryParse(typeof(ProcessWindowStyle), Action.LaunchProcessWindowStyle, out var ProcessWindowStyle))
                                 currenProcessWindowStyleItem = (int)ProcessWindowStyle;
                             if (ImGui.Combo("日志行类型", ref currenProcessWindowStyleItem,
-                                            Enum.GetValues<System.Diagnostics.ProcessWindowStyle>()
+                                            Enum.GetValues<ProcessWindowStyle>()
                                                 .Select(i => i.ToString()).ToList()))
-                                Action.LaunchProcessWindowStyle = currenProcessWindowStyleItem == 0 ? null : ((System.Diagnostics.ProcessWindowStyle)currenProcessWindowStyleItem).ToString();
+                                Action.LaunchProcessWindowStyle = currenProcessWindowStyleItem == 0 ? null : ((ProcessWindowStyle)currenProcessWindowStyleItem).ToString();
                             break;
                         }
                         case ActionTypeEnum.ExecuteScript:

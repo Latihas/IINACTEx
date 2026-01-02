@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Reflection;
 using System.Runtime.InteropServices;
 
@@ -56,7 +57,7 @@ namespace RainbowMage.OverlayPlugin.NetworkProcessors
 
                 container.Resolve<FFXIVRepository>().RegisterNetworkParser(Parse);
             }
-            catch (System.IO.FileNotFoundException)
+            catch (FileNotFoundException)
             {
                 logger.Log(LogLevel.Error, Resources.NetworkParserNoFfxiv);
             }
@@ -114,11 +115,8 @@ namespace RainbowMage.OverlayPlugin.NetworkProcessors
             {
                 return (ushort)GetEnumValue(MessageType, name);
             }
-            else
-            {
-                var value = MessageType.GetField(name).GetValue(null);
-                return (ushort)value.GetType().GetProperty("InternalValue").GetValue(value);
-            }
+            var value = MessageType.GetField(name).GetValue(null);
+            return (ushort)value.GetType().GetProperty("InternalValue").GetValue(value);
         }
 
         public unsafe void Parse(string id, long epoch, byte[] message)

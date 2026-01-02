@@ -10,7 +10,7 @@ namespace RainbowMage.OverlayPlugin.MemoryProcessors.JobGauge
         // We use FFXIVClientStructs versions of the structs because they have more required details than FFXIV_ACT_Plugin's struct definitions
         #region FFXIVClientStructs structs
         [StructLayout(LayoutKind.Explicit, Size = 0x60)]
-        public unsafe partial struct JobGaugeManager
+        public unsafe struct JobGaugeManager
         {
             [JsonIgnore]
             [FieldOffset(0x00)] public JobGauge* CurrentGauge;
@@ -46,7 +46,7 @@ namespace RainbowMage.OverlayPlugin.MemoryProcessors.JobGauge
 
             [FieldOffset(0x58)] public byte ClassJobID;
 
-            public byte[] GetRawGaugeData => new byte[] {
+            public byte[] GetRawGaugeData => new[] {
                 RawGaugeData[0], RawGaugeData[1], RawGaugeData[2], RawGaugeData[3],
                 RawGaugeData[4], RawGaugeData[5], RawGaugeData[6], RawGaugeData[7]
             };
@@ -91,7 +91,7 @@ namespace RainbowMage.OverlayPlugin.MemoryProcessors.JobGauge
         }
 
         [StructLayout(LayoutKind.Explicit, Size = 0x10)]
-        public unsafe struct AstrologianGauge : IBaseAstrologianGauge
+        public struct AstrologianGauge : IBaseAstrologianGauge
         {
             [FieldOffset(0x08)] public short Timer;
             [FieldOffset(0x0D)] public byte Card;
@@ -263,7 +263,7 @@ namespace RainbowMage.OverlayPlugin.MemoryProcessors.JobGauge
 
             byte IBaseDancerGauge.Esprit => Esprit;
 
-            byte[] IBaseDancerGauge.DanceSteps => new byte[] { DanceSteps[0], DanceSteps[1], DanceSteps[2], DanceSteps[3] };
+            byte[] IBaseDancerGauge.DanceSteps => new[] { DanceSteps[0], DanceSteps[1], DanceSteps[2], DanceSteps[3] };
 
             byte IBaseDancerGauge.StepIndex => StepIndex;
         }

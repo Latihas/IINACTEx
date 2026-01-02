@@ -60,7 +60,7 @@ namespace RainbowMage.OverlayPlugin.NetworkProcessors.PacketHelper
                         break;
                 }
 
-                packetTypeMap = new ReadOnlyDictionary<GameRegion, ReadOnlyDictionary<string, Type>>(new Dictionary<GameRegion, ReadOnlyDictionary<string, Type>>() {
+                packetTypeMap = new ReadOnlyDictionary<GameRegion, ReadOnlyDictionary<string, Type>>(new Dictionary<GameRegion, ReadOnlyDictionary<string, Type>> {
                     { GameRegion.Global, new ReadOnlyDictionary<string, Type>(globalDict) },
                     { GameRegion.Chinese, new ReadOnlyDictionary<string, Type>(chineseDict) },
                     { GameRegion.Korean, new ReadOnlyDictionary<string, Type>(koreanDict) },
@@ -234,7 +234,7 @@ namespace RainbowMage.OverlayPlugin.NetworkProcessors.PacketHelper
         /// <returns>null for invalid packet, otherwise a constructed packet</returns>
         public string ToString(long epoch, byte[] message)
         {
-            if (ToStructs(message, out var header, out var packet) == false)
+            if (!ToStructs(message, out var header, out var packet))
             {
                 return null;
             }
@@ -276,7 +276,7 @@ namespace RainbowMage.OverlayPlugin.NetworkProcessors.PacketHelper
             return ToStructs(ptr, out header, out packet);
         }
 
-        public unsafe bool ToStructs(IntPtr ptr, out MachinaHeaderWrapper header, out PacketType packet, bool ignoreOpcode = false)
+        public bool ToStructs(IntPtr ptr, out MachinaHeaderWrapper header, out PacketType packet, bool ignoreOpcode = false)
         {
             var headerObj = Marshal.PtrToStructure(ptr, headerType);
 

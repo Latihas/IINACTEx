@@ -1,6 +1,6 @@
-﻿using RainbowMage.OverlayPlugin.MemoryProcessors;
-using System;
+﻿using System;
 using System.Collections.Generic;
+using RainbowMage.OverlayPlugin.MemoryProcessors;
 
 namespace RainbowMage.OverlayPlugin.EventSources
 {
@@ -8,7 +8,7 @@ namespace RainbowMage.OverlayPlugin.EventSources
     public interface JSEvent
     {
         string EventName();
-    };
+    }
 
     // This class defines all the event |details| structures that go to each event type.
     public class JSEvents

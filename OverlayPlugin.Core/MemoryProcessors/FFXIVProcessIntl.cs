@@ -1,8 +1,9 @@
-﻿using Newtonsoft.Json.Linq;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Text;
+using Newtonsoft.Json.Linq;
 
 namespace RainbowMage.OverlayPlugin.MemoryProcessors
 {
@@ -186,10 +187,10 @@ namespace RainbowMage.OverlayPlugin.MemoryProcessors
                 var mem = *(EntityMemory*)&p[0];
 
                 // dump '\0' string terminators
-                var memoryName = System.Text.Encoding.UTF8.GetString(mem.Name, EntityMemory.nameBytes)
-                                       .Split(new[] { '\0' }, 2)[0];
+                var memoryName = Encoding.UTF8.GetString(mem.Name, EntityMemory.nameBytes)
+                                         .Split(new[] { '\0' }, 2)[0];
 
-                var entity = new EntityData()
+                var entity = new EntityData
                 {
                     name = memoryName,
                     id = mem.id,
@@ -322,7 +323,7 @@ namespace RainbowMage.OverlayPlugin.MemoryProcessors
 
             [FieldOffset(0x02)]
             public byte manaStacks;
-        };
+        }
 
         [Serializable]
         [StructLayout(LayoutKind.Explicit)]
@@ -330,7 +331,7 @@ namespace RainbowMage.OverlayPlugin.MemoryProcessors
         {
             [FieldOffset(0x00)]
             public byte beast;
-        };
+        }
 
         [Serializable]
         [StructLayout(LayoutKind.Explicit)]
@@ -347,7 +348,7 @@ namespace RainbowMage.OverlayPlugin.MemoryProcessors
 
             [FieldOffset(0x06)]
             public ushort livingShadowMilliseconds;
-        };
+        }
 
         [Serializable]
         [StructLayout(LayoutKind.Explicit)]
@@ -355,7 +356,7 @@ namespace RainbowMage.OverlayPlugin.MemoryProcessors
         {
             [FieldOffset(0x00)]
             public byte oath;
-        };
+        }
 
         [Serializable]
         [StructLayout(LayoutKind.Explicit)]
@@ -369,7 +370,7 @@ namespace RainbowMage.OverlayPlugin.MemoryProcessors
 
             [FieldOffset(0x04)]
             public byte continuationState;
-        };
+        }
 
         [Serializable]
         [StructLayout(LayoutKind.Explicit)]
@@ -443,7 +444,7 @@ namespace RainbowMage.OverlayPlugin.MemoryProcessors
                     };
                 }
             }
-        };
+        }
 
         [StructLayout(LayoutKind.Explicit)]
         public struct DancerJobMemory
@@ -490,7 +491,7 @@ namespace RainbowMage.OverlayPlugin.MemoryProcessors
                     return _steps.Select(s => s.ToString()).Where(s => s != "None").ToArray();
                 }
             }
-        };
+        }
 
         [Serializable]
         [StructLayout(LayoutKind.Explicit)]
@@ -513,8 +514,7 @@ namespace RainbowMage.OverlayPlugin.MemoryProcessors
                 {
                     if (stance == 1)
                         return blood_or_life_ms;
-                    else
-                        return 0;
+                    return 0;
                 }
             }
 
@@ -524,14 +524,13 @@ namespace RainbowMage.OverlayPlugin.MemoryProcessors
                 {
                     if (stance == 2)
                         return blood_or_life_ms;
-                    else
-                        return 0;
+                    return 0;
                 }
             }
 
             [FieldOffset(0x04)]
             public byte firstmindsFocus;
-        };
+        }
 
         [Serializable]
         [StructLayout(LayoutKind.Explicit)]
@@ -545,14 +544,14 @@ namespace RainbowMage.OverlayPlugin.MemoryProcessors
 
             [FieldOffset(0x03)]
             private byte hutonCount; // Why though?
-        };
+        }
 
         [StructLayout(LayoutKind.Explicit)]
         public struct ThaumaturgeJobMemory
         {
             [FieldOffset(0x02)]
             public sbyte umbralStacks; // Positive = Umbral Fire Stacks, Negative = Umbral Ice Stacks.
-        };
+        }
 
         [StructLayout(LayoutKind.Explicit)]
         public struct BlackMageJobMemory
@@ -590,7 +589,7 @@ namespace RainbowMage.OverlayPlugin.MemoryProcessors
                     return ((int)enochian_state >> 2) & 0x7; // = 0b111, to get the last 3 bits.
                 }
             }
-        };
+        }
 
         [StructLayout(LayoutKind.Explicit)]
         public struct WhiteMageJobMemory
@@ -603,14 +602,14 @@ namespace RainbowMage.OverlayPlugin.MemoryProcessors
 
             [FieldOffset(0x05)]
             public byte bloodlilyStacks;
-        };
+        }
 
         [StructLayout(LayoutKind.Explicit)]
         public struct ArcanistJobMemory
         {
             [FieldOffset(0x04)]
             public byte aetherflowStacks;
-        };
+        }
         
         [StructLayout(LayoutKind.Explicit)]
          public struct SummonerJobMemory {
@@ -713,7 +712,7 @@ namespace RainbowMage.OverlayPlugin.MemoryProcessors
                       0;
              }
            }
-         };
+         }
 
         [StructLayout(LayoutKind.Explicit)]
         public struct ScholarJobMemory
@@ -730,7 +729,7 @@ namespace RainbowMage.OverlayPlugin.MemoryProcessors
             [FieldOffset(0x04)]
             public byte
                 fairyStatus; // Seraph: 6, else 0.
-        };
+        }
 
 
         [StructLayout(LayoutKind.Explicit)]
@@ -785,8 +784,7 @@ namespace RainbowMage.OverlayPlugin.MemoryProcessors
                 {
                     if ((Nadi & 0x4) == 0x4)
                         return true;
-                    else
-                        return false;
+                    return false;
                 }
             }
 
@@ -796,8 +794,7 @@ namespace RainbowMage.OverlayPlugin.MemoryProcessors
                 {
                     if ((Nadi & 0x1) == 0x1)
                         return true;
-                    else
-                        return false;
+                    return false;
                 }
             }
             
@@ -818,7 +815,7 @@ namespace RainbowMage.OverlayPlugin.MemoryProcessors
                     return (Fury >> 4) & 0x3;
                 }
             }
-        };
+        }
 
         [StructLayout(LayoutKind.Explicit)]
         public struct MachinistJobMemory
@@ -845,7 +842,7 @@ namespace RainbowMage.OverlayPlugin.MemoryProcessors
             public bool overheatActive => (chargeTimerState & 0x1) == 1;
 
             public bool robotActive => (chargeTimerState & 0x2) == 1;
-        };
+        }
 
         [StructLayout(LayoutKind.Explicit)]
         public struct AstrologianJobMemory
@@ -896,18 +893,17 @@ namespace RainbowMage.OverlayPlugin.MemoryProcessors
             }
 
             public string nextdraw {
-                get {
+                get
+                {
                     if (_nextdraw == 0)
                     {
                         return "Astral";
-                    } else
-                    {
-                        return "Umbral";
                     }
+                    return "Umbral";
 
                 }
             }
-        };
+        }
 
         [StructLayout(LayoutKind.Explicit)]
         public struct SamuraiJobMemory

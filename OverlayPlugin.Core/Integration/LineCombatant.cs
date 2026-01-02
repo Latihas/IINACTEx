@@ -3,6 +3,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Threading;
@@ -49,14 +50,14 @@ namespace RainbowMage.OverlayPlugin.MemoryProcessors.Combatant
 
             private const uint InCombatDelayDefault = 1000;
 
-            public static CriteriaData InCombatCriteria = new CriteriaData()
+            public static CriteriaData InCombatCriteria = new CriteriaData
             {
                 DelayDefault = InCombatDelayDefault,
                 DelayPosition = 250,
                 DistancePosition = Math.Pow(5, 2),
                 DistanceHeading = (float)(45 * (Math.PI / 180)), // 45º turns
 
-                CheckFieldDelay = new ReadOnlyDictionary<FieldInfo, uint>(new Dictionary<FieldInfo, uint>(){
+                CheckFieldDelay = new ReadOnlyDictionary<FieldInfo, uint>(new Dictionary<FieldInfo, uint> {
                     // Default delay threshold
                     { typeof(Combatant).GetField(nameof(Combatant.OwnerID)),          InCombatDelayDefault },
                     { typeof(Combatant).GetField(nameof(Combatant.Type)),             InCombatDelayDefault },
@@ -81,14 +82,14 @@ namespace RainbowMage.OverlayPlugin.MemoryProcessors.Combatant
 
             private const uint OutOfCombatDelayDefault = 5000;
 
-            public static CriteriaData OutOfCombatCriteria = new CriteriaData()
+            public static CriteriaData OutOfCombatCriteria = new CriteriaData
             {
                 DelayDefault = OutOfCombatDelayDefault,
                 DelayPosition = 1250,
                 DistancePosition = Math.Pow(15, 2),
                 DistanceHeading = 20f, // Effectively disabled
 
-                CheckFieldDelay = new ReadOnlyDictionary<FieldInfo, uint>(new Dictionary<FieldInfo, uint>(){
+                CheckFieldDelay = new ReadOnlyDictionary<FieldInfo, uint>(new Dictionary<FieldInfo, uint> {
                     // Default delay threshold
                     { typeof(Combatant).GetField(nameof(Combatant.OwnerID)),          OutOfCombatDelayDefault },
                     { typeof(Combatant).GetField(nameof(Combatant.Type)),             OutOfCombatDelayDefault },
@@ -111,7 +112,7 @@ namespace RainbowMage.OverlayPlugin.MemoryProcessors.Combatant
                 })
             };
 
-            private static readonly string[] IgnoreFieldNames = new string[] {
+            private static readonly string[] IgnoreFieldNames = new[] {
                 // "ID" is always printed
                 nameof(Combatant.ID),
                 // Exclude "Effects" due to object complexity
@@ -139,8 +140,8 @@ namespace RainbowMage.OverlayPlugin.MemoryProcessors.Combatant
 
             // Fields that should be written out for add or full list of changes
             public static readonly FieldInfo[] AllFields = typeof(Combatant).GetFields()
-                .Where((field) => !IgnoreFieldNames.Contains(field.Name))
-                .OrderBy((field) => field.Name).ToArray();
+                .Where(field => !IgnoreFieldNames.Contains(field.Name))
+                .OrderBy(field => field.Name).ToArray();
 
             private static object GetDefault(Type type)
             {
@@ -157,7 +158,7 @@ namespace RainbowMage.OverlayPlugin.MemoryProcessors.Combatant
 
             public static readonly ReadOnlyDictionary<Type, object> DefaultValues =
                 new ReadOnlyDictionary<Type, object>(
-                    AllFields.Select((fi) => fi.FieldType).Distinct().ToDictionary((t) => t, (t) => GetDefault(t)));
+                    AllFields.Select(fi => fi.FieldType).Distinct().ToDictionary(t => t, t => GetDefault(t)));
         }
 
         private class CombatantStateInfo
@@ -185,7 +186,7 @@ namespace RainbowMage.OverlayPlugin.MemoryProcessors.Combatant
                 }
             };
             var customLogLines = container.Resolve<FFXIVCustomLogLines>();
-            this.logWriter = customLogLines.RegisterCustomLogLine(new LogLineRegistryEntry()
+            this.logWriter = customLogLines.RegisterCustomLogLine(new LogLineRegistryEntry
             {
                 Name = "CombatantMemory",
                 Source = "OverlayPlugin",
@@ -202,7 +203,7 @@ namespace RainbowMage.OverlayPlugin.MemoryProcessors.Combatant
                 offsetHeaderLoginUserID = netHelper.GetOffset(msgHeaderType, "LoginUserID");
                 ffxiv.RegisterNetworkParser(MessageReceived);
             }
-            catch (System.IO.FileNotFoundException)
+            catch (FileNotFoundException)
             {
                 logger.Log(LogLevel.Error, Resources.NetworkParserNoFfxiv);
             }
@@ -278,7 +279,7 @@ namespace RainbowMage.OverlayPlugin.MemoryProcessors.Combatant
                 // If this is a new combatant, always write a line for it
                 if (!combatantStateMap.ContainsKey(combatant.ID))
                 {
-                    combatantStateMap[combatant.ID] = new CombatantStateInfo()
+                    combatantStateMap[combatant.ID] = new CombatantStateInfo
                     {
                         lastUpdated = now,
                         combatant = combatant
@@ -286,7 +287,7 @@ namespace RainbowMage.OverlayPlugin.MemoryProcessors.Combatant
                     WriteLine(
                         CombatantMemoryChangeType.Add,
                         combatant.ID,
-                        string.Join("", CombatantChangeCriteria.AllFields.Select((fi) => FormatFieldChange(fi, combatant, true))));
+                        string.Join("", CombatantChangeCriteria.AllFields.Select(fi => FormatFieldChange(fi, combatant, true))));
                     continue;
                 }
 
@@ -361,7 +362,7 @@ namespace RainbowMage.OverlayPlugin.MemoryProcessors.Combatant
                         }
                     }
 
-                    combatantStateMap[combatant.ID] = new CombatantStateInfo()
+                    combatantStateMap[combatant.ID] = new CombatantStateInfo
                     {
                         lastUpdated = now,
                         combatant = combatant
@@ -373,8 +374,8 @@ namespace RainbowMage.OverlayPlugin.MemoryProcessors.Combatant
                         CombatantMemoryChangeType.Change,
                         combatant.ID,
                         string.Join("",
-                            CombatantChangeCriteria.AllFields.Where((field) => changed.Contains(field))
-                            .Select((fi) => FormatFieldChange(fi, combatant))));
+                            CombatantChangeCriteria.AllFields.Where(field => changed.Contains(field))
+                            .Select(fi => FormatFieldChange(fi, combatant))));
                 }
                 else
                 {

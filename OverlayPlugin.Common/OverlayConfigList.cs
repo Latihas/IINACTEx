@@ -1,5 +1,8 @@
 ﻿using System;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
+using System.Xml;
+using System.Xml.Schema;
 using System.Xml.Serialization;
 
 namespace RainbowMage.OverlayPlugin
@@ -20,12 +23,12 @@ namespace RainbowMage.OverlayPlugin
             _logger = logger;
         }
 
-        public System.Xml.Schema.XmlSchema GetSchema()
+        public XmlSchema GetSchema()
         {
             return null;
         }
 
-        public void ReadXml(System.Xml.XmlReader reader)
+        public void ReadXml(XmlReader reader)
         {
             MissingTypes = 0;
 
@@ -53,7 +56,7 @@ namespace RainbowMage.OverlayPlugin
                     }
                     catch (Exception e)
                     {
-                        System.Diagnostics.Trace.WriteLine(e);
+                        Trace.WriteLine(e);
                         _logger.Log(LogLevel.Error, e.ToString());
                     }
                 }
@@ -81,7 +84,7 @@ namespace RainbowMage.OverlayPlugin
             return null;
         }
 
-        public void WriteXml(System.Xml.XmlWriter writer)
+        public void WriteXml(XmlWriter writer)
         {
             foreach (var config in this)
             {

@@ -1,9 +1,9 @@
-using Dalamud.Interface.Windowing;
-using Dalamud.Bindings.ImGui;
 using System.Numerics;
-using Dalamud.Interface.Utility.Raii;
-using Dalamud.Interface.Components;
+using Dalamud.Bindings.ImGui;
 using Dalamud.Interface;
+using Dalamud.Interface.Components;
+using Dalamud.Interface.Utility.Raii;
+using Dalamud.Interface.Windowing;
 
 namespace IINACT.TextToSpeech;
 
@@ -36,7 +36,7 @@ public class EdgeTTSWindow : Window
         var voices = _manager.GetAvailableVoices();
         var devices = _manager.GetAvailableDevices();
 
-        ImGui.Columns(2, "EdgeTTSSettingsColumns", true);
+        ImGui.Columns(2, "EdgeTTSSettingsColumns");
 
         ImGui.Separator();
 
@@ -266,6 +266,6 @@ public class EdgeTTSWindow : Window
             _manager.CleanupCache();
         }
 
-        ImGui.Columns(1);
+        ImGui.Columns();
     }
 } 

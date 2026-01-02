@@ -8,7 +8,7 @@ namespace RainbowMage.OverlayPlugin.EventSources
     /**
      * This EventSource contains lines that should work without FFXIV, but add additional information when FFXIV is present
      */
-    partial class FFXIVOptionalEventSource : EventSourceBase
+    class FFXIVOptionalEventSource : EventSourceBase
     {
         private const string LogLineEvent = "LogLine";
         private const string ChangeZoneEvent = "ChangeZone";
@@ -77,9 +77,7 @@ namespace RainbowMage.OverlayPlugin.EventSources
                     }
                 }
                 catch
-                {
-                    return;
-                }
+                { }
 
                 return;
             }
@@ -170,7 +168,7 @@ namespace RainbowMage.OverlayPlugin.EventSources
             }
             catch (Exception e)
             {
-                Log(LogLevel.Error, "Failed to process log line: " + e.ToString());
+                Log(LogLevel.Error, "Failed to process log line: " + e);
             }
         }
 

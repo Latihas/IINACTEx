@@ -49,7 +49,7 @@ namespace RainbowMage.OverlayPlugin.MemoryProcessors.Combatant
                     mycharID = mem.ID;
                 }
 
-                Combatant combatant = new Combatant()
+                Combatant combatant = new Combatant
                 {
                     Name = FFXIVMemory.GetStringFromBytes(mem.Name, CombatantMemory.NameBytes),
                     Job = mem.Job,
@@ -286,7 +286,7 @@ namespace RainbowMage.OverlayPlugin.MemoryProcessors.Combatant
             {
                 EffectMemory72 mem = *(EffectMemory72*)&p[num * EffectMemory72.Size];
 
-                EffectEntry effectEntry = new EffectEntry()
+                EffectEntry effectEntry = new EffectEntry
                 {
                     BuffID = mem.BuffID,
                     Stack = mem.Stack,

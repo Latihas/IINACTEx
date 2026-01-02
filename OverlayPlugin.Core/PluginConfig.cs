@@ -1,8 +1,8 @@
-﻿using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace RainbowMage.OverlayPlugin
 {
@@ -147,10 +147,7 @@ namespace RainbowMage.OverlayPlugin
                 {
                     return null;
                 }
-                else
-                {
-                    return new Version(this.VersionString);
-                }
+                return new Version(this.VersionString);
             }
             set
             {

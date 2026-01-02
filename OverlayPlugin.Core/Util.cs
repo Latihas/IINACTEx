@@ -47,18 +47,18 @@ namespace RainbowMage.OverlayPlugin
                        screen,
                        formRectangle = new Rectangle(form.Left, form.Top, form.Width, form.Height)
                    })
-                   .Where(@t => @t.screen.WorkingArea.IntersectsWith(@t.formRectangle))
-                   .Select(@t => @t.screen)).Any();
+                   .Where(t => t.screen.WorkingArea.IntersectsWith(t.formRectangle))
+                   .Select(t => t.screen)).Any();
 
         /// <summary>
         /// 指定されたフォームを Windows の Alt+Tab の切り替え候補から除外します。
         /// </summary>
         /// <param name="form"></param>
-        public static void HidePreview(System.Windows.Forms.Form form)
+        public static void HidePreview(Form form)
         {
             var ex = NativeMethods.GetWindowLong(form.Handle, NativeMethods.GWL_EXSTYLE);
             ex |= NativeMethods.WS_EX_TOOLWINDOW;
-            NativeMethods.SetWindowLongA(form.Handle, NativeMethods.GWL_EXSTYLE, (IntPtr)ex);
+            NativeMethods.SetWindowLongA(form.Handle, NativeMethods.GWL_EXSTYLE, ex);
         }
 
         /// <summary>
@@ -92,7 +92,7 @@ namespace RainbowMage.OverlayPlugin
                 sbKeys.Append("Win + ");
             }
 
-            sbKeys.Append(Enum.ToObject(typeof(Keys), key).ToString());
+            sbKeys.Append(Enum.ToObject(typeof(Keys), key));
             return sbKeys.ToString();
         }
 
@@ -108,7 +108,7 @@ namespace RainbowMage.OverlayPlugin
         public static Keys RemoveModifiers(Keys keyCode, Keys modifiers)
         {
             var key = keyCode;
-            var modifierList = new List<Keys>()
+            var modifierList = new List<Keys>
             {
                 Keys.ControlKey, Keys.LControlKey, Keys.Alt, Keys.ShiftKey, Keys.Shift, Keys.LShiftKey, Keys.RShiftKey,
                 Keys.Control, Keys.LWin, Keys.RWin

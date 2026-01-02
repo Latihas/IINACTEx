@@ -66,7 +66,7 @@ namespace RainbowMage.OverlayPlugin.NetworkProcessors
 
             public string ToString(long epoch, uint ActorID)
             {
-                return $"";
+                return "";
             }
         }
 
@@ -90,15 +90,9 @@ namespace RainbowMage.OverlayPlugin.NetworkProcessors
                 {
                     List<ushort> flags = new List<ushort>();
 
-                    unsafe
+                    for (var i = 0; i < count && i < MaxCount; ++i)
                     {
-                        fixed (ushort* ptr = flags1)
-                        {
-                            for (var i = 0; i < count && i < MaxCount; ++i)
-                            {
-                                flags.Add(ptr[i]);
-                            }
-                        }
+                        flags.Add(flags1[i]);
                     }
 
                     return flags;
@@ -111,15 +105,9 @@ namespace RainbowMage.OverlayPlugin.NetworkProcessors
                 {
                     List<ushort> flags = new List<ushort>();
 
-                    unsafe
+                    for (var i = 0; i < count && i < MaxCount; ++i)
                     {
-                        fixed (ushort* ptr = flags2)
-                        {
-                            for (var i = 0; i < count && i < MaxCount; ++i)
-                            {
-                                flags.Add(ptr[i]);
-                            }
-                        }
+                        flags.Add(flags2[i]);
                     }
 
                     return flags;
@@ -132,15 +120,9 @@ namespace RainbowMage.OverlayPlugin.NetworkProcessors
                 {
                     List<byte> indexes = new List<byte>();
 
-                    unsafe
+                    for (var i = 0; i < count && i < MaxCount; ++i)
                     {
-                        fixed (byte* ptr = this.indexes)
-                        {
-                            for (var i = 0; i < count && i < MaxCount; ++i)
-                            {
-                                indexes.Add(ptr[i]);
-                            }
-                        }
+                        indexes.Add(this.indexes[i]);
                     }
 
                     return indexes;
@@ -149,7 +131,7 @@ namespace RainbowMage.OverlayPlugin.NetworkProcessors
 
             public string ToString(long epoch, uint ActorID)
             {
-                return $"";
+                return "";
             }
         }
 
@@ -173,15 +155,9 @@ namespace RainbowMage.OverlayPlugin.NetworkProcessors
                 {
                     List<ushort> flags = new List<ushort>();
 
-                    unsafe
+                    for (var i = 0; i < count && i < MaxCount; ++i)
                     {
-                        fixed (ushort* ptr = flags1)
-                        {
-                            for (var i = 0; i < count && i < MaxCount; ++i)
-                            {
-                                flags.Add(ptr[i]);
-                            }
-                        }
+                        flags.Add(flags1[i]);
                     }
 
                     return flags;
@@ -194,15 +170,9 @@ namespace RainbowMage.OverlayPlugin.NetworkProcessors
                 {
                     List<ushort> flags = new List<ushort>();
 
-                    unsafe
+                    for (var i = 0; i < count && i < MaxCount; ++i)
                     {
-                        fixed (ushort* ptr = flags2)
-                        {
-                            for (var i = 0; i < count && i < MaxCount; ++i)
-                            {
-                                flags.Add(ptr[i]);
-                            }
-                        }
+                        flags.Add(flags2[i]);
                     }
 
                     return flags;
@@ -215,15 +185,9 @@ namespace RainbowMage.OverlayPlugin.NetworkProcessors
                 {
                     List<byte> indexes = new List<byte>();
 
-                    unsafe
+                    for (var i = 0; i < count && i < MaxCount; ++i)
                     {
-                        fixed (byte* ptr = this.indexes)
-                        {
-                            for (var i = 0; i < count && i < MaxCount; ++i)
-                            {
-                                indexes.Add(ptr[i]);
-                            }
-                        }
+                        indexes.Add(this.indexes[i]);
                     }
 
                     return indexes;
@@ -232,7 +196,7 @@ namespace RainbowMage.OverlayPlugin.NetworkProcessors
 
             public string ToString(long epoch, uint ActorID)
             {
-                return $"";
+                return "";
             }
         }
 
@@ -256,15 +220,9 @@ namespace RainbowMage.OverlayPlugin.NetworkProcessors
                 {
                     List<ushort> flags = new List<ushort>();
 
-                    unsafe
+                    for (var i = 0; i < count && i < MaxCount; ++i)
                     {
-                        fixed (ushort* ptr = flags1)
-                        {
-                            for (var i = 0; i < count && i < MaxCount; ++i)
-                            {
-                                flags.Add(ptr[i]);
-                            }
-                        }
+                        flags.Add(flags1[i]);
                     }
 
                     return flags;
@@ -277,15 +235,9 @@ namespace RainbowMage.OverlayPlugin.NetworkProcessors
                 {
                     List<ushort> flags = new List<ushort>();
 
-                    unsafe
+                    for (var i = 0; i < count && i < MaxCount; ++i)
                     {
-                        fixed (ushort* ptr = flags2)
-                        {
-                            for (var i = 0; i < count && i < MaxCount; ++i)
-                            {
-                                flags.Add(ptr[i]);
-                            }
-                        }
+                        flags.Add(flags2[i]);
                     }
 
                     return flags;
@@ -298,15 +250,9 @@ namespace RainbowMage.OverlayPlugin.NetworkProcessors
                 {
                     List<byte> indexes = new List<byte>();
 
-                    unsafe
+                    for (var i = 0; i < count && i < MaxCount; ++i)
                     {
-                        fixed (byte* ptr = this.indexes)
-                        {
-                            for (var i = 0; i < count && i < MaxCount; ++i)
-                            {
-                                indexes.Add(ptr[i]);
-                            }
-                        }
+                        indexes.Add(this.indexes[i]);
                     }
 
                     return indexes;
@@ -315,7 +261,7 @@ namespace RainbowMage.OverlayPlugin.NetworkProcessors
 
             public string ToString(long epoch, uint ActorID)
             {
-                return $"";
+                return "";
             }
         }
 
@@ -333,22 +279,22 @@ namespace RainbowMage.OverlayPlugin.NetworkProcessors
         public const string MachinaPacketName = "MapEffect";
         private readonly ILogger logger;
         private RegionalizedPacketHelper<
-            Server_MessageHeader_Global, LineMapEffect.MapEffect4_v72,
-            Server_MessageHeader_CN, LineMapEffect.MapEffect4_v72,
-            Server_MessageHeader_KR, LineMapEffect.MapEffect4_v72,
-            Server_MessageHeader_TC, LineMapEffect.MapEffect4_v72> packetHelper_4;
+            Server_MessageHeader_Global, MapEffect4_v72,
+            Server_MessageHeader_CN, MapEffect4_v72,
+            Server_MessageHeader_KR, MapEffect4_v72,
+            Server_MessageHeader_TC, MapEffect4_v72> packetHelper_4;
 
         private RegionalizedPacketHelper<
-            Server_MessageHeader_Global, LineMapEffect.MapEffect8_v72,
-            Server_MessageHeader_CN, LineMapEffect.MapEffect8_v72,
-            Server_MessageHeader_KR, LineMapEffect.MapEffect8_v72,
-            Server_MessageHeader_TC, LineMapEffect.MapEffect8_v72> packetHelper_8;
+            Server_MessageHeader_Global, MapEffect8_v72,
+            Server_MessageHeader_CN, MapEffect8_v72,
+            Server_MessageHeader_KR, MapEffect8_v72,
+            Server_MessageHeader_TC, MapEffect8_v72> packetHelper_8;
 
         private RegionalizedPacketHelper<
-            Server_MessageHeader_Global, LineMapEffect.MapEffect12_v72,
-            Server_MessageHeader_CN, LineMapEffect.MapEffect12_v72,
-            Server_MessageHeader_KR, LineMapEffect.MapEffect12_v72,
-            Server_MessageHeader_TC, LineMapEffect.MapEffect12_v72> packetHelper_12;
+            Server_MessageHeader_Global, MapEffect12_v72,
+            Server_MessageHeader_CN, MapEffect12_v72,
+            Server_MessageHeader_KR, MapEffect12_v72,
+            Server_MessageHeader_TC, MapEffect12_v72> packetHelper_12;
 
         public LineMapEffect(TinyIoCContainer container)
             : base(container, LogFileLineID, logLineName, MachinaPacketName)
@@ -358,22 +304,22 @@ namespace RainbowMage.OverlayPlugin.NetworkProcessors
             var opcodeConfig = container.Resolve<OverlayPluginLogLineConfig>();
 
             packetHelper_4 = RegionalizedPacketHelper<
-            Server_MessageHeader_Global, LineMapEffect.MapEffect4_v72,
-            Server_MessageHeader_CN, LineMapEffect.MapEffect4_v72,
-            Server_MessageHeader_KR, LineMapEffect.MapEffect4_v72,
-            Server_MessageHeader_TC, LineMapEffect.MapEffect4_v72>.CreateFromOpcodeConfig(opcodeConfig, $"{MachinaPacketName}4");
+            Server_MessageHeader_Global, MapEffect4_v72,
+            Server_MessageHeader_CN, MapEffect4_v72,
+            Server_MessageHeader_KR, MapEffect4_v72,
+            Server_MessageHeader_TC, MapEffect4_v72>.CreateFromOpcodeConfig(opcodeConfig, $"{MachinaPacketName}4");
 
             packetHelper_8 = RegionalizedPacketHelper<
-            Server_MessageHeader_Global, LineMapEffect.MapEffect8_v72,
-            Server_MessageHeader_CN, LineMapEffect.MapEffect8_v72,
-            Server_MessageHeader_KR, LineMapEffect.MapEffect8_v72,
-            Server_MessageHeader_TC, LineMapEffect.MapEffect8_v72>.CreateFromOpcodeConfig(opcodeConfig, $"{MachinaPacketName}8");
+            Server_MessageHeader_Global, MapEffect8_v72,
+            Server_MessageHeader_CN, MapEffect8_v72,
+            Server_MessageHeader_KR, MapEffect8_v72,
+            Server_MessageHeader_TC, MapEffect8_v72>.CreateFromOpcodeConfig(opcodeConfig, $"{MachinaPacketName}8");
 
             packetHelper_12 = RegionalizedPacketHelper<
-            Server_MessageHeader_Global, LineMapEffect.MapEffect12_v72,
-            Server_MessageHeader_CN, LineMapEffect.MapEffect12_v72,
-            Server_MessageHeader_KR, LineMapEffect.MapEffect12_v72,
-            Server_MessageHeader_TC, LineMapEffect.MapEffect12_v72>.CreateFromOpcodeConfig(opcodeConfig, $"{MachinaPacketName}12");
+            Server_MessageHeader_Global, MapEffect12_v72,
+            Server_MessageHeader_CN, MapEffect12_v72,
+            Server_MessageHeader_KR, MapEffect12_v72,
+            Server_MessageHeader_TC, MapEffect12_v72>.CreateFromOpcodeConfig(opcodeConfig, $"{MachinaPacketName}12");
         }
 
         protected override void MessageReceived(string id, long epoch, byte[] message)
@@ -443,7 +389,7 @@ namespace RainbowMage.OverlayPlugin.NetworkProcessors
         {
             if (count == 0)
             {
-                logger.Log(LogLevel.Error, $"Got MapEffect packet with 0 entries");
+                logger.Log(LogLevel.Error, "Got MapEffect packet with 0 entries");
                 return;
             }
 

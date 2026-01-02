@@ -11,7 +11,7 @@ namespace RainbowMage.OverlayPlugin.NetworkProcessors
             Server_MessageHeader_TC, LineActorMove.ActorMove_v655>
     {
         [StructLayout(LayoutKind.Explicit, Size = structSize, Pack = 1)]
-        internal unsafe struct ActorMove_v655 : IPacketStruct
+        internal struct ActorMove_v655 : IPacketStruct
         {
             // 6.5.5 packet data (minus header):
             // 1897 3004 3C00 B681 AA80 9F83 00000000

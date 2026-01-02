@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-// For some reason this using is required by the github build?
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -11,11 +10,12 @@ using RainbowMage.OverlayPlugin.MemoryProcessors.Combatant;
 using RainbowMage.OverlayPlugin.MemoryProcessors.JobGauge;
 using RainbowMage.OverlayPlugin.MemoryProcessors.Party;
 using RainbowMage.OverlayPlugin.NetworkProcessors;
+// For some reason this using is required by the github build?
 using PluginCombatant = FFXIV_ACT_Plugin.Common.Models.Combatant;
 
 namespace RainbowMage.OverlayPlugin.EventSources
 {
-    partial class FFXIVRequiredEventSource : EventSourceBase
+    class FFXIVRequiredEventSource : EventSourceBase
     {
         private PartyListsStruct cachedPartyList = new PartyListsStruct();
 
@@ -74,7 +74,7 @@ namespace RainbowMage.OverlayPlugin.EventSources
                     JobGaugeChangedEvent
                 });
 
-                RegisterEventHandler("getLanguage", (msg) =>
+                RegisterEventHandler("getLanguage", msg =>
                 {
                     var lang = repository.GetLanguage();
                     var region = repository.GetMachinaRegion();
@@ -87,7 +87,7 @@ namespace RainbowMage.OverlayPlugin.EventSources
                     });
                 });
 
-                RegisterEventHandler("getVersion", (msg) =>
+                RegisterEventHandler("getVersion", msg =>
                 {
                     var version = repository.GetOverlayPluginVersion();
                     return JObject.FromObject(new
@@ -96,7 +96,7 @@ namespace RainbowMage.OverlayPlugin.EventSources
                     });
                 });
 
-                RegisterEventHandler("getCombatants", (msg) =>
+                RegisterEventHandler("getCombatants", msg =>
                 {
                     List<uint> ids = new List<uint>();
 
@@ -206,7 +206,7 @@ namespace RainbowMage.OverlayPlugin.EventSources
                     var jObjCombatant = JObject.FromObject(combatant).ToObject<Dictionary<string, object>>();
                     var ID = Convert.ToUInt32(jObjCombatant["ID"]);
 
-                    var pluginCombatant = pluginCombatants.FirstOrDefault((PluginCombatant c) => c.ID == ID);
+                    var pluginCombatant = pluginCombatants.FirstOrDefault(c => c.ID == ID);
                     if (pluginCombatant != null)
                     {
                         jObjCombatant["PartyType"] = GetPartyType(pluginCombatant);
@@ -302,7 +302,7 @@ namespace RainbowMage.OverlayPlugin.EventSources
             // TODO: We know how to detect alliance A/B/C. Need to verify alliance D/E/F
             List<PartyMember> result = new List<PartyMember>(24);
 
-            List<PartyType> remainingAlliances = new List<PartyType>() {
+            List<PartyType> remainingAlliances = new List<PartyType> {
                 PartyType.AllianceA,
                 PartyType.AllianceB,
                 PartyType.AllianceC,
@@ -492,8 +492,8 @@ namespace RainbowMage.OverlayPlugin.EventSources
                     return;
                 }
                 newParty.memberCount = 1;
-                newParty.partyMembers = new PartyListEntry[] {
-                    new PartyListEntry() {
+                newParty.partyMembers = new[] {
+                    new PartyListEntry {
                         x = currentPlayer.PosX,
                         y = currentPlayer.PosY,
                         z = currentPlayer.PosZ,
@@ -585,10 +585,7 @@ namespace RainbowMage.OverlayPlugin.EventSources
                         return true;
                     }
                     // Otherwise they're both null, we don't need to check them, continue
-                    else
-                    {
-                        continue;
-                    }
+                    continue;
                 }
                 // If the party list is in a different order, dispatch the event
                 if (newMember.objectId != oldMember.objectId)
