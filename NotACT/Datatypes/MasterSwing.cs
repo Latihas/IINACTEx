@@ -2,8 +2,7 @@
 
 namespace Advanced_Combat_Tracker;
 
-public class MasterSwing : IComparable, IComparable<MasterSwing>
-{
+public class MasterSwing : IComparable, IComparable<MasterSwing> {
     public delegate Color ColorDataCallback(MasterSwing Data);
 
     public delegate string StringDataCallback(MasterSwing Data);
@@ -32,8 +31,7 @@ public class MasterSwing : IComparable, IComparable<MasterSwing>
 
     public MasterSwing(
         int SwingType, bool Critical, Dnum damage, DateTime Time, int TimeSorter, string theAttackType,
-        string Attacker, string theDamageType, string Victim)
-    {
+        string Attacker, string theDamageType, string Victim) {
         time = Time;
         this.damage = damage;
         attacker = Attacker;
@@ -48,8 +46,7 @@ public class MasterSwing : IComparable, IComparable<MasterSwing>
 
     public MasterSwing(
         int SwingType, bool Critical, string Special, Dnum damage, DateTime Time, int TimeSorter,
-        string theAttackType, string Attacker, string theDamageType, string Victim)
-    {
+        string theAttackType, string Attacker, string theDamageType, string Victim) {
         time = Time;
         this.damage = damage;
         attacker = Attacker;
@@ -94,8 +91,7 @@ public class MasterSwing : IComparable, IComparable<MasterSwing>
         {
             var colTypeCollection = new string[ColumnDefs.Count];
             var i = 0;
-            foreach (var columnDef in ColumnDefs)
-            {
+            foreach (var columnDef in ColumnDefs) {
                 colTypeCollection[i] = columnDef.Value.SqlDataType;
                 i++;
             }
@@ -110,8 +106,7 @@ public class MasterSwing : IComparable, IComparable<MasterSwing>
         {
             var colHeaderCollection = new string[ColumnDefs.Count];
             var i = 0;
-            foreach (var columnDef in ColumnDefs)
-            {
+            foreach (var columnDef in ColumnDefs) {
                 colHeaderCollection[i] = columnDef.Value.SqlDataName;
                 i++;
             }
@@ -128,8 +123,7 @@ public class MasterSwing : IComparable, IComparable<MasterSwing>
         {
             var colCollection = new string[ColumnDefs.Count];
             var i = 0;
-            foreach (var columnDef in ColumnDefs)
-            {
+            foreach (var columnDef in ColumnDefs) {
                 colCollection[i] = columnDef.Value.GetSqlData(this);
                 i++;
             }
@@ -140,25 +134,19 @@ public class MasterSwing : IComparable, IComparable<MasterSwing>
 
     public Dictionary<string, object> Tags { get; set; } = new();
 
-    public int CompareTo(object? obj)
-    {
-        return CompareTo((MasterSwing?)obj);
-    }
+    public int CompareTo(object? obj) => CompareTo((MasterSwing?)obj);
 
-    public int CompareTo(MasterSwing? other)
-    {
+    public int CompareTo(MasterSwing? other) {
         Debug.Assert(other != null, nameof(other) + " != null");
 
         // Compare based on the sort column defined in ActGlobals.aTSort.
-        if (ColumnDefs.TryGetValue(ActGlobals.aTSort, out var sortColumn))
-        {
+        if (ColumnDefs.TryGetValue(ActGlobals.aTSort, out var sortColumn)) {
             var result = sortColumn.SortComparer(this, other);
             if (result != 0) return result;
         }
 
         // Compare based on the secondary sort column defined in ActGlobals.aTSort2.
-        if (ColumnDefs.TryGetValue(ActGlobals.aTSort2, out var secondarySortColumn))
-        {
+        if (ColumnDefs.TryGetValue(ActGlobals.aTSort2, out var secondarySortColumn)) {
             var result = secondarySortColumn.SortComparer(this, other);
             if (result != 0) return result;
         }
@@ -172,36 +160,33 @@ public class MasterSwing : IComparable, IComparable<MasterSwing>
     }
 
 
-    public string GetColumnByName(string name) => 
+    public string GetColumnByName(string name) =>
         ColumnDefs.ContainsKey(name) ? ColumnDefs[name].GetCellData(this) : string.Empty;
 
-    public override string ToString() => 
+    public override string ToString() =>
         $"{Time:s}|{Damage}|{Attacker}|{Special}|{AttackType}|{DamageType}|{Victim}";
 
-    public override bool Equals(object? obj)
-    {
+    public override bool Equals(object? obj) {
         var masterSwing = (MasterSwing)obj!;
         var text = ToString();
         var value = masterSwing.ToString();
         return text.Equals(value);
     }
 
-    public override int GetHashCode() => 
+    public override int GetHashCode() =>
         ToString().GetHashCode();
 
-    internal static int CompareTime(MasterSwing Left, MasterSwing Right)
-    {
+    internal static int CompareTime(MasterSwing Left, MasterSwing Right) {
         var timeSorterComparison = Left.TimeSorter.CompareTo(Right.TimeSorter);
         return timeSorterComparison != 0 ? timeSorterComparison : Left.Time.CompareTo(Right.Time);
     }
 
 
-    public class ColumnDef
-    {
-        public ColorDataCallback GetCellBackColor = Data => Color.Transparent;
+    public class ColumnDef {
+        public ColorDataCallback GetCellBackColor = _ => Color.Transparent;
         public StringDataCallback GetCellData;
 
-        public ColorDataCallback GetCellForeColor = Data => Color.Transparent;
+        public ColorDataCallback GetCellForeColor = _ => Color.Transparent;
 
         public StringDataCallback GetSqlData;
 
@@ -210,8 +195,7 @@ public class MasterSwing : IComparable, IComparable<MasterSwing>
         public ColumnDef(
             string Label, bool DefaultVisible, string SqlDataType, string SqlDataName,
             StringDataCallback CellDataCallback, StringDataCallback SqlDataCallback,
-            Comparison<MasterSwing> SortComparer)
-        {
+            Comparison<MasterSwing> SortComparer) {
             this.Label = Label;
             this.DefaultVisible = DefaultVisible;
             this.SqlDataType = SqlDataType;
@@ -230,39 +214,33 @@ public class MasterSwing : IComparable, IComparable<MasterSwing>
         public string Label { get; }
     }
 
-    public class DualComparison : IComparer<MasterSwing>
-    {
+    public class DualComparison : IComparer<MasterSwing> {
         private readonly string sort1;
 
         private readonly string sort2;
 
-        public DualComparison(string Sort1, string Sort2)
-        {
+        public DualComparison(string Sort1, string Sort2) {
             sort1 = Sort1;
             sort2 = Sort2;
         }
 
-        public int Compare(MasterSwing? Left, MasterSwing? Right)
-        {
+        public int Compare(MasterSwing? Left, MasterSwing? Right) {
             Debug.Assert(Left != null, nameof(Left) + " != null");
             Debug.Assert(Right != null, nameof(Right) + " != null");
 
-            if (ColumnDefs.TryGetValue(sort1, out var comparer1))
-            {
+            if (ColumnDefs.TryGetValue(sort1, out var comparer1)) {
                 var result = comparer1.SortComparer(Left, Right);
                 if (result != 0) return result;
             }
 
-            if (ColumnDefs.TryGetValue(sort2, out var comparer2))
-            {
+            if (ColumnDefs.TryGetValue(sort2, out var comparer2)) {
                 var result = comparer2.SortComparer(Left, Right);
                 if (result != 0) return result;
             }
 
             return Left.TimeSorter == Right.TimeSorter
-                       ? Left.Time.CompareTo(Right.Time)
-                       : Left.TimeSorter.CompareTo(Right.TimeSorter);
+                ? Left.Time.CompareTo(Right.Time)
+                : Left.TimeSorter.CompareTo(Right.TimeSorter);
         }
-
     }
 }

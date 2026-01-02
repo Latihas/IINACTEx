@@ -10,35 +10,29 @@ using static IINACT.Latihas.Color;
 
 namespace IINACT.Latihas;
 
-public partial class LWindow
-{
-    public class TriggernometryLogView() : Window($"{WindowPrefix}TriggernometryLogView")
-    {
+public partial class LWindow {
+    public class TriggernometryLogView() : Window($"{WindowPrefix}TriggernometryLogView") {
         private static string RegexExpr = "";
         private static Regex? Reg;
         private Dictionary<RealPlugin.DebugLevelEnum, bool> check = Enum.GetValues<RealPlugin.DebugLevelEnum>()
-                                                                        .ToDictionary(i => i, _ => true);
+            .ToDictionary(i => i, _ => true);
 
-        public override void Draw()
-        {
+        public override void Draw() {
             ImGui.Text($"共{RealPlugin.Instance.logFlattenTrn.Count}条");
             if (ImGui.InputText("## TrnRegex", ref RegexExpr))
                 Reg = RegexExpr.IsNullOrEmpty() ? null : new Regex(RegexExpr);
             var i = 1;
-            foreach (var k in check.Keys)
-            {
+            foreach (var k in check.Keys) {
                 var b = check[k];
                 if (ImGui.Checkbox(k.ToString(), ref b)) check[k] = b;
                 if (i++ != check.Count) ImGui.SameLine();
             }
-            try
-            {
+            try {
                 NewTable(["Time", "Lvl", "Log"], RealPlugin.Instance.logFlattenTrn.Where(i => check[i.Level] && (Reg == null || Reg.IsMatch(i.Message))).ToArray(), [
                         i => ImGui.Text(i.Timestamp.ToString()),
                         i => ImGui.Text(i.Level.ToString()),
                         i => ImGui.TextWrapped(i.Message)
-                    ], i => i.Level switch
-                    {
+                    ], i => i.Level switch {
                         RealPlugin.DebugLevelEnum.None => TWhite,
                         RealPlugin.DebugLevelEnum.Error => TRed,
                         RealPlugin.DebugLevelEnum.Warning => TYellow,
@@ -51,15 +45,13 @@ public partial class LWindow
                     }
                 );
             }
-            catch (Exception)
-            {
+            catch (Exception) {
                 //
             }
         }
     }
 
-    public partial class ACTLogView() : Window($"{WindowPrefix}ACTLogView")
-    {
+    public partial class ACTLogView() : Window($"{WindowPrefix}ACTLogView") {
         private static string RegexExpr = "";
         private static bool FromFile;
         private static Regex? Reg;
@@ -69,24 +61,19 @@ public partial class LWindow
         private static List<string> ImportLogs = [];
         private static string[] F(IEnumerable<string> l) => l.Where(i => Reg == null || Reg.IsMatch(i)).ToArray();
 
-        public static string ReadLockedTextFile(string filePath)
-        {
+        public static string ReadLockedTextFile(string filePath) {
             using var stream = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
             using var reader = new StreamReader(stream);
             return reader.ReadToEnd();
         }
 
-        public override void Draw()
-        {
+        public override void Draw() {
             ImGui.Checkbox("从.actxt文件导入", ref FromFile);
-            if (FromFile)
-            {
+            if (FromFile) {
                 FileDialogManager.Draw();
                 if (ImGui.Button("选择文件"))
-                    FileDialogManager.OpenFileDialog("Selector", ".actxt", (succ, str) =>
-                    {
-                        if (succ)
-                        {
+                    FileDialogManager.OpenFileDialog("Selector", ".actxt", (succ, str) => {
+                        if (succ) {
                             FilePath = str.First();
                             ImportLogs = ReadLockedTextFile(FilePath).Split(Environment.NewLine).ToList();
                         }
@@ -98,32 +85,26 @@ public partial class LWindow
             ImGui.Text($"共{(FromFile ? ImportLogs.Count : RealPlugin.Instance.logFlattenACT.Count)}条");
             if (ImGui.InputText("## ActRegex", ref RegexExpr))
                 Reg = RegexExpr.IsNullOrEmpty() ? null : new Regex(RegexExpr);
-            try
-            {
+            try {
                 NewTable(["Log"], F(FromFile ? ImportLogs : RealPlugin.Instance.logFlattenACT), [
-                    i =>
-                    {
+                    i => {
                         ImGui.PushID(i);
                         ImGui.TextWrapped(i);
-                        if (ImGui.IsItemClicked(ImGuiMouseButton.Left))
-                        {
+                        if (ImGui.IsItemClicked(ImGuiMouseButton.Left)) {
                             ImGui.SetClipboardText(i);
-                            Plugin.NotificationManager.AddNotification(new Notification
-                            {
+                            Plugin.NotificationManager.AddNotification(new Notification {
                                 Content = "已复制"
                             });
                         }
                         ImGui.PopID();
                     }
-                ], i =>
-                {
+                ], i => {
                     if (regexChatLog.IsMatch(i)) return TWhite;
                     if (regexOverlay.IsMatch(i)) return TYellow;
                     return Black;
                 });
             }
-            catch (Exception)
-            {
+            catch (Exception) {
                 //
             }
         }

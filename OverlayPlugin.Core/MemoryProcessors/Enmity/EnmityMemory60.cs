@@ -1,20 +1,17 @@
 ﻿using System;
 
-namespace RainbowMage.OverlayPlugin.MemoryProcessors.Enmity
-{
-    interface IEnmityMemory60 : IEnmityMemory { }
+namespace RainbowMage.OverlayPlugin.MemoryProcessors.Enmity;
 
-    class EnmityMemory60 : EnmityMemory, IEnmityMemory60
-    {
-        public const string enmitySignature = "83f9ff7412448b048e8bd3488d0d";
-        private const int enmitySignatureOffset = -2608;
+internal interface IEnmityMemory60 : IEnmityMemory {
+}
 
-        public EnmityMemory60(TinyIoCContainer container)
-            : base(container, enmitySignature, enmitySignatureOffset) { }
+internal class EnmityMemory60 : EnmityMemory, IEnmityMemory60 {
+    public const string enmitySignature = "83f9ff7412448b048e8bd3488d0d";
+    private const int enmitySignatureOffset = -2608;
 
-        public override Version GetVersion()
-        {
-            return new Version(6, 0);
-        }
+    public EnmityMemory60(TinyIoCContainer container)
+        : base(container, enmitySignature, enmitySignatureOffset) {
     }
+
+    public override Version GetVersion() => new(6, 0);
 }

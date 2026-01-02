@@ -20,5 +20,5 @@
 	branch = master
 [submodule "Unscrambler"]
 	path = Unscrambler
-	url = https://github.com/perchbirdd/Unscrambler
+	url = https://github.com/Latihas/Unscrambler
 	branch = main

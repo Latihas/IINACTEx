@@ -3,8 +3,7 @@
 
 namespace Advanced_Combat_Tracker;
 
-public class CombatantData : IComparable, IEquatable<CombatantData>, IComparable<CombatantData>
-{
+public class CombatantData : IComparable, IEquatable<CombatantData>, IComparable<CombatantData> {
     public delegate Color ColorDataCallback(CombatantData Data);
 
     public delegate string ExportStringDataCallback(CombatantData Data, string ExtraFormat);
@@ -23,9 +22,9 @@ public class CombatantData : IComparable, IEquatable<CombatantData>, IComparable
 
     public static SortedDictionary<int, List<string>> SwingTypeToDamageTypeDataLinksIncoming = new();
 
-    public static List<int> DamageSwingTypes = new();
+    public static List<int> DamageSwingTypes = [];
 
-    public static List<int> HealingSwingTypes = new();
+    public static List<int> HealingSwingTypes = [];
 
     public static string DamageTypeDataNonSkillDamage = Empty;
 
@@ -73,18 +72,15 @@ public class CombatantData : IComparable, IEquatable<CombatantData>, IComparable
 
     private bool threatCached;
 
-    public CombatantData(string combatantName, EncounterData Parent)
-    {
+    public CombatantData(string combatantName, EncounterData Parent) {
         Name = combatantName;
         Items = new Dictionary<string, DamageTypeData>();
-        foreach (var outgoingDamageTypeDataObject in OutgoingDamageTypeDataObjects)
-        {
+        foreach (var outgoingDamageTypeDataObject in OutgoingDamageTypeDataObjects) {
             outAll = new DamageTypeData(true, outgoingDamageTypeDataObject.Key, this);
             Items.Add(outgoingDamageTypeDataObject.Key, outAll);
         }
 
-        foreach (var incomingDamageTypeDataObject in IncomingDamageTypeDataObjects)
-        {
+        foreach (var incomingDamageTypeDataObject in IncomingDamageTypeDataObjects) {
             incAll = new DamageTypeData(false, incomingDamageTypeDataObject.Key, this);
             Items.Add(incomingDamageTypeDataObject.Key, incAll);
         }
@@ -102,8 +98,7 @@ public class CombatantData : IComparable, IEquatable<CombatantData>, IComparable
         {
             var colTypeCollection = new string[ColumnDefs.Count];
             var i = 0;
-            foreach (var columnDef in ColumnDefs)
-            {
+            foreach (var columnDef in ColumnDefs) {
                 colTypeCollection[i] = columnDef.Value.SqlDataType;
                 i++;
             }
@@ -118,8 +113,7 @@ public class CombatantData : IComparable, IEquatable<CombatantData>, IComparable
         {
             var colHeaderCollection = new string[ColumnDefs.Count];
             var i = 0;
-            foreach (var columnDef in ColumnDefs)
-            {
+            foreach (var columnDef in ColumnDefs) {
                 colHeaderCollection[i] = columnDef.Value.SqlDataName;
                 i++;
             }
@@ -136,8 +130,7 @@ public class CombatantData : IComparable, IEquatable<CombatantData>, IComparable
         {
             var colCollection = new string[ColumnDefs.Count];
             var i = 0;
-            foreach (var columnDef in ColumnDefs)
-            {
+            foreach (var columnDef in ColumnDefs) {
                 colCollection[i] = columnDef.Value.GetSqlData(this);
                 i++;
             }
@@ -152,10 +145,8 @@ public class CombatantData : IComparable, IEquatable<CombatantData>, IComparable
         {
             if (deathsCached) return cachedDeaths;
 
-            if (!AllInc.TryGetValue(ActGlobals.Trans["specialAttackTerm-killing"], out var value))
-            {
-                if (AllInc.TryGetValue(ActGlobals.Trans["attackTypeTerm-all"], out value))
-                {
+            if (!AllInc.TryGetValue(ActGlobals.Trans["specialAttackTerm-killing"], out var value)) {
+                if (AllInc.TryGetValue(ActGlobals.Trans["attackTypeTerm-all"], out value)) {
                     foreach (var swing in value.Items)
                         if (swing.Damage == Dnum.Death)
                             cachedDeaths++;
@@ -180,14 +171,12 @@ public class CombatantData : IComparable, IEquatable<CombatantData>, IComparable
                 return cachedKills;
 
             // Try to get the special "killing" attack type; if it doesn't exist, use the "all" attack type instead
-            if (!AllOut.TryGetValue(ActGlobals.Trans["specialAttackTerm-killing"], out var value))
-            {
+            if (!AllOut.TryGetValue(ActGlobals.Trans["specialAttackTerm-killing"], out var value)) {
                 AllOut.TryGetValue(ActGlobals.Trans["attackTypeTerm-all"], out value);
             }
 
             // If the value is still null, set the cached kills to 0 and return
-            if (value == null)
-            {
+            if (value == null) {
                 cachedKills = 0;
                 killsCached = true;
                 return cachedKills;
@@ -195,25 +184,20 @@ public class CombatantData : IComparable, IEquatable<CombatantData>, IComparable
 
             // Check if the current entity is an ally
             var flag = false;
-            if (Parent.GetAllies(true) != null)
-            {
+            if (Parent.GetAllies(true) != null) {
                 flag = Parent != null && Parent.GetAllies(true).Contains(this);
             }
 
             // Iterate through the attack types and count the number of kills
             cachedKills = 0;
-            try
-            {
-                foreach (var attackType in value.Items)
-                {
-                    if (attackType.Damage == Dnum.Death && (flag || !attackType.Victim.Contains(" ")))
-                    {
+            try {
+                foreach (var attackType in value.Items) {
+                    if (attackType.Damage == Dnum.Death && (flag || !attackType.Victim.Contains(" "))) {
                         cachedKills++;
                     }
                 }
             }
-            catch (InvalidOperationException)
-            {
+            catch (InvalidOperationException) {
                 // If an exception occurs while iterating, recursively call the Kills property until the value is retrieved
                 return Kills;
             }
@@ -261,8 +245,7 @@ public class CombatantData : IComparable, IEquatable<CombatantData>, IComparable
     {
         get
         {
-            if (Parent.StartTimes.Count <= 1)
-            {
+            if (Parent.StartTimes.Count <= 1) {
                 if (EndTime > StartTime) return EndTime - StartTime;
 
                 return TimeSpan.Zero;
@@ -276,8 +259,7 @@ public class CombatantData : IComparable, IEquatable<CombatantData>, IComparable
 
             var fightStartTimes = new List<DateTime>(Parent.StartTimes);
             var fightEndTimes = new List<DateTime>(Parent.EndTimes);
-            if (fightStartTimes.Count < fightEndTimes.Count)
-            {
+            if (fightStartTimes.Count < fightEndTimes.Count) {
                 fightStartTimes.Add(StartTime);
                 fightEndTimes.Add(EndTime);
             }
@@ -287,20 +269,17 @@ public class CombatantData : IComparable, IEquatable<CombatantData>, IComparable
             var fightDuration = TimeSpan.Zero;
             var lastMasterSwingTime = DateTime.MinValue;
 
-            for (var i = 0; i < fightStartTimes.Count; i++)
-            {
+            for (var i = 0; i < fightStartTimes.Count; i++) {
                 if (i >= fightEndTimes.Count) continue;
                 var start = fightStartTimes[i];
                 var end = fightEndTimes[i];
 
                 var relevantMasterSwings = masterSwingTimes
-                                           .SkipWhile(t => t < start)
-                                           .TakeWhile(t => t <= end);
+                    .SkipWhile(t => t < start)
+                    .TakeWhile(t => t <= end);
 
-                foreach (var masterSwingTime in relevantMasterSwings)
-                {
-                    if (lastMasterSwingTime != DateTime.MinValue)
-                    {
+                foreach (var masterSwingTime in relevantMasterSwings) {
+                    if (lastMasterSwingTime != DateTime.MinValue) {
                         fightDuration += masterSwingTime - lastMasterSwingTime;
                     }
 
@@ -316,8 +295,8 @@ public class CombatantData : IComparable, IEquatable<CombatantData>, IComparable
 
 
     public string DurationS => Duration.Hours == 0
-                                   ? $"{Duration.Minutes:00}:{Duration.Seconds:00}"
-                                   : $"{Duration.Hours:00}:{Duration.Minutes:00}:{Duration.Seconds:00}";
+        ? $"{Duration.Minutes:00}:{Duration.Seconds:00}"
+        : $"{Duration.Hours:00}:{Duration.Minutes:00}:{Duration.Seconds:00}";
 
     public long Damage => Items[DamageTypeDataOutgoingDamage].Damage;
 
@@ -328,8 +307,7 @@ public class CombatantData : IComparable, IEquatable<CombatantData>, IComparable
             var result = "--";
 
             // Check if the entity is an ally and the total damage done is greater than zero
-            if (!Parent.GetAllies().Contains(this) || Parent.Damage <= 0)
-            {
+            if (!Parent.GetAllies().Contains(this) || Parent.Damage <= 0) {
                 return result;
             }
 
@@ -337,8 +315,7 @@ public class CombatantData : IComparable, IEquatable<CombatantData>, IComparable
             var percent = (int)(Damage / (float)Parent.Damage * 100f);
 
             // Check if the percentage is valid (between 0 and 100)
-            if (percent is < 0 or > 100)
-            {
+            if (percent is < 0 or > 100) {
                 return result;
             }
 
@@ -376,12 +353,10 @@ public class CombatantData : IComparable, IEquatable<CombatantData>, IComparable
     {
         get
         {
-            try
-            {
+            try {
                 return Hits / Swings * 100f;
             }
-            catch
-            {
+            catch {
                 return 0f;
             }
         }
@@ -408,14 +383,12 @@ public class CombatantData : IComparable, IEquatable<CombatantData>, IComparable
         get
         {
             var result = "--";
-            if (!Parent.GetAllies().Contains(this) || Parent.Healed <= 0)
-            {
+            if (!Parent.GetAllies().Contains(this) || Parent.Healed <= 0) {
                 return result;
             }
 
             var percentage = (int)(Healed / (float)Parent.Healed * 100f);
-            if (percentage is < 0 or > 100)
-            {
+            if (percentage is < 0 or > 100) {
                 return result;
             }
 
@@ -434,31 +407,24 @@ public class CombatantData : IComparable, IEquatable<CombatantData>, IComparable
 
     public Dictionary<string, object> Tags { get; set; } = new();
 
-    public int CompareTo(object? obj)
-    {
-        return CompareTo((CombatantData?)obj);
-    }
+    public int CompareTo(object? obj) => CompareTo((CombatantData?)obj);
 
-    public int CompareTo(CombatantData? other)
-    {
+    public int CompareTo(CombatantData? other) {
         // Initialize the comparison result to 0
         var comparisonResult = 0;
 
         // If the sorting column is defined, use its comparer to compare this object with the other one
-        if (ColumnDefs.TryGetValue(ActGlobals.eDSort, out var value))
-        {
+        if (ColumnDefs.TryGetValue(ActGlobals.eDSort, out var value)) {
             comparisonResult = value.SortComparer(this, other!);
         }
 
         // If the comparison result is still 0 and the secondary sorting column is defined, use its comparer
-        if (comparisonResult == 0 && ColumnDefs.TryGetValue(ActGlobals.eDSort2, out var value2))
-        {
+        if (comparisonResult == 0 && ColumnDefs.TryGetValue(ActGlobals.eDSort2, out var value2)) {
             comparisonResult = value2.SortComparer(this, other!);
         }
 
         // If the comparison result is still 0, compare the damage dealt by each object
-        if (comparisonResult == 0)
-        {
+        if (comparisonResult == 0) {
             comparisonResult = Damage.CompareTo(other!.Damage);
         }
 
@@ -466,13 +432,9 @@ public class CombatantData : IComparable, IEquatable<CombatantData>, IComparable
     }
 
 
-    public bool Equals(CombatantData? other)
-    {
-        return string.Equals(Name, other!.Name, StringComparison.CurrentCultureIgnoreCase);
-    }
+    public bool Equals(CombatantData? other) => string.Equals(Name, other!.Name, StringComparison.CurrentCultureIgnoreCase);
 
-    public void InvalidateCachedValues()
-    {
+    public void InvalidateCachedValues() {
         durationCached = false;
         deathsCached = false;
         killsCached = false;
@@ -481,8 +443,7 @@ public class CombatantData : IComparable, IEquatable<CombatantData>, IComparable
         threatCached = false;
     }
 
-    public void InvalidateCachedValues(bool Recursive)
-    {
+    public void InvalidateCachedValues(bool Recursive) {
         InvalidateCachedValues();
         if (!Recursive) return;
 
@@ -490,14 +451,12 @@ public class CombatantData : IComparable, IEquatable<CombatantData>, IComparable
             item.Value.InvalidateCachedValues(true);
     }
 
-    public void Trim()
-    {
+    public void Trim() {
         foreach (var item in Items)
             item.Value.Trim();
     }
 
-    public void AddCombatAction(MasterSwing action)
-    {
+    public void AddCombatAction(MasterSwing action) {
         // Reset cached values
         durationCached = false;
         startTimeCached = false;
@@ -509,11 +468,9 @@ public class CombatantData : IComparable, IEquatable<CombatantData>, IComparable
         var combatant = action.Victim.ToUpper();
 
         // Check if the swing type is supported
-        if (SwingTypeToDamageTypeDataLinksOutgoing.ContainsKey(action.SwingType))
-        {
+        if (SwingTypeToDamageTypeDataLinksOutgoing.ContainsKey(action.SwingType)) {
             // Loop through the damage types linked to the swing type
-            foreach (var damageTypeLink in SwingTypeToDamageTypeDataLinksOutgoing[action.SwingType])
-            {
+            foreach (var damageTypeLink in SwingTypeToDamageTypeDataLinksOutgoing[action.SwingType]) {
                 // Get the damage type data
                 var damageTypeData = Items[damageTypeLink];
 
@@ -527,8 +484,7 @@ public class CombatantData : IComparable, IEquatable<CombatantData>, IComparable
                 damageTypeData.AddCombatAction(action, ActGlobals.Trans["attackTypeTerm-all"]);
 
                 // Add the combat action to the damage type data for the specific attack type (if allowed)
-                if (!ActGlobals.restrictToAll)
-                {
+                if (!ActGlobals.restrictToAll) {
                     damageTypeData.AddCombatAction(action, action.AttackType);
                 }
             }
@@ -537,15 +493,13 @@ public class CombatantData : IComparable, IEquatable<CombatantData>, IComparable
             outAll.AddCombatAction(action, ActGlobals.Trans["attackTypeTerm-all"]);
 
             // Add the combat action to the "all" damage type data for the specific attack type (if allowed)
-            if (!ActGlobals.restrictToAll)
-            {
+            if (!ActGlobals.restrictToAll) {
                 outAll.AddCombatAction(action, action.AttackType);
             }
         }
     }
 
-    public void AddReverseCombatAction(MasterSwing action)
-    {
+    public void AddReverseCombatAction(MasterSwing action) {
         // Reset cached values
         durationCached = false;
         deathsCached = false;
@@ -556,13 +510,11 @@ public class CombatantData : IComparable, IEquatable<CombatantData>, IComparable
         var combatant = action.Attacker.ToUpper();
 
         // Check if there are any damage type links for this swing type
-        if (!SwingTypeToDamageTypeDataLinksIncoming.ContainsKey(action.SwingType))
+        if (!SwingTypeToDamageTypeDataLinksIncoming.TryGetValue(action.SwingType, out var links))
             return;
 
         // For each damage type link, add the combat action to the corresponding damage type and modify the ally value
-        var links = SwingTypeToDamageTypeDataLinksIncoming[action.SwingType];
-        foreach (var link in links)
-        {
+        foreach (var link in links) {
             var damageTypeData = Items[link];
             var allyValue = IncomingDamageTypeDataObjects[damageTypeData.Type].AllyValue;
             ModAlly(combatant, allyValue);
@@ -579,12 +531,10 @@ public class CombatantData : IComparable, IEquatable<CombatantData>, IComparable
     }
 
 
-    public string GetMaxHit(bool ShowType = true, bool UseSuffix = true)
-    {
+    public string GetMaxHit(bool ShowType = true, bool UseSuffix = true) {
         MasterSwing masterSwing = null!;
         var attackType = GetAttackType(ActGlobals.Trans["attackTypeTerm-all"], DamageTypeDataOutgoingDamage);
-        if (attackType != null)
-        {
+        if (attackType != null) {
             foreach (var t in attackType.Items)
                 if (masterSwing == null || (long)t.Damage > (long)masterSwing.Damage)
                     masterSwing = t;
@@ -593,33 +543,30 @@ public class CombatantData : IComparable, IEquatable<CombatantData>, IComparable
         if (masterSwing == null)
             return Empty;
         return ShowType
-                   ? $"{masterSwing.AttackType}-{ActGlobals.oFormActMain.CreateDamageString(masterSwing.Damage, UseSuffix, true)}"
-                   : $"{ActGlobals.oFormActMain.CreateDamageString(masterSwing.Damage, UseSuffix, false)}";
+            ? $"{masterSwing.AttackType}-{ActGlobals.oFormActMain.CreateDamageString(masterSwing.Damage, UseSuffix, true)}"
+            : $"{ActGlobals.oFormActMain.CreateDamageString(masterSwing.Damage, UseSuffix, false)}";
     }
 
-    public string GetMaxHeal(bool ShowType = true, bool CountWards = false, bool UseSuffix = true)
-    {
+    public string GetMaxHeal(bool ShowType = true, bool CountWards = false, bool UseSuffix = true) {
         MasterSwing masterSwing = null!;
         var attackType = GetAttackType(ActGlobals.Trans["attackTypeTerm-all"], DamageTypeDataOutgoingHealing);
-        if (attackType != null)
-        {
+        if (attackType != null) {
             foreach (var swing in attackType.Items.Where(swing =>
-                                                             (CountWards || swing.DamageType !=
-                                                              ActGlobals.Trans["specialAttackTerm-wardAbsorb"]) &&
-                                                             (masterSwing == null || (long)swing.Damage >
-                                                              (long)masterSwing.Damage)))
+                         (CountWards || swing.DamageType !=
+                         ActGlobals.Trans["specialAttackTerm-wardAbsorb"]) &&
+                         (masterSwing == null || (long)swing.Damage >
+                         (long)masterSwing.Damage)))
                 masterSwing = swing;
         }
 
         if (masterSwing == null) return Empty;
 
         return ShowType
-                   ? $"{masterSwing.AttackType}-{ActGlobals.oFormActMain.CreateDamageString(masterSwing.Damage, UseSuffix, true)}"
-                   : $"{ActGlobals.oFormActMain.CreateDamageString(masterSwing.Damage, UseSuffix, true)}";
+            ? $"{masterSwing.AttackType}-{ActGlobals.oFormActMain.CreateDamageString(masterSwing.Damage, UseSuffix, true)}"
+            : $"{ActGlobals.oFormActMain.CreateDamageString(masterSwing.Damage, UseSuffix, true)}";
     }
 
-    public int GetCombatantType()
-    {
+    public int GetCombatantType() {
         if (!Parent.GetAllies().Contains(this))
             return 0; // Combatant is an enemy
 
@@ -641,22 +588,19 @@ public class CombatantData : IComparable, IEquatable<CombatantData>, IComparable
     }
 
 
-    public long GetMaxHealth()
-    {
+    public long GetMaxHealth() {
         var damageTaken = DamageTaken;
         var healsTaken = HealsTaken;
 
-        if (AllInc.TryGetValue(ActGlobals.Trans["attackTypeTerm-all"], out var allItems))
-        {
+        if (AllInc.TryGetValue(ActGlobals.Trans["attackTypeTerm-all"], out var allItems)) {
             // Get a list of all the swings in the 'all' attack type category
-            List<MasterSwing> allSwings = new List<MasterSwing>(allItems.Items);
+            var allSwings = new List<MasterSwing>(allItems.Items);
             allSwings.Sort(MasterSwing.CompareTime);
 
             var maxNegativeDamage = 0L;
             var runningTotal = 0L;
 
-            foreach (var swing in allSwings)
-            {
+            foreach (var swing in allSwings) {
                 long swingDamage = swing.Damage;
 
                 if (DamageSwingTypes.Contains(swing.SwingType) && swingDamage > 0) runningTotal -= swingDamage;
@@ -675,20 +619,12 @@ public class CombatantData : IComparable, IEquatable<CombatantData>, IComparable
     }
 
 
-    public string GetColumnByName(string name)
-    {
-        return ColumnDefs.TryGetValue(name, out var value) ? value.GetCellData(this) : Empty;
-    }
+    public string GetColumnByName(string name) => ColumnDefs.TryGetValue(name, out var value) ? value.GetCellData(this) : Empty;
 
-    public AttackType? GetAttackType(string AttackTypeName, string Type)
-    {
-        return Items[Type].Items.TryGetValue(AttackTypeName, out var value) ? value : null;
-    }
+    public AttackType? GetAttackType(string AttackTypeName, string Type) => Items[Type].Items.TryGetValue(AttackTypeName, out var value) ? value : null;
 
-    public long GetThreatDelta(string DamageTypeDataLabel)
-    {
-        if (threatCached)
-        {
+    public long GetThreatDelta(string DamageTypeDataLabel) {
+        if (threatCached) {
             // Return the cached value if it's available
             return cachedThreatDelta;
         }
@@ -696,43 +632,35 @@ public class CombatantData : IComparable, IEquatable<CombatantData>, IComparable
         // Initialize variables
         long increaseThreat = 0;
         long decreaseThreat = 0;
-        int increaseThreatPosition = 0;
-        int decreaseThreatPosition = 0;
+        var increaseThreatPosition = 0;
+        var decreaseThreatPosition = 0;
 
         // Get the swings in the specified damage type category
-        if (Items[DamageTypeDataLabel].Items.TryGetValue(ActGlobals.Trans["attackTypeTerm-all"], out var swings))
-        {
-            foreach (var swing in swings.Items)
-            {
+        if (Items[DamageTypeDataLabel].Items.TryGetValue(ActGlobals.Trans["attackTypeTerm-all"], out var swings)) {
+            foreach (var swing in swings.Items) {
                 long swingDamage = swing.Damage;
 
-                if (swingDamage > 0)
-                {
+                if (swingDamage > 0) {
                     // The swing was a damage swing
-                    if (swing.DamageType == ActGlobals.Trans["specialAttackTerm-increase"])
-                    {
+                    if (swing.DamageType == ActGlobals.Trans["specialAttackTerm-increase"]) {
                         // The swing increased threat
                         increaseThreat += swingDamage;
                     }
-                    else
-                    {
+                    else {
                         // The swing decreased threat
                         decreaseThreat += swingDamage;
                     }
                 }
-                else if ((int)swing.Damage == (int)Dnum.ThreatPosition)
-                {
+                else if ((int)swing.Damage == (int)Dnum.ThreatPosition) {
                     // The swing was a threat swing
                     var length = swing.Damage.DamageString.IndexOf(' ');
                     var threatValue = int.Parse(swing.Damage.DamageString[..length]);
 
-                    if (swing.DamageType == ActGlobals.Trans["specialAttackTerm-increase"])
-                    {
+                    if (swing.DamageType == ActGlobals.Trans["specialAttackTerm-increase"]) {
                         // The swing increased threat position
                         increaseThreatPosition += threatValue;
                     }
-                    else
-                    {
+                    else {
                         // The swing decreased threat position
                         decreaseThreatPosition += threatValue;
                     }
@@ -750,8 +678,7 @@ public class CombatantData : IComparable, IEquatable<CombatantData>, IComparable
     }
 
 
-    public string GetThreatStr(string DamageTypeDataLabel)
-    {
+    public string GetThreatStr(string DamageTypeDataLabel) {
         if (threatCached)
             return cachedThreatStr;
 
@@ -760,34 +687,25 @@ public class CombatantData : IComparable, IEquatable<CombatantData>, IComparable
         var increaseCount = 0;
         var decreaseCount = 0;
 
-        if (Items.TryGetValue(DamageTypeDataLabel, out var damageTypeData))
-        {
-            if (damageTypeData.Items.TryGetValue(ActGlobals.Trans["attackTypeTerm-all"], out var allInc))
-            {
-                foreach (var masterSwing in allInc.Items)
-                {
-                    if ((long)masterSwing.Damage > 0)
-                    {
-                        if (masterSwing.DamageType == ActGlobals.Trans["specialAttackTerm-increase"])
-                        {
+        if (Items.TryGetValue(DamageTypeDataLabel, out var damageTypeData)) {
+            if (damageTypeData.Items.TryGetValue(ActGlobals.Trans["attackTypeTerm-all"], out var allInc)) {
+                foreach (var masterSwing in allInc.Items) {
+                    if ((long)masterSwing.Damage > 0) {
+                        if (masterSwing.DamageType == ActGlobals.Trans["specialAttackTerm-increase"]) {
                             increase += masterSwing.Damage;
                         }
-                        else
-                        {
+                        else {
                             decrease += masterSwing.Damage;
                         }
                     }
-                    else if ((int)(long)masterSwing.Damage == (int)(long)Dnum.ThreatPosition)
-                    {
+                    else if ((int)(long)masterSwing.Damage == (int)(long)Dnum.ThreatPosition) {
                         var length = masterSwing.Damage.DamageString.IndexOf(' ');
                         var value = int.Parse(masterSwing.Damage.DamageString[..length]);
 
-                        if (masterSwing.DamageType == ActGlobals.Trans["specialAttackTerm-increase"])
-                        {
+                        if (masterSwing.DamageType == ActGlobals.Trans["specialAttackTerm-increase"]) {
                             increaseCount += value;
                         }
-                        else
-                        {
+                        else {
                             decreaseCount += value;
                         }
                     }
@@ -803,27 +721,20 @@ public class CombatantData : IComparable, IEquatable<CombatantData>, IComparable
     }
 
 
-    public override bool Equals(object? obj)
-    {
-        return Name.ToLower().Equals(((CombatantData)obj!).Name.ToLower());
-    }
+    public override bool Equals(object? obj) => Name.ToLower().Equals(((CombatantData)obj!).Name.ToLower());
 
-    public override int GetHashCode()
-    {
-        try
-        {
+    public override int GetHashCode() {
+        try {
             return Items.Values.Aggregate(0L, (current, value) => current + value.GetHashCode()).GetHashCode();
         }
-        catch (InvalidOperationException)
-        {
+        catch (InvalidOperationException) {
             return GetHashCode();
         }
     }
 
     public override string ToString() => Name;
 
-    public void ModAlly(string Combatant, int Mod)
-    {
+    public void ModAlly(string Combatant, int Mod) {
         if (Name == "Unknown" || Combatant == "UNKNOWN") return;
         if (!Allies.ContainsKey(Combatant))
             Allies.Add(Combatant, 0);
@@ -833,21 +744,18 @@ public class CombatantData : IComparable, IEquatable<CombatantData>, IComparable
         Parent.SetAlliesUncached();
     }
 
-    internal static int CompareDamageTakenTime(CombatantData? Left, CombatantData? Right)
-    {
+    internal static int CompareDamageTakenTime(CombatantData? Left, CombatantData? Right) {
         var compareTo = Left?.DamageTaken.CompareTo(Right?.DamageTaken) ?? 0;
         if (compareTo == 0)
             compareTo = Compare(Left?.Name, Right?.Name, StringComparison.Ordinal);
         return compareTo;
     }
 
-    public class TextExportFormatter
-    {
+    public class TextExportFormatter {
         public ExportStringDataCallback GetExportString;
 
         public TextExportFormatter(
-            string Name, string Label, string Description, ExportStringDataCallback FormatterCallback)
-        {
+            string Name, string Label, string Description, ExportStringDataCallback FormatterCallback) {
             this.Name = Name;
             this.Label = Label;
             this.Description = Description;
@@ -861,12 +769,11 @@ public class CombatantData : IComparable, IEquatable<CombatantData>, IComparable
         public string Name { get; }
     }
 
-    public class ColumnDef
-    {
-        public ColorDataCallback GetCellBackColor = Data => Color.Transparent;
+    public class ColumnDef {
+        public ColorDataCallback GetCellBackColor = _ => Color.Transparent;
         public StringDataCallback GetCellData;
 
-        public ColorDataCallback GetCellForeColor = Data => Color.Transparent;
+        public ColorDataCallback GetCellForeColor = _ => Color.Transparent;
 
         public StringDataCallback GetSqlData;
 
@@ -875,8 +782,7 @@ public class CombatantData : IComparable, IEquatable<CombatantData>, IComparable
         public ColumnDef(
             string Label, bool DefaultVisible, string SqlDataType, string SqlDataName,
             StringDataCallback CellDataCallback, StringDataCallback SqlDataCallback,
-            Comparison<CombatantData> SortComparer)
-        {
+            Comparison<CombatantData> SortComparer) {
             this.Label = Label;
             this.DefaultVisible = DefaultVisible;
             this.SqlDataType = SqlDataType;
@@ -895,10 +801,8 @@ public class CombatantData : IComparable, IEquatable<CombatantData>, IComparable
         public string Label { get; }
     }
 
-    public class DamageTypeDef
-    {
-        public DamageTypeDef(string Label, int AllyValue, Color TypeColor)
-        {
+    public class DamageTypeDef {
+        public DamageTypeDef(string Label, int AllyValue, Color TypeColor) {
             this.Label = Label;
             this.AllyValue = AllyValue;
             this.TypeColor = TypeColor;

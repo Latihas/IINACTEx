@@ -17,14 +17,11 @@ using RainbowMage.OverlayPlugin.WebSocket;
 
 namespace IINACT.Windows;
 
-public class MainWindow : Window
-{
+public class MainWindow : Window {
     private int selectedOverlayIndex;
 
-    public MainWindow() : base(LWindow.WindowPrefix)
-    {
-        SizeConstraints = new WindowSizeConstraints
-        {
+    public MainWindow() : base(LWindow.WindowPrefix) {
+        SizeConstraints = new WindowSizeConstraints {
             MinimumSize = new Vector2(307, 207),
             MaximumSize = new Vector2(float.MaxValue, float.MaxValue)
         };
@@ -35,8 +32,7 @@ public class MainWindow : Window
     private string[]? OverlayNames => OverlayPresets?.Select(x => x.Name).ToArray();
     public ServerController? Server { get; set; }
 
-    public override void Draw()
-    {
+    public override void Draw() {
         using var bar = ImRaii.TabBar("settingsTabs");
         if (!bar) return;
         LWindow.DrawHelpSettings();
@@ -48,8 +44,7 @@ public class MainWindow : Window
         LWindow.DrawSettings();
     }
 
-    private void DrawMainWindow()
-    {
+    private void DrawMainWindow() {
         using var tab = ImRaii.TabItem("运行状态");
         if (!tab) return;
 
@@ -73,13 +68,10 @@ public class MainWindow : Window
                     selectedOverlayIndex = i;
 
         ImGui.SetNextItemWidth(comboWidth);
-        if (ImGui.BeginCombo("悬浮窗", selectedOverlayName))
-        {
-            for (var i = 0; i < OverlayNames?.Length; i++)
-            {
+        if (ImGui.BeginCombo("悬浮窗", selectedOverlayName)) {
+            for (var i = 0; i < OverlayNames?.Length; i++) {
                 var currentOverlayName = OverlayNames?[i] ?? "";
-                if (ImGui.Selectable(currentOverlayName, currentOverlayName == selectedOverlayName))
-                {
+                if (ImGui.Selectable(currentOverlayName, currentOverlayName == selectedOverlayName)) {
                     selectedOverlayIndex = i;
                     Plugin.Configuration.SelectedOverlay = currentOverlayName;
                     Plugin.Configuration.Save();
@@ -109,29 +101,23 @@ public class MainWindow : Window
         ImGui.Text("下载");
         ImGui.Text("也可以尝试");
         ImGui.SameLine();
-        if (ImGui.Button("一键下载解压"))
-        {
-            if (FileDownloaderCactbot != null)
-            {
-                Plugin.NotificationManager.AddNotification(new Notification
-                {
+        if (ImGui.Button("一键下载解压")) {
+            if (FileDownloaderCactbot != null) {
+                Plugin.NotificationManager.AddNotification(new Notification {
                     Type = NotificationType.Warning,
                     Content = "有未完成的下载任务"
                 });
             }
-            else
-            {
+            else {
                 var zipPath = Path.Combine(Plugin.Instance.PluginConfigDirectory, "cactbot.zip");
-                FileDownloaderCactbot = new FileDownloader(cactboturl, zipPath, () =>
-                {
+                FileDownloaderCactbot = new FileDownloader(cactboturl, zipPath, () => {
                     FileDownloaderCactbot = null;
                     Plugin.UnzipWithoutPassword(zipPath, cactbotDir);
                 });
                 _ = FileDownloaderCactbot.DownloadFileAsync();
             }
         }
-        if (FileDownloaderCactbot != null)
-        {
+        if (FileDownloaderCactbot != null) {
             ImGui.SameLine();
             ImGui.ProgressBar(FileDownloaderCactbot.Progress, new Vector2(300, 24), "下载中");
         }
@@ -141,13 +127,11 @@ public class MainWindow : Window
 
         if (ImGui.Button("打开资源文件夹")) LWindow.Start(Plugin.Instance.PluginConfigDirectory);
         ImGui.Text("更多网页可见cactbot文件夹。以下是开发者喜欢用的网址，点击复制，贴进bw即可:");
-        foreach (var url in new[]
-                 {
+        foreach (var url in new[] {
                      ("伤害统计", $"http://overlay.diemoe.net/kagerou/overlay/?HOST_PORT=ws://{Server?.Address}:{Server?.Port}"),
                      ("时间轴", $"file:///{cactbotDir}/ui/raidboss/raidboss.html?timeline=1&alerts=1&OVERLAY_WS=ws://{Server?.Address}:{Server?.Port}/ws".Replace('\\', '/')),
                      ("设置", $"http://cactbot.diemoe.net/ui/config/config.html?OVERLAY_WS=ws://{Server?.Address}:{Server?.Port}/ws")
-                 })
-        {
+                 }) {
             if (ImGui.Button(url.Item1)) ImGui.SetClipboardText(url.Item1);
             ImGui.SameLine();
             ImGui.Text(":");
@@ -165,8 +149,7 @@ public class MainWindow : Window
         if (Server?.Running ?? false)
             serverStatus = $"监听 {Server?.Address}:{Server?.Port}";
 
-        if (Server?.Failed ?? false)
-        {
+        if (Server?.Failed ?? false) {
             serverStatus = Server.LastException?.Message ?? "失败";
             if (Server.LastException is SocketException { ErrorCode: 10048 })
                 serverStatus = $"端口 {Server?.Port} 已被占用";
@@ -177,21 +160,18 @@ public class MainWindow : Window
         ImGui.Text(serverStatus);
         ImGui.GetWindowDpiScale();
 
-        if (Server?.Running ?? false)
-        {
+        if (Server?.Running ?? false) {
             if (ImGui.Button("停止"))
                 Server.Stop();
 
             ImGui.SameLine();
 
-            if (ImGui.Button("重启"))
-            {
+            if (ImGui.Button("重启")) {
                 Server.Restart();
                 Plugin.Instance.OverlayWindow.Init(Server);
             }
         }
-        else if (Server is not null)
-        {
+        else if (Server is not null) {
             if (ImGui.Button("启动"))
                 Server.Start();
         }
@@ -200,21 +180,18 @@ public class MainWindow : Window
 
     private static FileDownloader? FileDownloaderCactbot;
 
-    private void DrawParseSettings()
-    {
+    private void DrawParseSettings() {
         using var tab = ImRaii.TabItem("解析设置");
         if (!tab) return;
 
         ImGui.Spacing();
-        var elementWidth = ImGui.GetWindowWidth() - (150 * ImGuiHelpers.GlobalScale);
+        var elementWidth = ImGui.GetWindowWidth() - 150 * ImGuiHelpers.GlobalScale;
         var logFilePath = Plugin.Configuration.LogFilePath;
         ImGui.SetNextItemWidth(elementWidth);
         ImGui.InputText("日志文件路径", ref logFilePath, 200, ImGuiInputTextFlags.ReadOnly);
         ImGui.SameLine();
-        if (ImGuiComponents.DisabledButton(FontAwesomeIcon.Folder))
-        {
-            Plugin.FileDialogManager.OpenFolderDialog("选择保存日志的文件夹", (success, path) =>
-            {
+        if (ImGuiComponents.DisabledButton(FontAwesomeIcon.Folder)) {
+            Plugin.FileDialogManager.OpenFolderDialog("选择保存日志的文件夹", (success, path) => {
                 if (!success) return;
                 Plugin.Configuration.LogFilePath = path;
                 Plugin.Configuration.Save();
@@ -223,12 +200,10 @@ public class MainWindow : Window
         ImGui.Spacing();
         ImGui.SetNextItemWidth(elementWidth);
         if (ImGui.BeginCombo("解析过滤器",
-                             GetParseFilterModeText((ParseFilterMode)Plugin.Configuration.ParseFilterMode)))
-        {
+                GetParseFilterModeText((ParseFilterMode)Plugin.Configuration.ParseFilterMode))) {
             foreach (var filter in Enum.GetValues<ParseFilterMode>())
                 if (ImGui.Selectable(GetParseFilterModeText(filter),
-                                     (ParseFilterMode)Plugin.Configuration.ParseFilterMode == filter))
-                {
+                        (ParseFilterMode)Plugin.Configuration.ParseFilterMode == filter)) {
                     Plugin.Configuration.ParseFilterMode = (int)filter;
                     Plugin.Configuration.Save();
                 }
@@ -238,26 +213,22 @@ public class MainWindow : Window
 
         ImGui.Spacing();
         var WriteLogFile = Plugin.Configuration.WriteLogFile;
-        if (ImGui.Checkbox("写入网络日志文件", ref WriteLogFile))
-        {
+        if (ImGui.Checkbox("写入网络日志文件", ref WriteLogFile)) {
             Plugin.Configuration.WriteLogFile = WriteLogFile;
             Plugin.Configuration.Save();
         }
         var WriteActLogFile = Plugin.Configuration.WriteActLogFile;
-        if (Plugin.Configuration.WriteLogFile && ImGui.Checkbox("写入ACT日志文件(.actxt)", ref WriteActLogFile))
-        {
+        if (Plugin.Configuration.WriteLogFile && ImGui.Checkbox("写入ACT日志文件(.actxt)", ref WriteActLogFile)) {
             Plugin.Configuration.WriteActLogFile = WriteActLogFile;
             Plugin.Configuration.Save();
         }
         var WriteTrnLogFile = Plugin.Configuration.WriteTrnLogFile;
-        if (Plugin.Configuration.WriteLogFile && ImGui.Checkbox("写入Trn日志文件(.trnxt)", ref WriteTrnLogFile))
-        {
+        if (Plugin.Configuration.WriteLogFile && ImGui.Checkbox("写入Trn日志文件(.trnxt)", ref WriteTrnLogFile)) {
             Plugin.Configuration.WriteTrnLogFile = WriteTrnLogFile;
             Plugin.Configuration.Save();
         }
         var disablePvp = Plugin.Configuration.DisablePvp;
-        if (ImGui.Checkbox("在PvP中禁用写入网络日志文件", ref disablePvp))
-        {
+        if (ImGui.Checkbox("在PvP中禁用写入网络日志文件", ref disablePvp)) {
             if (Plugin.ClientState.IsPvP && disablePvp) Plugin.Configuration.DisableWritingPvpLogFile = true;
 
             Plugin.Configuration.DisablePvp = disablePvp;
@@ -265,22 +236,19 @@ public class MainWindow : Window
         }
 
         var disableDamageShield = Plugin.Configuration.DisableDamageShield;
-        if (ImGui.Checkbox("禁用伤害盾估计", ref disableDamageShield))
-        {
+        if (ImGui.Checkbox("禁用伤害盾估计", ref disableDamageShield)) {
             Plugin.Configuration.DisableDamageShield = disableDamageShield;
             Plugin.Configuration.Save();
         }
 
         var disableCombinePets = Plugin.Configuration.DisableCombinePets;
-        if (ImGui.Checkbox("禁用宠物合并", ref disableCombinePets))
-        {
+        if (ImGui.Checkbox("禁用宠物合并", ref disableCombinePets)) {
             Plugin.Configuration.DisableCombinePets = disableCombinePets;
             Plugin.Configuration.Save();
         }
 
         var showDebug = Plugin.Configuration.ShowDebug;
-        if (ImGui.Checkbox("显示调试选项", ref showDebug))
-        {
+        if (ImGui.Checkbox("显示调试选项", ref showDebug)) {
             Plugin.Configuration.ShowDebug = showDebug;
             Plugin.Configuration.Save();
         }
@@ -292,22 +260,19 @@ public class MainWindow : Window
         ImGui.Spacing();
 
         var simulateIndividualDoTCrits = Plugin.Configuration.SimulateIndividualDoTCrits;
-        if (ImGui.Checkbox("模拟单体 DoT 暴击", ref simulateIndividualDoTCrits))
-        {
+        if (ImGui.Checkbox("模拟单体 DoT 暴击", ref simulateIndividualDoTCrits)) {
             Plugin.Configuration.SimulateIndividualDoTCrits = simulateIndividualDoTCrits;
             Plugin.Configuration.Save();
         }
 
         var showRealDoTTicks = Plugin.Configuration.ShowRealDoTTicks;
-        if (ImGui.Checkbox("显示真实 DoT Ticks", ref showRealDoTTicks))
-        {
+        if (ImGui.Checkbox("显示真实 DoT Ticks", ref showRealDoTTicks)) {
             Plugin.Configuration.ShowRealDoTTicks = showRealDoTTicks;
             Plugin.Configuration.Save();
         }
     }
 
-    private void DrawWebSocketSettings()
-    {
+    private void DrawWebSocketSettings() {
         // using var tab = ImRaii.TabItem("WebSocket 服务");
         // if (!tab) return;
 
@@ -315,13 +280,11 @@ public class MainWindow : Window
         var wsServerIp = OverlayPluginConfig?.WSServerIP ?? "";
         ImGui.InputText("IP地址", ref wsServerIp, 100);
 
-        if (IPAddress.TryParse(wsServerIp, out var address))
-        {
+        if (IPAddress.TryParse(wsServerIp, out var address)) {
             if (OverlayPluginConfig is not null)
                 OverlayPluginConfig.WSServerIP = address.ToString();
         }
-        else if (wsServerIp == "*")
-        {
+        else if (wsServerIp == "*") {
             if (OverlayPluginConfig is not null)
                 OverlayPluginConfig.WSServerIP = "*";
         }
@@ -329,8 +292,7 @@ public class MainWindow : Window
         var wsServerPort = OverlayPluginConfig?.WSServerPort.ToString() ?? "";
         ImGui.InputText("端口", ref wsServerPort, 100);
 
-        if (int.TryParse(wsServerPort, out var port))
-        {
+        if (int.TryParse(wsServerPort, out var port)) {
             if (OverlayPluginConfig is not null)
                 OverlayPluginConfig.WSServerPort = port;
         }
@@ -338,8 +300,7 @@ public class MainWindow : Window
         OverlayPluginConfig?.Save();
     }
 
-    private void DrawTTSSettings()
-    {
+    private void DrawTTSSettings() {
         using var tab = ImRaii.TabItem("文字转语音");
         if (!tab) return;
 
@@ -347,11 +308,9 @@ public class MainWindow : Window
         var useEdgeTTS = Plugin.Configuration.UseEdgeTts;
         if (ImGui.Checkbox("使用EdgeTTS（不勾选则使用本地TTS）", ref useEdgeTTS))
             Plugin.TextToSpeechProvider.SetUseEdgeTTS(useEdgeTTS);
-        if (useEdgeTTS)
-        {
+        if (useEdgeTTS) {
             ImGui.SameLine();
-            if (ImGui.Button("打开设置"))
-            {
+            if (ImGui.Button("打开设置")) {
                 Plugin.OpenEdgeTTSWindow();
             }
         }
@@ -363,10 +322,8 @@ public class MainWindow : Window
         ImGui.Spacing();
     }
 
-    private string GetParseFilterModeText(ParseFilterMode mode)
-    {
-        return mode switch
-        {
+    private string GetParseFilterModeText(ParseFilterMode mode) {
+        return mode switch {
             ParseFilterMode.None => "无 (None)",
             ParseFilterMode.Self => "仅自己 (Self)",
             ParseFilterMode.Party => "仅小队成员 (Party)",

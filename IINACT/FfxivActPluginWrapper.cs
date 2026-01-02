@@ -21,8 +21,7 @@ using ACTWrapper = FFXIV_ACT_Plugin.Common.ACTWrapper;
 
 namespace IINACT;
 
-public partial class FfxivActPluginWrapper : IDisposable
-{
+public partial class FfxivActPluginWrapper : IDisposable {
     private readonly FFXIV_ACT_Plugin.FFXIV_ACT_Plugin ffxivActPlugin;
     private readonly Container iocContainer;
     private ISettingsMediator settingsMediator = null!;
@@ -55,8 +54,7 @@ public partial class FfxivActPluginWrapper : IDisposable
     public readonly IDataRepository Repository;
     public readonly IDataSubscription Subscription;
 
-    public unsafe FfxivActPluginWrapper()
-    {
+    public unsafe FfxivActPluginWrapper() {
         ffxivActPlugin = new FFXIV_ACT_Plugin.FFXIV_ACT_Plugin();
         Plugin.Log.Information($"Initializing FFXIV_ACT_Plugin version {typeof(FFXIV_ACT_Plugin.FFXIV_ACT_Plugin).Assembly.GetName().Version}");
         ffxivActPlugin.ConfigureIOC();
@@ -100,36 +98,33 @@ public partial class FfxivActPluginWrapper : IDisposable
         serverTimeProcessor.ServerTime = DateTime.Now;
 
         cancellationTokenSource = new CancellationTokenSource();
-        scanThread = new Thread(() => ScanMemory(cancellationTokenSource.Token))
-        {
+        scanThread = new Thread(() => ScanMemory(cancellationTokenSource.Token)) {
             IsBackground = true
         };
         scanThread.Start();
 
         mobArraySize = mobArrayProcessor._internalMmobArray.Length;
-        var combatantProcessor = ((CombatantProcessor)combatantManager._combatantProcessor);
+        var combatantProcessor = (CombatantProcessor)combatantManager._combatantProcessor;
         combatantBufferSize = ((ReadCombatant)combatantProcessor._readCombatant)._buffer.Length;
         combatantSize = sizeof(CombatantStruct);
-        mobData = Marshal.AllocHGlobal((mobArraySize * combatantSize) + (combatantBufferSize - combatantSize));
+        mobData = Marshal.AllocHGlobal(mobArraySize * combatantSize + (combatantBufferSize - combatantSize));
         mobDataOffsets = new nint[mobArraySize];
         for (var i = 0; i < mobArraySize; i++)
-            mobDataOffsets[i] = mobData + (i * combatantSize);
+            mobDataOffsets[i] = mobData + i * combatantSize;
 
         Plugin.Framework.Update += MobDataRefresh;
     }
 
     private Language ClientLanguage =>
-        Plugin.DataManager.Language switch
-        {
+        Plugin.DataManager.Language switch {
             Dalamud.Game.ClientLanguage.Japanese => Language.Japanese,
             Dalamud.Game.ClientLanguage.English => Language.English,
             Dalamud.Game.ClientLanguage.German => Language.German,
             Dalamud.Game.ClientLanguage.French => Language.French,
-            _ =>  Plugin.DataManager.Language.ToString() == "ChineseSimplified" ? Language.Chinese : Language.English
+            _ => Plugin.DataManager.Language.ToString() == "ChineseSimplified" ? Language.Chinese : Language.English
         };
 
-    public void Dispose()
-    {
+    public void Dispose() {
         cancellationTokenSource.Cancel();
         cancellationTokenSource.Dispose();
         Plugin.Framework.Update -= MobDataRefresh;
@@ -138,12 +133,10 @@ public partial class FfxivActPluginWrapper : IDisposable
         Marshal.FreeHGlobal(mobData);
     }
 
-    private void SetupSettingsMediator()
-    {
+    private void SetupSettingsMediator() {
         settingsMediator = ffxivActPlugin._dataCollection._settingsMediator;
 
-        DataCollectionSettings = new DataCollectionSettingsEventArgs
-        {
+        DataCollectionSettings = new DataCollectionSettingsEventArgs {
             LogFileFolder = ActGlobals.oFormActMain.LogFilePath,
             UseSocketFilter = false,
             UseWinPCap = false,
@@ -152,8 +145,7 @@ public partial class FfxivActPluginWrapper : IDisposable
         };
         settingsMediator.DataCollectionSettings = DataCollectionSettings;
 
-        ParseSettings = new ParseSettings
-        {
+        ParseSettings = new ParseSettings {
             DisableDamageShield = Plugin.Configuration.DisableDamageShield,
             DisableCombinePets = Plugin.Configuration.DisableCombinePets,
             LanguageID = ClientLanguage,
@@ -168,15 +160,15 @@ public partial class FfxivActPluginWrapper : IDisposable
         settingsMediator.ProcessException = OnProcessException;
 
         var line = logFormat.FormatParseSettings(ParseSettings.DisableDamageShield, ParseSettings.DisableCombinePets,
-                                                 ParseSettings.LanguageID, ParseSettings.ParseFilter,
-                                                 ParseSettings.SimulateIndividualDoTCrits,
-                                                 ParseSettings.ShowRealDoTTicks);
+            ParseSettings.LanguageID, ParseSettings.ParseFilter,
+            ParseSettings.SimulateIndividualDoTCrits,
+            ParseSettings.ShowRealDoTTicks);
         logOutput.WriteLine(LogMessageType.Settings, DateTime.MinValue, line);
 
         var line2 = logFormat.FormatMemorySettings(DataCollectionSettings.ProcessID,
-                                                   DataCollectionSettings.LogFileFolder,
-                                                   DataCollectionSettings.LogAllNetworkData,
-                                                   DataCollectionSettings.DisableCombatLog);
+            DataCollectionSettings.LogFileFolder,
+            DataCollectionSettings.LogAllNetworkData,
+            DataCollectionSettings.DisableCombatLog);
         logOutput.WriteLine(LogMessageType.Settings, DateTime.MinValue, line2);
 
         logOutput.CallMethod("ConfigureLogFile", null);
@@ -187,19 +179,17 @@ public partial class FfxivActPluginWrapper : IDisposable
     }
 
     private void OnChatMessage(
-        XivChatType type, int senderId, ref SeString sender, ref SeString message, ref bool isHandled)
-    {
+        XivChatType type, int senderId, ref SeString sender, ref SeString message, ref bool isHandled) {
         var evenType = (uint)type;
         var player = sender.TextValue;
         var text = message.TextValue.Replace('\r', ' ').Replace('\n', ' ')
-                                    .Replace('|', '❘');
+            .Replace('|', '❘');
         var line = logFormat.FormatChatMessage(evenType, player, text);
 
         logOutput.WriteLine(LogMessageType.ChatLog, GameServerTime.CurrentServerTime, line);
     }
 
-    private void SetupActWrapper()
-    {
+    private void SetupActWrapper() {
         var actWrapper = logOutput.GetField<ACTWrapper>("_actWrapper");
 
         actWrapper.TimeStampLen = DateTime.Now.ToString("HH:mm:ss.fff", CultureInfo.InvariantCulture).Length + 3;
@@ -211,24 +201,20 @@ public partial class FfxivActPluginWrapper : IDisposable
         ActGlobals.oFormActMain.FfxivPlugin = ffxivActPlugin;
     }
 
-    private void OFormActMain_BeforeLogLineRead(bool isImport, LogLineEventArgs logInfo)
-    {
+    private void OFormActMain_BeforeLogLineRead(bool isImport, LogLineEventArgs logInfo) {
         (logInfo.logLine, logInfo.detectedType) =
             parseMediator.BeforeLogLineRead(isImport, logInfo.detectedTime, logInfo.logLine);
     }
 
-    private void SetupDataSubscription()
-    {
+    private void SetupDataSubscription() {
         ffxivActPlugin.DataSubscription.ZoneChanged += OnZoneChanged;
     }
 
-    private static void OnZoneChanged(uint zoneId, string zoneName)
-    {
+    private static void OnZoneChanged(uint zoneId, string zoneName) {
         ActGlobals.oFormActMain.ChangeZone(zoneName);
     }
 
-    private static void OnProcessException(DateTime timestamp, string text)
-    {
+    private static void OnProcessException(DateTime timestamp, string text) {
         Plugin.Log.Debug($"[FFXIV_ACT_Plugin] {text}");
     }
 
@@ -236,13 +222,11 @@ public partial class FfxivActPluginWrapper : IDisposable
     [LibraryImport("SafeMemoryReader.dll")]
     private static partial int ReadMemory(nint dest, nint src, int size);
 
-    private unsafe void MobDataRefresh(IFramework _)
-    {
+    private unsafe void MobDataRefresh(IFramework _) {
         if (settingsMediator.DataCollectionSettings == null)
             return;
 
-        if (mobDataAge < 3 || (!Plugin.Condition[ConditionFlag.BoundByDuty56] && mobDataAge < 10))
-        {
+        if (mobDataAge < 3 || !Plugin.Condition[ConditionFlag.BoundByDuty56] && mobDataAge < 10) {
             mobDataAge++;
             if (mobArrayProcessor.PrimaryPlayerPointer == nint.Zero)
                 return;
@@ -255,8 +239,7 @@ public partial class FfxivActPluginWrapper : IDisposable
         var mobArrayAddress = (ulong*)mobArrayProcessor._readMobArray.Read64();
         var mobArray = mobArrayProcessor._internalMmobArray;
 
-        if (*mobArrayAddress == 0)
-        {
+        if (*mobArrayAddress == 0) {
             Array.Clear(mobArray);
             return;
         }
@@ -264,10 +247,8 @@ public partial class FfxivActPluginWrapper : IDisposable
         ReadMemory(mobDataOffsets[0], (nint)(void*)*mobArrayAddress, combatantSize);
         mobArray[0] = mobDataOffsets[0];
 
-        for (var i = 1; i < mobArraySize; i++)
-        {
-            if (*(mobArrayAddress + i) == 0)
-            {
+        for (var i = 1; i < mobArraySize; i++) {
+            if (*(mobArrayAddress + i) == 0) {
                 mobArray[i] = nint.Zero;
                 continue;
             }
@@ -278,12 +259,9 @@ public partial class FfxivActPluginWrapper : IDisposable
         refreshSemaphore.Release();
     }
 
-    private void ScanMemory(CancellationToken token)
-    {
-        while (!token.IsCancellationRequested)
-        {
-            try
-            {
+    private void ScanMemory(CancellationToken token) {
+        while (!token.IsCancellationRequested) {
+            try {
                 refreshSemaphore.Wait(token);
                 serverTimeProcessor.ServerTime = GameServerTime.CurrentServerTime;
 
@@ -300,12 +278,10 @@ public partial class FfxivActPluginWrapper : IDisposable
                 playerProcessor.Refresh();
                 partyProcessor.Refresh();
             }
-            catch (Exception ex) when (ex is ThreadAbortException or OperationCanceledException or ObjectDisposedException)
-            {
+            catch (Exception ex) when (ex is ThreadAbortException or OperationCanceledException or ObjectDisposedException) {
                 return;
             }
-            catch (Exception ex)
-            {
+            catch (Exception ex) {
                 Plugin.Log.Error(ex, "[FFXIV_ACT_Plugin] ScanMemory failure");
             }
         }

@@ -12,8 +12,7 @@ using static IINACT.Plugin;
 
 namespace IINACT;
 
-internal class TextToSpeechProvider : IDisposable
-{
+internal class TextToSpeechProvider : IDisposable {
     private readonly object speechLock = new();
     private readonly HttpClient client = new();
     private SpeechSynthesizer? speechSynthesizer;
@@ -22,32 +21,30 @@ internal class TextToSpeechProvider : IDisposable
     private bool useEdgeTTS;
     private bool useLatihasTTS;
 
-    public TextToSpeechProvider()
-    {
-        try
-        {
+    public TextToSpeechProvider() {
+        try {
             var assetsdir = Path.Combine(Instance.PluginConfigDirectory, "TtsAssets");
             Assembly latihasTtsAssembly;
-            using (var memoryStream = new MemoryStream(File.ReadAllBytes(Path.Combine(assetsdir, "System.Numerics.Tensors.dll"))))
+            using (var memoryStream = new MemoryStream(File.ReadAllBytes(Path.Combine(assetsdir, "System.Numerics.Tensors.dll")))) {
                 AssemblyLoadContext.GetLoadContext(Assembly.GetExecutingAssembly())!.LoadFromStream(memoryStream);
-            using (var memoryStream = new MemoryStream(File.ReadAllBytes(Path.Combine(assetsdir, "Microsoft.ML.OnnxRuntime.dll"))))
+            }
+            using (var memoryStream = new MemoryStream(File.ReadAllBytes(Path.Combine(assetsdir, "Microsoft.ML.OnnxRuntime.dll")))) {
                 AssemblyLoadContext.GetLoadContext(Assembly.GetExecutingAssembly())!.LoadFromStream(memoryStream);
-            using (var memoryStream = new MemoryStream(File.ReadAllBytes(Path.Combine(assetsdir, "LatihasTTS.dll"))))
+            }
+            using (var memoryStream = new MemoryStream(File.ReadAllBytes(Path.Combine(assetsdir, "LatihasTTS.dll")))) {
                 latihasTtsAssembly = AssemblyLoadContext.GetLoadContext(Assembly.GetExecutingAssembly())!.LoadFromStream(memoryStream);
+            }
             LatihasTts = Activator.CreateInstance(latihasTtsAssembly.GetType("LatihasTTS.LatihasTts")!)!;
             LatihasTts.Init(assetsdir, Path.Combine(Instance.PluginConfigDirectory, "tmp"), Log);
             if (!LatihasTts.CheckAssets()) Log.Warning("LatihasTts Assets Lost");
         }
-        catch (Exception ex)
-        {
+        catch (Exception ex) {
             Log.Warning(ex, "Failed to initialize LatihasTTS engine");
         }
-        try
-        {
+        try {
             edgeTTSManager = new EdgeTTSManager(Log, Instance.PluginConfigDirectory);
         }
-        catch (Exception ex)
-        {
+        catch (Exception ex) {
             Log.Warning(ex, "Failed to initialize EdgeTTS engine");
         }
         ActGlobals.oFormActMain.TextToSpeech += Speak;
@@ -55,19 +52,15 @@ internal class TextToSpeechProvider : IDisposable
         SetUseLatihasTTS(Plugin.Configuration.UseLatihasTts);
     }
 
-    public void SetUseEdgeTTS(bool useEdgeTTS)
-    {
+    public void SetUseEdgeTTS(bool useEdgeTTS) {
         if (useEdgeTTS) Plugin.Configuration.UseLatihasTts = useLatihasTTS = false;
         Plugin.Configuration.UseEdgeTts = this.useEdgeTTS = useEdgeTTS;
         Plugin.Configuration.Save();
     }
 
-    public void SetUseLatihasTTS(bool useLatihasTTS)
-    {
-        if (useLatihasTTS)
-        {
-            if (LatihasTts == null || !LatihasTts!.CheckAssets())
-            {
+    public void SetUseLatihasTTS(bool useLatihasTTS) {
+        if (useLatihasTTS) {
+            if (LatihasTts == null || !LatihasTts!.CheckAssets()) {
                 Plugin.Configuration.UseLatihasTts = this.useLatihasTTS = false;
                 Plugin.Configuration.Save();
                 return;
@@ -78,59 +71,46 @@ internal class TextToSpeechProvider : IDisposable
         Plugin.Configuration.Save();
     }
 
-    public void Speak(string message)
-    {
+    public void Speak(string message) {
         if (string.IsNullOrEmpty(message)) return;
 
-        if (useEdgeTTS && edgeTTSManager != null)
-        {
-            try
-            {
+        if (useEdgeTTS && edgeTTSManager != null) {
+            try {
                 Task.Run(() => edgeTTSManager.Speak(message));
             }
-            catch (Exception ex)
-            {
+            catch (Exception ex) {
                 Log.Error(ex, $"EdgeTTS failed to play back {message}");
             }
             return;
         }
-        if (useLatihasTTS && LatihasTts != null)
-        {
-            try
-            {
+        if (useLatihasTTS && LatihasTts != null) {
+            try {
                 LatihasTts!.Speak(message);
             }
-            catch (Exception ex)
-            {
+            catch (Exception ex) {
                 Log.Error(ex, $"LatihasTTS failed to play back {message}");
             }
             return;
         }
 
-        Task.Run(() =>
-        {
-            if (speechSynthesizer == null && !Util.IsWine())
-            {
-                try
-                {
+        Task.Run(() => {
+            if (speechSynthesizer == null && !Util.IsWine()) {
+                try {
                     speechSynthesizer = new SpeechSynthesizer();
                     speechSynthesizer?.SetOutputToDefaultAudioDevice();
                 }
-                catch (Exception ex)
-                {
+                catch (Exception ex) {
                     Log.Warning(ex, "Failed to initialize SAPI TTS engine");
                     speechSynthesizer = null;
                 }
             }
-            try
-            {
+            try {
                 if (speechSynthesizer == null)
                     SpeakGoogle(message);
                 else
                     SpeakSapi(message);
             }
-            catch (Exception ex)
-            {
+            catch (Exception ex) {
                 Log.Error(ex, $"TTS failed to play back {message}");
             }
         });
@@ -138,8 +118,7 @@ internal class TextToSpeechProvider : IDisposable
 
     public EdgeTTSManager? GetEdgeTTSManager() => edgeTTSManager;
 
-    private void SpeakGoogle(string message)
-    {
+    private void SpeakGoogle(string message) {
         var query = WebUtility.UrlEncode(message);
         const string lang = "en";
         var url = $"https://translate.google.com/translate_tts?ie=UTF-8&client=tw-ob&tl={lang}&q={query}";
@@ -151,16 +130,14 @@ internal class TextToSpeechProvider : IDisposable
         waveOut.Init(reader);
         var waitHandle = new ManualResetEventSlim(false);
 
-        lock (speechLock)
-        {
+        lock (speechLock) {
             waveOut.Play();
-            waveOut.PlaybackStopped += (s, e) => waitHandle.Set();
+            waveOut.PlaybackStopped += (_, _) => waitHandle.Set();
             waitHandle.Wait();
         }
     }
 
-    private void SpeakSapi(string message)
-    {
+    private void SpeakSapi(string message) {
         lock (speechLock)
             speechSynthesizer?.Speak(message);
     }

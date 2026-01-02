@@ -6,10 +6,8 @@ using Newtonsoft.Json;
 namespace IINACT;
 
 [Serializable]
-public class Configuration : IPluginConfiguration
-{
-    [JsonIgnore]
-    public string DefaultLogFilePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "IINACT");
+public class Configuration : IPluginConfiguration {
+    [JsonIgnore] public string DefaultLogFilePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "IINACT");
     private string? logFilePath;
 
     public int ParseFilterMode { get; set; }
@@ -26,10 +24,8 @@ public class Configuration : IPluginConfiguration
 
     public bool ShowDebug { get; set; }
 
-    [JsonProperty("useEdgeTTS")]
-    public bool UseEdgeTts { get; set; } = true;
-    [JsonProperty("useLatihasTTS")]
-    public bool UseLatihasTts { get; set; } = true;
+    [JsonProperty("useEdgeTTS")] public bool UseEdgeTts { get; set; } = true;
+    [JsonProperty("useLatihasTTS")] public bool UseLatihasTts { get; set; } = true;
     public bool ShowWindowOnInit { get; set; } = true;
     public bool ShowOverlayOnInit { get; set; } = true;
     public bool TtsOnInit { get; set; } = true;
@@ -68,8 +64,7 @@ public class Configuration : IPluginConfiguration
 
     public string? SelectedOverlay { get; set; }
 
-    public void Save()
-    {
+    public void Save() {
         Plugin.PluginInterface.SavePluginConfig(this);
     }
 }

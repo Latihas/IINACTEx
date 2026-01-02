@@ -1,26 +1,24 @@
 ﻿using System;
 
-namespace RainbowMage.OverlayPlugin
-{
-    public interface IEventSource : IDisposable
-    {
-        /// <summary>
-        /// ユーザーが設定したオーバーレイの名前を取得します。
-        /// </summary>
-        string Name { get; }
+namespace RainbowMage.OverlayPlugin;
 
-        /// <summary>
-        /// オーバーレイの更新を開始します。
-        /// </summary>
-        void Start();
+public interface IEventSource : IDisposable {
+    /// <summary>
+    ///     ユーザーが設定したオーバーレイの名前を取得します。
+    /// </summary>
+    string Name { get; }
 
-        /// <summary>
-        /// オーバーレイの更新を停止します。
-        /// </summary>
-        void Stop();
+    /// <summary>
+    ///     オーバーレイの更新を開始します。
+    /// </summary>
+    void Start();
 
-        void LoadConfig(IPluginConfig config);
+    /// <summary>
+    ///     オーバーレイの更新を停止します。
+    /// </summary>
+    void Stop();
 
-        void SaveConfig(IPluginConfig config);
-    }
+    void LoadConfig(IPluginConfig config);
+
+    void SaveConfig(IPluginConfig config);
 }

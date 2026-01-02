@@ -3,10 +3,8 @@ using static ChineseConverter.NativeMethods;
 
 namespace ChineseConverter;
 
-public static class ChineseConverter
-{
-    public static string Convert(string text, ChineseConversionDirection direction)
-    {
+public static class ChineseConverter {
+    public static string Convert(string text, ChineseConversionDirection direction) {
         if (string.IsNullOrEmpty(text)) return string.Empty;
         var officeConversionEngine = OfficeConversionEngine.Create();
         if (officeConversionEngine != null) return officeConversionEngine.TcscConvert(text, direction);

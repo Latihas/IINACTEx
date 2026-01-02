@@ -1,20 +1,17 @@
 ﻿using System;
 
-namespace RainbowMage.OverlayPlugin.MemoryProcessors.InCombat
-{
-    interface IInCombatMemory70 : IInCombatMemory { }
+namespace RainbowMage.OverlayPlugin.MemoryProcessors.InCombat;
 
-    class InCombatMemory70 : InCombatMemory, IInCombatMemory70
-    {
-        private const string inCombatSignature = "803D??????????74??488B03488BCBFF50";
-        private const int inCombatSignatureOffset = -15;
-        private const int inCombatRIPOffset = 1;
-        public InCombatMemory70(TinyIoCContainer container) : base(container, inCombatSignature, inCombatSignatureOffset, inCombatRIPOffset) { }
+internal interface IInCombatMemory70 : IInCombatMemory {
+}
 
-        public override Version GetVersion()
-        {
-            return new Version(7, 0);
-        }
+internal class InCombatMemory70 : InCombatMemory, IInCombatMemory70 {
+    private const string inCombatSignature = "803D??????????74??488B03488BCBFF50";
+    private const int inCombatSignatureOffset = -15;
+    private const int inCombatRIPOffset = 1;
 
+    public InCombatMemory70(TinyIoCContainer container) : base(container, inCombatSignature, inCombatSignatureOffset, inCombatRIPOffset) {
     }
+
+    public override Version GetVersion() => new(7, 0);
 }

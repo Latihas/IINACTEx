@@ -4,243 +4,216 @@ using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using Microsoft.Extensions.ObjectPool;
 
-namespace RainbowMage.OverlayPlugin.MemoryProcessors.Combatant
-{
-    public abstract class CombatantMemory : ICombatantMemory
-    {
-        public FFXIVMemory memory;
-        private ILogger logger;
+namespace RainbowMage.OverlayPlugin.MemoryProcessors.Combatant;
 
-        public IntPtr charmapAddress = IntPtr.Zero;
+public abstract class CombatantMemory : ICombatantMemory {
+    public FFXIVMemory memory;
+    private ILogger logger;
 
-        private string charmapSignature;
+    public IntPtr charmapAddress = IntPtr.Zero;
 
-        public int numMemoryCombatants;
-        public int combatantSize;
-        private int effectSize;
-        
-        protected ObjectPool<Combatant> combatantPool;
+    private string charmapSignature;
 
-        // Constants.
-        protected const uint emptyID = 0xE0000000;
+    public int numMemoryCombatants;
+    public int combatantSize;
+    private int effectSize;
 
-        public CombatantMemory(
-            TinyIoCContainer container, string charmapSignature, int combatantSize, int effectSize,
-            int numMemoryCombatants = 421)
-        {
-            this.charmapSignature = charmapSignature;
-            this.combatantSize = combatantSize;
-            this.effectSize = effectSize;
-            this.numMemoryCombatants = numMemoryCombatants;
-            logger = container.Resolve<ILogger>();
-            memory = container.Resolve<FFXIVMemory>();
-            var policy = new DefaultPooledObjectPolicy<Combatant>();
-            combatantPool = new DefaultObjectPool<Combatant>(policy, maximumRetained: 2 * numMemoryCombatants);
+    protected ObjectPool<Combatant> combatantPool;
+
+    // Constants.
+    protected const uint emptyID = 0xE0000000;
+
+    public CombatantMemory(
+        TinyIoCContainer container, string charmapSignature, int combatantSize, int effectSize,
+        int numMemoryCombatants = 421) {
+        this.charmapSignature = charmapSignature;
+        this.combatantSize = combatantSize;
+        this.effectSize = effectSize;
+        this.numMemoryCombatants = numMemoryCombatants;
+        logger = container.Resolve<ILogger>();
+        memory = container.Resolve<FFXIVMemory>();
+        var policy = new DefaultPooledObjectPolicy<Combatant>();
+        combatantPool = new DefaultObjectPool<Combatant>(policy, 2 * numMemoryCombatants);
+    }
+
+    private void ResetPointers() {
+        charmapAddress = IntPtr.Zero;
+    }
+
+    private bool HasValidPointers() {
+        if (charmapAddress == IntPtr.Zero)
+            return false;
+        return true;
+    }
+
+    public bool IsValid() {
+        if (!memory.IsValid())
+            return false;
+
+        if (!HasValidPointers())
+            return false;
+
+        return true;
+    }
+
+    public void ScanPointers() {
+        ResetPointers();
+        if (!memory.IsValid())
+            return;
+
+        var fail = new List<string>();
+
+        var list = memory.SigScan(charmapSignature, 0, true);
+        if (list != null && list.Count > 0) {
+            charmapAddress = list[0];
         }
-
-        private void ResetPointers()
-        {
+        else {
             charmapAddress = IntPtr.Zero;
+            fail.Add(nameof(charmapAddress));
         }
 
-        private bool HasValidPointers()
-        {
-            if (charmapAddress == IntPtr.Zero)
-                return false;
-            return true;
+        logger.Log(LogLevel.Debug, "charmapAddress: 0x{0:X}", charmapAddress.ToInt64());
+
+        var c = GetSelfCombatant();
+        if (c != null) {
+            logger.Log(LogLevel.Debug, "MyCharacter: '{0}' (0x{1:X})", c.Name, c.ID);
         }
 
-        public bool IsValid()
-        {
-            if (!memory.IsValid())
-                return false;
-
-            if (!HasValidPointers())
-                return false;
-
-            return true;
+        if (fail.Count == 0) {
+            logger.Log(LogLevel.Info, $"Found combatant memory via {GetType().Name}.");
+            return;
         }
 
-        public void ScanPointers()
-        {
-            ResetPointers();
-            if (!memory.IsValid())
-                return;
+        logger.Log(LogLevel.Error,
+            $"Failed to find combatant memory via {GetType().Name}: {string.Join(",", fail)}.");
+    }
 
-            List<string> fail = new List<string>();
+    public abstract Version GetVersion();
 
-            List<IntPtr> list = memory.SigScan(charmapSignature, 0, true);
-            if (list != null && list.Count > 0)
-            {
-                charmapAddress = list[0];
+    public Combatant GetSelfCombatant() {
+        var address = memory.ReadIntPtr(charmapAddress);
+        if (address == IntPtr.Zero)
+            return null;
+        var source = memory.GetByteArrayPooled(address, combatantSize);
+        var ret = GetCombatantFromByteArray(source, 0, true, true);
+        ArrayPool<byte>.Shared.Return(source);
+        return ret;
+    }
+
+    public Combatant GetCombatantFromAddress(IntPtr address, uint selfCharID = 0) {
+        var c = memory.GetByteArrayPooled(address, combatantSize);
+        var ret = GetCombatantFromByteArray(c, selfCharID, false);
+        ArrayPool<byte>.Shared.Return(c);
+        return ret;
+    }
+
+    public unsafe List<Combatant> GetCombatantList() {
+        var result = new List<Combatant>();
+        var seen = new HashSet<uint>();
+        var mychar = GetSelfCombatant();
+
+        // Int64 pointer size
+        const int sz = 8;
+        var source = memory.GetByteArrayPooled(charmapAddress, sz * numMemoryCombatants);
+        if (source == null || source.Length == 0)
+            return result;
+
+        for (var i = 0; i < numMemoryCombatants; i++) {
+            IntPtr p;
+            fixed (byte* bp = source) {
+                p = new IntPtr(*(long*)&bp[i * sz]);
             }
-            else
-            {
-                charmapAddress = IntPtr.Zero;
-                fail.Add(nameof(charmapAddress));
-            }
 
-            logger.Log(LogLevel.Debug, "charmapAddress: 0x{0:X}", charmapAddress.ToInt64());
+            if (p == IntPtr.Zero)
+                continue;
 
-            Combatant c = GetSelfCombatant();
-            if (c != null)
-            {
-                logger.Log(LogLevel.Debug, "MyCharacter: '{0}' (0x{1:X})", c.Name, c.ID);
-            }
-
-            if (fail.Count == 0)
-            {
-                logger.Log(LogLevel.Info, $"Found combatant memory via {GetType().Name}.");
-                return;
-            }
-
-            logger.Log(LogLevel.Error,
-                       $"Failed to find combatant memory via {GetType().Name}: {string.Join(",", fail)}.");
-        }
-
-        public abstract Version GetVersion();
-
-        public Combatant GetSelfCombatant()
-        {
-            IntPtr address = memory.ReadIntPtr(charmapAddress);
-            if (address == IntPtr.Zero)
-                return null;
-            byte[] source = memory.GetByteArrayPooled(address, combatantSize);
-            var ret = GetCombatantFromByteArray(source, 0, true, true);
-            ArrayPool<byte>.Shared.Return(source);
-            return ret;
-        }
-
-        public Combatant GetCombatantFromAddress(IntPtr address, uint selfCharID = 0)
-        {
-            byte[] c = memory.GetByteArrayPooled(address, combatantSize);
-            var ret = GetCombatantFromByteArray(c, selfCharID, false);
+            var c = memory.GetByteArrayPooled(p, combatantSize);
+            var combatant = GetMobFromByteArray(c, mychar?.ID ?? 0);
             ArrayPool<byte>.Shared.Return(c);
-            return ret;
-        }
-
-        public unsafe List<Combatant> GetCombatantList()
-        {
-            var result = new List<Combatant>();
-            var seen = new HashSet<uint>();
-            var mychar = GetSelfCombatant();
-
-            // Int64 pointer size
-            const int sz = 8;
-            byte[] source = memory.GetByteArrayPooled(charmapAddress, sz * numMemoryCombatants);
-            if (source == null || source.Length == 0)
-                return result;
-
-            for (int i = 0; i < numMemoryCombatants; i++)
-            {
-                IntPtr p;
-                fixed (byte* bp = source) p = new IntPtr(*(Int64*)&bp[i * sz]);
-
-                if (p == IntPtr.Zero)
-                    continue;
-
-                byte[] c = memory.GetByteArrayPooled(p, combatantSize);
-                Combatant combatant = GetMobFromByteArray(c, mychar?.ID ?? 0);
-                ArrayPool<byte>.Shared.Return(c);
-                if (combatant == null)
-                    continue;
-                if (seen.Contains(combatant.ID))
-                {
-                    ReturnCombatant(combatant);
-                    continue;
-                }
-
-                // TODO: should this just be a dictionary? there are a lot of id lookups.
-                result.Add(combatant);
-                seen.Add(combatant.ID);
-            }
-            
-            ArrayPool<byte>.Shared.Return(source);
-            ReturnCombatant(mychar);
-            return result;
-        }
-
-        public void ReturnCombatant(Combatant combatant)
-        {
             if (combatant == null)
-            {
-                return;
-            }
-            
-            combatantPool.Return(combatant);
-        }
-
-        // Returns a combatant if the combatant is a mob or a PC.
-        public abstract Combatant GetMobFromByteArray(byte[] source, uint mycharID);
-
-        // Will return any kind of combatant, even if not a mob.
-        // This function always returns a combatant object, even if empty.
-        protected abstract Combatant GetCombatantFromByteArray(
-            byte[] source, uint mycharID, bool isPlayer, bool exceptEffects = false);
-
-        protected unsafe List<EffectEntry> GetEffectEntries(byte* source, ObjectType type, uint mycharID)
-        {
-            var result = new List<EffectEntry>();
-            int maxEffects = (type == ObjectType.PC) ? 30 : 60;
-            var size = EffectMemory.Size * maxEffects;
-
-            var bytes = ArrayPool<byte>.Shared.Rent(size);
-            Marshal.Copy((IntPtr)source, bytes, 0, size);
-
-            for (int i = 0; i < maxEffects; i++)
-            {
-                var effect = GetEffectEntryFromByteArray(bytes, i);
-
-                if (effect.BuffID > 0 &&
-                    effect.Stack >= 0 &&
-                    effect.Timer >= 0.0f &&
-                    effect.ActorID > 0)
-                {
-                    effect.isOwner = effect.ActorID == mycharID;
-
-                    result.Add(effect);
-                }
+                continue;
+            if (seen.Contains(combatant.ID)) {
+                ReturnCombatant(combatant);
+                continue;
             }
 
-            ArrayPool<byte>.Shared.Return(bytes);
-            return result;
+            // TODO: should this just be a dictionary? there are a lot of id lookups.
+            result.Add(combatant);
+            seen.Add(combatant.ID);
         }
 
-        protected unsafe EffectEntry GetEffectEntryFromByteArray(byte[] source, int num = 0)
-        {
-            fixed (byte* p = source)
-            {
-                EffectMemory mem = *(EffectMemory*)&p[num * EffectMemory.Size];
+        ArrayPool<byte>.Shared.Return(source);
+        ReturnCombatant(mychar);
+        return result;
+    }
 
-                EffectEntry effectEntry = new EffectEntry
-                {
-                    BuffID = mem.BuffID,
-                    Stack = mem.Stack,
-                    Timer = mem.Timer,
-                    ActorID = mem.ActorID,
-                    isOwner = false
-                };
+    public void ReturnCombatant(Combatant combatant) {
+        if (combatant == null) {
+            return;
+        }
 
-                return effectEntry;
+        combatantPool.Return(combatant);
+    }
+
+    // Returns a combatant if the combatant is a mob or a PC.
+    public abstract Combatant GetMobFromByteArray(byte[] source, uint mycharID);
+
+    // Will return any kind of combatant, even if not a mob.
+    // This function always returns a combatant object, even if empty.
+    protected abstract Combatant GetCombatantFromByteArray(
+        byte[] source, uint mycharID, bool isPlayer, bool exceptEffects = false);
+
+    protected unsafe List<EffectEntry> GetEffectEntries(byte* source, ObjectType type, uint mycharID) {
+        var result = new List<EffectEntry>();
+        var maxEffects = type == ObjectType.PC ? 30 : 60;
+        var size = EffectMemory.Size * maxEffects;
+
+        var bytes = ArrayPool<byte>.Shared.Rent(size);
+        Marshal.Copy((IntPtr)source, bytes, 0, size);
+
+        for (var i = 0; i < maxEffects; i++) {
+            var effect = GetEffectEntryFromByteArray(bytes, i);
+
+            if (effect.BuffID > 0 &&
+                effect.Stack >= 0 &&
+                effect.Timer >= 0.0f &&
+                effect.ActorID > 0) {
+                effect.isOwner = effect.ActorID == mycharID;
+
+                result.Add(effect);
             }
         }
 
-        [StructLayout(LayoutKind.Explicit, Size = Size)]
-        public struct EffectMemory
-        {
-            public const int Size = 12;
+        ArrayPool<byte>.Shared.Return(bytes);
+        return result;
+    }
 
-            [FieldOffset(0)]
-            public ushort BuffID;
+    protected unsafe EffectEntry GetEffectEntryFromByteArray(byte[] source, int num = 0) {
+        fixed (byte* p = source) {
+            var mem = *(EffectMemory*)&p[num * EffectMemory.Size];
 
-            [FieldOffset(2)]
-            public ushort Stack;
+            var effectEntry = new EffectEntry {
+                BuffID = mem.BuffID,
+                Stack = mem.Stack,
+                Timer = mem.Timer,
+                ActorID = mem.ActorID,
+                isOwner = false
+            };
 
-            [FieldOffset(4)]
-            public float Timer;
-
-            [FieldOffset(8)]
-            public uint ActorID;
+            return effectEntry;
         }
+    }
+
+    [StructLayout(LayoutKind.Explicit, Size = Size)]
+    public struct EffectMemory {
+        public const int Size = 12;
+
+        [FieldOffset(0)] public ushort BuffID;
+
+        [FieldOffset(2)] public ushort Stack;
+
+        [FieldOffset(4)] public float Timer;
+
+        [FieldOffset(8)] public uint ActorID;
     }
 }

@@ -2,8 +2,7 @@ namespace IINACT.Network;
 
 #pragma warning disable CS0649 // Field is never assigned to, and will always have its default value
 
-internal struct PacketElementHeader
-{
+internal struct PacketElementHeader {
     public readonly uint Size;
     public uint SrcEntity;
     public uint DstEntity;
@@ -11,10 +10,9 @@ internal struct PacketElementHeader
     public ushort Padding;
 }
 
-internal struct FrameHeader
-{
+internal struct FrameHeader {
     public unsafe fixed byte Prefix[16];
-    
+
     public ulong TimeValue;
     public uint TotalSize;
     public PacketProtocol Protocol;

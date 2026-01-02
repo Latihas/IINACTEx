@@ -1,10 +1,8 @@
 ﻿namespace Advanced_Combat_Tracker;
 
-public class HistoryRecord : IComparable<HistoryRecord>, IEquatable<HistoryRecord>
-{
+public class HistoryRecord : IComparable<HistoryRecord>, IEquatable<HistoryRecord> {
     public HistoryRecord(
-        int Type, DateTime StartTime, DateTime EndTime, string Label, string CharName, string FolderHint = "")
-    {
+        int Type, DateTime StartTime, DateTime EndTime, string Label, string CharName, string FolderHint = "") {
         this.Type = Type;
         this.StartTime = StartTime;
         this.EndTime = EndTime;
@@ -27,18 +25,11 @@ public class HistoryRecord : IComparable<HistoryRecord>, IEquatable<HistoryRecor
 
     public string FolderHint { get; set; }
 
-    public int CompareTo(HistoryRecord? other)
-    {
-        return StartTime.CompareTo(other!.StartTime);
-    }
+    public int CompareTo(HistoryRecord? other) => StartTime.CompareTo(other!.StartTime);
 
-    public bool Equals(HistoryRecord? other)
-    {
-        return StartTime.Equals(other!.StartTime);
-    }
+    public bool Equals(HistoryRecord? other) => StartTime.Equals(other!.StartTime);
 
-    public override bool Equals(object? obj)
-    {
+    public override bool Equals(object? obj) {
         if (obj == DBNull.Value) return false;
 
         if (obj == null) return false;
@@ -47,13 +38,12 @@ public class HistoryRecord : IComparable<HistoryRecord>, IEquatable<HistoryRecor
         return StartTime.Equals(historyRecord.StartTime);
     }
 
-    public override string ToString()
-    {
+    public override string ToString() {
         var duration = EndTime - StartTime;
         var durationString = duration.ToString(duration.TotalHours >= 1 ? @"hh\:mm\:ss" : @"mm\:ss");
         var folderHint = ActGlobals.oFormActMain.LogFilePath.Equals(FolderHint, StringComparison.OrdinalIgnoreCase)
-                             ? string.Empty
-                             : FolderHint.ToLower();
+            ? string.Empty
+            : FolderHint.ToLower();
         var labelPrefix = Type == 1 ? "     " : string.Empty;
         return $"{labelPrefix}{Label} - {StartTime:MM/dd/yyyy h:mm:ss tt} [{durationString}] {folderHint}";
     }

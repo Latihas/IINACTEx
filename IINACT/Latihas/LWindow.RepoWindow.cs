@@ -4,14 +4,12 @@ using Triggernometry.Core;
 
 namespace IINACT.Latihas;
 
-public static partial class LWindow
-{
-    public class RepoWindow() : Window($"{WindowPrefix}RepoWindow")
-    {
+public static partial class LWindow {
+    public class RepoWindow() : Window($"{WindowPrefix}RepoWindow") {
         internal static Repository? Repository;
 
-        public override void Draw()
-        {if(Repository==null)   return;
+        public override void Draw() {
+            if (Repository == null) return;
             ImGui.Text("Id: ");
             ImGui.SameLine();
             var id = Repository.Id.ToString();
@@ -24,8 +22,7 @@ public static partial class LWindow
                 Repository.Address = Address;
         }
 
-        public void Open(Repository repository)
-        {
+        public void Open(Repository repository) {
             Repository = repository;
             Plugin.Instance.RepoWindow.IsOpen = true;
         }

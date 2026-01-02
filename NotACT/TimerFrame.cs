@@ -1,3 +1,4 @@
 ﻿namespace Advanced_Combat_Tracker;
 
-internal class TimerFrame { }
+internal class TimerFrame {
+}

@@ -18,12 +18,10 @@ using Triggernometry.UI.CustomControls;
 
 namespace IINACT.Latihas;
 
-public static partial class LWindow
-{
+public static partial class LWindow {
     internal const string WindowPrefix = "IINACTEx ";
 
-    internal static void DrawTriggerSettings()
-    {
+    internal static void DrawTriggerSettings() {
         using var tab = ImRaii.TabItem("触发器");
         if (!tab) return;
         using var bar = ImRaii.TabBar("TriggerBar");
@@ -33,8 +31,7 @@ public static partial class LWindow
         DrawTriggerDebug();
     }
 
-    internal static void DrawTriggerTriggerSettings()
-    {
+    internal static void DrawTriggerTriggerSettings() {
         using var tab = ImRaii.TabItem("触发器仓库");
         if (!tab) return;
         if (ImGui.Button("刷新触发器"))
@@ -47,8 +44,7 @@ public static partial class LWindow
         UserInterface.BuildRenderTreeFromConfiguration(null, null, false);
     }
 
-    internal static void DrawTriggerVarSettings()
-    {
+    internal static void DrawTriggerVarSettings() {
         using var tab = ImRaii.TabItem("变量");
         if (!tab) return;
         using var bar = ImRaii.TabBar("变量Bar");
@@ -65,8 +61,7 @@ public static partial class LWindow
         DrawTriggerVarNamedCallbackSettings();
     }
 
-    internal static void DrawTriggerDebug()
-    {
+    internal static void DrawTriggerDebug() {
         using var tab = ImRaii.TabItem("触发器调试");
         if (!tab) return;
         using var bar = ImRaii.TabBar("触发器调试Bar");
@@ -78,14 +73,13 @@ public static partial class LWindow
         DrawTriggerDebugCommonExpr();
     }
 
-    internal static void DrawTriggerDebugLog()
-    {
+    internal static void DrawTriggerDebugLog() {
         using var tab = ImRaii.TabItem("日志");
         if (!tab) return;
         var DebugLevel = (int)RealPlugin.Instance.cfg.DebugLevel;
         if (ImGui.Combo("Trn输出调试日志等级", ref DebugLevel,
-                        Enum.GetValues<RealPlugin.DebugLevelEnum>()
-                            .Select(i => i.ToString()).ToList()))
+                Enum.GetValues<RealPlugin.DebugLevelEnum>()
+                    .Select(i => i.ToString()).ToList()))
             RealPlugin.Instance.cfg.DebugLevel = (RealPlugin.DebugLevelEnum)DebugLevel;
         var LogFlattenMaxCount = RealPlugin.Instance.cfg.LogFlattenMaxCount.ToString();
         if (ImGui.InputText("最大日志队列数量", ref LogFlattenMaxCount))
@@ -97,16 +91,13 @@ public static partial class LWindow
         if (ImGui.Button("清空日志队列")) RealPlugin.Instance.ClearLog();
     }
 
-    internal static void DrawTriggerDebugInternalTest()
-    {
+    internal static void DrawTriggerDebugInternalTest() {
         using var tab = ImRaii.TabItem("内置测试表达式");
         if (!tab) return;
         ImGui.Text("内置测试表达式");
-        foreach (var t in Test1.Test().Concat(Test2.Test()))
-        {
+        foreach (var t in Test1.Test().Concat(Test2.Test())) {
             var ts = t.ToString();
-            if (t.IsCorrect is null or false)
-            {
+            if (t.IsCorrect is null or false) {
                 if (ImGui.Button(ts))
                     ImGui.SetClipboardText(ts);
             }
@@ -116,16 +107,15 @@ public static partial class LWindow
 
     private static string Sbe = "", Sb = "";
 
-    internal static void DrawTriggerDebugEvalTest()
-    {
+    internal static void DrawTriggerDebugEvalTest() {
         using var tab = ImRaii.TabItem("评估");
         if (!tab) return;
         ImGui.SetNextItemWidth(-1);
         ImGui.InputTextMultiline("代码", ref TestCode, 1145141);
         if (ImGui.Button("编译代码"))
             Sbe = CSharpScriptCompiler.CompileScript(TestCode, true)
-                      ? "成功"
-                      : "失败，详情见/xllog";
+                ? "成功"
+                : "失败，详情见/xllog";
         ImGui.SameLine();
         if (ImGui.Button("编译并运行代码(无反馈)"))
             RealPlugin._instance.scripting.Evaluate(TestCode, null, null);
@@ -139,8 +129,7 @@ public static partial class LWindow
         if (!string.IsNullOrEmpty(Sbe)) ImGui.Text(Sbe);
     }
 
-    internal static void DrawTriggerDebugCommonExpr()
-    {
+    internal static void DrawTriggerDebugCommonExpr() {
         using var tab = ImRaii.TabItem("常用表达式");
         if (!tab) return;
         ImGui.Text("${_systemtime} = " + TestContext.ExpandVariables(null, null, false, "${_systemtime}"));
@@ -163,28 +152,25 @@ public static partial class LWindow
         if (targ == null)
             if (Plugin.ObjectTable.LocalPlayer != null)
                 targ = Plugin.ObjectTable.LocalPlayer;
-        if (targ != null)
-        {
+        if (targ != null) {
             ImGui.Text("Target.Name: " + targ.Name);
             ImGui.Text("Target.Address: 0x" + targ.Address.ToString("X"));
             ImGui.Text("Target.BaseId: 0x" + targ.BaseId.ToString("X"));
             ImGui.Text("Target.EntityId: 0x" + targ.EntityId.ToString("X"));
             ImGui.Text("Target.GameObjectId: 0x" + targ.GameObjectId.ToString("X"));
             ImGui.Text("Target.OwnerId: 0x" + targ.OwnerId.ToString("X"));
-            ImGui.Text($"Target.Position: ({targ.Position.X}, {targ.Position.Y}, {targ.Position.Z})" );
+            ImGui.Text($"Target.Position: ({targ.Position.X}, {targ.Position.Y}, {targ.Position.Z})");
         }
         ImGui.Separator();
         ImGui.Text("...蓝笔了不写了");
     }
 
-    internal static void DrawTriggerDebugTrigger()
-    {
+    internal static void DrawTriggerDebugTrigger() {
         using var tab = ImRaii.TabItem("触发器验证");
         if (!tab) return;
         ImGui.InputText("触发器Id", ref TestTriggerId);
         ImGui.SameLine();
-        if (ImGui.Button("验证触发器"))
-        {
+        if (ImGui.Button("验证触发器")) {
             Sb = $"总量: {RealPlugin.Instance.Triggers.Count}";
             foreach (var t in RealPlugin.Instance.Triggers)
                 if (t.Id.ToString() == TestTriggerId)
@@ -204,46 +190,38 @@ public static partial class LWindow
         }
     }
 
-    internal static void DrawSettingsIINACT()
-    {
+    internal static void DrawSettingsIINACT() {
         using var tab = ImRaii.TabItem("IINACT设置");
         if (!tab) return;
         var ShowWindowOnInit = Plugin.Configuration.ShowWindowOnInit;
-        if (ImGui.Checkbox("启动时显示界面", ref ShowWindowOnInit))
-        {
+        if (ImGui.Checkbox("启动时显示界面", ref ShowWindowOnInit)) {
             Plugin.Configuration.ShowWindowOnInit = ShowWindowOnInit;
             Plugin.Configuration.Save();
         }
         var ShowOverlayOnInit = Plugin.Configuration.ShowOverlayOnInit;
-        if (ImGui.Checkbox("启动时显示Overlay", ref ShowOverlayOnInit))
-        {
+        if (ImGui.Checkbox("启动时显示Overlay", ref ShowOverlayOnInit)) {
             Plugin.Configuration.ShowOverlayOnInit = ShowOverlayOnInit;
             Plugin.Configuration.Save();
         }
         var TtsOnInit = Plugin.Configuration.TtsOnInit;
-        if (ImGui.Checkbox("启动时TTS提示加载完成", ref TtsOnInit))
-        {
+        if (ImGui.Checkbox("启动时TTS提示加载完成", ref TtsOnInit)) {
             Plugin.Configuration.TtsOnInit = TtsOnInit;
             Plugin.Configuration.Save();
         }
     }
 
-    internal static void DrawSettingsTrn()
-    {
+    internal static void DrawSettingsTrn() {
         using var tab = ImRaii.TabItem("Trn设置");
         if (!tab) return;
         var EnableModuleBase = RealPlugin.Instance.cfg.EnableModuleBase;
         if (ImGui.Checkbox("启用ModuleBase(极有可能炸游戏的功能，如绘图等。尤其是VfxModule，用于管理绘图极其容易爆炸，禁用掉可以大幅提升稳定性)", ref EnableModuleBase))
             RealPlugin.Instance.cfg.EnableModuleBase = EnableModuleBase;
-        if (EnableModuleBase)
-        {
+        if (EnableModuleBase) {
             var modules = BridgeNamazu.Modules.Concat(BridgeNamazu.SideloadModules).Select(i => i.Key.Name.ToString()).ToArray();
-            foreach (var name in modules)
-            {
+            foreach (var name in modules) {
                 ImGui.Indent();
                 var cChecked = !RealPlugin.Instance.cfg.PostnamazuModuleDisabled.Contains(name);
-                if (ImGui.Checkbox(name, ref cChecked))
-                {
+                if (ImGui.Checkbox(name, ref cChecked)) {
                     if (cChecked) RealPlugin.Instance.cfg.PostnamazuModuleDisabled.Remove(name);
                     else RealPlugin.Instance.cfg.PostnamazuModuleDisabled.Add(name);
                 }
@@ -252,8 +230,7 @@ public static partial class LWindow
         }
     }
 
-    internal static void DrawSettingsPostnmz()
-    {
+    internal static void DrawSettingsPostnmz() {
         using var tab = ImRaii.TabItem("鲇鱼精设置");
         if (!tab) return;
         var TextPort = Plugin.Instance.PostNamazuPlugin.PluginUi.TextPort.Text;
@@ -273,11 +250,9 @@ public static partial class LWindow
             Plugin.Instance.PostNamazuPlugin.PluginUi.CheckAutoStart.Checked = PostNamazuAutoStart;
         ImGui.Text("启用功能");
         var iter = 1;
-        foreach (var c in Plugin.Instance.PostNamazuPlugin.PluginUi.flowLayoutActions.Controls.OfType<CheckBox>())
-        {
+        foreach (var c in Plugin.Instance.PostNamazuPlugin.PluginUi.flowLayoutActions.Controls.OfType<CheckBox>()) {
             var cChecked = c.Checked;
-            if (ImGui.Checkbox(c.Text, ref cChecked))
-            {
+            if (ImGui.Checkbox(c.Text, ref cChecked)) {
                 c.Checked = cChecked;
                 Plugin.Instance.PostNamazuPlugin.PluginUi.ActionEnabled[c.Text] = cChecked;
             }
@@ -285,23 +260,19 @@ public static partial class LWindow
         }
         ImGui.Separator();
         var items = Plugin.Instance.PostNamazuPlugin.PluginUi.lstMessages.Items;
-        for (var i = 0; i < items.Count; i++)
-        {
+        for (var i = 0; i < items.Count; i++) {
             var item = items[i];
             var itemId = $"## copyItem_{i}";
-            if (ImGui.Selectable($"{item}{itemId}"))
-            {
+            if (ImGui.Selectable($"{item}{itemId}")) {
                 ImGui.SetClipboardText(item.ToString());
-                Plugin.NotificationManager.AddNotification(new Notification
-                {
+                Plugin.NotificationManager.AddNotification(new Notification {
                     Content = "已复制"
                 });
             }
         }
     }
 
-    internal static void DrawSettings()
-    {
+    internal static void DrawSettings() {
         using var tab = ImRaii.TabItem("设置");
         if (!tab) return;
         using var bar = ImRaii.TabBar("设置Bar");
@@ -313,8 +284,7 @@ public static partial class LWindow
         DrawSettingsOpCodes();
     }
 
-    internal static void DrawSettingsScripts()
-    {
+    internal static void DrawSettingsScripts() {
         using var tab = ImRaii.TabItem("脚本设置");
         if (!tab) return;
         ImGui.Text("脚本一览(待开发)");
@@ -323,13 +293,11 @@ public static partial class LWindow
         if (ImGui.Button("打开脚本文件夹")) Start(Plugin.Instance.PluginActScriptDirectory);
         //TODO 检测重复 GetFileNameWithoutExtension
         NewTable(["名称", "状态", "操作"], Directory.GetFiles(Plugin.Instance.PluginActScriptDirectory, "*.cs", SearchOption.TopDirectoryOnly)
-                                              .Concat(Directory.GetFiles(Plugin.Instance.PluginActScriptDirectory, "*.dll", SearchOption.TopDirectoryOnly))
-                                              .Select(Path.GetFileName).Cast<string>().ToArray(), [
+            .Concat(Directory.GetFiles(Plugin.Instance.PluginActScriptDirectory, "*.dll", SearchOption.TopDirectoryOnly))
+            .Select(Path.GetFileName).Cast<string>().ToArray(), [
             i => ImGui.Text(i),
-            i =>
-            {
-                if (i.StartsWith('_'))
-                {
+            i => {
+                if (i.StartsWith('_')) {
                     ImGui.Text("内置插件");
                     return;
                 }
@@ -337,20 +305,17 @@ public static partial class LWindow
                 if (plugins.Count == 0) ImGui.Text("未载入");
                 else ImGui.Text(ActGlobals.oFormActMain.ActPlugins.First(x => x.pluginFileName == i).cbEnabled.Enabled ? "已启用" : "已禁用");
             },
-            i =>
-            {
+            i => {
                 if (i.StartsWith('_')) return;
                 var plugins = ActGlobals.oFormActMain.ActPlugins.Select(x => x.pluginFileName).Where(x => x == i).ToList();
-                if (plugins.Count == 0)
-                {
+                if (plugins.Count == 0) {
                     if (ImGui.Button($"载入##{i}"))
                         if (i.EndsWith(".cs"))
                             Plugin.LoadPScript(i);
                         else
                             Plugin.LoadIActPluginV1(i);
                 }
-                else
-                {
+                else {
                     var plugin = ActGlobals.oFormActMain.ActPlugins.First(x => x.pluginFileName == i);
                     if (ImGui.Button($"禁用##{i}")) Plugin.DeInitIActPluginV1(plugin);
                     ImGui.SameLine();
@@ -359,8 +324,7 @@ public static partial class LWindow
         ]);
     }
 
-    internal static void DrawSettingsOpCodes()
-    {
+    internal static void DrawSettingsOpCodes() {
         using var tab = ImRaii.TabItem("OpCodes设置");
         if (!tab) return;
         ImGui.PushStyleColor(ImGuiCol.Text, Color.LRed);
@@ -374,20 +338,17 @@ public static partial class LWindow
         ImGui.PushStyleColor(ImGuiCol.Text, Color.LPurple);
         ImGui.Text("当前状态:");
         ImGui.PopStyleColor(1);
-        if (Plugin.Instance.opcodestxtReplaced)
-        {
+        if (Plugin.Instance.opcodestxtReplaced) {
             ImGui.PushStyleColor(ImGuiCol.Text, Color.LRed);
             ImGui.Text("opcodes.txt已替换");
             ImGui.PopStyleColor(1);
             ImGui.SameLine();
-            if (Plugin.Instance.opcodestxtCanReplace)
-            {
+            if (Plugin.Instance.opcodestxtCanReplace) {
                 if (ImGui.Button("删除opcodes.txt")) File.Delete(Plugin.Instance.opcodestxtPath);
             }
             else ImGui.Text("(文件缺失，将在下次加载恢复内置)");
         }
-        else if (Plugin.Instance.opcodestxtCanReplace)
-        {
+        else if (Plugin.Instance.opcodestxtCanReplace) {
             ImGui.PushStyleColor(ImGuiCol.Text, Color.LYellow);
             ImGui.Text("opcodes.txt将在下次加载插件时替换");
             ImGui.PopStyleColor(1);
@@ -395,20 +356,17 @@ public static partial class LWindow
             if (ImGui.Button("删除opcodes.txt")) File.Delete(Plugin.Instance.opcodestxtPath);
         }
         else ImGui.Text("opcodes.txt为内置版本");
-        if (Plugin.Instance.opcodesjsoncReplaced)
-        {
+        if (Plugin.Instance.opcodesjsoncReplaced) {
             ImGui.PushStyleColor(ImGuiCol.Text, Color.LRed);
             ImGui.Text("opcodes.jsonc已替换");
             ImGui.PopStyleColor(1);
             ImGui.SameLine();
-            if (Plugin.Instance.opcodesjsoncCanReplace)
-            {
+            if (Plugin.Instance.opcodesjsoncCanReplace) {
                 if (ImGui.Button("删除opcodes.jsonc")) File.Delete(Plugin.Instance.opcodesjsoncPath);
             }
             else ImGui.Text("(文件缺失，将在下次加载恢复内置)");
         }
-        else if (Plugin.Instance.opcodesjsoncCanReplace)
-        {
+        else if (Plugin.Instance.opcodesjsoncCanReplace) {
             ImGui.PushStyleColor(ImGuiCol.Text, Color.LYellow);
             ImGui.Text("opcodes.jsonc将在下次加载插件时替换");
             ImGui.PopStyleColor(1);
@@ -418,33 +376,30 @@ public static partial class LWindow
         else ImGui.Text("opcodes.jsonc为内置版本");
         ImGui.Separator();
         ImGui.Text("这里可以在线获取两个文件");
-        if (!FileDownloaderOpcodes.ContainsKey("[CN][Diemoe]opcodes.txt"))
-        {
-            if (ImGui.Button("[CN][Diemoe]opcodes.txt"))
-            {
+        if (!FileDownloaderOpcodes.ContainsKey("[CN][Diemoe]opcodes.txt")) {
+            if (ImGui.Button("[CN][Diemoe]opcodes.txt")) {
                 var dp = Path.Combine(Plugin.Instance.PluginAssemblyDirectory, "chinese.zip");
-                FileDownloaderOpcodes["[CN][Diemoe]opcodes.txt"] = new FileDownloader("https://cdn.diemoe.net/files/ACT.DieMoe/Packs/FFXIV_ACT_Plugin/chinese.zip", dp, () =>
-                {
+                FileDownloaderOpcodes["[CN][Diemoe]opcodes.txt"] = new FileDownloader("https://cdn.diemoe.net/files/ACT.DieMoe/Packs/FFXIV_ACT_Plugin/chinese.zip", dp, () => {
                     FileDownloaderOpcodes.Remove("[CN][Diemoe]opcodes.txt");
-                    try
-                    {
+                    try {
                         var exp = Path.Combine(Plugin.Instance.PluginAssemblyDirectory, "chinese");
                         Plugin.UnzipWithoutPassword(dp, exp, true);
-                        var alc = new AssemblyLoadContext(null, isCollectible: true);
+                        var alc = new AssemblyLoadContext(null, true);
                         var dllAssembly = alc.LoadFromAssemblyPath(Path.Combine(exp, "FFXIV_ACT_Plugin.dll"));
                         var dllp = Path.Combine(exp, "machina.ffxiv.dll");
                         using (var stream = dllAssembly.GetManifestResourceStream("costura.machina.ffxiv.dll.compressed")!)
                         using (var destination = new FileStream(dllp, FileMode.Create))
-                        using (var deflateStream = new DeflateStream(stream, CompressionMode.Decompress))
+                        using (var deflateStream = new DeflateStream(stream, CompressionMode.Decompress)) {
                             deflateStream.CopyTo(destination);
+                        }
                         dllAssembly = alc.LoadFromAssemblyPath(dllp);
                         var outputPath = Path.Combine(Plugin.Instance.PluginAssemblyDirectory, "opcodes.txt");
                         using (var resourceStream2 = dllAssembly.GetManifestResourceStream("Machina.FFXIV.Headers.Opcodes.Chinese.txt")!)
-                        using (var fileStream2 = new FileStream(outputPath, FileMode.Create, FileAccess.Write))
+                        using (var fileStream2 = new FileStream(outputPath, FileMode.Create, FileAccess.Write)) {
                             resourceStream2.CopyTo(fileStream2);
+                        }
                     }
-                    catch (Exception e)
-                    {
+                    catch (Exception e) {
                         Plugin.Log.Error(e.ToString());
                     }
                 });
@@ -453,26 +408,18 @@ public static partial class LWindow
         }
         else ImGui.Text("处理中");
         ImGui.SameLine();
-        if (!FileDownloaderOpcodes.ContainsKey("[CN][Karashiiro]扩展的opcodes.txt"))
-        {
-            if (ImGui.Button("[CN][Karashiiro]扩展的opcodes.txt"))
-            {
+        if (!FileDownloaderOpcodes.ContainsKey("[CN][Karashiiro]扩展的opcodes.txt")) {
+            if (ImGui.Button("[CN][Karashiiro]扩展的opcodes.txt")) {
                 var dp = Path.Combine(Plugin.Instance.PluginAssemblyDirectory, "opcodes.txt.json");
-                FileDownloaderOpcodes["[CN][Karashiiro]扩展的opcodes.txt"] = new FileDownloader("https://cdn.jsdelivr.net/gh/karashiiro/FFXIVOpcodes@latest/opcodes.min.json", dp, () =>
-                {
+                FileDownloaderOpcodes["[CN][Karashiiro]扩展的opcodes.txt"] = new FileDownloader("https://cdn.jsdelivr.net/gh/karashiiro/FFXIVOpcodes@latest/opcodes.min.json", dp, () => {
                     FileDownloaderOpcodes.Remove("[CN][Karashiiro]扩展的opcodes.txt");
-                    try
-                    {
+                    try {
                         var sb = new StringBuilder();
-                        foreach (var a in JsonNode.Parse(File.ReadAllText(dp))!.AsArray())
-                        {
-                            if (a!["region"]!.ToString() == "CN")
-                            {
+                        foreach (var a in JsonNode.Parse(File.ReadAllText(dp))!.AsArray()) {
+                            if (a!["region"]!.ToString() == "CN") {
                                 var jo = a["lists"]!.AsObject();
-                                foreach (var p in jo)
-                                {
-                                    foreach (var p2 in p.Value!.AsArray())
-                                    {
+                                foreach (var p in jo) {
+                                    foreach (var p2 in p.Value!.AsArray()) {
                                         var o = p2!.AsObject();
                                         sb.Append(o["name"]).Append('|').Append(int.Parse(o["opcode"]!.ToString()).ToString("X")).Append(Environment.NewLine);
                                     }
@@ -481,8 +428,7 @@ public static partial class LWindow
                         }
                         File.WriteAllText(Path.Combine(Plugin.Instance.PluginAssemblyDirectory, "opcodes.txt"), sb.ToString());
                     }
-                    catch (Exception e)
-                    {
+                    catch (Exception e) {
                         Plugin.Log.Error(e.ToString());
                     }
                 });
@@ -490,31 +436,27 @@ public static partial class LWindow
             }
         }
         else ImGui.Text("处理中");
-        if (!FileDownloaderOpcodes.ContainsKey("[Diemoe]opcodes.jsonc"))
-        {
-            if (ImGui.Button("[Diemoe]opcodes.jsonc"))
-            {
+        if (!FileDownloaderOpcodes.ContainsKey("[Diemoe]opcodes.jsonc")) {
+            if (ImGui.Button("[Diemoe]opcodes.jsonc")) {
                 FileDownloaderOpcodes["[Diemoe]opcodes.jsonc"] = new FileDownloader("https://assets.diemoe.net/OverlayPlugin/OverlayPlugin.Core/resources/opcodes.jsonc", Path.Combine(Plugin.Instance.PluginAssemblyDirectory, "opcodes.jsonc"),
-                                                                                        () =>FileDownloaderOpcodes.Remove("[Diemoe]opcodes.jsonc"));
+                    () => FileDownloaderOpcodes.Remove("[Diemoe]opcodes.jsonc"));
                 _ = FileDownloaderOpcodes["[Diemoe]opcodes.jsonc"].DownloadFileAsync();
             }
         }
         else ImGui.Text("处理中");
         ImGui.SameLine();
-        if (!FileDownloaderOpcodes.ContainsKey("[OverlayPlugin]opcodes.jsonc"))
-        {
-            if (ImGui.Button("[OverlayPlugin]opcodes.jsonc"))
-            {
-                FileDownloaderOpcodes["[OverlayPlugin]opcodes.jsonc"] = new FileDownloader("https://raw.githubusercontent.com/OverlayPlugin/OverlayPlugin/main/OverlayPlugin.Core/resources/opcodes.jsonc", Path.Combine(Plugin.Instance.PluginAssemblyDirectory, "opcodes.jsonc"),
-                                                                                        () =>FileDownloaderOpcodes.Remove("[OverlayPlugin]opcodes.jsonc"));
+        if (!FileDownloaderOpcodes.ContainsKey("[OverlayPlugin]opcodes.jsonc")) {
+            if (ImGui.Button("[OverlayPlugin]opcodes.jsonc")) {
+                FileDownloaderOpcodes["[OverlayPlugin]opcodes.jsonc"] = new FileDownloader("https://raw.githubusercontent.com/OverlayPlugin/OverlayPlugin/main/OverlayPlugin.Core/resources/opcodes.jsonc",
+                    Path.Combine(Plugin.Instance.PluginAssemblyDirectory, "opcodes.jsonc"),
+                    () => FileDownloaderOpcodes.Remove("[OverlayPlugin]opcodes.jsonc"));
                 _ = FileDownloaderOpcodes["[OverlayPlugin]opcodes.jsonc"].DownloadFileAsync();
             }
         }
         else ImGui.Text("处理中");
         ImGui.Separator();
         if (Plugin.Instance.opcodestxtDiff.Length == 0) ImGui.Text("opcodes.txt无差异");
-        else
-        {
+        else {
             ImGui.Text($"opcodes.txt有差异({Plugin.Instance.opcodestxtDiff.Length}个)");
             NewTable(["项目", "原始", "替换"], Plugin.Instance.opcodestxtDiff, [
                 i => ImGui.Text(i.Item1),
@@ -534,24 +476,21 @@ public static partial class LWindow
             i => ImGui.Text(i.Value.LastChanger)
         ]);
 
-    internal static void DrawTriggerVarScalerSettings()
-    {
+    internal static void DrawTriggerVarScalerSettings() {
         using var tab = ImRaii.TabItem("临时标量");
         if (!tab) return;
         TScaler(RealPlugin.Instance.sessionvars.Scalar);
         DrawTriggerVarESettings(false, TriggerVarType.Scalar);
     }
 
-    internal static void DrawTriggerVarPScalerSettings()
-    {
+    internal static void DrawTriggerVarPScalerSettings() {
         using var tab = ImRaii.TabItem("永久标量");
         if (!tab) return;
         TScaler(RealPlugin.Instance.cfg.PersistentVariables.Scalar);
         DrawTriggerVarESettings(true, TriggerVarType.Scalar);
     }
 
-    private enum TriggerVarType
-    {
+    private enum TriggerVarType {
         Scalar,
         List,
         Table,
@@ -561,8 +500,7 @@ public static partial class LWindow
     // private static string Ename = "";
     // private static string Eexpr = "";
 
-    private static void DrawTriggerVarESettings(bool persist, TriggerVarType type)
-    {
+    private static void DrawTriggerVarESettings(bool persist, TriggerVarType type) {
         //     ImGui.Separator();
         //     ImGui.InputText("name", ref Ename);
         //     ImGui.InputText("expr", ref Eexpr);
@@ -589,16 +527,14 @@ public static partial class LWindow
             i => ImGui.Text(i.Value.LastChanger)
         ]);
 
-    internal static void DrawTriggerVarListSettings()
-    {
+    internal static void DrawTriggerVarListSettings() {
         using var tab = ImRaii.TabItem("临时列表");
         if (!tab) return;
         TList(RealPlugin.Instance.sessionvars.List);
         DrawTriggerVarESettings(false, TriggerVarType.List);
     }
 
-    internal static void DrawTriggerVarPListSettings()
-    {
+    internal static void DrawTriggerVarPListSettings() {
         using var tab = ImRaii.TabItem("永久列表");
         if (!tab) return;
         TList(RealPlugin.Instance.cfg.PersistentVariables.List);
@@ -610,8 +546,7 @@ public static partial class LWindow
             i => ImGui.Text(i.Key),
             i => ImGui.Text(i.Value.Width.ToString()),
             i => ImGui.Text(i.Value.Height.ToString()),
-            i =>
-            {
+            i => {
                 List<string> sb = [];
                 foreach (var item in i.Value.Rows)
                     sb.Add($"({string.Join(',', item.Values)})");
@@ -621,16 +556,14 @@ public static partial class LWindow
             i => ImGui.Text(i.Value.LastChanger)
         ]);
 
-    internal static void DrawTriggerVarTableSettings()
-    {
+    internal static void DrawTriggerVarTableSettings() {
         using var tab = ImRaii.TabItem("临时表格");
         if (!tab) return;
         TTable(RealPlugin.Instance.sessionvars.Table);
         DrawTriggerVarESettings(false, TriggerVarType.Table);
     }
 
-    internal static void DrawTriggerVarPTableSettings()
-    {
+    internal static void DrawTriggerVarPTableSettings() {
         using var tab = ImRaii.TabItem("永久表格");
         if (!tab) return;
         TTable(RealPlugin.Instance.cfg.PersistentVariables.Table);
@@ -641,8 +574,7 @@ public static partial class LWindow
         NewTable(["名称", "长度", "值", "时间", "源"], data.ToArray(), [
             i => ImGui.Text(i.Key),
             i => ImGui.Text(i.Value.Size.ToString()),
-            i =>
-            {
+            i => {
                 List<string> sb = [];
                 foreach (var item in i.Value.Values)
                     sb.Add($"({item.Key}:{item.Value})");
@@ -652,24 +584,21 @@ public static partial class LWindow
             i => ImGui.Text(i.Value.LastChanger)
         ]);
 
-    internal static void DrawTriggerVarDictSettings()
-    {
+    internal static void DrawTriggerVarDictSettings() {
         using var tab = ImRaii.TabItem("临时字典");
         if (!tab) return;
         TDict(RealPlugin.Instance.sessionvars.Dict);
         DrawTriggerVarESettings(false, TriggerVarType.Dict);
     }
 
-    internal static void DrawTriggerVarPDictSettings()
-    {
+    internal static void DrawTriggerVarPDictSettings() {
         using var tab = ImRaii.TabItem("永久字典");
         if (!tab) return;
         TDict(RealPlugin.Instance.cfg.PersistentVariables.Dict);
         DrawTriggerVarESettings(true, TriggerVarType.Dict);
     }
 
-    internal static void DrawTriggerVarNamedCallbackSettings()
-    {
+    internal static void DrawTriggerVarNamedCallbackSettings() {
         using var tab = ImRaii.TabItem("具名回调");
         if (!tab) return;
         List<RealPlugin.NamedCallback> nCs = [];
@@ -684,8 +613,7 @@ public static partial class LWindow
         ]);
     }
 
-    internal static void DrawTriggerVarTextAuraSettings()
-    {
+    internal static void DrawTriggerVarTextAuraSettings() {
         using var tab = ImRaii.TabItem("文本悬浮窗");
         if (!tab) return;
         NewTable(["悬浮窗名称", "名称", "文本"], RealPlugin._instance.textauras.ToArray(), [
@@ -695,29 +623,23 @@ public static partial class LWindow
         ]);
     }
 
-    internal static void Start(string cmd) => Process.Start(new ProcessStartInfo(cmd)
-    {
+    internal static void Start(string cmd) => Process.Start(new ProcessStartInfo(cmd) {
         UseShellExecute = true
     });
 
-    private static void NewTable<T>(string[] header, T[]? data, Action<T>[] acts, Func<T, Vector4>? setColor = null)
-    {
+    private static void NewTable<T>(string[] header, T[]? data, Action<T>[] acts, Func<T, Vector4>? setColor = null) {
         if (data is null || data.Length == 0) return;
-        if (ImGui.BeginTable("Table", acts.Length, ImGuiTableFlag))
-        {
+        if (ImGui.BeginTable("Table", acts.Length, ImGuiTableFlag)) {
             foreach (var item in header) ImGui.TableSetupColumn(item, ImGuiTableColumnFlags.WidthStretch);
             ImGui.TableHeadersRow();
-            foreach (var res in data)
-            {
+            foreach (var res in data) {
                 ImGui.TableNextRow();
-                if (setColor != null)
-                {
+                if (setColor != null) {
                     var color = setColor(res);
                     ImGui.PushStyleColor(ImGuiCol.TableRowBg, color);
                     ImGui.PushStyleColor(ImGuiCol.TableRowBgAlt, color);
                 }
-                for (var i = 0; i < acts.Length; i++)
-                {
+                for (var i = 0; i < acts.Length; i++) {
                     ImGui.TableSetColumnIndex(i);
                     acts[i](res);
                 }

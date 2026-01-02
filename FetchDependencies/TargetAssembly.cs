@@ -2,16 +2,16 @@
 
 namespace FetchDependencies;
 
-internal class TargetAssembly : IDisposable
-{
-    public TargetAssembly(string assemblyPath)
-    {
+internal class TargetAssembly : IDisposable {
+    public TargetAssembly(string assemblyPath) {
         AssemblyPath = assemblyPath;
 
         var resolver = new DefaultAssemblyResolver();
         resolver.AddSearchDirectory(Path.GetDirectoryName(assemblyPath));
         Assembly = AssemblyDefinition.ReadAssembly(AssemblyPath,
-                                                   new ReaderParameters { AssemblyResolver = resolver });
+            new ReaderParameters {
+                AssemblyResolver = resolver
+            });
     }
 
     public AssemblyDefinition Assembly { get; }
@@ -19,30 +19,25 @@ internal class TargetAssembly : IDisposable
 
     public Version Version => Assembly.MainModule.Assembly.Name.Version;
 
-    public void Dispose()
-    {
+    public void Dispose() {
         Assembly.Dispose();
     }
 
-    public MethodDefinition GetMethod(string name)
-    {
+    public MethodDefinition GetMethod(string name) {
         return GetAllTypes()
-               .Where(o => o.IsClass)
-               .SelectMany(type => type.Methods)
-               .First(o => o.FullName.Contains(name));
+            .Where(o => o.IsClass)
+            .SelectMany(type => type.Methods)
+            .First(o => o.FullName.Contains(name));
     }
 
-    public void MakePublic()
-    {
-        static bool CheckCompilerGeneratedAttribute(ICustomAttributeProvider member)
-        {
+    public void MakePublic() {
+        static bool CheckCompilerGeneratedAttribute(ICustomAttributeProvider member) {
             return member.CustomAttributes.Any(x =>
-                                                   x.AttributeType.FullName ==
-                                                   "System.Runtime.CompilerServices.CompilerGeneratedAttribute");
+                x.AttributeType.FullName ==
+                "System.Runtime.CompilerServices.CompilerGeneratedAttribute");
         }
 
-        foreach (var type in GetAllTypes())
-        {
+        foreach (var type in GetAllTypes()) {
             if (CheckCompilerGeneratedAttribute(type))
                 continue;
 
@@ -52,63 +47,57 @@ internal class TargetAssembly : IDisposable
                 type.IsPublic = true;
 
             foreach (var method in type.Methods.Where(method =>
-                                                          !CheckCompilerGeneratedAttribute(method) &&
-                                                          !method.IsCompilerControlled))
+                         !CheckCompilerGeneratedAttribute(method) &&
+                         !method.IsCompilerControlled))
                 method.IsPublic = true;
 
             foreach (var field in type.Fields.Where(field =>
-                                                        !CheckCompilerGeneratedAttribute(field) &&
-                                                        !field.IsCompilerControlled))
+                         !CheckCompilerGeneratedAttribute(field) &&
+                         !field.IsCompilerControlled))
                 field.IsPublic = true;
         }
     }
 
-    public void RemoveStrongNaming()
-    {
+    public void RemoveStrongNaming() {
         var name = Assembly.Name;
         name.HasPublicKey = false;
-        name.PublicKey = Array.Empty<byte>();
+        name.PublicKey = [];
 
-        foreach (var module in Assembly.Modules)
-        {
+        foreach (var module in Assembly.Modules) {
             module.Attributes &= ~ModuleAttributes.StrongNameSigned;
-            var coreLibs = new[] { "netstandard", "mscorlib", "System" };
-            foreach (var reference in module.AssemblyReferences)
-            {
+            var coreLibs = new[] {
+                "netstandard", "mscorlib", "System"
+            };
+            foreach (var reference in module.AssemblyReferences) {
                 if (coreLibs.Any(coreLib => reference.Name == coreLib))
                     continue;
                 reference.HasPublicKey = false;
-                reference.PublicKey = Array.Empty<byte>();
+                reference.PublicKey = [];
             }
         }
     }
 
-    private IEnumerable<TypeDefinition> GetAllTypes()
-    {
+    private IEnumerable<TypeDefinition> GetAllTypes() {
         var types = new Queue<TypeDefinition>(Assembly.MainModule.Types);
 
-        while (types.Count > 0)
-        {
+        while (types.Count > 0) {
             var type = types.Dequeue();
             yield return type;
             foreach (var nestedType in type.NestedTypes)
                 types.Enqueue(nestedType);
         }
     }
-    
-    public bool ApiVersionMatches()
-    {
+
+    public bool ApiVersionMatches() {
         foreach (var type in Assembly.MainModule.Types)
             if (type.Namespace == ApiVersion.NamespaceIdentifier && type.Name == "WasHere")
                 return true;
-        
+
         return false;
     }
 
-    public void WriteOut()
-    {
-        if (!ApiVersionMatches())
-        {
+    public void WriteOut() {
+        if (!ApiVersionMatches()) {
             // Log.WriteLine($"[PatchWasHere] Adding type {ApiVersion.NamespaceIdentifier}.WasHere");
             var wasHere = new TypeDefinition(ApiVersion.NamespaceIdentifier, "WasHere", TypeAttributes.Public | TypeAttributes.Class) {
                 BaseType = Assembly.MainModule.TypeSystem.Object

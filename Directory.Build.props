@@ -1,21 +1,21 @@
 ﻿<Project>
-    <PropertyGroup>
-        <NoWarn>NU1701;CS8618;CS8765;CS8625;EnableGenerateDocumentationFile;CS0659;CA2211</NoWarn>
-        <!--NU1701是framework与core的版本不匹配警告，CS8618是退出构造函数时null!字段警告，CS8765、CS8625是无法将null字面量转换为非null的引用类型-->
-        <!--CS0659重写Object.Equals(object o) 但不重写 Object.GetHashCode()-->
-        <!--CA2211: 非常量字段应当不可见-->
-        <TargetFramework>net10.0-windows8.0</TargetFramework>
-        <RuntimeIdentifier>win-x64</RuntimeIdentifier>
-        <SatelliteResourceLanguages>None</SatelliteResourceLanguages>
-        <PlatformTarget>x64</PlatformTarget>
-        <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
-        <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
-        <LangVersion>latest</LangVersion>
-        <GenerateSatelliteAssembliesForCore>false</GenerateSatelliteAssembliesForCore>
-        <Optimize>true</Optimize>
-        <DebugType>none</DebugType>
-        <DebugSymbols>false</DebugSymbols>
-        <DalamudLibPath>$(appdata)\XIVLauncherCN\addon\Hooks\dev\</DalamudLibPath>
-        <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
-    </PropertyGroup>
+  <PropertyGroup>
+    <NoWarn>NU1701;CS8618;CS8765;CS8625;EnableGenerateDocumentationFile;CS0659;CA2211</NoWarn>
+    <!--NU1701是framework与core的版本不匹配警告，CS8618是退出构造函数时null!字段警告，CS8765、CS8625是无法将null字面量转换为非null的引用类型-->
+    <!--CS0659重写Object.Equals(object o) 但不重写 Object.GetHashCode()-->
+    <!--CA2211: 非常量字段应当不可见-->
+    <TargetFramework>net10.0-windows8.0</TargetFramework>
+    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+    <SatelliteResourceLanguages>None</SatelliteResourceLanguages>
+    <PlatformTarget>x64</PlatformTarget>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
+    <LangVersion>latest</LangVersion>
+    <GenerateSatelliteAssembliesForCore>false</GenerateSatelliteAssembliesForCore>
+    <Optimize>true</Optimize>
+    <DebugType>none</DebugType>
+    <DebugSymbols>false</DebugSymbols>
+    <DalamudLibPath>$(appdata)\XIVLauncherCN\addon\Hooks\dev\</DalamudLibPath>
+    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+  </PropertyGroup>
 </Project>

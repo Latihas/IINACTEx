@@ -4,14 +4,12 @@ using Triggernometry.Core;
 
 namespace IINACT.Latihas;
 
-public static partial class LWindow
-{
-    public class FolderWindow() : Window($"{WindowPrefix}FolderWindow")
-    {
+public static partial class LWindow {
+    public class FolderWindow() : Window($"{WindowPrefix}FolderWindow") {
         private static Folder? Folder;
 
-        public override void Draw()
-        {if(Folder==null)return;
+        public override void Draw() {
+            if (Folder == null) return;
             ImGui.Text("Id: ");
             ImGui.SameLine();
             var id = Folder.Id.ToString();
@@ -32,13 +30,13 @@ public static partial class LWindow
             if (ImGui.InputText("区域ID", ref FfxivZoneIdRegex))
                 Folder.FfxivZoneIdRegex = FfxivZoneIdRegex;
 
-            var EventFilterEnabled =Folder.EventFilterEnabled;
+            var EventFilterEnabled = Folder.EventFilterEnabled;
             if (ImGui.Checkbox("限制文本匹配(正则)", ref EventFilterEnabled))
                 Folder.EventFilterEnabled = EventFilterEnabled;
             var EventRegex = Folder.EventRegex;
             if (ImGui.InputText("文本", ref EventRegex))
                 Folder.EventRegex = EventRegex;
-            
+
             // var FFXIVJobFilterEnabled = Folder.FFXIVJobFilterEnabled != null && bool.Parse(Folder.FFXIVJobFilterEnabled);
             // if (ImGui.Checkbox("限制职业", ref FFXIVJobFilterEnabled))
             //     Folder.FFXIVJobFilterEnabled = FFXIVJobFilterEnabled.ToString();
@@ -48,8 +46,7 @@ public static partial class LWindow
                 Folder.RawEnvironmentVariables = RawEnvironmentVariables;
         }
 
-        public void Open(Folder folder)
-        {
+        public void Open(Folder folder) {
             Folder = folder;
             Plugin.Instance.FolderWindow.IsOpen = true;
         }

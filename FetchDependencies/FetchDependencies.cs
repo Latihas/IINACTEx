@@ -2,8 +2,7 @@ using System.IO.Compression;
 
 namespace FetchDependencies;
 
-public class FetchDependencies
-{
+public class FetchDependencies {
     private const string VersionUrlGlobal = "https://www.iinact.com/updater/version";
     private const string VersionUrlChinese = "https://cninact.diemoe.net/CN解析/版本.txt";
     private const string PluginUrlGlobal = "https://www.iinact.com/updater/download";
@@ -14,16 +13,14 @@ public class FetchDependencies
     private bool IsChinese { get; }
     private HttpClient HttpClient { get; }
 
-    public FetchDependencies(Version version, string assemblyDir, bool isChinese, HttpClient httpClient)
-    {
+    public FetchDependencies(Version version, string assemblyDir, bool isChinese, HttpClient httpClient) {
         PluginVersion = version;
         DependenciesDir = assemblyDir;
         IsChinese = isChinese;
         HttpClient = httpClient;
     }
 
-    public void GetFfxivPlugin()
-    {
+    public void GetFfxivPlugin() {
         var pluginZipPath = Path.Combine(DependenciesDir, "FFXIV_ACT_Plugin.zip");
         var pluginPath = Path.Combine(DependenciesDir, "FFXIV_ACT_Plugin.dll");
         if (!NeedsUpdate(pluginPath))
@@ -31,16 +28,13 @@ public class FetchDependencies
 
         if (IsChinese)
             DownloadFile(PluginUrlChinese, pluginPath);
-        else
-        {
+        else {
             if (!File.Exists(pluginZipPath))
                 DownloadFile(PluginUrlGlobal, pluginZipPath);
-            try
-            {
+            try {
                 ZipFile.ExtractToDirectory(pluginZipPath, DependenciesDir, true);
             }
-            catch (InvalidDataException)
-            {
+            catch (InvalidDataException) {
                 File.Delete(pluginZipPath);
                 DownloadFile(PluginUrlGlobal, pluginZipPath);
                 ZipFile.ExtractToDirectory(pluginZipPath, DependenciesDir, true);
@@ -57,35 +51,31 @@ public class FetchDependencies
         patcher.MemoryPlugin();
     }
 
-    private bool NeedsUpdate(string dllPath)
-    {
+    private bool NeedsUpdate(string dllPath) {
         if (!File.Exists(dllPath)) return true;
-        try
-        {
+        try {
             using var plugin = new TargetAssembly(dllPath);
 
             if (!plugin.ApiVersionMatches())
                 return true;
-            
+
             using var cancelAfterDelay = new CancellationTokenSource(TimeSpan.FromSeconds(3));
             var remoteVersionString = HttpClient
-                                      .GetStringAsync(IsChinese ? VersionUrlChinese : VersionUrlGlobal,
-                                                      cancelAfterDelay.Token).Result;
+                .GetStringAsync(IsChinese ? VersionUrlChinese : VersionUrlGlobal,
+                    cancelAfterDelay.Token).Result;
             var remoteVersion = new Version(remoteVersionString);
             return remoteVersion > plugin.Version;
         }
-        catch
-        {
+        catch {
             return false;
         }
     }
 
-    private void DownloadFile(string url, string path)
-    {
+    private void DownloadFile(string url, string path) {
         using var cancelAfterDelay = new CancellationTokenSource(TimeSpan.FromSeconds(30));
         using var downloadStream = HttpClient
-                                   .GetStreamAsync(url,
-                                                   cancelAfterDelay.Token).Result;
+            .GetStreamAsync(url,
+                cancelAfterDelay.Token).Result;
         using var zipFileStream = new FileStream(path, FileMode.Create);
         downloadStream.CopyTo(zipFileStream);
         zipFileStream.Close();

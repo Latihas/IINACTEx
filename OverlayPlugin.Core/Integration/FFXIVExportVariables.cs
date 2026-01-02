@@ -1,117 +1,99 @@
 ﻿using System;
 using Advanced_Combat_Tracker;
 
-namespace RainbowMage.OverlayPlugin
-{
-    class FFXIVExportVariables
-    {
-        static string outH = CombatantData.DamageTypeDataOutgoingHealing;
+namespace RainbowMage.OverlayPlugin;
 
-        public static void Init()
-        {
-            // TODO: Profile and optimize if necessary.
+internal class FFXIVExportVariables {
+    private static string outH = CombatantData.DamageTypeDataOutgoingHealing;
 
-            // The code below was taken under MIT license from https://github.com/ZCube/ACTWebSocket/blob/master/ACTWebSocket.Core/Functions/OverlayACTWork.cs.
-            // Copyright (c) 2016 ZCube
+    public static void Init() {
+        // TODO: Profile and optimize if necessary.
 
-            if (!CombatantData.ExportVariables.ContainsKey("overHeal"))
-            {
-                CombatantData.ExportVariables.Add
+        // The code below was taken under MIT license from https://github.com/ZCube/ACTWebSocket/blob/master/ACTWebSocket.Core/Functions/OverlayACTWork.cs.
+        // Copyright (c) 2016 ZCube
+
+        if (!CombatantData.ExportVariables.ContainsKey("overHeal")) {
+            CombatantData.ExportVariables.Add
+            (
+                "overHeal",
+                new CombatantData.TextExportFormatter
                 (
                     "overHeal",
-                    new CombatantData.TextExportFormatter
-                    (
-                        "overHeal",
-                        "Overheal",
-                        "Amount of healing that made flood over 100% of health.",
-                        (Data, ExtraFormat) =>
-                        {
-                            if (!Data.Items[outH].Items.TryGetValue("All", out var attack))
-                            {
-                                return "0";
-                            }
-
-                            long sum = 0;
-                            var swings = attack.Items;
-                            for (var i = 0; i < swings.Count; i++)
-                            {
-                                if (swings[i].Tags.TryGetValue("overheal", out var value))
-                                {
-                                    sum += Convert.ToInt64(value);
-                                }
-                            }
-
-                            return sum.ToString();
+                    "Overheal",
+                    "Amount of healing that made flood over 100% of health.",
+                    (Data, _) => {
+                        if (!Data.Items[outH].Items.TryGetValue("All", out var attack)) {
+                            return "0";
                         }
-                    )
-                );
-            }
 
-            if (!CombatantData.ExportVariables.ContainsKey("damageShield"))
-            {
-                CombatantData.ExportVariables.Add
+                        long sum = 0;
+                        var swings = attack.Items;
+                        for (var i = 0; i < swings.Count; i++) {
+                            if (swings[i].Tags.TryGetValue("overheal", out var value)) {
+                                sum += Convert.ToInt64(value);
+                            }
+                        }
+
+                        return sum.ToString();
+                    }
+                )
+            );
+        }
+
+        if (!CombatantData.ExportVariables.ContainsKey("damageShield")) {
+            CombatantData.ExportVariables.Add
+            (
+                "damageShield",
+                new CombatantData.TextExportFormatter
                 (
                     "damageShield",
-                    new CombatantData.TextExportFormatter
-                    (
-                        "damageShield",
-                        "Damage Shield",
-                        "Damage blocked by Shield skills of healer.",
-                        (Data, ExtraFormat) =>
-                        {
-                            if (!Data.Items[outH].Items.TryGetValue("All", out var attack))
-                            {
-                                return "0";
-                            }
-
-                            long sum = 0;
-                            var swings = attack.Items;
-                            for (var i = 0; i < swings.Count; i++)
-                            {
-                                if (swings[i].Special == "DamageShield")
-                                {
-                                    sum += swings[i].Damage;
-                                }
-                            }
-
-                            return sum.ToString();
+                    "Damage Shield",
+                    "Damage blocked by Shield skills of healer.",
+                    (Data, _) => {
+                        if (!Data.Items[outH].Items.TryGetValue("All", out var attack)) {
+                            return "0";
                         }
-                    )
-                );
-            }
 
-            if (!CombatantData.ExportVariables.ContainsKey("absorbHeal"))
-            {
-                CombatantData.ExportVariables.Add
+                        long sum = 0;
+                        var swings = attack.Items;
+                        for (var i = 0; i < swings.Count; i++) {
+                            if (swings[i].Special == "DamageShield") {
+                                sum += swings[i].Damage;
+                            }
+                        }
+
+                        return sum.ToString();
+                    }
+                )
+            );
+        }
+
+        if (!CombatantData.ExportVariables.ContainsKey("absorbHeal")) {
+            CombatantData.ExportVariables.Add
+            (
+                "absorbHeal",
+                new CombatantData.TextExportFormatter
                 (
                     "absorbHeal",
-                    new CombatantData.TextExportFormatter
-                    (
-                        "absorbHeal",
-                        "Healed by Absorbing",
-                        "Amount of heal, done by absorbing.",
-                        (Data, ExtraFormat) =>
-                        {
-                            if (!Data.Items[outH].Items.TryGetValue("All", out var attack))
-                            {
-                                return "0";
-                            }
-
-                            long sum = 0;
-                            var swings = attack.Items;
-                            for (var i = 0; i < swings.Count; i++)
-                            {
-                                if (swings[i].DamageType == "Absorb")
-                                {
-                                    sum += swings[i].Damage;
-                                }
-                            }
-
-                            return sum.ToString();
+                    "Healed by Absorbing",
+                    "Amount of heal, done by absorbing.",
+                    (Data, _) => {
+                        if (!Data.Items[outH].Items.TryGetValue("All", out var attack)) {
+                            return "0";
                         }
-                    )
-                );
-            }
+
+                        long sum = 0;
+                        var swings = attack.Items;
+                        for (var i = 0; i < swings.Count; i++) {
+                            if (swings[i].DamageType == "Absorb") {
+                                sum += swings[i].Damage;
+                            }
+                        }
+
+                        return sum.ToString();
+                    }
+                )
+            );
         }
     }
 }

@@ -1,9 +1,7 @@
 ﻿namespace Advanced_Combat_Tracker;
 
-public class LocalizationObject
-{
-    public LocalizationObject(string DisplayedText, string LocalizationDescription)
-    {
+public class LocalizationObject {
+    public LocalizationObject(string DisplayedText, string LocalizationDescription) {
         this.DisplayedText = DisplayedText;
         this.LocalizationDescription = LocalizationDescription;
     }
@@ -18,6 +16,6 @@ public class LocalizationObject
 
     public static implicit operator string(LocalizationObject val) => val.DisplayedText;
 
-    public static implicit operator LocalizationObject(string val) => 
-        new LocalizationObject(val, string.Empty);
+    public static implicit operator LocalizationObject(string val) =>
+        new(val, string.Empty);
 }

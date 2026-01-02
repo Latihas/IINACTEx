@@ -1,9 +1,7 @@
 ﻿namespace Advanced_Combat_Tracker;
 
-public class LogLineEntry
-{
-    public LogLineEntry(DateTime Time, string LogLine, int ParsedType, int GlobalTimeSorter)
-    {
+public class LogLineEntry {
+    public LogLineEntry(DateTime Time, string LogLine, int ParsedType, int GlobalTimeSorter) {
         this.LogLine = LogLine;
         Type = ParsedType;
         SearchSelected = false;

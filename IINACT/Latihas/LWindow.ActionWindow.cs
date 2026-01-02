@@ -8,38 +8,32 @@ using static Triggernometry.Core.ActionOld;
 
 namespace IINACT.Latihas;
 
-public partial class LWindow
-{
+public partial class LWindow {
     [SuppressMessage("ReSharper", "InconsistentNaming")]
-    public class ActionWindow() : Window($"{WindowPrefix}ActionWindow")
-    {
+    public class ActionWindow() : Window($"{WindowPrefix}ActionWindow") {
         internal static ActionOld? Action;
         internal static Trigger? Trigger;
         internal static ConditionPanel ConditionPanel;
 
-        internal void Open(Trigger trigger, ActionOld action)
-        {
+        internal void Open(Trigger trigger, ActionOld action) {
             Trigger = trigger;
             Action = action;
             ConditionPanel = new ConditionPanel(action);
             Plugin.Instance.ActionWindow.IsOpen = true;
         }
 
-        public void DeleteAction(Trigger trigger, ActionOld action)
-        {
+        public void DeleteAction(Trigger trigger, ActionOld action) {
             trigger.Actions.Remove(action);
             for (var i = 0; i < trigger.Actions.Count; i++)
-                trigger.Actions[i].OrderNumber = (i + 1);
-            if (Action == action)
-            {
+                trigger.Actions[i].OrderNumber = i + 1;
+            if (Action == action) {
                 Trigger = null;
                 Action = null;
                 Plugin.Instance.ActionWindow.IsOpen = false;
             }
         }
 
-        public override void Draw()
-        {
+        public override void Draw() {
             if (Action == null) return;
             ImGui.Text("Id: ");
             ImGui.SameLine();
@@ -47,20 +41,16 @@ public partial class LWindow
             if (ImGui.Button(id)) ImGui.SetClipboardText(id);
             if (ImGui.Button("删除")) DeleteAction(Trigger!, Action);
             var currentActionTypeEnumItem = 0;
-                currentActionTypeEnumItem = (int)Action.ActionType;
+            currentActionTypeEnumItem = (int)Action.ActionType;
             if (ImGui.Combo("动作类型", ref currentActionTypeEnumItem,
-                            Enum.GetValues<ActionTypeEnum>()
-                                .Select(i => i.ToString())
-                                .ToList()))
-                Action.ActionType =  (ActionTypeEnum)currentActionTypeEnumItem;
-            if (ImGui.BeginTabBar("## EActionTabBar"))
-            {
-                if (ImGui.BeginTabItem("特定动作设置"))
-                {
-                    switch (Action.ActionType)
-                    {
-                        case ActionTypeEnum.SystemBeep:
-                        {
+                    Enum.GetValues<ActionTypeEnum>()
+                        .Select(i => i.ToString())
+                        .ToList()))
+                Action.ActionType = (ActionTypeEnum)currentActionTypeEnumItem;
+            if (ImGui.BeginTabBar("## EActionTabBar")) {
+                if (ImGui.BeginTabItem("特定动作设置")) {
+                    switch (Action.ActionType) {
+                        case ActionTypeEnum.SystemBeep: {
                             var SystemBeepFreqExpression = Action.SystemBeepFreqExpression;
                             if (ImGui.InputText("频率", ref SystemBeepFreqExpression))
                                 Action.SystemBeepFreqExpression = SystemBeepFreqExpression;
@@ -69,8 +59,7 @@ public partial class LWindow
                                 Action.SystemBeepLengthExpression = SystemBeepLengthExpression;
                             break;
                         }
-                        case ActionTypeEnum.PlaySound:
-                        {
+                        case ActionTypeEnum.PlaySound: {
                             var PlaySoundFileExpression = Action.PlaySoundFileExpression;
                             if (ImGui.InputText("音频路径", ref PlaySoundFileExpression))
                                 Action.PlaySoundFileExpression = PlaySoundFileExpression;
@@ -79,24 +68,22 @@ public partial class LWindow
                                 Action.PlaySoundVolumeExpression = PlaySoundVolumeExpression;
                             break;
                         }
-                        case ActionTypeEnum.UseTTS:
-                        {
+                        case ActionTypeEnum.UseTTS: {
                             var UseTTSTextExpression = Action.UseTTSTextExpression;
                             if (ImGui.InputText("播读内容", ref UseTTSTextExpression))
                                 Action.UseTTSTextExpression = UseTTSTextExpression;
                             break;
                         }
-                        case ActionTypeEnum.Variable:
-                        {
+                        case ActionTypeEnum.Variable: {
                             var currenVariableOpEnumItem = 0;
                             if (Enum.TryParse(typeof(VariableOpEnum), Action.VariableOp, out var VariableOpEnumType))
                                 currenVariableOpEnumItem = (int)VariableOpEnumType;
                             if (ImGui.Combo("操作", ref currenVariableOpEnumItem,
-                                            Enum.GetValues<VariableOpEnum>()
-                                                .Select(i => i.ToString())
-                                                .ToList()))
+                                    Enum.GetValues<VariableOpEnum>()
+                                        .Select(i => i.ToString())
+                                        .ToList()))
                                 Action.VariableOp = currenVariableOpEnumItem == 0 ? null : ((VariableOpEnum)currenVariableOpEnumItem).ToString();
-                            if (currenVariableOpEnumItem == (int)(VariableOpEnum.UnsetAll)) break;
+                            if (currenVariableOpEnumItem == (int)VariableOpEnum.UnsetAll) break;
                             var VariableName = Action.VariableName;
                             if (ImGui.InputText("源变量", ref VariableName))
                                 Action.VariableName = VariableName;
@@ -110,8 +97,7 @@ public partial class LWindow
                             if (ImGui.InputText("表达式", ref VariableExpression))
                                 Action.VariableExpression = VariableExpression;
                             if (Action.VariableOp is nameof(VariableOpEnum.QueryJsonPath)
-                                or nameof(VariableOpEnum.QueryJsonPathList))
-                            {
+                                or nameof(VariableOpEnum.QueryJsonPathList)) {
                                 var VariableJsonTarget = Action.VariableJsonTarget;
                                 if (ImGui.InputText("目标变量", ref VariableJsonTarget))
                                     Action.VariableJsonTarget = VariableJsonTarget;
@@ -121,8 +107,7 @@ public partial class LWindow
                             }
                             break;
                         }
-                        case ActionTypeEnum.ListVariable:
-                        {
+                        case ActionTypeEnum.ListVariable: {
                             // var currenListVariableOpEnumItem = 0;
                             // if (Enum.TryParse(typeof(ListVariableOpEnum), Action.ListVariableOp, out var ListVariableOpEnumType))
                             //     currenListVariableOpEnumItem = (int)ListVariableOpEnumType;
@@ -164,40 +149,35 @@ public partial class LWindow
                             ImGui.Text("还没做");
                             break;
                         }
-                        case ActionTypeEnum.TableVariable:
-                        {
+                        case ActionTypeEnum.TableVariable: {
                             ImGui.Text("还没做");
                             break;
                         }
-                        case ActionTypeEnum.DictVariable:
-                        {
+                        case ActionTypeEnum.DictVariable: {
                             ImGui.Text("还没做");
                             break;
                         }
-                        case ActionTypeEnum.MessageBox:
-                        {
+                        case ActionTypeEnum.MessageBox: {
                             var currenMessageBoxIconTypeEnumItem = 0;
                             if (Enum.TryParse(typeof(MessageBoxIconTypeEnum), Action.MessageBoxIconType, out var MessageBoxIconType))
                                 currenMessageBoxIconTypeEnumItem = (int)MessageBoxIconType;
                             if (ImGui.Combo("消息级别", ref currenMessageBoxIconTypeEnumItem,
-                                            Enum.GetValues<MessageBoxIconTypeEnum>()
-                                                .Select(i => i.ToString()).ToList()))
+                                    Enum.GetValues<MessageBoxIconTypeEnum>()
+                                        .Select(i => i.ToString()).ToList()))
                                 Action.MessageBoxIconType = currenMessageBoxIconTypeEnumItem == 0 ? null : ((MessageBoxIconTypeEnum)currenMessageBoxIconTypeEnumItem).ToString();
                             var MessageBoxText = Action.MessageBoxText;
                             if (ImGui.InputText("消息内容", ref MessageBoxText))
                                 Action.MessageBoxText = MessageBoxText;
                             break;
                         }
-                        case ActionTypeEnum.LogMessage:
-                        {
+                        case ActionTypeEnum.LogMessage: {
                             var LogMessageText = Action.LogMessageText;
                             if (ImGui.InputText("日志文本", ref LogMessageText))
                                 Action.LogMessageText = LogMessageText;
                             var LogProcess = Action.LogProcess != null && bool.Parse(Action.LogProcess);
                             if (ImGui.Checkbox("处理为待解析的日志行", ref LogProcess))
                                 Action.LogProcess = LogProcess.ToString();
-                            if (LogProcess)
-                            {
+                            if (LogProcess) {
                                 var LogProcessACT = Action.LogProcessACT != null && bool.Parse(Action.LogProcessACT);
                                 if (ImGui.Checkbox("将日志添加至ACT战斗记录", ref LogProcessACT))
                                     Action.LogProcessACT = LogProcessACT.ToString();
@@ -205,30 +185,28 @@ public partial class LWindow
                                 if (Enum.TryParse(typeof(LogEvent.SourceEnum), Action.LogMessageTarget, out var SourceEnumType))
                                     currenSourceEnumItem = (int)SourceEnumType;
                                 if (ImGui.Combo("日志行类型", ref currenSourceEnumItem,
-                                                Enum.GetValues<LogEvent.SourceEnum>()
-                                                    .Select(i => i.ToString()).ToList()))
+                                        Enum.GetValues<LogEvent.SourceEnum>()
+                                            .Select(i => i.ToString()).ToList()))
                                     Action.LogMessageTarget = currenSourceEnumItem == 0 ? null : ((LogEvent.SourceEnum)currenSourceEnumItem).ToString();
                             }
-                            else
-                            {
+                            else {
                                 var currenLogMessageEnumItem = 0;
                                 if (Enum.TryParse(typeof(LogMessageEnum), Action.LogLevel, out var LogMessage))
                                     currenLogMessageEnumItem = (int)LogMessage;
                                 if (ImGui.Combo("触发器日志等级", ref currenLogMessageEnumItem,
-                                                Enum.GetValues<LogMessageEnum>()
-                                                    .Select(i => i.ToString()).ToList()))
+                                        Enum.GetValues<LogMessageEnum>()
+                                            .Select(i => i.ToString()).ToList()))
                                     Action.LogLevel = currenLogMessageEnumItem == 0 ? null : ((LogMessageEnum)currenLogMessageEnumItem).ToString();
                             }
                             break;
                         }
-                        case ActionTypeEnum.TextAura:
-                        {
+                        case ActionTypeEnum.TextAura: {
                             var TextAuraOpEnumItem = 0;
                             if (Enum.TryParse(typeof(AuraOpEnum), Action.TextAuraOp, out var TextAuraOp))
                                 TextAuraOpEnumItem = (int)TextAuraOp;
                             if (ImGui.Combo("操作", ref TextAuraOpEnumItem,
-                                            Enum.GetValues<AuraOpEnum>()
-                                                .Select(i => i.ToString()).ToList()))
+                                    Enum.GetValues<AuraOpEnum>()
+                                        .Select(i => i.ToString()).ToList()))
                                 Action.TextAuraOp = TextAuraOpEnumItem == 0 ? null : ((AuraOpEnum)TextAuraOpEnumItem).ToString();
                             var TextAuraName = Action.TextAuraName;
                             if (ImGui.InputText("名称", ref TextAuraName))
@@ -240,11 +218,11 @@ public partial class LWindow
                             if (Enum.TryParse(typeof(TextAuraAlignmentEnum), Action.TextAuraAlignment, out var TextAuraAlignment))
                                 TextAuraAlignmentEnumItem = (int)TextAuraAlignment;
                             if (ImGui.Combo("文本对齐", ref TextAuraAlignmentEnumItem,
-                                            Enum.GetValues<TextAuraAlignmentEnum>()
-                                                .Select(i => i.ToString()).ToList()))
+                                    Enum.GetValues<TextAuraAlignmentEnum>()
+                                        .Select(i => i.ToString()).ToList()))
                                 Action.TextAuraAlignment = TextAuraAlignmentEnumItem == 0 ? null : ((TextAuraAlignmentEnum)TextAuraAlignmentEnumItem).ToString();
 
-                            var TextAuraTTLTickExpression =string.IsNullOrEmpty( Action.TextAuraTTLTickExpression) ? "1*1000-${_sincems}" : Action.TextAuraTTLTickExpression;
+                            var TextAuraTTLTickExpression = string.IsNullOrEmpty(Action.TextAuraTTLTickExpression) ? "1*1000-${_sincems}" : Action.TextAuraTTLTickExpression;
                             if (string.IsNullOrEmpty(Action.TextAuraTTLTickExpression) || ImGui.InputText("存续条件(>0)", ref TextAuraTTLTickExpression))
                                 Action.TextAuraTTLTickExpression = TextAuraTTLTickExpression;
                             var TextAuraFontName = string.IsNullOrEmpty(Action.TextAuraFontName) ? "Microsoft YaHei UI" : Action.TextAuraFontName;
@@ -301,26 +279,24 @@ public partial class LWindow
                                 Action.TextAuraOTickExpression = TextAuraOTickExpression;
                             break;
                         }
-                        case ActionTypeEnum.Aura:
-                        {
+                        case ActionTypeEnum.Aura: {
                             ImGui.Text("暂不支持");
                             break;
                         }
-                        case ActionTypeEnum.Mouse:
-                        {
+                        case ActionTypeEnum.Mouse: {
                             var MouseOpTypeEnumItem = 0;
                             if (Enum.TryParse(typeof(MouseOpEnum), Action.MouseOpType, out var MouseOpType))
                                 MouseOpTypeEnumItem = (int)MouseOpType;
                             if (ImGui.Combo("操作", ref MouseOpTypeEnumItem,
-                                            Enum.GetValues<MouseOpEnum>()
-                                                .Select(i => i.ToString()).ToList()))
+                                    Enum.GetValues<MouseOpEnum>()
+                                        .Select(i => i.ToString()).ToList()))
                                 Action.MouseOpType = MouseOpTypeEnumItem == 0 ? null : ((MouseOpEnum)MouseOpTypeEnumItem).ToString();
                             var MouseCoordTypeEnumItem = 0;
                             if (Enum.TryParse(typeof(MouseCoordEnum), Action.MouseCoordType, out var MouseCoordType))
                                 MouseCoordTypeEnumItem = (int)MouseCoordType;
                             if (ImGui.Combo("坐标系", ref MouseCoordTypeEnumItem,
-                                            Enum.GetValues<MouseCoordEnum>()
-                                                .Select(i => i.ToString()).ToList()))
+                                    Enum.GetValues<MouseCoordEnum>()
+                                        .Select(i => i.ToString()).ToList()))
                                 Action.MouseCoordType = MouseCoordTypeEnumItem == 0 ? null : ((MouseCoordEnum)MouseCoordTypeEnumItem).ToString();
                             var MouseX = Action.MouseX;
                             if (ImGui.InputText("X", ref MouseX))
@@ -330,23 +306,20 @@ public partial class LWindow
                                 Action.MouseY = MouseY;
                             break;
                         }
-                        case ActionTypeEnum.KeyPress:
-                        {
+                        case ActionTypeEnum.KeyPress: {
                             var KeypressTypeEnumItem = 0;
                             if (Enum.TryParse(typeof(KeypressTypeEnum), Action.KeypressType, out var KeypressType))
                                 KeypressTypeEnumItem = (int)KeypressType;
                             if (ImGui.Combo("发送方式", ref KeypressTypeEnumItem,
-                                            Enum.GetValues<KeypressTypeEnum>()
-                                                .Select(i => i.ToString()).ToList()))
+                                    Enum.GetValues<KeypressTypeEnum>()
+                                        .Select(i => i.ToString()).ToList()))
                                 Action.KeypressType = KeypressTypeEnumItem == 0 ? null : ((KeypressTypeEnum)KeypressTypeEnumItem).ToString();
-                            if (KeypressTypeEnumItem == (int)KeypressTypeEnum.SendKeys)
-                            {
+                            if (KeypressTypeEnumItem == (int)KeypressTypeEnum.SendKeys) {
                                 var KeyPressExpression = Action.KeyPressExpression;
                                 if (ImGui.InputText("按键命令", ref KeyPressExpression))
                                     Action.KeypressType = KeyPressExpression;
                             }
-                            else
-                            {
+                            else {
                                 var KeyPressProcId = Action.KeyPressProcId;
                                 if (ImGui.InputText("进程ID", ref KeyPressProcId))
                                     Action.KeyPressProcId = KeyPressProcId;
@@ -359,8 +332,7 @@ public partial class LWindow
                             }
                             break;
                         }
-                        case ActionTypeEnum.NamedCallback:
-                        {
+                        case ActionTypeEnum.NamedCallback: {
                             var NamedCallbackName = Action.NamedCallbackName;
                             if (ImGui.InputText("回调名称", ref NamedCallbackName))
                                 Action.NamedCallbackName = NamedCallbackName;
@@ -369,8 +341,7 @@ public partial class LWindow
                                 Action.NamedCallbackParam = NamedCallbackParam;
                             break;
                         }
-                        case ActionTypeEnum.WindowMessage:
-                        {
+                        case ActionTypeEnum.WindowMessage: {
                             var WmsgProcId = Action.WmsgProcId;
                             if (ImGui.InputText("进程ID", ref WmsgProcId))
                                 Action.WmsgProcId = WmsgProcId;
@@ -388,14 +359,13 @@ public partial class LWindow
                                 Action.WmsgLparam = WmsgLparam;
                             break;
                         }
-                        case ActionTypeEnum.DiskFile:
-                        {
+                        case ActionTypeEnum.DiskFile: {
                             var DiskFileOpEnumItem = 0;
                             if (Enum.TryParse(typeof(DiskFileOpEnum), Action.DiskFileOp, out var DiskFileOp))
                                 DiskFileOpEnumItem = (int)DiskFileOp;
                             if (ImGui.Combo("操作", ref DiskFileOpEnumItem,
-                                            Enum.GetValues<KeypressTypeEnum>()
-                                                .Select(i => i.ToString()).ToList()))
+                                    Enum.GetValues<KeypressTypeEnum>()
+                                        .Select(i => i.ToString()).ToList()))
                                 Action.DiskFileOp = DiskFileOpEnumItem == 0 ? null : ((KeypressTypeEnum)DiskFileOpEnumItem).ToString();
                             var DiskFileOpName = Action.DiskFileOpName;
                             if (ImGui.InputText("文件名", ref DiskFileOpName))
@@ -408,8 +378,7 @@ public partial class LWindow
                                 Action.DiskFileCache = DiskFileCache.ToString();
                             break;
                         }
-                        case ActionTypeEnum.LaunchProcess:
-                        {
+                        case ActionTypeEnum.LaunchProcess: {
                             var LaunchProcessPathExpression = Action.LaunchProcessPathExpression;
                             if (ImGui.InputText("程序路径", ref LaunchProcessPathExpression))
                                 Action.LaunchProcessPathExpression = LaunchProcessPathExpression;
@@ -423,40 +392,36 @@ public partial class LWindow
                             if (Enum.TryParse(typeof(ProcessWindowStyle), Action.LaunchProcessWindowStyle, out var ProcessWindowStyle))
                                 currenProcessWindowStyleItem = (int)ProcessWindowStyle;
                             if (ImGui.Combo("日志行类型", ref currenProcessWindowStyleItem,
-                                            Enum.GetValues<ProcessWindowStyle>()
-                                                .Select(i => i.ToString()).ToList()))
+                                    Enum.GetValues<ProcessWindowStyle>()
+                                        .Select(i => i.ToString()).ToList()))
                                 Action.LaunchProcessWindowStyle = currenProcessWindowStyleItem == 0 ? null : ((ProcessWindowStyle)currenProcessWindowStyleItem).ToString();
                             break;
                         }
-                        case ActionTypeEnum.ExecuteScript:
-                        {
+                        case ActionTypeEnum.ExecuteScript: {
                             var ExecScriptExpression = Action.ExecScriptExpression;
                             ImGui.SetNextItemWidth(-1);
                             if (ImGui.InputTextMultiline("## 脚本代码", ref ExecScriptExpression, 1145141))
                                 Action.ExecScriptExpression = ExecScriptExpression;
                             break;
                         }
-                        case ActionTypeEnum.Mutex:
-                        {
+                        case ActionTypeEnum.Mutex: {
                             var MutexOpEnumItem = 0;
                             if (Enum.TryParse(typeof(MutexOpEnum), Action.MutexOpType, out var MutexOpType))
                                 MutexOpEnumItem = (int)MutexOpType;
                             if (ImGui.Combo("日志行类型", ref MutexOpEnumItem,
-                                            Enum.GetValues<MutexOpEnum>()
-                                                .Select(i => i.ToString()).ToList()))
+                                    Enum.GetValues<MutexOpEnum>()
+                                        .Select(i => i.ToString()).ToList()))
                                 Action.MutexOpType = MutexOpEnumItem == 0 ? null : ((MutexOpEnum)MutexOpEnumItem).ToString();
                             var MutexName = Action.MutexName;
                             if (ImGui.InputText("互斥锁名称", ref MutexName))
                                 Action.MutexName = MutexName;
                             break;
                         }
-                        case ActionTypeEnum.Loop:
-                        {
+                        case ActionTypeEnum.Loop: {
                             ImGui.Text("还没做");
                             break;
                         }
-                        case ActionTypeEnum.GenericJson:
-                        {
+                        case ActionTypeEnum.GenericJson: {
                             var JsonEndpointExpression = Action.JsonEndpointExpression;
                             if (ImGui.InputText("目标URL", ref JsonEndpointExpression))
                                 Action.JsonEndpointExpression = JsonEndpointExpression;
@@ -464,8 +429,8 @@ public partial class LWindow
                             if (Enum.TryParse(typeof(HTTPMethodEnum), Action.JsonOperationType, out var JsonOperationType))
                                 JsonOperationEnumItem = (int)JsonOperationType;
                             if (ImGui.Combo("HTTP方法类型", ref JsonOperationEnumItem,
-                                            Enum.GetValues<HTTPMethodEnum>()
-                                                .Select(i => i.ToString()).ToList()))
+                                    Enum.GetValues<HTTPMethodEnum>()
+                                        .Select(i => i.ToString()).ToList()))
                                 Action.JsonOperationType = JsonOperationEnumItem == 0 ? null : ((HTTPMethodEnum)JsonOperationEnumItem).ToString();
                             var JsonPayloadExpression = Action.JsonPayloadExpression;
                             if (ImGui.InputText("发送内容", ref JsonPayloadExpression))
@@ -487,8 +452,7 @@ public partial class LWindow
                                 Action.JsonCacheRequest = JsonCacheRequest.ToString();
                             break;
                         }
-                        case ActionTypeEnum.DiscordWebhook:
-                        {
+                        case ActionTypeEnum.DiscordWebhook: {
                             var DiscordWebhookURL = Action.DiscordWebhookURL;
                             if (ImGui.InputText("接口URL", ref DiscordWebhookURL))
                                 Action.DiscordWebhookURL = DiscordWebhookURL;
@@ -501,17 +465,15 @@ public partial class LWindow
                             ImGui.Text("还没做");
                             break;
                         }
-                        case ActionTypeEnum.LiveSplitControl:
-                        {
+                        case ActionTypeEnum.LiveSplitControl: {
                             var LiveSplitControlEnumItem = 0;
                             if (Enum.TryParse(typeof(LiveSplitControlTypeEnum), Action.LiveSplitControlType, out var LiveSplitControlType))
                                 LiveSplitControlEnumItem = (int)LiveSplitControlType;
                             if (ImGui.Combo("操作", ref LiveSplitControlEnumItem,
-                                            Enum.GetValues<LiveSplitControlTypeEnum>()
-                                                .Select(i => i.ToString()).ToList()))
+                                    Enum.GetValues<LiveSplitControlTypeEnum>()
+                                        .Select(i => i.ToString()).ToList()))
                                 Action.LiveSplitControlType = LiveSplitControlEnumItem == 0 ? null : ((LiveSplitControlTypeEnum)LiveSplitControlEnumItem).ToString();
-                            if (LiveSplitControlEnumItem == (int)LiveSplitControlTypeEnum.CustomPayload)
-                            {
+                            if (LiveSplitControlEnumItem == (int)LiveSplitControlTypeEnum.CustomPayload) {
                                 var LiveSplitCustomPayload = Action.LiveSplitCustomPayload;
                                 if (ImGui.InputText("消息负载", ref LiveSplitCustomPayload))
                                     Action.LiveSplitCustomPayload = LiveSplitCustomPayload;
@@ -520,8 +482,7 @@ public partial class LWindow
                             ImGui.Text("还没做");
                             break;
                         }
-                        case ActionTypeEnum.ObsControl:
-                        {
+                        case ActionTypeEnum.ObsControl: {
                             var OBSEndPoint = Action.OBSEndPoint;
                             if (ImGui.InputText("URL", ref OBSEndPoint))
                                 Action.OBSEndPoint = OBSEndPoint;
@@ -532,83 +493,77 @@ public partial class LWindow
                             if (Enum.TryParse(typeof(ObsControlTypeEnum), Action.OBSControlType, out var OBSControlType))
                                 OBSControlEnumItem = (int)OBSControlType;
                             if (ImGui.Combo("操作", ref OBSControlEnumItem,
-                                            Enum.GetValues<ObsControlTypeEnum>()
-                                                .Select(i => i.ToString()).ToList()))
+                                    Enum.GetValues<ObsControlTypeEnum>()
+                                        .Select(i => i.ToString()).ToList()))
                                 Action.LiveSplitControlType = OBSControlEnumItem == 0 ? null : ((ObsControlTypeEnum)OBSControlEnumItem).ToString();
                             if (OBSControlEnumItem is (int)ObsControlTypeEnum.SetScene
                                 or (int)ObsControlTypeEnum.ShowSource
-                                or (int)ObsControlTypeEnum.HideSource)
-                            {
+                                or (int)ObsControlTypeEnum.HideSource) {
                                 var OBSSceneName = Action.OBSSceneName;
                                 if (ImGui.InputText("场景名称", ref OBSSceneName))
                                     Action.OBSSceneName = OBSSceneName;
-                                if (OBSControlEnumItem != (int)ObsControlTypeEnum.SetScene)
-                                {
+                                if (OBSControlEnumItem != (int)ObsControlTypeEnum.SetScene) {
                                     var OBSSourceName = Action.OBSSourceName;
                                     if (ImGui.InputText("源名称", ref OBSSourceName))
                                         Action.OBSSourceName = OBSSourceName;
                                 }
                             }
-                            if (OBSControlEnumItem is (int)ObsControlTypeEnum.JSONPayload)
-                            {
+                            if (OBSControlEnumItem is (int)ObsControlTypeEnum.JSONPayload) {
                                 var OBSJSONPayload = Action.OBSJSONPayload;
                                 if (ImGui.InputText("JSON消息", ref OBSJSONPayload))
                                     Action.OBSJSONPayload = OBSJSONPayload;
                             }
                             break;
                         }
-                        case ActionTypeEnum.ActInteraction:
-                        {
+                        case ActionTypeEnum.ActInteraction: {
                             ImGui.Text("暂不支持");
                             break;
                         }
-                        case ActionTypeEnum.Trigger:
-                        {
+                        case ActionTypeEnum.Trigger: {
                             ImGui.Text("还没做");
                             break;
                         }
-                        case ActionTypeEnum.Folder:
-                        {
+                        case ActionTypeEnum.Folder: {
                             ImGui.Text("还没做");
                             break;
                         }
-                        case ActionTypeEnum.Repository:
-                        {
+                        case ActionTypeEnum.Repository: {
                             ImGui.Text("还没做");
                             break;
                         }
                         case ActionTypeEnum.Placeholder: break;
                     }
                     ImGui.Separator();
-                    var key = Action.ActionType switch
-                    {
+                    var key = Action.ActionType switch {
                         ActionTypeEnum.Variable => "rtbHelperVar" + (Action.VariableOp ?? ((VariableOpEnum)0).ToString()),
-                       ActionTypeEnum.ListVariable => "rtbHelperLvar" + (Action.ListVariableOp ?? ((ListVariableOpEnum)0).ToString()),
+                        ActionTypeEnum.ListVariable => "rtbHelperLvar" + (Action.ListVariableOp ?? ((ListVariableOpEnum)0).ToString()),
                         ActionTypeEnum.TableVariable => "rtbHelperTvar" + (Action.TableVariableOp ?? ((TableVariableOpEnum)0).ToString()),
-                       ActionTypeEnum.DictVariable => "rtbHelperDict" + (Action.DictVariableOp ?? ((DictVariableOpEnum)0).ToString()),
-                       ActionTypeEnum.KeyPress => "rtbHelperSendKeys" + (Action.KeypressType ?? ((KeypressTypeEnum)0).ToString()),
-                       ActionTypeEnum.NamedCallback => "rtbHelperCallback",
-                     ActionTypeEnum.WindowMessage => "rtbHelperWmsg",
-                      ActionTypeEnum.GenericJson => "rtbHelperJson",
+                        ActionTypeEnum.DictVariable => "rtbHelperDict" + (Action.DictVariableOp ?? ((DictVariableOpEnum)0).ToString()),
+                        ActionTypeEnum.KeyPress => "rtbHelperSendKeys" + (Action.KeypressType ?? ((KeypressTypeEnum)0).ToString()),
+                        ActionTypeEnum.NamedCallback => "rtbHelperCallback",
+                        ActionTypeEnum.WindowMessage => "rtbHelperWmsg",
+                        ActionTypeEnum.GenericJson => "rtbHelperJson",
                         _ => ""
                     };
                     if (key != "") ImGui.Text(I18n.Translate($"ActionForm/{key}", $"{key}.Text"));
                     ImGui.EndTabItem();
                 }
-                if (ImGui.BeginTabItem("动作条件"))
-                {
+                if (ImGui.BeginTabItem("动作条件")) {
                     ConditionPanel.Draw();
                     ImGui.EndTabItem();
                 }
-                if (ImGui.BeginTabItem("计划任务"))
-                {
+                if (ImGui.BeginTabItem("计划任务")) {
                     var currentRefireInterruptItem = Action.RefireInterrupt ? 0 : 1;
                     if (ImGui.Combo("触发器再次触发时，此动作若尚未结束", ref currentRefireInterruptItem,
-                                    new[] { "保留队列中所有旧动作，", "中断队列中所有旧动作，" }))
-                        Action.RefireInterrupt = (currentRefireInterruptItem == 0);
+                            new[] {
+                                "保留队列中所有旧动作，", "中断队列中所有旧动作，"
+                            }))
+                        Action.RefireInterrupt = currentRefireInterruptItem == 0;
                     var currentRefireRequeueItem = Action.RefireRequeue ? 1 : 0;
                     if (ImGui.Combo("## 触发器再次触发时，此动作若尚未结束", ref currentRefireRequeueItem,
-                                    new[] { "并允许触发器再次触发", "并禁止触发器再次触发" }))
+                            new[] {
+                                "并允许触发器再次触发", "并禁止触发器再次触发"
+                            }))
                         Action.RefireRequeue = currentRefireRequeueItem == 1;
                     var ExecutionDelayExpression = Action.ExecutionDelayExpression;
                     if (ImGui.InputText("动作延迟(ms)", ref ExecutionDelayExpression))
@@ -618,8 +573,7 @@ public partial class LWindow
                         Action.Asynchronous = Asynchronous;
                     ImGui.EndTabItem();
                 }
-                if (ImGui.BeginTabItem("描述"))
-                {
+                if (ImGui.BeginTabItem("描述")) {
                     var description = Action.Description ?? "";
                     ImGui.SetNextItemWidth(-1);
                     if (ImGui.InputTextMultiline("## 描述", ref description))

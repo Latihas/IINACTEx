@@ -4,8 +4,7 @@ public delegate void LogLineEventDelegate(bool isImport, LogLineEventArgs logInf
 
 public delegate void LogFileChangedDelegate(bool IsImport, string NewLogFileName);
 
-public class LogLineEventArgs : EventArgs
-{
+public class LogLineEventArgs : EventArgs {
     public readonly string companionLogName;
 
     public readonly DateTime detectedTime;
@@ -20,8 +19,7 @@ public class LogLineEventArgs : EventArgs
     public string logLine;
 
     public LogLineEventArgs(
-        string LogLine, int DetectedType, DateTime DetectedTime, string DetectedZone, bool InCombat)
-    {
+        string LogLine, int DetectedType, DateTime DetectedTime, string DetectedZone, bool InCombat) {
         originalLogLine = LogLine;
         logLine = LogLine;
         detectedType = DetectedType;
@@ -33,8 +31,7 @@ public class LogLineEventArgs : EventArgs
 
     public LogLineEventArgs(
         string LogLine, int DetectedType, DateTime DetectedTime, string DetectedZone, bool InCombat,
-        string CompanionLogName)
-    {
+        string CompanionLogName) {
         originalLogLine = LogLine;
         logLine = LogLine;
         detectedType = DetectedType;

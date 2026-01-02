@@ -4,34 +4,29 @@ using Newtonsoft.Json.Linq;
 
 namespace RainbowMage.OverlayPlugin.Handlers;
 
-internal abstract class LegacyHandler : IHandler, IEventReceiver
-{
+internal abstract class LegacyHandler : IHandler, IEventReceiver {
     public string Name { get; }
     protected ILogger Logger { get; }
     private EventDispatcher Dispatcher { get; }
     private FFXIVRepository Repository { get; }
 
-    protected LegacyHandler(string name, ILogger logger, EventDispatcher eventDispatcher, FFXIVRepository repository)
-    {
+    protected LegacyHandler(string name, ILogger logger, EventDispatcher eventDispatcher, FFXIVRepository repository) {
         Name = name;
         Logger = logger;
         Dispatcher = eventDispatcher;
         Repository = repository;
     }
 
-    protected void Start()
-    {
+    protected void Start() {
         Dispatcher.Subscribe("CombatData", this);
         Dispatcher.Subscribe("LogLine", this);
         Dispatcher.Subscribe("ChangeZone", this);
         Dispatcher.Subscribe("ChangePrimaryPlayer", this);
-        
-        Send((JObject)JToken.FromObject(new
-        {
+
+        Send((JObject)JToken.FromObject(new {
             type = "broadcast",
             msgtype = "SendCharName",
-            msg = new
-            {
+            msg = new {
                 charName = Repository.GetPlayerName() ?? "YOU",
                 charID = Repository.GetPlayerID()
             }
@@ -42,12 +37,12 @@ internal abstract class LegacyHandler : IHandler, IEventReceiver
 
     public virtual void Dispose() => Dispatcher.UnsubscribeAll(this);
 
-    public void HandleEvent(JObject e)
-    {
-        var data = (JObject)JToken.FromObject(new {type = "broadcast"});
-        
-        switch ( e["type"]?.ToString())
-        {
+    public void HandleEvent(JObject e) {
+        var data = (JObject)JToken.FromObject(new {
+            type = "broadcast"
+        });
+
+        switch (e["type"]?.ToString()) {
             case "CombatData":
                 data["msgtype"] = "CombatData";
                 data["msg"] = e;
@@ -67,16 +62,14 @@ internal abstract class LegacyHandler : IHandler, IEventReceiver
             default:
                 return;
         }
-        
+
         Send(data);
     }
 
-    public void DataReceived(JObject data)
-    {
-        if (!data.ContainsKey("type") || !data.ContainsKey("msgtype")) return;
+    public void DataReceived(JObject data) {
+        if (!data.ContainsKey("type") || !data.TryGetValue("msgtype", out var value)) return;
 
-        switch (data["msgtype"]?.ToString())
-        {
+        switch (value?.ToString()) {
             case "Capture":
                 Logger.Log(LogLevel.Warning, "ACTWS Capture is not supported outside of overlays.");
                 break;
@@ -86,4 +79,3 @@ internal abstract class LegacyHandler : IHandler, IEventReceiver
         }
     }
 }
-

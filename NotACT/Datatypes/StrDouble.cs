@@ -1,9 +1,7 @@
 ﻿namespace Advanced_Combat_Tracker;
 
-public class StrDouble : IComparable, IEquatable<StrDouble>
-{
-    public StrDouble(string Name, double Val)
-    {
+public class StrDouble : IComparable, IEquatable<StrDouble> {
+    public StrDouble(string Name, double Val) {
         this.Name = Name;
         this.Val = Val;
     }
@@ -12,8 +10,7 @@ public class StrDouble : IComparable, IEquatable<StrDouble>
 
     public double Val { get; }
 
-    public int CompareTo(object? obj)
-    {
+    public int CompareTo(object? obj) {
         if (obj is not StrDouble other)
             throw new ArgumentException("Object is not a StrDouble.");
 
@@ -21,8 +18,5 @@ public class StrDouble : IComparable, IEquatable<StrDouble>
     }
 
 
-    public bool Equals(StrDouble? other)
-    {
-        return Name == other!.Name && Val == other!.Val;
-    }
+    public bool Equals(StrDouble? other) => Name == other!.Name && Val == other!.Val;
 }

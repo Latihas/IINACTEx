@@ -2,8 +2,7 @@
 
 public delegate void CombatActionDelegate(bool isImport, CombatActionEventArgs actionInfo);
 
-public class CombatActionEventArgs : EventArgs
-{
+public class CombatActionEventArgs : EventArgs {
     public readonly MasterSwing combatAction;
 
     public string attacker;
@@ -29,8 +28,7 @@ public class CombatActionEventArgs : EventArgs
 
     public string victim;
 
-    public CombatActionEventArgs(MasterSwing CombatAction)
-    {
+    public CombatActionEventArgs(MasterSwing CombatAction) {
         combatAction = CombatAction;
         swingType = CombatAction.SwingType;
         critical = CombatAction.Critical;
@@ -48,8 +46,7 @@ public class CombatActionEventArgs : EventArgs
     [Obsolete]
     public CombatActionEventArgs(
         int SwingType, bool Critical, string Special, string Attacker, string TheAttackType, Dnum Damage,
-        DateTime Time, int TimeSorter, string Victim, string TheDamageType)
-    {
+        DateTime Time, int TimeSorter, string Victim, string TheDamageType) {
         swingType = SwingType;
         critical = Critical;
         attacker = Attacker;
@@ -65,8 +62,7 @@ public class CombatActionEventArgs : EventArgs
     [Obsolete]
     public CombatActionEventArgs(
         int SwingType, bool Critical, string Attacker, string TheAttackType, Dnum Damage, DateTime Time,
-        int TimeSorter, string Victim, string TheDamageType)
-    {
+        int TimeSorter, string Victim, string TheDamageType) {
         swingType = SwingType;
         critical = Critical;
         attacker = Attacker;

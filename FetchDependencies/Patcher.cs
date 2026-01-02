@@ -4,26 +4,21 @@ using Mono.Cecil.Cil;
 
 namespace FetchDependencies;
 
-internal class Patcher
-{
+internal class Patcher {
     private Version PluginVersion { get; }
     private string WorkPath { get; }
 
-    public Patcher(Version version, string workPath)
-    {
+    public Patcher(Version version, string workPath) {
         PluginVersion = version;
         WorkPath = workPath;
     }
 
-    public void MainPlugin()
-    {
+    public void MainPlugin() {
         var plugin = new TargetAssembly(Path.Combine(WorkPath, "FFXIV_ACT_Plugin.dll"));
         var resources = plugin.Assembly.MainModule.Resources.ToArray();
 
-        foreach (var resource in resources)
-        {
-            if (Costura.CheckForPlugin(resource.Name))
-            {
+        foreach (var resource in resources) {
+            if (Costura.CheckForPlugin(resource.Name)) {
                 using var stream = (resource as EmbeddedResource)!.GetResourceStream();
                 var dllPath = Path.Combine(WorkPath, Costura.Fix(resource.Name));
                 Costura.Decompress(stream, dllPath);
@@ -46,8 +41,7 @@ internal class Patcher
         plugin.WriteOut();
     }
 
-    public void LogFilePlugin()
-    {
+    public void LogFilePlugin() {
         var logfile = new TargetAssembly(Path.Combine(WorkPath, "FFXIV_ACT_Plugin.Logfile.dll"));
         {
             var method = logfile.GetMethod(
@@ -66,22 +60,20 @@ internal class Patcher
                 0, Instruction.Create(OpCodes.Ldstr, $"This is IINACT {PluginVersion} (API {ApiVersion.IinactApiVersion}) based on FFXIV_ACT_Plugin {{0}}"));
             ilProcessor.Replace(1, Instruction.Create(OpCodes.Ldc_I4_1));
             var stelemIndex = Array.FindIndex(ilProcessor.Body.Instructions.ToArray(),
-                                              code => code.OpCode == OpCodes.Stelem_Ref);
+                code => code.OpCode == OpCodes.Stelem_Ref);
             Enumerable.Range(0, 5).ToList().ForEach(_ => ilProcessor.RemoveAt(stelemIndex + 1));
         }
 
         logfile.WriteOut();
     }
 
-    public void MemoryPlugin()
-    {
+    public void MemoryPlugin() {
         var memory = new TargetAssembly(Path.Combine(WorkPath, "FFXIV_ACT_Plugin.Memory.dll"));
 
         var dataSubscription = memory.Assembly.MainModule.Types.First(type => type.Name == "DataSubscription");
         var delegates = dataSubscription.Methods.Where(method => method.Name.StartsWith("On"));
 
-        void BeginInvokeFix(MethodDefinition method)
-        {
+        void BeginInvokeFix(MethodDefinition method) {
             var originalIl = method.Body.Instructions.ToArray();
             var invokeIndex =
                 Array.FindIndex(
@@ -110,15 +102,13 @@ internal class Patcher
             var ilProcessor = method.Body.GetILProcessor();
             ilProcessor.Replace(0, Instruction.Create(OpCodes.Ret));
         }
-        
+
         var marshallType = memory.Assembly.MainModule.ImportReference(typeof(Marshal)).Resolve();
-        var marshallCopyBuffer = marshallType.Methods.First(
-            m => m.FullName ==
-                 "System.Void System.Runtime.InteropServices.Marshal::Copy(System.IntPtr,System.Byte[],System.Int32,System.Int32)");
+        var marshallCopyBuffer = marshallType.Methods.First(m => m.FullName ==
+                                                                 "System.Void System.Runtime.InteropServices.Marshal::Copy(System.IntPtr,System.Byte[],System.Int32,System.Int32)");
         var marshallCopyBufferReference = memory.Assembly.MainModule.ImportReference(marshallCopyBuffer);
 
-        void UseMarshallCopyBuffer(MethodDefinition method)
-        {
+        void UseMarshallCopyBuffer(MethodDefinition method) {
             var originalIl = method.Body.Instructions.ToArray();
             var bufferIndex =
                 Array.FindIndex(
@@ -133,23 +123,19 @@ internal class Patcher
             ilProcessor.RemoveAt(bufferIndex - 6 + offset);
         }
 
-        var readBufferMethods = new[]
-        {
-            "System.IntPtr FFXIV_ACT_Plugin.Memory.MemoryReader.ReadParty::Read()",
-            "System.IntPtr FFXIV_ACT_Plugin.Memory.MemoryReader.ReadZoneMap::Read()",
-            "System.IntPtr FFXIV_ACT_Plugin.Memory.MemoryReader.ReadCombatant::Read(System.IntPtr)",
-            "System.IntPtr FFXIV_ACT_Plugin.Memory.MemoryReader.ReadPlayer::Read()",
-            "System.IntPtr FFXIV_ACT_Plugin.Memory.MemoryReader.ReadMobArray::Read64()"
+        var readBufferMethods = new[] {
+            "System.IntPtr FFXIV_ACT_Plugin.Memory.MemoryReader.ReadParty::Read()", "System.IntPtr FFXIV_ACT_Plugin.Memory.MemoryReader.ReadZoneMap::Read()", "System.IntPtr FFXIV_ACT_Plugin.Memory.MemoryReader.ReadCombatant::Read(System.IntPtr)",
+            "System.IntPtr FFXIV_ACT_Plugin.Memory.MemoryReader.ReadPlayer::Read()", "System.IntPtr FFXIV_ACT_Plugin.Memory.MemoryReader.ReadMobArray::Read64()"
         };
 
         foreach (var methodName in readBufferMethods)
             UseMarshallCopyBuffer(memory.GetMethod(methodName));
-        
+
         var intPtrType = memory.Assembly.MainModule.ImportReference(typeof(IntPtr)).Resolve();
         var intPtrOp =
             intPtrType.Methods.First(m => m.FullName == "System.Void* System.IntPtr::op_Explicit(System.IntPtr)");
         var intPtrOpReference = memory.Assembly.MainModule.ImportReference(intPtrOp);
-        
+
         {
             var method = memory.GetMethod(
                 "System.UInt32 FFXIV_ACT_Plugin.Memory.MemoryReader.ReadMemory::ReadUInt32(System.IntPtr)");
@@ -160,7 +146,7 @@ internal class Patcher
             ilProcessor.Emit(OpCodes.Ldind_U4);
             ilProcessor.Emit(OpCodes.Ret);
         }
-        
+
         {
             var method = memory.GetMethod(
                 "System.UInt64 FFXIV_ACT_Plugin.Memory.MemoryReader.ReadMemory::ReadUInt64(System.IntPtr)");
@@ -171,7 +157,7 @@ internal class Patcher
             ilProcessor.Emit(OpCodes.Ldind_I8);
             ilProcessor.Emit(OpCodes.Ret);
         }
-        
+
         {
             var method = memory.GetMethod(
                 "System.IntPtr FFXIV_ACT_Plugin.Memory.MemoryReader.ReadMemory::ReadPointer(System.IntPtr)");
@@ -186,7 +172,7 @@ internal class Patcher
             ilProcessor.Emit(OpCodes.Newobj, intPtrCtorReference);
             ilProcessor.Emit(OpCodes.Ret);
         }
-        
+
         // not needed and sometimes throws an exception during early load, see #61
         {
             var method = memory.GetMethod(
@@ -194,7 +180,7 @@ internal class Patcher
             var ilProcessor = method.Body.GetILProcessor();
             ilProcessor.Replace(0, Instruction.Create(OpCodes.Ret));
         }
-        
+
         memory.WriteOut();
     }
 }

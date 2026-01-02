@@ -1,15 +1,13 @@
 ﻿namespace Advanced_Combat_Tracker;
 
-public enum AttackTypeTypeEnum
-{
+public enum AttackTypeTypeEnum {
     Melee,
     Spell,
     CombatArt,
     UnknownNonMelee
 }
 
-public class AttackType : IComparable, IEquatable<AttackType>, IComparable<AttackType>
-{
+public class AttackType : IComparable, IEquatable<AttackType>, IComparable<AttackType> {
     public delegate Color ColorDataCallback(AttackType Data);
 
     public delegate string StringDataCallback(AttackType Data);
@@ -76,9 +74,8 @@ public class AttackType : IComparable, IEquatable<AttackType>, IComparable<Attac
 
     private bool swingsCached;
 
-    public AttackType(string theAttackType, DamageTypeData Parent)
-    {
-        Items = new List<MasterSwing>();
+    public AttackType(string theAttackType, DamageTypeData Parent) {
+        Items = [];
         Type = theAttackType;
         InvalidateCachedValues();
         this.Parent = Parent;
@@ -92,8 +89,7 @@ public class AttackType : IComparable, IEquatable<AttackType>, IComparable<Attac
         {
             var types = new string[ColumnDefs.Count];
             var index = 0;
-            foreach (var columnDef in ColumnDefs)
-            {
+            foreach (var columnDef in ColumnDefs) {
                 types[index] = columnDef.Value.SqlDataType;
                 index++;
             }
@@ -107,8 +103,7 @@ public class AttackType : IComparable, IEquatable<AttackType>, IComparable<Attac
         {
             var headers = new string[ColumnDefs.Count];
             var index = 0;
-            foreach (var columnDef in ColumnDefs)
-            {
+            foreach (var columnDef in ColumnDefs) {
                 headers[index] = columnDef.Value.SqlDataName;
                 index++;
             }
@@ -125,8 +120,7 @@ public class AttackType : IComparable, IEquatable<AttackType>, IComparable<Attac
         {
             var result = new string[ColumnDefs.Count];
             var index = 0;
-            foreach (var columnDef in ColumnDefs)
-            {
+            foreach (var columnDef in ColumnDefs) {
                 result[index] = columnDef.Value.GetSqlData(this);
                 index++;
             }
@@ -144,38 +138,33 @@ public class AttackType : IComparable, IEquatable<AttackType>, IComparable<Attac
 
             string result;
 
-            if (Type == ActGlobals.Trans["attackTypeTerm-all"])
-            {
+            if (Type == ActGlobals.Trans["attackTypeTerm-all"]) {
                 result = ActGlobals.Trans["attackTypeTerm-all"];
             }
-            else
-            {
+            else {
                 var text = string.Empty;
                 var list = new List<string>();
 
-                foreach (var item in Items)
-                {
+                foreach (var item in Items) {
                     var damageType = item.DamageType
-                                         .Replace(ActGlobals.Trans["specialAttackTerm-warded"] + "/", string.Empty);
+                        .Replace(ActGlobals.Trans["specialAttackTerm-warded"] + "/", string.Empty);
 
                     if (damageType == ActGlobals.Trans["specialAttackTerm-melee"] ||
                         damageType == ActGlobals.Trans["specialAttackTerm-nonMelee"] ||
-                        damageType == ActGlobals.Trans["specialAttackTerm-warded"])
-                    {
+                        damageType == ActGlobals.Trans["specialAttackTerm-warded"]) {
                         text = damageType;
                     }
-                    else if (!list.Contains(damageType))
-                    {
+                    else if (!list.Contains(damageType)) {
                         list.Add(damageType);
                         break;
                     }
                 }
 
                 result = list.Count == 1
-                             ? list[0]
-                             : !string.IsNullOrEmpty(text)
-                                 ? text
-                                 : ActGlobals.Trans["specialAttackTerm-unknown"];
+                    ? list[0]
+                    : !string.IsNullOrEmpty(text)
+                        ? text
+                        : ActGlobals.Trans["specialAttackTerm-unknown"];
             }
 
             cResist = result;
@@ -192,13 +181,11 @@ public class AttackType : IComparable, IEquatable<AttackType>, IComparable<Attac
             if (damageCached) return cDamage;
 
             long _damage = 0;
-            try
-            {
+            try {
                 _damage = Items.Where(masterSwing => (long)masterSwing.Damage > 0).Aggregate(0L,
                     (current, masterSwing) => (long)(current + masterSwing.Damage));
             }
-            catch (InvalidOperationException)
-            {
+            catch (InvalidOperationException) {
                 return Damage;
             }
 
@@ -212,18 +199,15 @@ public class AttackType : IComparable, IEquatable<AttackType>, IComparable<Attac
     {
         get
         {
-            if (hitsCached) 
+            if (hitsCached)
                 return cachedHits;
 
             var numHits = 0;
-            foreach (var swing in Items)
-            {
-                if (ActGlobals.blockIsHit && swing.Damage >= 0)
-                {
+            foreach (var swing in Items) {
+                if (ActGlobals.blockIsHit && swing.Damage >= 0) {
                     numHits++;
                 }
-                else if (swing.Damage > 0)
-                {
+                else if (swing.Damage > 0) {
                     numHits++;
                 }
             }
@@ -235,12 +219,10 @@ public class AttackType : IComparable, IEquatable<AttackType>, IComparable<Attac
         }
     }
 
-    private static bool IsCritHit(MasterSwing swing)
-    {
-        return ActGlobals.blockIsHit 
-                   ? swing.Critical && (long)swing.Damage >= 0 
-                   : swing.Critical && (long)swing.Damage > 0;
-    }
+    private static bool IsCritHit(MasterSwing swing) =>
+        ActGlobals.blockIsHit
+            ? swing.Critical && (long)swing.Damage >= 0
+            : swing.Critical && (long)swing.Damage > 0;
 
     public int CritHits
     {
@@ -310,12 +292,10 @@ public class AttackType : IComparable, IEquatable<AttackType>, IComparable<Attac
     {
         get
         {
-            try
-            {
+            try {
                 return Hits / Swings * 100f;
             }
-            catch
-            {
+            catch {
                 return 0f;
             }
         }
@@ -334,18 +314,15 @@ public class AttackType : IComparable, IEquatable<AttackType>, IComparable<Attac
     {
         get
         {
-            try
-            {
+            try {
                 if (medianCached) return cachedMedian;
 
                 var list = (from masterSwing in Items where (long)masterSwing.Damage >= 0 select masterSwing.Damage)
                     .ToList();
-                try
-                {
+                try {
                     list.Sort();
                 }
-                catch (Exception ex)
-                {
+                catch (Exception ex) {
                     ActGlobals.oFormActMain.WriteExceptionLog(ex, string.Empty);
                 }
 
@@ -358,8 +335,7 @@ public class AttackType : IComparable, IEquatable<AttackType>, IComparable<Attac
                 medianCached = true;
                 return cachedMedian;
             }
-            catch
-            {
+            catch {
                 return 0L;
             }
         }
@@ -407,12 +383,11 @@ public class AttackType : IComparable, IEquatable<AttackType>, IComparable<Attac
 
             var minHit = long.MaxValue;
             foreach (var masterSwing in Items)
-                if (ActGlobals.blockIsHit)
-                {
-                    if ((long)masterSwing.Damage >= 0 && (long)masterSwing.Damage < minHit) 
+                if (ActGlobals.blockIsHit) {
+                    if ((long)masterSwing.Damage >= 0 && (long)masterSwing.Damage < minHit)
                         minHit = masterSwing.Damage;
                 }
-                else if ((long)masterSwing.Damage > 0 && (long)masterSwing.Damage < minHit) 
+                else if ((long)masterSwing.Damage > 0 && (long)masterSwing.Damage < minHit)
                     minHit = masterSwing.Damage;
 
             if (minHit == long.MaxValue) return 0L;
@@ -430,9 +405,8 @@ public class AttackType : IComparable, IEquatable<AttackType>, IComparable<Attac
             if (maxhitCached) return cachedMaxHit;
 
             var maxHit = 0L;
-            foreach (var masterSwing in Items)
-            {
-                if ((long)masterSwing.Damage > 0 && (long)masterSwing.Damage > maxHit) 
+            foreach (var masterSwing in Items) {
+                if ((long)masterSwing.Damage > 0 && (long)masterSwing.Damage > maxHit)
                     maxHit = masterSwing.Damage;
             }
 
@@ -486,8 +460,7 @@ public class AttackType : IComparable, IEquatable<AttackType>, IComparable<Attac
         get
         {
             // If there are multiple start times, calculate duration based on item times.
-            if (Parent?.Parent?.Parent?.StartTimes.Count > 1)
-            {
+            if (Parent?.Parent?.Parent?.StartTimes.Count > 1) {
                 if (durationCached) return cachedDuration;
 
                 // Sort items by time.
@@ -499,20 +472,17 @@ public class AttackType : IComparable, IEquatable<AttackType>, IComparable<Attac
                 var itemIndex = 0;
                 var startList = new List<DateTime>();
                 var endList = new List<DateTime>();
-            
+
                 // For each time range, find the items that fall within it.
-                for (var i = 0; i < startTimes.Count; i++)
-                {
+                for (var i = 0; i < startTimes.Count; i++) {
                     var startTime = startTimes[i];
                     var endTime = i < endTimes.Count ? endTimes[i] : DateTime.MaxValue;
 
-                    while (itemIndex < Items.Count && Items[itemIndex].Time < startTime)
-                    {
+                    while (itemIndex < Items.Count && Items[itemIndex].Time < startTime) {
                         itemIndex++;
                     }
 
-                    while (itemIndex < Items.Count && Items[itemIndex].Time <= endTime)
-                    {
+                    while (itemIndex < Items.Count && Items[itemIndex].Time <= endTime) {
                         startList.Add(Items[itemIndex].Time);
                         itemIndex++;
                     }
@@ -522,8 +492,7 @@ public class AttackType : IComparable, IEquatable<AttackType>, IComparable<Attac
 
                 // Calculate the duration based on the start and end times.
                 var duration = TimeSpan.Zero;
-                for (var i = 0; i < startList.Count; i++)
-                {
+                for (var i = 0; i < startList.Count; i++) {
                     duration += endList[i] - startList[i];
                 }
 
@@ -533,8 +502,7 @@ public class AttackType : IComparable, IEquatable<AttackType>, IComparable<Attac
             }
 
             // If there is only one start time, use the start and end times to calculate duration.
-            if (EndTime > StartTime)
-            {
+            if (EndTime > StartTime) {
                 return EndTime - StartTime;
             }
 
@@ -544,8 +512,8 @@ public class AttackType : IComparable, IEquatable<AttackType>, IComparable<Attac
 
 
     public string DurationS => Duration.Hours == 0
-                                   ? $"{Duration.Minutes:00}:{Duration.Seconds:00}"
-                                   : $"{Duration.Hours:00}:{Duration.Minutes:00}:{Duration.Seconds:00}";
+        ? $"{Duration.Minutes:00}:{Duration.Seconds:00}"
+        : $"{Duration.Hours:00}:{Duration.Minutes:00}:{Duration.Seconds:00}";
 
     public float AverageDelay
     {
@@ -575,8 +543,7 @@ public class AttackType : IComparable, IEquatable<AttackType>, IComparable<Attac
             if (attacktypetypeCached)
                 return cachedAttackTypeType;
 
-            if (CombatantData.DamageSwingTypes.Count == 1)
-            {
+            if (CombatantData.DamageSwingTypes.Count == 1) {
                 // If there is only one damage swing type, it's probably not melee.
                 return AttackTypeTypeEnum.UnknownNonMelee;
             }
@@ -585,14 +552,12 @@ public class AttackType : IComparable, IEquatable<AttackType>, IComparable<Attac
             var damageSwingType = CombatantData.DamageSwingTypes[0];
             var swingTypeCounts = GetSwingTypeCounts();
 
-            if (swingTypeCounts.Count == 1 && swingTypeCounts.ContainsKey(damageSwingType))
-            {
+            if (swingTypeCounts.Count == 1 && swingTypeCounts.ContainsKey(damageSwingType)) {
                 // If the most common damage swing type is the only one and it matches the swing type of the combatant,
                 // then it's probably melee.
                 cachedAttackTypeType = AttackTypeTypeEnum.Melee;
             }
-            else
-            {
+            else {
                 // Otherwise, it's probably not melee.
                 cachedAttackTypeType = AttackTypeTypeEnum.UnknownNonMelee;
             }
@@ -607,32 +572,25 @@ public class AttackType : IComparable, IEquatable<AttackType>, IComparable<Attac
 
     public Dictionary<string, object> Tags { get; set; } = new();
 
-    public int CompareTo(object? obj)
-    {
-        return CompareTo((AttackType?)obj);
-    }
+    public int CompareTo(object? obj) => CompareTo((AttackType?)obj);
 
-    public int CompareTo(AttackType? other)
-    {
+    public int CompareTo(AttackType? other) {
         var comparisonResult = 0;
-    
+
         // Check if a primary sort column is specified
-        if (ColumnDefs.TryGetValue(ActGlobals.mDSort, out var value))
-        {
+        if (ColumnDefs.TryGetValue(ActGlobals.mDSort, out var value)) {
             // Compare the current object with the other object using the primary sort column
             comparisonResult = value.SortComparer(this, other!);
         }
 
         // If objects are still equivalent, check if a secondary sort column is specified
-        if (comparisonResult == 0 && ColumnDefs.TryGetValue(ActGlobals.mDSort2, out var value2))
-        {
+        if (comparisonResult == 0 && ColumnDefs.TryGetValue(ActGlobals.mDSort2, out var value2)) {
             // Compare the current object with the other object using the secondary sort column
             comparisonResult = value2.SortComparer(this, other!);
         }
 
         // If objects are still equivalent, compare them based on their damage
-        if (comparisonResult == 0)
-        {
+        if (comparisonResult == 0) {
             comparisonResult = Damage.CompareTo(other!.Damage);
         }
 
@@ -641,13 +599,9 @@ public class AttackType : IComparable, IEquatable<AttackType>, IComparable<Attac
     }
 
 
-    public bool Equals(AttackType? other)
-    {
-        return Type == other!.Type;
-    }
+    public bool Equals(AttackType? other) => Type == other!.Type;
 
-    public void InvalidateCachedValues()
-    {
+    public void InvalidateCachedValues() {
         damageCached = false;
         hitsCached = false;
         swingsCached = false;
@@ -664,21 +618,16 @@ public class AttackType : IComparable, IEquatable<AttackType>, IComparable<Attac
         averageDelayCached = false;
     }
 
-    public void AddCombatAction(MasterSwing action)
-    {
+    public void AddCombatAction(MasterSwing action) {
         InvalidateCachedValues();
         Items.Add(action);
     }
 
     public void Trim() => Items.TrimExcess();
 
-    public string GetColumnByName(string name)
-    {
-        return ColumnDefs.TryGetValue(name, out var value) ? value.GetCellData(this) : string.Empty;
-    }
+    public string GetColumnByName(string name) => ColumnDefs.TryGetValue(name, out var value) ? value.GetCellData(this) : string.Empty;
 
-    public Dictionary<int, int> GetSwingTypeCounts()
-    {
+    public Dictionary<int, int> GetSwingTypeCounts() {
         var dictionary = new Dictionary<int, int>();
         foreach (var masterSwing in Items)
             if (dictionary.ContainsKey(masterSwing.SwingType))
@@ -689,13 +638,9 @@ public class AttackType : IComparable, IEquatable<AttackType>, IComparable<Attac
         return dictionary;
     }
 
-    public override string ToString()
-    {
-        return Type;
-    }
+    public override string ToString() => Type;
 
-    public override bool Equals(object? obj)
-    {
+    public override bool Equals(object? obj) {
         if (obj == DBNull.Value) return false;
 
         var attackType = (AttackType)obj!;
@@ -703,20 +648,16 @@ public class AttackType : IComparable, IEquatable<AttackType>, IComparable<Attac
         return Type.Equals(value);
     }
 
-    public override int GetHashCode()
-    {
-        try
-        {
+    public override int GetHashCode() {
+        try {
             return Items.Aggregate(0L, (current, masterSwing) => current + masterSwing.GetHashCode()).GetHashCode();
         }
-        catch (InvalidOperationException)
-        {
+        catch (InvalidOperationException) {
             return GetHashCode();
         }
     }
 
-    public Dictionary<string, int> GetAttackSpecials()
-    {
+    public Dictionary<string, int> GetAttackSpecials() {
         // Get a sorted list of all MasterSwing items for this combatant
         var swings = new List<MasterSwing>(Items);
         swings.Sort(MasterSwing.CompareTime);
@@ -726,30 +667,26 @@ public class AttackType : IComparable, IEquatable<AttackType>, IComparable<Attac
 
         // Count the occurrence of each attack special
         var specialCounts = new Dictionary<string, int>();
-        foreach (var swing in swings)
-        {
+        foreach (var swing in swings) {
             // If the current swing has no special attack, clear the list of previous specials
             if (swing.Special == ActGlobals.Trans["specialAttackTerm-none"])
                 previousSpecials.Clear();
 
             // If the current swing has a new special attack, update the counts
-            if (!previousSpecials.Contains(swing.Special))
-            {
+            if (!previousSpecials.Contains(swing.Special)) {
                 if (specialCounts.ContainsKey(swing.Special))
                     specialCounts[swing.Special]++;
                 else
                     specialCounts.Add(swing.Special, 1);
 
                 // If the special attack is not "none", also update the "ANY" and "ONCE" counts
-                if (swing.Special != ActGlobals.Trans["specialAttackTerm-none"])
-                {
+                if (swing.Special != ActGlobals.Trans["specialAttackTerm-none"]) {
                     if (specialCounts.ContainsKey("ANY"))
                         specialCounts["ANY"]++;
                     else
                         specialCounts.Add("ANY", 1);
 
-                    if (!previousSpecials.Contains("ONCE"))
-                    {
+                    if (!previousSpecials.Contains("ONCE")) {
                         if (specialCounts.ContainsKey("ONCE"))
                             specialCounts["ONCE"]++;
                         else
@@ -769,12 +706,11 @@ public class AttackType : IComparable, IEquatable<AttackType>, IComparable<Attac
     }
 
 
-    public class ColumnDef
-    {
-        public ColorDataCallback GetCellBackColor = Data => Color.Transparent;
+    public class ColumnDef {
+        public ColorDataCallback GetCellBackColor = _ => Color.Transparent;
         public StringDataCallback GetCellData;
 
-        public ColorDataCallback GetCellForeColor = Data => Color.Transparent;
+        public ColorDataCallback GetCellForeColor = _ => Color.Transparent;
 
         public StringDataCallback GetSqlData;
 
@@ -783,8 +719,7 @@ public class AttackType : IComparable, IEquatable<AttackType>, IComparable<Attac
         public ColumnDef(
             string Label, bool DefaultVisible, string SqlDataType, string SqlDataName,
             StringDataCallback CellDataCallback, StringDataCallback SqlDataCallback,
-            Comparison<AttackType> SortComparer)
-        {
+            Comparison<AttackType> SortComparer) {
             this.Label = Label;
             this.DefaultVisible = DefaultVisible;
             this.SqlDataType = SqlDataType;

@@ -3,8 +3,7 @@
 #pragma warning disable CS0169 // Field is never used
 namespace IINACT.Network;
 
-public unsafe struct PacketDispatcher
-{
+public unsafe struct PacketDispatcher {
     private void* Unknown1;
     private void* Unknown2;
     private void* NetworkModuleProxy;
@@ -16,8 +15,7 @@ public unsafe struct PacketDispatcher
     public uint Key2;
     public uint Unknown_32;
 
-    public static PacketDispatcher* GetInstance()
-    {
+    public static PacketDispatcher* GetInstance() {
         var framework = Framework.Instance();
         if (framework == null) return null;
         var nmp = framework->NetworkModuleProxy;
@@ -26,9 +24,8 @@ public unsafe struct PacketDispatcher
         if (rcb == null) return null;
         return (PacketDispatcher*)&rcb->PacketDispatcher;
     }
-    
-    public static nint GetOnReceivePacketAddress()
-    {
+
+    public static nint GetOnReceivePacketAddress() {
         var vtable = FFXIVClientStructs.FFXIV.Client.Network.PacketDispatcher.StaticVirtualTablePointer;
         return (nint)vtable->OnReceivePacket;
     }

@@ -7,13 +7,11 @@ using Triggernometry.Expressions.Tests;
 
 namespace IINACT.Latihas;
 
-public static partial class LWindow
-{
+public static partial class LWindow {
     private static string TestTriggerId = "", TestCode = "", TestExpression = "", TestTts = "";
     private static readonly Context TestContext = new(null);
 
-    internal static void DrawHelpSettings()
-    {
+    internal static void DrawHelpSettings() {
         using var tab = ImRaii.TabItem("帮助");
         if (!tab) return;
         ImGui.PushStyleColor(ImGuiCol.Text, Color.LRed);
@@ -22,18 +20,15 @@ public static partial class LWindow
         ImGui.Text("重要提醒！！！请一定要先看完介绍再使用，本插件仍然不是很稳定，有炸游戏风险");
         ImGui.Text("其实最会炸游戏的是VfxModule，设置-Trn设置-启用ModuleBase-取消VfxModule勾选即可禁用");
         ImGui.PopStyleColor(1);
-        if (ImGui.CollapsingHeader("更新日志", ImGuiTreeNodeFlags.DefaultOpen))
-        {
+        if (ImGui.CollapsingHeader("更新日志", ImGuiTreeNodeFlags.DefaultOpen)) {
             ImGui.Text("多了一个已知问题bug。");
         }
         var s = ImGui.CollapsingHeader("已知问题(没定位到问题所在，可以提Pr之类的协助我修复。)", ImGuiTreeNodeFlags.DefaultOpen);
-        if (s)
-        {
+        if (s) {
             ImGui.Text("插件加载的第一次有时会加载失败，类似于下面，涉及解析插件的初始化，重新加载即可。彻底解决需要重启XIVLauncher。");
             ImGui.Text("这个问题有时候在更新的时候(也会卸载)触发，且再次载入大概率会炸游戏，请注意。");
             ImGui.Indent();
-            if (s && ImGui.CollapsingHeader("展开堆栈信息"))
-            {
+            if (s && ImGui.CollapsingHeader("展开堆栈信息")) {
                 ImGui.Text("11:28:52.526 | 警告 | [IINACTEx] DalamudStartInfo Inited");
                 ImGui.Text("11:28:52.527 | 错误 | [LOCALPLUGIN] 加载 \"IINACTEx\" 时出错，绑定并调用插件构造函数失败");
                 ImGui.Text("	System.AggregateException: Failed to create IINACT.Plugin (ctor invocation) (Exception has been thrown by the target of an invocation.)");
@@ -68,15 +63,13 @@ public static partial class LWindow
             }
             ImGui.Unindent();
         }
-        if (ImGui.CollapsingHeader("TODO", ImGuiTreeNodeFlags.DefaultOpen))
-        {
+        if (ImGui.CollapsingHeader("TODO", ImGuiTreeNodeFlags.DefaultOpen)) {
             ImGui.Text("触发器生成器");
             ImGui.Text("触发器搜索器");
             ImGui.Text("完善脚本");
             ImGui.Text("VfxModule修复");
         }
-        if (ImGui.CollapsingHeader("项目介绍"))
-        {
+        if (ImGui.CollapsingHeader("项目介绍")) {
             ImGui.Text("修改IINACT的初衷旨在尽可能满足日常对ACT的基本需求，替代ACT，假装自己是西瓜玩。");
             ImGui.Text("本项目仍然处于野蛮开发期，代码管理极其混乱，暗藏神秘bug，仅作开发测试使用。");
             ImGui.Text("该插件会在一个类ACT的环境下运行FFXIV_ACT_Plugin与大量修改的Overlay Plugin以适配现代.NET。与此同时，也添加了大量修改的Triggernometry与Postnamazu。包括类ACT、Triggernometry、Postnamazu在内，这些并非完整的代码移植，并且仍在开发完善中，可能缺少部分原版的函数，开发时请注意。");
@@ -118,8 +111,7 @@ public static partial class LWindow
             ImGui.Text("    ...");
             ImGui.Text("目前支持cactbot.zip一键下载安装，比较依赖网络环境。手动的话资源放在插件Config目录，cactbot可以选择手动解压，也可以在插件下次加载时自动解压。");
         }
-        if (ImGui.CollapsingHeader("已知限制"))
-        {
+        if (ImGui.CollapsingHeader("已知限制")) {
             ImGui.Text("Act原版插件支持非常有限(复杂的几乎都不支持)");
             ImGui.Text("!!! Triggernometry有时会因为宝宝椅的鲇鱼精扩展功能炸游戏/显示异常/...。开发者用Penumbra可以恢复部分图形问题");
             ImGui.SameLine();
@@ -142,8 +134,7 @@ public static partial class LWindow
             ImGui.Text("    //DalamudDirReferenes");
             foreach (var asm in CSharpScriptCompiler.DalamudDirReferenes) ImGui.Text("    " + asm);
         }
-        if (ImGui.CollapsingHeader("常见问题"))
-        {
+        if (ImGui.CollapsingHeader("常见问题")) {
             ImGui.Text("问题太多了。如果出现bug，试着关开一下插件，说不定就自己会好了。");
             ImGui.Text("当然也可能是我懒得写了，你也可以帮助我完善这一部分。");
             ImGui.Text("其他问题可在Github仓库提issue解决。");
@@ -153,8 +144,7 @@ public static partial class LWindow
     private static readonly BasicTest Test1 = new();
     private static readonly FunctionTest Test2 = new();
 
-    internal static void DrawTestSettings()
-    {
+    internal static void DrawTestSettings() {
         using var tab = ImRaii.TabItem("测试");
         if (!tab) return;
         if (ImGui.Button("打开插件目录"))

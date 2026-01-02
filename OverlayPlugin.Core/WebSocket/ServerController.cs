@@ -6,12 +6,10 @@ using Advanced_Combat_Tracker;
 
 namespace RainbowMage.OverlayPlugin.WebSocket;
 
-public class ServerController
-{
+public class ServerController {
     public EventHandler<StateChangedArgs>? OnStateChanged;
 
-    public ServerController(TinyIoCContainer container)
-    {
+    public ServerController(TinyIoCContainer container) {
         Container = container;
         Logger = container.Resolve<ILogger>();
         Config = container.Resolve<IPluginConfig>();
@@ -29,14 +27,11 @@ public class ServerController
     public bool Secure => false;
     public Uri Uri => new($"{(Secure ? "wss" : "ws")}://{Address}:{Port}");
 
-    public void Stop()
-    {
-        try
-        {
+    public void Stop() {
+        try {
             Server?.Stop();
         }
-        catch (Exception e)
-        {
+        catch (Exception e) {
             LastException = e;
             Logger.Log(LogLevel.Error, Resources.WSShutdownError, e);
         }
@@ -46,43 +41,34 @@ public class ServerController
         OnStateChanged?.Invoke(null, new StateChangedArgs(false, false));
     }
 
-    public void Restart()
-    {
+    public void Restart() {
         Stop();
         Start();
     }
 
-    public bool IsSSLPossible()
-    {
-        return File.Exists(GetCertPath());
-    }
+    public bool IsSSLPossible() => File.Exists(GetCertPath());
 
-    private static bool IsAssemblyLoadContextException(Exception ex)
-    {
+    private static bool IsAssemblyLoadContextException(Exception ex) {
         if (ex == null) return false;
-        
+
         var message = ex.Message;
-        if (message.Contains("AssemblyLoadContext") || 
-            message.Contains("unloading") || 
-            message.Contains("unloaded"))
-        {
+        if (message.Contains("AssemblyLoadContext") ||
+            message.Contains("unloading") ||
+            message.Contains("unloaded")) {
             return true;
         }
-        
-        if (ex.InnerException != null)
-        {
+
+        if (ex.InnerException != null) {
             return IsAssemblyLoadContextException(ex.InnerException);
         }
-        
+
         return false;
     }
 
-    public void Start()
-    {
+    public void Start() {
         Failed = false;
 
-        try
-        {
+        try {
             // TODO: add SSL support
             // var sslPath = GetCertPath();
             // var secure = _cfg.WSServerSSL && File.Exists(sslPath);
@@ -91,20 +77,18 @@ public class ServerController
 
             Server = new OverlayServer(address, Config.WSServerPort, Container);
             Server.OptionReuseAddress = true;
-            
+
             Server.Start();
 
             OnStateChanged?.Invoke(this, new StateChangedArgs(true, false));
         }
-        catch (Exception e) when (IsAssemblyLoadContextException(e))
-        {
+        catch (Exception e) when (IsAssemblyLoadContextException(e)) {
             Failed = true;
             LastException = e;
             Logger.Log(LogLevel.Error, "WebSocket 服务器启动失败: AssemblyLoadContext 正在卸载或已卸载。这通常发生在插件热重载时。请重新加载插件或重开游戏。");
             OnStateChanged?.Invoke(this, new StateChangedArgs(false, true));
         }
-        catch (Exception e)
-        {
+        catch (Exception e) {
             Failed = true;
             LastException = e;
             Logger.Log(LogLevel.Error, Resources.WSStartFailed, e);
@@ -112,8 +96,7 @@ public class ServerController
         }
     }
 
-    public string GetModernUrl(string url)
-    {
+    public string GetModernUrl(string url) {
         if (url.Contains("?"))
             url += "&";
         else
@@ -131,8 +114,7 @@ public class ServerController
         return url;
     }
 
-    public string GetCertPath()
-    {
+    public string GetCertPath() {
         var path = Path.Combine(
             ActGlobals.oFormActMain.AppDataFolder.FullName,
             "Config",
@@ -140,13 +122,11 @@ public class ServerController
 
         return path;
     }
-    
-    public class StateChangedArgs : EventArgs
-    {
-        public StateChangedArgs(bool running, bool failed)
-        {
-            this.Running = running;
-            this.Failed = failed;
+
+    public class StateChangedArgs : EventArgs {
+        public StateChangedArgs(bool running, bool failed) {
+            Running = running;
+            Failed = failed;
         }
 
         public bool Running { get; private set; }

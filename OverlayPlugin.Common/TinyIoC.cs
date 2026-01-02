@@ -22,13 +22,19 @@
 // Preprocessor directives for enabling/disabling functionality
 // depending on platform features. If the platform has an appropriate
 // #DEFINE then these should be set automatically below.
-#define EXPRESSIONS                      // Platform supports System.Linq.Expressions
-#define COMPILED_EXPRESSIONS             // Platform supports compiling expressions
-#define APPDOMAIN_GETASSEMBLIES          // Platform supports getting all assemblies from the AppDomain object
+#define EXPRESSIONS // Platform supports System.Linq.Expressions
+#define COMPILED_EXPRESSIONS // Platform supports compiling expressions
+#define APPDOMAIN_GETASSEMBLIES // Platform supports getting all assemblies from the AppDomain object
 #define UNBOUND_GENERICS_GETCONSTRUCTORS // Platform supports GetConstructors on unbound generic types
-#define GETPARAMETERS_OPEN_GENERICS      // Platform supports GetParameters on open generics
-#define RESOLVE_OPEN_GENERICS            // Platform supports resolving open generics
-#define READER_WRITER_LOCK_SLIM          // Platform supports ReaderWriterLockSlim
+#define GETPARAMETERS_OPEN_GENERICS // Platform supports GetParameters on open generics
+#define RESOLVE_OPEN_GENERICS // Platform supports resolving open generics
+#define READER_WRITER_LOCK_SLIM // Platform supports ReaderWriterLockSlim
+
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Reflection;
 
 //// NETFX_CORE
 //#if NETFX_CORE
@@ -67,13 +73,7 @@
 
 #endregion
 
-namespace RainbowMage.OverlayPlugin
-{
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Reflection;
-
+namespace RainbowMage.OverlayPlugin {
 #if EXPRESSIONS
     using System.Linq.Expressions;
     using System.Threading;
@@ -95,10 +95,9 @@ namespace RainbowMage.OverlayPlugin
 #else
     public
 #endif
-        class SafeDictionary<TKey, TValue> : IDisposable
-    {
-        private readonly ReaderWriterLockSlim _padlock = new ReaderWriterLockSlim();
-        private readonly Dictionary<TKey, TValue> _Dictionary = new Dictionary<TKey, TValue>();
+        class SafeDictionary<TKey, TValue> : IDisposable {
+        private readonly ReaderWriterLockSlim _padlock = new();
+        private readonly Dictionary<TKey, TValue> _Dictionary = new();
 
         public TValue this[TKey key]
         {
@@ -106,11 +105,9 @@ namespace RainbowMage.OverlayPlugin
             {
                 _padlock.EnterWriteLock();
 
-                try
-                {
+                try {
                     TValue current;
-                    if (_Dictionary.TryGetValue(key, out current))
-                    {
+                    if (_Dictionary.TryGetValue(key, out current)) {
                         var disposable = current as IDisposable;
 
                         if (disposable != null)
@@ -118,45 +115,39 @@ namespace RainbowMage.OverlayPlugin
                     }
 
                     _Dictionary[key] = value;
-                } finally
-                {
+                }
+                finally {
                     _padlock.ExitWriteLock();
                 }
             }
         }
 
-        public bool TryGetValue(TKey key, out TValue value)
-        {
+        public bool TryGetValue(TKey key, out TValue value) {
             _padlock.EnterReadLock();
-            try
-            {
+            try {
                 return _Dictionary.TryGetValue(key, out value);
-            } finally
-            {
+            }
+            finally {
                 _padlock.ExitReadLock();
             }
         }
 
-        public bool Remove(TKey key)
-        {
+        public bool Remove(TKey key) {
             _padlock.EnterWriteLock();
-            try
-            {
+            try {
                 return _Dictionary.Remove(key);
-            } finally
-            {
+            }
+            finally {
                 _padlock.ExitWriteLock();
             }
         }
 
-        public void Clear()
-        {
+        public void Clear() {
             _padlock.EnterWriteLock();
-            try
-            {
+            try {
                 _Dictionary.Clear();
-            } finally
-            {
+            }
+            finally {
                 _padlock.ExitWriteLock();
             }
         }
@@ -166,11 +157,10 @@ namespace RainbowMage.OverlayPlugin
             get
             {
                 _padlock.EnterReadLock();
-                try
-                {
+                try {
                     return new List<TKey>(_Dictionary.Keys);
-                } finally
-                {
+                }
+                finally {
                     _padlock.ExitReadLock();
                 }
             }
@@ -178,22 +168,19 @@ namespace RainbowMage.OverlayPlugin
 
         #region IDisposable Members
 
-        public void Dispose()
-        {
+        public void Dispose() {
             _padlock.EnterWriteLock();
 
-            try
-            {
+            try {
                 var disposableItems = from item in _Dictionary.Values
-                                      where item is IDisposable
-                                      select item as IDisposable;
+                    where item is IDisposable
+                    select item as IDisposable;
 
-                foreach (var item in disposableItems)
-                {
+                foreach (var item in disposableItems) {
                     item.Dispose();
                 }
-            } finally
-            {
+            }
+            finally {
                 _padlock.ExitWriteLock();
             }
 
@@ -296,27 +283,21 @@ namespace RainbowMage.OverlayPlugin
 #else
     public
 #endif
-        static class AssemblyExtensions
-    {
-        public static Type[] SafeGetTypes(this Assembly assembly)
-        {
+        static class AssemblyExtensions {
+        public static Type[] SafeGetTypes(this Assembly assembly) {
             Type[] assemblies;
 
-            try
-            {
+            try {
                 assemblies = assembly.GetTypes();
             }
-            catch (System.IO.FileNotFoundException)
-            {
-                assemblies = new Type[] { };
+            catch (FileNotFoundException) {
+                assemblies = [];
             }
-            catch (NotSupportedException)
-            {
-                assemblies = new Type[] { };
+            catch (NotSupportedException) {
+                assemblies = [];
             }
 #if !NETFX_CORE
-            catch (ReflectionTypeLoadException e)
-            {
+            catch (ReflectionTypeLoadException e) {
                 assemblies = e.Types.Where(t => t != null).ToArray();
             }
 #endif
@@ -329,12 +310,10 @@ namespace RainbowMage.OverlayPlugin
 #else
     public
 #endif
-        static class TypeExtensions
-    {
+        static class TypeExtensions {
         private static SafeDictionary<GenericMethodCacheKey, MethodInfo> _genericMethodCache;
 
-        static TypeExtensions()
-        {
+        static TypeExtensions() {
             _genericMethodCache = new SafeDictionary<GenericMethodCacheKey, MethodInfo>();
         }
 
@@ -367,7 +346,7 @@ namespace RainbowMage.OverlayPlugin
         //		}
         //#else
         /// <summary>
-        /// Gets a generic method from a type given the method name, binding flags, generic types and parameter types
+        ///     Gets a generic method from a type given the method name, binding flags, generic types and parameter types
         /// </summary>
         /// <param name="sourceType">Source type</param>
         /// <param name="bindingFlags">Binding flags</param>
@@ -375,20 +354,18 @@ namespace RainbowMage.OverlayPlugin
         /// <param name="genericTypes">Generic types to use to make the method generic</param>
         /// <param name="parameterTypes">Method parameters</param>
         /// <returns>MethodInfo or null if no matches found</returns>
-        /// <exception cref="System.Reflection.AmbiguousMatchException"/>
-        /// <exception cref="System.ArgumentException"/>
+        /// <exception cref="System.Reflection.AmbiguousMatchException" />
+        /// <exception cref="System.ArgumentException" />
         public static MethodInfo GetGenericMethod(
             this Type sourceType, BindingFlags bindingFlags, string methodName, Type[] genericTypes,
-            Type[] parameterTypes)
-        {
+            Type[] parameterTypes) {
             MethodInfo method;
             var cacheKey = new GenericMethodCacheKey(sourceType, methodName, genericTypes, parameterTypes);
 
             // Shouldn't need any additional locking
             // we don't care if we do the method info generation
             // more than once before it gets cached.
-            if (!_genericMethodCache.TryGetValue(cacheKey, out method))
-            {
+            if (!_genericMethodCache.TryGetValue(cacheKey, out method)) {
                 method = GetMethod(sourceType, bindingFlags, methodName, genericTypes, parameterTypes);
                 _genericMethodCache[cacheKey] = method;
             }
@@ -417,18 +394,13 @@ namespace RainbowMage.OverlayPlugin
         }
 #else
         private static MethodInfo GetMethod(
-            Type sourceType, BindingFlags bindingFlags, string methodName, Type[] genericTypes, Type[] parameterTypes)
-        {
+            Type sourceType, BindingFlags bindingFlags, string methodName, Type[] genericTypes, Type[] parameterTypes) {
 #if GETPARAMETERS_OPEN_GENERICS
             var methods =
-                sourceType.GetMethods(bindingFlags).Where(
-                              mi => string.Equals(methodName, mi.Name, StringComparison.Ordinal)).Where(
-                              mi => mi.ContainsGenericParameters)
-                          .Where(mi => mi.GetGenericArguments().Length == genericTypes.Length)
-                          .Where(mi => mi.GetParameters().Length == parameterTypes.Length).Select(
-                              mi => mi.MakeGenericMethod(genericTypes)).Where(
-                              mi => mi.GetParameters().Select(pi => pi.ParameterType).SequenceEqual(parameterTypes))
-                          .ToList();
+                sourceType.GetMethods(bindingFlags).Where(mi => string.Equals(methodName, mi.Name, StringComparison.Ordinal)).Where(mi => mi.ContainsGenericParameters)
+                    .Where(mi => mi.GetGenericArguments().Length == genericTypes.Length)
+                    .Where(mi => mi.GetParameters().Length == parameterTypes.Length).Select(mi => mi.MakeGenericMethod(genericTypes)).Where(mi => mi.GetParameters().Select(pi => pi.ParameterType).SequenceEqual(parameterTypes))
+                    .ToList();
 #else
             var validMethods = from method in sourceType.GetMethods(bindingFlags)
                                 where method.Name == methodName
@@ -441,8 +413,7 @@ namespace RainbowMage.OverlayPlugin
 
             var methods = validMethods.ToList();
 #endif
-            if (methods.Count > 1)
-            {
+            if (methods.Count > 1) {
                 throw new AmbiguousMatchException();
             }
 
@@ -450,8 +421,7 @@ namespace RainbowMage.OverlayPlugin
         }
 #endif
 
-        private sealed class GenericMethodCacheKey
-        {
+        private sealed class GenericMethodCacheKey {
             private readonly Type _sourceType;
 
             private readonly string _methodName;
@@ -462,8 +432,7 @@ namespace RainbowMage.OverlayPlugin
 
             private readonly int _hashCode;
 
-            public GenericMethodCacheKey(Type sourceType, string methodName, Type[] genericTypes, Type[] parameterTypes)
-            {
+            public GenericMethodCacheKey(Type sourceType, string methodName, Type[] genericTypes, Type[] parameterTypes) {
                 _sourceType = sourceType;
                 _methodName = methodName;
                 _genericTypes = genericTypes;
@@ -471,8 +440,7 @@ namespace RainbowMage.OverlayPlugin
                 _hashCode = GenerateHashCode();
             }
 
-            public override bool Equals(object obj)
-            {
+            public override bool Equals(object obj) {
                 var cacheKey = obj as GenericMethodCacheKey;
                 if (cacheKey == null)
                     return false;
@@ -480,7 +448,7 @@ namespace RainbowMage.OverlayPlugin
                 if (_sourceType != cacheKey._sourceType)
                     return false;
 
-                if (!String.Equals(_methodName, cacheKey._methodName, StringComparison.Ordinal))
+                if (!string.Equals(_methodName, cacheKey._methodName, StringComparison.Ordinal))
                     return false;
 
                 if (_genericTypes.Length != cacheKey._genericTypes.Length)
@@ -489,14 +457,12 @@ namespace RainbowMage.OverlayPlugin
                 if (_parameterTypes.Length != cacheKey._parameterTypes.Length)
                     return false;
 
-                for (var i = 0; i < _genericTypes.Length; ++i)
-                {
+                for (var i = 0; i < _genericTypes.Length; ++i) {
                     if (_genericTypes[i] != cacheKey._genericTypes[i])
                         return false;
                 }
 
-                for (var i = 0; i < _parameterTypes.Length; ++i)
-                {
+                for (var i = 0; i < _parameterTypes.Length; ++i) {
                     if (_parameterTypes[i] != cacheKey._parameterTypes[i])
                         return false;
                 }
@@ -504,27 +470,20 @@ namespace RainbowMage.OverlayPlugin
                 return true;
             }
 
-            public override int GetHashCode()
-            {
-                return _hashCode;
-            }
+            public override int GetHashCode() => _hashCode;
 
-            private int GenerateHashCode()
-            {
-                unchecked
-                {
+            private int GenerateHashCode() {
+                unchecked {
                     var result = _sourceType.GetHashCode();
 
-                    result = (result * 397) ^ _methodName.GetHashCode();
+                    result = result * 397 ^ _methodName.GetHashCode();
 
-                    for (var i = 0; i < _genericTypes.Length; ++i)
-                    {
-                        result = (result * 397) ^ _genericTypes[i].GetHashCode();
+                    for (var i = 0; i < _genericTypes.Length; ++i) {
+                        result = result * 397 ^ _genericTypes[i].GetHashCode();
                     }
 
-                    for (var i = 0; i < _parameterTypes.Length; ++i)
-                    {
-                        result = (result * 397) ^ _parameterTypes[i].GetHashCode();
+                    for (var i = 0; i < _parameterTypes.Length; ++i) {
+                        result = result * 397 ^ _parameterTypes[i].GetHashCode();
                     }
 
                     return result;
@@ -554,15 +513,16 @@ namespace RainbowMage.OverlayPlugin
 #else
     public
 #endif
-        class TinyIoCResolutionException : Exception
-    {
+        class TinyIoCResolutionException : Exception {
         private const string ERROR_TEXT = "Unable to resolve type: {0}";
 
         public TinyIoCResolutionException(Type type)
-            : base(String.Format(ERROR_TEXT, type.FullName)) { }
+            : base(string.Format(ERROR_TEXT, type.FullName)) {
+        }
 
         public TinyIoCResolutionException(Type type, Exception innerException)
-            : base(String.Format(ERROR_TEXT, type.FullName), innerException) { }
+            : base(string.Format(ERROR_TEXT, type.FullName), innerException) {
+        }
     }
 
 #if TINYIOC_INTERNAL
@@ -570,16 +530,17 @@ namespace RainbowMage.OverlayPlugin
 #else
     public
 #endif
-        class TinyIoCRegistrationTypeException : Exception
-    {
+        class TinyIoCRegistrationTypeException : Exception {
         private const string REGISTER_ERROR_TEXT =
             "Cannot register type {0} - abstract classes or interfaces are not valid implementation types for {1}.";
 
         public TinyIoCRegistrationTypeException(Type type, string factory)
-            : base(String.Format(REGISTER_ERROR_TEXT, type.FullName, factory)) { }
+            : base(string.Format(REGISTER_ERROR_TEXT, type.FullName, factory)) {
+        }
 
         public TinyIoCRegistrationTypeException(Type type, string factory, Exception innerException)
-            : base(String.Format(REGISTER_ERROR_TEXT, type.FullName, factory), innerException) { }
+            : base(string.Format(REGISTER_ERROR_TEXT, type.FullName, factory), innerException) {
+        }
     }
 
 #if TINYIOC_INTERNAL
@@ -587,23 +548,26 @@ namespace RainbowMage.OverlayPlugin
 #else
     public
 #endif
-        class TinyIoCRegistrationException : Exception
-    {
+        class TinyIoCRegistrationException : Exception {
         private const string CONVERT_ERROR_TEXT = "Cannot convert current registration of {0} to {1}";
         private const string GENERIC_CONSTRAINT_ERROR_TEXT = "Type {1} is not valid for a registration of type {0}";
 
         public TinyIoCRegistrationException(Type type, string method)
-            : base(String.Format(CONVERT_ERROR_TEXT, type.FullName, method)) { }
+            : base(string.Format(CONVERT_ERROR_TEXT, type.FullName, method)) {
+        }
 
         public TinyIoCRegistrationException(Type type, string method, Exception innerException)
-            : base(String.Format(CONVERT_ERROR_TEXT, type.FullName, method), innerException) { }
+            : base(string.Format(CONVERT_ERROR_TEXT, type.FullName, method), innerException) {
+        }
 
         public TinyIoCRegistrationException(Type registerType, Type implementationType)
-            : base(String.Format(GENERIC_CONSTRAINT_ERROR_TEXT, registerType.FullName, implementationType.FullName)) { }
+            : base(string.Format(GENERIC_CONSTRAINT_ERROR_TEXT, registerType.FullName, implementationType.FullName)) {
+        }
 
         public TinyIoCRegistrationException(Type registerType, Type implementationType, Exception innerException)
-            : base(String.Format(GENERIC_CONSTRAINT_ERROR_TEXT, registerType.FullName, implementationType.FullName),
-                   innerException) { }
+            : base(string.Format(GENERIC_CONSTRAINT_ERROR_TEXT, registerType.FullName, implementationType.FullName),
+                innerException) {
+        }
     }
 
 #if TINYIOC_INTERNAL
@@ -611,15 +575,16 @@ namespace RainbowMage.OverlayPlugin
 #else
     public
 #endif
-        class TinyIoCWeakReferenceException : Exception
-    {
+        class TinyIoCWeakReferenceException : Exception {
         private const string ERROR_TEXT = "Unable to instantiate {0} - referenced object has been reclaimed";
 
         public TinyIoCWeakReferenceException(Type type)
-            : base(String.Format(ERROR_TEXT, type.FullName)) { }
+            : base(string.Format(ERROR_TEXT, type.FullName)) {
+        }
 
         public TinyIoCWeakReferenceException(Type type, Exception innerException)
-            : base(String.Format(ERROR_TEXT, type.FullName), innerException) { }
+            : base(string.Format(ERROR_TEXT, type.FullName), innerException) {
+        }
     }
 
 #if TINYIOC_INTERNAL
@@ -627,21 +592,24 @@ namespace RainbowMage.OverlayPlugin
 #else
     public
 #endif
-        class TinyIoCConstructorResolutionException : Exception
-    {
+        class TinyIoCConstructorResolutionException : Exception {
         private const string ERROR_TEXT = "Unable to resolve constructor for {0} using provided Expression.";
 
         public TinyIoCConstructorResolutionException(Type type)
-            : base(String.Format(ERROR_TEXT, type.FullName)) { }
+            : base(string.Format(ERROR_TEXT, type.FullName)) {
+        }
 
         public TinyIoCConstructorResolutionException(Type type, Exception innerException)
-            : base(String.Format(ERROR_TEXT, type.FullName), innerException) { }
+            : base(string.Format(ERROR_TEXT, type.FullName), innerException) {
+        }
 
         public TinyIoCConstructorResolutionException(string message, Exception innerException)
-            : base(message, innerException) { }
+            : base(message, innerException) {
+        }
 
         public TinyIoCConstructorResolutionException(string message)
-            : base(message) { }
+            : base(message) {
+        }
     }
 
 #if TINYIOC_INTERNAL
@@ -649,20 +617,20 @@ namespace RainbowMage.OverlayPlugin
 #else
     public
 #endif
-        class TinyIoCAutoRegistrationException : Exception
-    {
+        class TinyIoCAutoRegistrationException : Exception {
         private const string ERROR_TEXT = "Duplicate implementation of type {0} found ({1}).";
 
         public TinyIoCAutoRegistrationException(Type registerType, IEnumerable<Type> types)
-            : base(String.Format(ERROR_TEXT, registerType, GetTypesString(types))) { }
+            : base(string.Format(ERROR_TEXT, registerType, GetTypesString(types))) {
+        }
 
         public TinyIoCAutoRegistrationException(Type registerType, IEnumerable<Type> types, Exception innerException)
-            : base(String.Format(ERROR_TEXT, registerType, GetTypesString(types)), innerException) { }
+            : base(string.Format(ERROR_TEXT, registerType, GetTypesString(types)), innerException) {
+        }
 
-        private static string GetTypesString(IEnumerable<Type> types)
-        {
+        private static string GetTypesString(IEnumerable<Type> types) {
             var typeNames = from type in types
-                            select type.FullName;
+                select type.FullName;
 
             return string.Join(",", typeNames.ToArray());
         }
@@ -673,26 +641,24 @@ namespace RainbowMage.OverlayPlugin
     #region Public Setup / Settings Classes
 
     /// <summary>
-    /// Name/Value pairs for specifying "user" parameters when resolving
+    ///     Name/Value pairs for specifying "user" parameters when resolving
     /// </summary>
 #if TINYIOC_INTERNAL
     internal
 #else
     public
 #endif
-        sealed class NamedParameterOverloads : Dictionary<string, object>
-    {
-        public static NamedParameterOverloads FromIDictionary(IDictionary<string, object> data)
-        {
-            return data as NamedParameterOverloads ?? new NamedParameterOverloads(data);
+        sealed class NamedParameterOverloads : Dictionary<string, object> {
+        public static NamedParameterOverloads FromIDictionary(IDictionary<string, object> data) => data as NamedParameterOverloads ?? new NamedParameterOverloads(data);
+
+        public NamedParameterOverloads() {
         }
 
-        public NamedParameterOverloads() { }
-
         public NamedParameterOverloads(IDictionary<string, object> data)
-            : base(data) { }
+            : base(data) {
+        }
 
-        public static NamedParameterOverloads Default { get; } = new NamedParameterOverloads();
+        public static NamedParameterOverloads Default { get; } = new();
     }
 
 #if TINYIOC_INTERNAL
@@ -700,25 +666,22 @@ namespace RainbowMage.OverlayPlugin
 #else
     public
 #endif
-        enum UnregisteredResolutionActions
-    {
+        enum UnregisteredResolutionActions {
         /// <summary>
-        /// Attempt to resolve type, even if the type isn't registered.
-        /// 
-        /// Registered types/options will always take precedence.
+        ///     Attempt to resolve type, even if the type isn't registered.
+        ///     Registered types/options will always take precedence.
         /// </summary>
         AttemptResolve,
 
         /// <summary>
-        /// Fail resolution if type not explicitly registered
+        ///     Fail resolution if type not explicitly registered
         /// </summary>
         Fail,
 
         /// <summary>
-        /// Attempt to resolve unregistered type if requested type is generic
-        /// and no registration exists for the specific generic parameters used.
-        /// 
-        /// Registered types/options will always take precedence.
+        ///     Attempt to resolve unregistered type if requested type is generic
+        ///     and no registration exists for the specific generic parameters used.
+        ///     Registered types/options will always take precedence.
         /// </summary>
         GenericsOnly
     }
@@ -728,8 +691,7 @@ namespace RainbowMage.OverlayPlugin
 #else
     public
 #endif
-        enum NamedResolutionFailureActions
-    {
+        enum NamedResolutionFailureActions {
         AttemptUnnamedResolution,
         Fail
     }
@@ -739,27 +701,34 @@ namespace RainbowMage.OverlayPlugin
 #else
     public
 #endif
-        enum DuplicateImplementationActions
-    {
+        enum DuplicateImplementationActions {
         RegisterSingle,
         RegisterMultiple,
         Fail
     }
 
     /// <summary>
-    /// Resolution settings
+    ///     Resolution settings
     /// </summary>
 #if TINYIOC_INTERNAL
     internal
 #else
     public
 #endif
-        sealed class ResolveOptions
-    {
-        private static readonly ResolveOptions _Default = new ResolveOptions();
-        private static readonly ResolveOptions _FailUnregisteredAndNameNotFound = new ResolveOptions() { NamedResolutionFailureAction = NamedResolutionFailureActions.Fail, UnregisteredResolutionAction = UnregisteredResolutionActions.Fail };
-        private static readonly ResolveOptions _FailUnregisteredOnly = new ResolveOptions() { NamedResolutionFailureAction = NamedResolutionFailureActions.AttemptUnnamedResolution, UnregisteredResolutionAction = UnregisteredResolutionActions.Fail };
-        private static readonly ResolveOptions _FailNameNotFoundOnly = new ResolveOptions() { NamedResolutionFailureAction = NamedResolutionFailureActions.Fail, UnregisteredResolutionAction = UnregisteredResolutionActions.AttemptResolve };
+        sealed class ResolveOptions {
+        private static readonly ResolveOptions _Default = new();
+        private static readonly ResolveOptions _FailUnregisteredAndNameNotFound = new() {
+            NamedResolutionFailureAction = NamedResolutionFailureActions.Fail,
+            UnregisteredResolutionAction = UnregisteredResolutionActions.Fail
+        };
+        private static readonly ResolveOptions _FailUnregisteredOnly = new() {
+            NamedResolutionFailureAction = NamedResolutionFailureActions.AttemptUnnamedResolution,
+            UnregisteredResolutionAction = UnregisteredResolutionActions.Fail
+        };
+        private static readonly ResolveOptions _FailNameNotFoundOnly = new() {
+            NamedResolutionFailureAction = NamedResolutionFailureActions.Fail,
+            UnregisteredResolutionAction = UnregisteredResolutionActions.AttemptResolve
+        };
 
         public UnregisteredResolutionActions UnregisteredResolutionAction { get; set; } =
             UnregisteredResolutionActions.AttemptResolve;
@@ -768,33 +737,32 @@ namespace RainbowMage.OverlayPlugin
             NamedResolutionFailureActions.Fail;
 
         /// <summary>
-        /// Gets the default options (attempt resolution of unregistered types, fail on named resolution if name not found)
+        ///     Gets the default options (attempt resolution of unregistered types, fail on named resolution if name not found)
         /// </summary>
-        public static ResolveOptions Default { get; } = new ResolveOptions()
-        {
+        public static ResolveOptions Default { get; } = new() {
             NamedResolutionFailureAction = NamedResolutionFailureActions.Fail,
             UnregisteredResolutionAction = UnregisteredResolutionActions.Fail
         };
 
         /// <summary>
-        /// Preconfigured option for attempting resolution of unregistered types and failing on named resolution if name not found
+        ///     Preconfigured option for attempting resolution of unregistered types and failing on named resolution if name not
+        ///     found
         /// </summary>
-        public static ResolveOptions FailNameNotFoundOnly { get; } = new ResolveOptions()
-        {
+        public static ResolveOptions FailNameNotFoundOnly { get; } = new() {
             NamedResolutionFailureAction = NamedResolutionFailureActions.Fail,
             UnregisteredResolutionAction = UnregisteredResolutionActions.AttemptResolve
         };
 
         /// <summary>
-        /// Preconfigured option for failing on resolving unregistered types and on named resolution if name not found
+        ///     Preconfigured option for failing on resolving unregistered types and on named resolution if name not found
         /// </summary>
         public static ResolveOptions FailUnregisteredAndNameNotFound => Default;
 
         /// <summary>
-        /// Preconfigured option for failing on resolving unregistered types, but attempting unnamed resolution if name not found
+        ///     Preconfigured option for failing on resolving unregistered types, but attempting unnamed resolution if name not
+        ///     found
         /// </summary>
-        public static ResolveOptions FailUnregisteredOnly { get; } = new ResolveOptions()
-        {
+        public static ResolveOptions FailUnregisteredOnly { get; } = new() {
             NamedResolutionFailureAction = NamedResolutionFailureActions.AttemptUnnamedResolution,
             UnregisteredResolutionAction = UnregisteredResolutionActions.Fail
         };
@@ -807,8 +775,7 @@ namespace RainbowMage.OverlayPlugin
 #else
     public
 #endif
-        sealed partial class TinyIoCContainer : IDisposable
-    {
+        sealed class TinyIoCContainer : IDisposable {
         #region Fake NETFX_CORE Classes
 
 #if NETFX_CORE
@@ -862,26 +829,23 @@ namespace RainbowMage.OverlayPlugin
         #region "Fluent" API
 
         /// <summary>
-        /// Registration options for "fluent" API
+        ///     Registration options for "fluent" API
         /// </summary>
-        public sealed class RegisterOptions
-        {
+        public sealed class RegisterOptions {
             private TinyIoCContainer _Container;
             private TypeRegistration _Registration;
 
-            public RegisterOptions(TinyIoCContainer container, TypeRegistration registration)
-            {
+            public RegisterOptions(TinyIoCContainer container, TypeRegistration registration) {
                 _Container = container;
                 _Registration = registration;
             }
 
             /// <summary>
-            /// Make registration a singleton (single instance) if possible
+            ///     Make registration a singleton (single instance) if possible
             /// </summary>
             /// <returns>RegisterOptions</returns>
             /// <exception cref="TinyIoCInstantiationTypeException"></exception>
-            public RegisterOptions AsSingleton()
-            {
+            public RegisterOptions AsSingleton() {
                 var currentFactory = _Container.GetCurrentFactory(_Registration);
 
                 if (currentFactory == null)
@@ -891,12 +855,11 @@ namespace RainbowMage.OverlayPlugin
             }
 
             /// <summary>
-            /// Make registration multi-instance if possible
+            ///     Make registration multi-instance if possible
             /// </summary>
             /// <returns>RegisterOptions</returns>
             /// <exception cref="TinyIoCInstantiationTypeException"></exception>
-            public RegisterOptions AsMultiInstance()
-            {
+            public RegisterOptions AsMultiInstance() {
                 var currentFactory = _Container.GetCurrentFactory(_Registration);
 
                 if (currentFactory == null)
@@ -906,12 +869,11 @@ namespace RainbowMage.OverlayPlugin
             }
 
             /// <summary>
-            /// Make registration hold a weak reference if possible
+            ///     Make registration hold a weak reference if possible
             /// </summary>
             /// <returns>RegisterOptions</returns>
             /// <exception cref="TinyIoCInstantiationTypeException"></exception>
-            public RegisterOptions WithWeakReference()
-            {
+            public RegisterOptions WithWeakReference() {
                 var currentFactory = _Container.GetCurrentFactory(_Registration);
 
                 if (currentFactory == null)
@@ -921,12 +883,11 @@ namespace RainbowMage.OverlayPlugin
             }
 
             /// <summary>
-            /// Make registration hold a strong reference if possible
+            ///     Make registration hold a strong reference if possible
             /// </summary>
             /// <returns>RegisterOptions</returns>
             /// <exception cref="TinyIoCInstantiationTypeException"></exception>
-            public RegisterOptions WithStrongReference()
-            {
+            public RegisterOptions WithStrongReference() {
                 var currentFactory = _Container.GetCurrentFactory(_Registration);
 
                 if (currentFactory == null)
@@ -936,8 +897,7 @@ namespace RainbowMage.OverlayPlugin
             }
 
 #if EXPRESSIONS
-            public RegisterOptions UsingConstructor<RegisterType>(Expression<Func<RegisterType>> constructor)
-            {
+            public RegisterOptions UsingConstructor<RegisterType>(Expression<Func<RegisterType>> constructor) {
                 var lambda = constructor as LambdaExpression;
                 if (lambda == null)
                     throw new TinyIoCConstructorResolutionException(typeof(RegisterType));
@@ -960,24 +920,22 @@ namespace RainbowMage.OverlayPlugin
             }
 #endif
             /// <summary>
-            /// Switches to a custom lifetime manager factory if possible.
-            /// 
-            /// Usually used for RegisterOptions "To*" extension methods such as the ASP.Net per-request one.
+            ///     Switches to a custom lifetime manager factory if possible.
+            ///     Usually used for RegisterOptions "To*" extension methods such as the ASP.Net per-request one.
             /// </summary>
             /// <param name="instance">RegisterOptions instance</param>
             /// <param name="lifetimeProvider">Custom lifetime manager</param>
             /// <param name="errorString">Error string to display if switch fails</param>
             /// <returns>RegisterOptions</returns>
             public static RegisterOptions ToCustomLifetimeManager(
-                RegisterOptions instance, ITinyIoCObjectLifetimeProvider lifetimeProvider, string errorString)
-            {
+                RegisterOptions instance, ITinyIoCObjectLifetimeProvider lifetimeProvider, string errorString) {
                 if (instance == null)
                     throw new ArgumentNullException("instance", "instance is null.");
 
                 if (lifetimeProvider == null)
                     throw new ArgumentNullException("lifetimeProvider", "lifetimeProvider is null.");
 
-                if (String.IsNullOrEmpty(errorString))
+                if (string.IsNullOrEmpty(errorString))
                     throw new ArgumentException("errorString is null or empty.", "errorString");
 
                 var currentFactory = instance._Container.GetCurrentFactory(instance._Registration);
@@ -986,53 +944,48 @@ namespace RainbowMage.OverlayPlugin
                     throw new TinyIoCRegistrationException(instance._Registration.Type, errorString);
 
                 return instance._Container.AddUpdateRegistration(instance._Registration,
-                                                                 currentFactory.GetCustomObjectLifetimeVariant(
-                                                                     lifetimeProvider, errorString));
+                    currentFactory.GetCustomObjectLifetimeVariant(
+                        lifetimeProvider, errorString));
             }
         }
 
         /// <summary>
-        /// Registration options for "fluent" API when registering multiple implementations
+        ///     Registration options for "fluent" API when registering multiple implementations
         /// </summary>
-        public sealed class MultiRegisterOptions
-        {
+        public sealed class MultiRegisterOptions {
             private IEnumerable<RegisterOptions> _RegisterOptions;
 
             /// <summary>
-            /// Initializes a new instance of the MultiRegisterOptions class.
+            ///     Initializes a new instance of the MultiRegisterOptions class.
             /// </summary>
             /// <param name="registerOptions">Registration options</param>
-            public MultiRegisterOptions(IEnumerable<RegisterOptions> registerOptions)
-            {
+            public MultiRegisterOptions(IEnumerable<RegisterOptions> registerOptions) {
                 _RegisterOptions = registerOptions;
             }
 
             /// <summary>
-            /// Make registration a singleton (single instance) if possible
+            ///     Make registration a singleton (single instance) if possible
             /// </summary>
             /// <returns>RegisterOptions</returns>
             /// <exception cref="TinyIoCInstantiationTypeException"></exception>
-            public MultiRegisterOptions AsSingleton()
-            {
+            public MultiRegisterOptions AsSingleton() {
                 _RegisterOptions = ExecuteOnAllRegisterOptions(ro => ro.AsSingleton());
                 return this;
             }
 
             /// <summary>
-            /// Make registration multi-instance if possible
+            ///     Make registration multi-instance if possible
             /// </summary>
             /// <returns>MultiRegisterOptions</returns>
             /// <exception cref="TinyIoCInstantiationTypeException"></exception>
-            public MultiRegisterOptions AsMultiInstance()
-            {
+            public MultiRegisterOptions AsMultiInstance() {
                 _RegisterOptions = ExecuteOnAllRegisterOptions(ro => ro.AsMultiInstance());
                 return this;
             }
 
             /// <summary>
-            /// Switches to a custom lifetime manager factory if possible.
-            /// 
-            /// Usually used for RegisterOptions "To*" extension methods such as the ASP.Net per-request one.
+            ///     Switches to a custom lifetime manager factory if possible.
+            ///     Usually used for RegisterOptions "To*" extension methods such as the ASP.Net per-request one.
             /// </summary>
             /// <param name="instance">MultiRegisterOptions instance</param>
             /// <param name="lifetimeProvider">Custom lifetime manager</param>
@@ -1041,31 +994,27 @@ namespace RainbowMage.OverlayPlugin
             public static MultiRegisterOptions ToCustomLifetimeManager(
                 MultiRegisterOptions instance,
                 ITinyIoCObjectLifetimeProvider lifetimeProvider,
-                string errorString)
-            {
+                string errorString) {
                 if (instance == null)
                     throw new ArgumentNullException("instance", "instance is null.");
 
                 if (lifetimeProvider == null)
                     throw new ArgumentNullException("lifetimeProvider", "lifetimeProvider is null.");
 
-                if (String.IsNullOrEmpty(errorString))
+                if (string.IsNullOrEmpty(errorString))
                     throw new ArgumentException("errorString is null or empty.", "errorString");
 
                 instance._RegisterOptions =
-                    instance.ExecuteOnAllRegisterOptions(
-                        ro => RegisterOptions.ToCustomLifetimeManager(ro, lifetimeProvider, errorString));
+                    instance.ExecuteOnAllRegisterOptions(ro => RegisterOptions.ToCustomLifetimeManager(ro, lifetimeProvider, errorString));
 
                 return instance;
             }
 
             private IEnumerable<RegisterOptions> ExecuteOnAllRegisterOptions(
-                Func<RegisterOptions, RegisterOptions> action)
-            {
+                Func<RegisterOptions, RegisterOptions> action) {
                 var newRegisterOptions = new List<RegisterOptions>();
 
-                foreach (var registerOption in _RegisterOptions)
-                {
+                foreach (var registerOption in _RegisterOptions) {
                     newRegisterOptions.Add(action(registerOption));
                 }
 
@@ -1079,293 +1028,261 @@ namespace RainbowMage.OverlayPlugin
 
         #region Child Containers
 
-        public TinyIoCContainer GetChildContainer()
-        {
-            return new TinyIoCContainer(this);
-        }
+        public TinyIoCContainer GetChildContainer() => new(this);
 
         #endregion
 
         #region Registration
 
         /// <summary>
-        /// Attempt to automatically register all non-generic classes and interfaces in the current app domain.
-        /// 
-        /// If more than one class implements an interface then only one implementation will be registered
-        /// although no error will be thrown.
+        ///     Attempt to automatically register all non-generic classes and interfaces in the current app domain.
+        ///     If more than one class implements an interface then only one implementation will be registered
+        ///     although no error will be thrown.
         /// </summary>
-        public void AutoRegister()
-        {
+        public void AutoRegister() {
 #if APPDOMAIN_GETASSEMBLIES
             AutoRegisterInternal(AppDomain.CurrentDomain.GetAssemblies().Where(a => !IsIgnoredAssembly(a)),
-                                 DuplicateImplementationActions.RegisterSingle, null);
+                DuplicateImplementationActions.RegisterSingle, null);
 #else
             AutoRegisterInternal(new Assembly[] {this.GetType().Assembly()}, true, null);
 #endif
         }
 
         /// <summary>
-        /// Attempt to automatically register all non-generic classes and interfaces in the current app domain.
-        /// Types will only be registered if they pass the supplied registration predicate.
-        /// 
-        /// If more than one class implements an interface then only one implementation will be registered
-        /// although no error will be thrown.
+        ///     Attempt to automatically register all non-generic classes and interfaces in the current app domain.
+        ///     Types will only be registered if they pass the supplied registration predicate.
+        ///     If more than one class implements an interface then only one implementation will be registered
+        ///     although no error will be thrown.
         /// </summary>
         /// <param name="registrationPredicate">Predicate to determine if a particular type should be registered</param>
-        public void AutoRegister(Func<Type, bool> registrationPredicate)
-        {
+        public void AutoRegister(Func<Type, bool> registrationPredicate) {
 #if APPDOMAIN_GETASSEMBLIES
             AutoRegisterInternal(AppDomain.CurrentDomain.GetAssemblies().Where(a => !IsIgnoredAssembly(a)),
-                                 DuplicateImplementationActions.RegisterSingle, registrationPredicate);
+                DuplicateImplementationActions.RegisterSingle, registrationPredicate);
 #else
             AutoRegisterInternal(new Assembly[] { this.GetType().Assembly()}, true, registrationPredicate);
 #endif
         }
 
         /// <summary>
-        /// Attempt to automatically register all non-generic classes and interfaces in the current app domain.
+        ///     Attempt to automatically register all non-generic classes and interfaces in the current app domain.
         /// </summary>
-        /// <param name="duplicateAction">What action to take when encountering duplicate implementations of an interface/base class.</param>
-        /// <exception cref="TinyIoCAutoRegistrationException"/>
-        public void AutoRegister(DuplicateImplementationActions duplicateAction)
-        {
+        /// <param name="duplicateAction">
+        ///     What action to take when encountering duplicate implementations of an interface/base
+        ///     class.
+        /// </param>
+        /// <exception cref="TinyIoCAutoRegistrationException" />
+        public void AutoRegister(DuplicateImplementationActions duplicateAction) {
 #if APPDOMAIN_GETASSEMBLIES
             AutoRegisterInternal(AppDomain.CurrentDomain.GetAssemblies().Where(a => !IsIgnoredAssembly(a)),
-                                 duplicateAction, null);
+                duplicateAction, null);
 #else
             AutoRegisterInternal(new Assembly[] { this.GetType().Assembly() }, ignoreDuplicateImplementations, null);
 #endif
         }
 
         /// <summary>
-        /// Attempt to automatically register all non-generic classes and interfaces in the current app domain.
-        /// Types will only be registered if they pass the supplied registration predicate.
+        ///     Attempt to automatically register all non-generic classes and interfaces in the current app domain.
+        ///     Types will only be registered if they pass the supplied registration predicate.
         /// </summary>
-        /// <param name="duplicateAction">What action to take when encountering duplicate implementations of an interface/base class.</param>
+        /// <param name="duplicateAction">
+        ///     What action to take when encountering duplicate implementations of an interface/base
+        ///     class.
+        /// </param>
         /// <param name="registrationPredicate">Predicate to determine if a particular type should be registered</param>
-        /// <exception cref="TinyIoCAutoRegistrationException"/>
-        public void AutoRegister(DuplicateImplementationActions duplicateAction, Func<Type, bool> registrationPredicate)
-        {
+        /// <exception cref="TinyIoCAutoRegistrationException" />
+        public void AutoRegister(DuplicateImplementationActions duplicateAction, Func<Type, bool> registrationPredicate) {
 #if APPDOMAIN_GETASSEMBLIES
             AutoRegisterInternal(AppDomain.CurrentDomain.GetAssemblies().Where(a => !IsIgnoredAssembly(a)),
-                                 duplicateAction, registrationPredicate);
+                duplicateAction, registrationPredicate);
 #else
             AutoRegisterInternal(new Assembly[] { this.GetType().Assembly() }, ignoreDuplicateImplementations, registrationPredicate);
 #endif
         }
 
         /// <summary>
-        /// Attempt to automatically register all non-generic classes and interfaces in the specified assemblies
-        /// 
-        /// If more than one class implements an interface then only one implementation will be registered
-        /// although no error will be thrown.
+        ///     Attempt to automatically register all non-generic classes and interfaces in the specified assemblies
+        ///     If more than one class implements an interface then only one implementation will be registered
+        ///     although no error will be thrown.
         /// </summary>
         /// <param name="assemblies">Assemblies to process</param>
-        public void AutoRegister(IEnumerable<Assembly> assemblies)
-        {
+        public void AutoRegister(IEnumerable<Assembly> assemblies) {
             AutoRegisterInternal(assemblies, DuplicateImplementationActions.RegisterSingle, null);
         }
 
         /// <summary>
-        /// Attempt to automatically register all non-generic classes and interfaces in the specified assemblies
-        /// Types will only be registered if they pass the supplied registration predicate.
-        /// 
-        /// If more than one class implements an interface then only one implementation will be registered
-        /// although no error will be thrown.
+        ///     Attempt to automatically register all non-generic classes and interfaces in the specified assemblies
+        ///     Types will only be registered if they pass the supplied registration predicate.
+        ///     If more than one class implements an interface then only one implementation will be registered
+        ///     although no error will be thrown.
         /// </summary>
         /// <param name="assemblies">Assemblies to process</param>
         /// <param name="registrationPredicate">Predicate to determine if a particular type should be registered</param>
-        public void AutoRegister(IEnumerable<Assembly> assemblies, Func<Type, bool> registrationPredicate)
-        {
+        public void AutoRegister(IEnumerable<Assembly> assemblies, Func<Type, bool> registrationPredicate) {
             AutoRegisterInternal(assemblies, DuplicateImplementationActions.RegisterSingle, registrationPredicate);
         }
 
         /// <summary>
-        /// Attempt to automatically register all non-generic classes and interfaces in the specified assemblies
+        ///     Attempt to automatically register all non-generic classes and interfaces in the specified assemblies
         /// </summary>
         /// <param name="assemblies">Assemblies to process</param>
-        /// <param name="duplicateAction">What action to take when encountering duplicate implementations of an interface/base class.</param>
-        /// <exception cref="TinyIoCAutoRegistrationException"/>
-        public void AutoRegister(IEnumerable<Assembly> assemblies, DuplicateImplementationActions duplicateAction)
-        {
+        /// <param name="duplicateAction">
+        ///     What action to take when encountering duplicate implementations of an interface/base
+        ///     class.
+        /// </param>
+        /// <exception cref="TinyIoCAutoRegistrationException" />
+        public void AutoRegister(IEnumerable<Assembly> assemblies, DuplicateImplementationActions duplicateAction) {
             AutoRegisterInternal(assemblies, duplicateAction, null);
         }
 
         /// <summary>
-        /// Attempt to automatically register all non-generic classes and interfaces in the specified assemblies
-        /// Types will only be registered if they pass the supplied registration predicate.
+        ///     Attempt to automatically register all non-generic classes and interfaces in the specified assemblies
+        ///     Types will only be registered if they pass the supplied registration predicate.
         /// </summary>
         /// <param name="assemblies">Assemblies to process</param>
-        /// <param name="duplicateAction">What action to take when encountering duplicate implementations of an interface/base class.</param>
+        /// <param name="duplicateAction">
+        ///     What action to take when encountering duplicate implementations of an interface/base
+        ///     class.
+        /// </param>
         /// <param name="registrationPredicate">Predicate to determine if a particular type should be registered</param>
-        /// <exception cref="TinyIoCAutoRegistrationException"/>
+        /// <exception cref="TinyIoCAutoRegistrationException" />
         public void AutoRegister(
             IEnumerable<Assembly> assemblies, DuplicateImplementationActions duplicateAction,
-            Func<Type, bool> registrationPredicate)
-        {
+            Func<Type, bool> registrationPredicate) {
             AutoRegisterInternal(assemblies, duplicateAction, registrationPredicate);
         }
 
         /// <summary>
-        /// Creates/replaces a container class registration with default options.
+        ///     Creates/replaces a container class registration with default options.
         /// </summary>
         /// <param name="registerType">Type to register</param>
         /// <returns>RegisterOptions for fluent API</returns>
-        public RegisterOptions Register(Type registerType)
-        {
-            return RegisterInternal(registerType, string.Empty, GetDefaultObjectFactory(registerType, registerType));
-        }
+        public RegisterOptions Register(Type registerType) => RegisterInternal(registerType, string.Empty, GetDefaultObjectFactory(registerType, registerType));
 
         /// <summary>
-        /// Creates/replaces a named container class registration with default options.
+        ///     Creates/replaces a named container class registration with default options.
         /// </summary>
         /// <param name="registerType">Type to register</param>
         /// <param name="name">Name of registration</param>
         /// <returns>RegisterOptions for fluent API</returns>
-        public RegisterOptions Register(Type registerType, string name)
-        {
-            return RegisterInternal(registerType, name, GetDefaultObjectFactory(registerType, registerType));
-        }
+        public RegisterOptions Register(Type registerType, string name) => RegisterInternal(registerType, name, GetDefaultObjectFactory(registerType, registerType));
 
         /// <summary>
-        /// Creates/replaces a container class registration with a given implementation and default options.
+        ///     Creates/replaces a container class registration with a given implementation and default options.
         /// </summary>
         /// <param name="registerType">Type to register</param>
         /// <param name="registerImplementation">Type to instantiate that implements RegisterType</param>
         /// <returns>RegisterOptions for fluent API</returns>
-        public RegisterOptions Register(Type registerType, Type registerImplementation)
-        {
-            return this.RegisterInternal(registerType, string.Empty,
-                                         GetDefaultObjectFactory(registerType, registerImplementation));
-        }
+        public RegisterOptions Register(Type registerType, Type registerImplementation) =>
+            RegisterInternal(registerType, string.Empty,
+                GetDefaultObjectFactory(registerType, registerImplementation));
 
         /// <summary>
-        /// Creates/replaces a named container class registration with a given implementation and default options.
+        ///     Creates/replaces a named container class registration with a given implementation and default options.
         /// </summary>
         /// <param name="registerType">Type to register</param>
         /// <param name="registerImplementation">Type to instantiate that implements RegisterType</param>
         /// <param name="name">Name of registration</param>
         /// <returns>RegisterOptions for fluent API</returns>
-        public RegisterOptions Register(Type registerType, Type registerImplementation, string name)
-        {
-            return this.RegisterInternal(registerType, name,
-                                         GetDefaultObjectFactory(registerType, registerImplementation));
-        }
+        public RegisterOptions Register(Type registerType, Type registerImplementation, string name) =>
+            RegisterInternal(registerType, name,
+                GetDefaultObjectFactory(registerType, registerImplementation));
 
         /// <summary>
-        /// Creates/replaces a container class registration with a specific, strong referenced, instance.
+        ///     Creates/replaces a container class registration with a specific, strong referenced, instance.
         /// </summary>
         /// <param name="registerType">Type to register</param>
         /// <param name="instance">Instance of RegisterType to register</param>
         /// <returns>RegisterOptions for fluent API</returns>
-        public RegisterOptions Register(Type registerType, object instance)
-        {
-            return RegisterInternal(registerType, string.Empty,
-                                    new InstanceFactory(registerType, registerType, instance));
-        }
+        public RegisterOptions Register(Type registerType, object instance) =>
+            RegisterInternal(registerType, string.Empty,
+                new InstanceFactory(registerType, registerType, instance));
 
         /// <summary>
-        /// Creates/replaces a named container class registration with a specific, strong referenced, instance.
+        ///     Creates/replaces a named container class registration with a specific, strong referenced, instance.
         /// </summary>
         /// <param name="registerType">Type to register</param>
         /// <param name="instance">Instance of RegisterType to register</param>
         /// <param name="name">Name of registration</param>
         /// <returns>RegisterOptions for fluent API</returns>
-        public RegisterOptions Register(Type registerType, object instance, string name)
-        {
-            return RegisterInternal(registerType, name, new InstanceFactory(registerType, registerType, instance));
-        }
+        public RegisterOptions Register(Type registerType, object instance, string name) => RegisterInternal(registerType, name, new InstanceFactory(registerType, registerType, instance));
 
         /// <summary>
-        /// Creates/replaces a container class registration with a specific, strong referenced, instance.
+        ///     Creates/replaces a container class registration with a specific, strong referenced, instance.
         /// </summary>
         /// <param name="registerType">Type to register</param>
         /// <param name="registerImplementation">Type of instance to register that implements RegisterType</param>
         /// <param name="instance">Instance of RegisterImplementation to register</param>
         /// <returns>RegisterOptions for fluent API</returns>
-        public RegisterOptions Register(Type registerType, Type registerImplementation, object instance)
-        {
-            return RegisterInternal(registerType, string.Empty,
-                                    new InstanceFactory(registerType, registerImplementation, instance));
-        }
+        public RegisterOptions Register(Type registerType, Type registerImplementation, object instance) =>
+            RegisterInternal(registerType, string.Empty,
+                new InstanceFactory(registerType, registerImplementation, instance));
 
         /// <summary>
-        /// Creates/replaces a named container class registration with a specific, strong referenced, instance.
+        ///     Creates/replaces a named container class registration with a specific, strong referenced, instance.
         /// </summary>
         /// <param name="registerType">Type to register</param>
         /// <param name="registerImplementation">Type of instance to register that implements RegisterType</param>
         /// <param name="instance">Instance of RegisterImplementation to register</param>
         /// <param name="name">Name of registration</param>
         /// <returns>RegisterOptions for fluent API</returns>
-        public RegisterOptions Register(Type registerType, Type registerImplementation, object instance, string name)
-        {
-            return RegisterInternal(registerType, name,
-                                    new InstanceFactory(registerType, registerImplementation, instance));
-        }
+        public RegisterOptions Register(Type registerType, Type registerImplementation, object instance, string name) =>
+            RegisterInternal(registerType, name,
+                new InstanceFactory(registerType, registerImplementation, instance));
 
         /// <summary>
-        /// Creates/replaces a container class registration with a user specified factory
+        ///     Creates/replaces a container class registration with a user specified factory
         /// </summary>
         /// <param name="registerType">Type to register</param>
         /// <param name="factory">Factory/lambda that returns an instance of RegisterType</param>
         /// <returns>RegisterOptions for fluent API</returns>
         public RegisterOptions Register(
-            Type registerType, Func<TinyIoCContainer, NamedParameterOverloads, object> factory)
-        {
-            return RegisterInternal(registerType, string.Empty, new DelegateFactory(registerType, factory));
-        }
+            Type registerType, Func<TinyIoCContainer, NamedParameterOverloads, object> factory) =>
+            RegisterInternal(registerType, string.Empty, new DelegateFactory(registerType, factory));
 
         /// <summary>
-        /// Creates/replaces a container class registration with a user specified factory
+        ///     Creates/replaces a container class registration with a user specified factory
         /// </summary>
         /// <param name="registerType">Type to register</param>
         /// <param name="factory">Factory/lambda that returns an instance of RegisterType</param>
         /// <param name="name">Name of registation</param>
         /// <returns>RegisterOptions for fluent API</returns>
         public RegisterOptions Register(
-            Type registerType, Func<TinyIoCContainer, NamedParameterOverloads, object> factory, string name)
-        {
-            return RegisterInternal(registerType, name, new DelegateFactory(registerType, factory));
-        }
+            Type registerType, Func<TinyIoCContainer, NamedParameterOverloads, object> factory, string name) =>
+            RegisterInternal(registerType, name, new DelegateFactory(registerType, factory));
 
         /// <summary>
-        /// Creates/replaces a container class registration with default options.
+        ///     Creates/replaces a container class registration with default options.
         /// </summary>
         /// <typeparam name="RegisterImplementation">Type to register</typeparam>
         /// <returns>RegisterOptions for fluent API</returns>
         public RegisterOptions Register<RegisterType>()
-            where RegisterType : class
-        {
-            return this.Register(typeof(RegisterType));
-        }
+            where RegisterType : class =>
+            Register(typeof(RegisterType));
 
         /// <summary>
-        /// Creates/replaces a named container class registration with default options.
+        ///     Creates/replaces a named container class registration with default options.
         /// </summary>
         /// <typeparam name="RegisterImplementation">Type to register</typeparam>
         /// <param name="name">Name of registration</param>
         /// <returns>RegisterOptions for fluent API</returns>
         public RegisterOptions Register<RegisterType>(string name)
-            where RegisterType : class
-        {
-            return this.Register(typeof(RegisterType), name);
-        }
+            where RegisterType : class =>
+            Register(typeof(RegisterType), name);
 
         /// <summary>
-        /// Creates/replaces a container class registration with a given implementation and default options.
+        ///     Creates/replaces a container class registration with a given implementation and default options.
         /// </summary>
         /// <typeparam name="RegisterType">Type to register</typeparam>
         /// <typeparam name="RegisterImplementation">Type to instantiate that implements RegisterType</typeparam>
         /// <returns>RegisterOptions for fluent API</returns>
         public RegisterOptions Register<RegisterType, RegisterImplementation>()
             where RegisterType : class
-            where RegisterImplementation : class, RegisterType
-        {
-            return this.Register(typeof(RegisterType), typeof(RegisterImplementation));
-        }
+            where RegisterImplementation : class, RegisterType =>
+            Register(typeof(RegisterType), typeof(RegisterImplementation));
 
         /// <summary>
-        /// Creates/replaces a named container class registration with a given implementation and default options.
+        ///     Creates/replaces a named container class registration with a given implementation and default options.
         /// </summary>
         /// <typeparam name="RegisterType">Type to register</typeparam>
         /// <typeparam name="RegisterImplementation">Type to instantiate that implements RegisterType</typeparam>
@@ -1373,38 +1290,32 @@ namespace RainbowMage.OverlayPlugin
         /// <returns>RegisterOptions for fluent API</returns>
         public RegisterOptions Register<RegisterType, RegisterImplementation>(string name)
             where RegisterType : class
-            where RegisterImplementation : class, RegisterType
-        {
-            return this.Register(typeof(RegisterType), typeof(RegisterImplementation), name);
-        }
+            where RegisterImplementation : class, RegisterType =>
+            Register(typeof(RegisterType), typeof(RegisterImplementation), name);
 
         /// <summary>
-        /// Creates/replaces a container class registration with a specific, strong referenced, instance.
+        ///     Creates/replaces a container class registration with a specific, strong referenced, instance.
         /// </summary>
         /// <typeparam name="RegisterType">Type to register</typeparam>
         /// <param name="instance">Instance of RegisterType to register</param>
         /// <returns>RegisterOptions for fluent API</returns>
         public RegisterOptions Register<RegisterType>(RegisterType instance)
-            where RegisterType : class
-        {
-            return this.Register(typeof(RegisterType), instance);
-        }
+            where RegisterType : class =>
+            Register(typeof(RegisterType), instance);
 
         /// <summary>
-        /// Creates/replaces a named container class registration with a specific, strong referenced, instance.
+        ///     Creates/replaces a named container class registration with a specific, strong referenced, instance.
         /// </summary>
         /// <typeparam name="RegisterType">Type to register</typeparam>
         /// <param name="instance">Instance of RegisterType to register</param>
         /// <param name="name">Name of registration</param>
         /// <returns>RegisterOptions for fluent API</returns>
         public RegisterOptions Register<RegisterType>(RegisterType instance, string name)
-            where RegisterType : class
-        {
-            return this.Register(typeof(RegisterType), instance, name);
-        }
+            where RegisterType : class =>
+            Register(typeof(RegisterType), instance, name);
 
         /// <summary>
-        /// Creates/replaces a container class registration with a specific, strong referenced, instance.
+        ///     Creates/replaces a container class registration with a specific, strong referenced, instance.
         /// </summary>
         /// <typeparam name="RegisterType">Type to register</typeparam>
         /// <typeparam name="RegisterImplementation">Type of instance to register that implements RegisterType</typeparam>
@@ -1412,13 +1323,11 @@ namespace RainbowMage.OverlayPlugin
         /// <returns>RegisterOptions for fluent API</returns>
         public RegisterOptions Register<RegisterType, RegisterImplementation>(RegisterImplementation instance)
             where RegisterType : class
-            where RegisterImplementation : class, RegisterType
-        {
-            return this.Register(typeof(RegisterType), typeof(RegisterImplementation), instance);
-        }
+            where RegisterImplementation : class, RegisterType =>
+            Register(typeof(RegisterType), typeof(RegisterImplementation), instance);
 
         /// <summary>
-        /// Creates/replaces a named container class registration with a specific, strong referenced, instance.
+        ///     Creates/replaces a named container class registration with a specific, strong referenced, instance.
         /// </summary>
         /// <typeparam name="RegisterType">Type to register</typeparam>
         /// <typeparam name="RegisterImplementation">Type of instance to register that implements RegisterType</typeparam>
@@ -1428,31 +1337,27 @@ namespace RainbowMage.OverlayPlugin
         public RegisterOptions Register<RegisterType, RegisterImplementation>(
             RegisterImplementation instance, string name)
             where RegisterType : class
-            where RegisterImplementation : class, RegisterType
-        {
-            return this.Register(typeof(RegisterType), typeof(RegisterImplementation), instance, name);
-        }
+            where RegisterImplementation : class, RegisterType =>
+            Register(typeof(RegisterType), typeof(RegisterImplementation), instance, name);
 
         /// <summary>
-        /// Creates/replaces a container class registration with a user specified factory
+        ///     Creates/replaces a container class registration with a user specified factory
         /// </summary>
         /// <typeparam name="RegisterType">Type to register</typeparam>
         /// <param name="factory">Factory/lambda that returns an instance of RegisterType</param>
         /// <returns>RegisterOptions for fluent API</returns>
         public RegisterOptions Register<RegisterType>(
             Func<TinyIoCContainer, NamedParameterOverloads, RegisterType> factory)
-            where RegisterType : class
-        {
-            if (factory == null)
-            {
+            where RegisterType : class {
+            if (factory == null) {
                 throw new ArgumentNullException("factory");
             }
 
-            return this.Register(typeof(RegisterType), (c, o) => factory(c, o));
+            return Register(typeof(RegisterType), (c, o) => factory(c, o));
         }
 
         /// <summary>
-        /// Creates/replaces a named container class registration with a user specified factory
+        ///     Creates/replaces a named container class registration with a user specified factory
         /// </summary>
         /// <typeparam name="RegisterType">Type to register</typeparam>
         /// <param name="factory">Factory/lambda that returns an instance of RegisterType</param>
@@ -1460,39 +1365,31 @@ namespace RainbowMage.OverlayPlugin
         /// <returns>RegisterOptions for fluent API</returns>
         public RegisterOptions Register<RegisterType>(
             Func<TinyIoCContainer, NamedParameterOverloads, RegisterType> factory, string name)
-            where RegisterType : class
-        {
-            if (factory == null)
-            {
+            where RegisterType : class {
+            if (factory == null) {
                 throw new ArgumentNullException("factory");
             }
 
-            return this.Register(typeof(RegisterType), (c, o) => factory(c, o), name);
+            return Register(typeof(RegisterType), (c, o) => factory(c, o), name);
         }
 
         /// <summary>
-        /// Register multiple implementations of a type.
-        /// 
-        /// Internally this registers each implementation using the full name of the class as its registration name.
+        ///     Register multiple implementations of a type.
+        ///     Internally this registers each implementation using the full name of the class as its registration name.
         /// </summary>
         /// <typeparam name="RegisterType">Type that each implementation implements</typeparam>
         /// <param name="implementationTypes">Types that implement RegisterType</param>
         /// <returns>MultiRegisterOptions for the fluent API</returns>
-        public MultiRegisterOptions RegisterMultiple<RegisterType>(IEnumerable<Type> implementationTypes)
-        {
-            return RegisterMultiple(typeof(RegisterType), implementationTypes);
-        }
+        public MultiRegisterOptions RegisterMultiple<RegisterType>(IEnumerable<Type> implementationTypes) => RegisterMultiple(typeof(RegisterType), implementationTypes);
 
         /// <summary>
-        /// Register multiple implementations of a type.
-        /// 
-        /// Internally this registers each implementation using the full name of the class as its registration name.
+        ///     Register multiple implementations of a type.
+        ///     Internally this registers each implementation using the full name of the class as its registration name.
         /// </summary>
         /// <param name="registrationType">Type that each implementation implements</param>
         /// <param name="implementationTypes">Types that implement RegisterType</param>
         /// <returns>MultiRegisterOptions for the fluent API</returns>
-        public MultiRegisterOptions RegisterMultiple(Type registrationType, IEnumerable<Type> implementationTypes)
-        {
+        public MultiRegisterOptions RegisterMultiple(Type registrationType, IEnumerable<Type> implementationTypes) {
             if (implementationTypes == null)
                 throw new ArgumentNullException("types", "types is null.");
 
@@ -1502,16 +1399,15 @@ namespace RainbowMage.OverlayPlugin
                 //#else
                 if (!registrationType.IsAssignableFrom(type))
                     //#endif
-                    throw new ArgumentException(String.Format("types: The type {0} is not assignable from {1}",
-                                                              registrationType.FullName, type.FullName));
+                    throw new ArgumentException(string.Format("types: The type {0} is not assignable from {1}",
+                        registrationType.FullName, type.FullName));
 
-            if (implementationTypes.Count() != implementationTypes.Distinct().Count())
-            {
+            if (implementationTypes.Count() != implementationTypes.Distinct().Count()) {
                 var queryForDuplicatedTypes = from i in implementationTypes
-                                              group i by i
-                                              into j
-                                              where j.Count() > 1
-                                              select j.Key.FullName;
+                    group i by i
+                    into j
+                    where j.Count() > 1
+                    select j.Key.FullName;
 
                 var fullNamesOfDuplicatedTypes = string.Join(",\n", queryForDuplicatedTypes.ToArray());
                 var multipleRegMessage =
@@ -1523,8 +1419,7 @@ namespace RainbowMage.OverlayPlugin
 
             var registerOptions = new List<RegisterOptions>();
 
-            foreach (var type in implementationTypes)
-            {
+            foreach (var type in implementationTypes) {
                 registerOptions.Add(Register(registrationType, type, type.FullName));
             }
 
@@ -1536,113 +1431,100 @@ namespace RainbowMage.OverlayPlugin
         #region Resolution
 
         /// <summary>
-        /// Attempts to resolve a type using default options.
+        ///     Attempts to resolve a type using default options.
         /// </summary>
         /// <param name="resolveType">Type to resolve</param>
         /// <returns>Instance of type</returns>
         /// <exception cref="TinyIoCResolutionException">Unable to resolve the type.</exception>
-        public object Resolve(Type resolveType)
-        {
-            return ResolveInternal(new TypeRegistration(resolveType), NamedParameterOverloads.Default,
-                                   ResolveOptions.Default);
-        }
+        public object Resolve(Type resolveType) =>
+            ResolveInternal(new TypeRegistration(resolveType), NamedParameterOverloads.Default,
+                ResolveOptions.Default);
 
         /// <summary>
-        /// Attempts to resolve a type using specified options.
+        ///     Attempts to resolve a type using specified options.
         /// </summary>
         /// <param name="resolveType">Type to resolve</param>
         /// <param name="options">Resolution options</param>
         /// <returns>Instance of type</returns>
         /// <exception cref="TinyIoCResolutionException">Unable to resolve the type.</exception>
-        public object Resolve(Type resolveType, ResolveOptions options)
-        {
-            return ResolveInternal(new TypeRegistration(resolveType), NamedParameterOverloads.Default, options);
-        }
+        public object Resolve(Type resolveType, ResolveOptions options) => ResolveInternal(new TypeRegistration(resolveType), NamedParameterOverloads.Default, options);
 
         /// <summary>
-        /// Attempts to resolve a type using default options and the supplied name.
-        ///
-        /// Parameters are used in conjunction with normal container resolution to find the most suitable constructor (if one exists).
-        /// All user supplied parameters must exist in at least one resolvable constructor of RegisterType or resolution will fail.
+        ///     Attempts to resolve a type using default options and the supplied name.
+        ///     Parameters are used in conjunction with normal container resolution to find the most suitable constructor (if one
+        ///     exists).
+        ///     All user supplied parameters must exist in at least one resolvable constructor of RegisterType or resolution will
+        ///     fail.
         /// </summary>
         /// <param name="resolveType">Type to resolve</param>
         /// <param name="name">Name of registration</param>
         /// <returns>Instance of type</returns>
         /// <exception cref="TinyIoCResolutionException">Unable to resolve the type.</exception>
-        public object Resolve(Type resolveType, string name)
-        {
-            return ResolveInternal(new TypeRegistration(resolveType, name), NamedParameterOverloads.Default,
-                                   ResolveOptions.Default);
-        }
+        public object Resolve(Type resolveType, string name) =>
+            ResolveInternal(new TypeRegistration(resolveType, name), NamedParameterOverloads.Default,
+                ResolveOptions.Default);
 
         /// <summary>
-        /// Attempts to resolve a type using supplied options and  name.
-        ///
-        /// Parameters are used in conjunction with normal container resolution to find the most suitable constructor (if one exists).
-        /// All user supplied parameters must exist in at least one resolvable constructor of RegisterType or resolution will fail.
+        ///     Attempts to resolve a type using supplied options and  name.
+        ///     Parameters are used in conjunction with normal container resolution to find the most suitable constructor (if one
+        ///     exists).
+        ///     All user supplied parameters must exist in at least one resolvable constructor of RegisterType or resolution will
+        ///     fail.
         /// </summary>
         /// <param name="resolveType">Type to resolve</param>
         /// <param name="name">Name of registration</param>
         /// <param name="options">Resolution options</param>
         /// <returns>Instance of type</returns>
         /// <exception cref="TinyIoCResolutionException">Unable to resolve the type.</exception>
-        public object Resolve(Type resolveType, string name, ResolveOptions options)
-        {
-            return ResolveInternal(new TypeRegistration(resolveType, name), NamedParameterOverloads.Default, options);
-        }
+        public object Resolve(Type resolveType, string name, ResolveOptions options) => ResolveInternal(new TypeRegistration(resolveType, name), NamedParameterOverloads.Default, options);
 
         /// <summary>
-        /// Attempts to resolve a type using default options and the supplied constructor parameters.
-        ///
-        /// Parameters are used in conjunction with normal container resolution to find the most suitable constructor (if one exists).
-        /// All user supplied parameters must exist in at least one resolvable constructor of RegisterType or resolution will fail.
+        ///     Attempts to resolve a type using default options and the supplied constructor parameters.
+        ///     Parameters are used in conjunction with normal container resolution to find the most suitable constructor (if one
+        ///     exists).
+        ///     All user supplied parameters must exist in at least one resolvable constructor of RegisterType or resolution will
+        ///     fail.
         /// </summary>
         /// <param name="resolveType">Type to resolve</param>
         /// <param name="parameters">User specified constructor parameters</param>
         /// <returns>Instance of type</returns>
         /// <exception cref="TinyIoCResolutionException">Unable to resolve the type.</exception>
-        public object Resolve(Type resolveType, NamedParameterOverloads parameters)
-        {
-            return ResolveInternal(new TypeRegistration(resolveType), parameters, ResolveOptions.Default);
-        }
+        public object Resolve(Type resolveType, NamedParameterOverloads parameters) => ResolveInternal(new TypeRegistration(resolveType), parameters, ResolveOptions.Default);
 
         /// <summary>
-        /// Attempts to resolve a type using specified options and the supplied constructor parameters.
-        ///
-        /// Parameters are used in conjunction with normal container resolution to find the most suitable constructor (if one exists).
-        /// All user supplied parameters must exist in at least one resolvable constructor of RegisterType or resolution will fail.
+        ///     Attempts to resolve a type using specified options and the supplied constructor parameters.
+        ///     Parameters are used in conjunction with normal container resolution to find the most suitable constructor (if one
+        ///     exists).
+        ///     All user supplied parameters must exist in at least one resolvable constructor of RegisterType or resolution will
+        ///     fail.
         /// </summary>
         /// <param name="resolveType">Type to resolve</param>
         /// <param name="parameters">User specified constructor parameters</param>
         /// <param name="options">Resolution options</param>
         /// <returns>Instance of type</returns>
         /// <exception cref="TinyIoCResolutionException">Unable to resolve the type.</exception>
-        public object Resolve(Type resolveType, NamedParameterOverloads parameters, ResolveOptions options)
-        {
-            return ResolveInternal(new TypeRegistration(resolveType), parameters, options);
-        }
+        public object Resolve(Type resolveType, NamedParameterOverloads parameters, ResolveOptions options) => ResolveInternal(new TypeRegistration(resolveType), parameters, options);
 
         /// <summary>
-        /// Attempts to resolve a type using default options and the supplied constructor parameters and name.
-        ///
-        /// Parameters are used in conjunction with normal container resolution to find the most suitable constructor (if one exists).
-        /// All user supplied parameters must exist in at least one resolvable constructor of RegisterType or resolution will fail.
+        ///     Attempts to resolve a type using default options and the supplied constructor parameters and name.
+        ///     Parameters are used in conjunction with normal container resolution to find the most suitable constructor (if one
+        ///     exists).
+        ///     All user supplied parameters must exist in at least one resolvable constructor of RegisterType or resolution will
+        ///     fail.
         /// </summary>
         /// <param name="resolveType">Type to resolve</param>
         /// <param name="parameters">User specified constructor parameters</param>
         /// <param name="name">Name of registration</param>
         /// <returns>Instance of type</returns>
         /// <exception cref="TinyIoCResolutionException">Unable to resolve the type.</exception>
-        public object Resolve(Type resolveType, string name, NamedParameterOverloads parameters)
-        {
-            return ResolveInternal(new TypeRegistration(resolveType, name), parameters, ResolveOptions.Default);
-        }
+        public object Resolve(Type resolveType, string name, NamedParameterOverloads parameters) => ResolveInternal(new TypeRegistration(resolveType, name), parameters, ResolveOptions.Default);
 
         /// <summary>
-        /// Attempts to resolve a named type using specified options and the supplied constructor parameters.
-        ///
-        /// Parameters are used in conjunction with normal container resolution to find the most suitable constructor (if one exists).
-        /// All user supplied parameters must exist in at least one resolvable constructor of RegisterType or resolution will fail.
+        ///     Attempts to resolve a named type using specified options and the supplied constructor parameters.
+        ///     Parameters are used in conjunction with normal container resolution to find the most suitable constructor (if one
+        ///     exists).
+        ///     All user supplied parameters must exist in at least one resolvable constructor of RegisterType or resolution will
+        ///     fail.
         /// </summary>
         /// <param name="resolveType">Type to resolve</param>
         /// <param name="name">Name of registration</param>
@@ -1650,57 +1532,50 @@ namespace RainbowMage.OverlayPlugin
         /// <param name="options">Resolution options</param>
         /// <returns>Instance of type</returns>
         /// <exception cref="TinyIoCResolutionException">Unable to resolve the type.</exception>
-        public object Resolve(Type resolveType, string name, NamedParameterOverloads parameters, ResolveOptions options)
-        {
-            return ResolveInternal(new TypeRegistration(resolveType, name), parameters, options);
-        }
+        public object Resolve(Type resolveType, string name, NamedParameterOverloads parameters, ResolveOptions options) => ResolveInternal(new TypeRegistration(resolveType, name), parameters, options);
 
         /// <summary>
-        /// Attempts to resolve a type using default options.
+        ///     Attempts to resolve a type using default options.
         /// </summary>
         /// <typeparam name="ResolveType">Type to resolve</typeparam>
         /// <returns>Instance of type</returns>
         /// <exception cref="TinyIoCResolutionException">Unable to resolve the type.</exception>
         public ResolveType Resolve<ResolveType>()
-            where ResolveType : class
-        {
-            return (ResolveType)Resolve(typeof(ResolveType));
-        }
+            where ResolveType : class =>
+            (ResolveType)Resolve(typeof(ResolveType));
 
         /// <summary>
-        /// Attempts to resolve a type using specified options.
+        ///     Attempts to resolve a type using specified options.
         /// </summary>
         /// <typeparam name="ResolveType">Type to resolve</typeparam>
         /// <param name="options">Resolution options</param>
         /// <returns>Instance of type</returns>
         /// <exception cref="TinyIoCResolutionException">Unable to resolve the type.</exception>
         public ResolveType Resolve<ResolveType>(ResolveOptions options)
-            where ResolveType : class
-        {
-            return (ResolveType)Resolve(typeof(ResolveType), options);
-        }
+            where ResolveType : class =>
+            (ResolveType)Resolve(typeof(ResolveType), options);
 
         /// <summary>
-        /// Attempts to resolve a type using default options and the supplied name.
-        ///
-        /// Parameters are used in conjunction with normal container resolution to find the most suitable constructor (if one exists).
-        /// All user supplied parameters must exist in at least one resolvable constructor of RegisterType or resolution will fail.
+        ///     Attempts to resolve a type using default options and the supplied name.
+        ///     Parameters are used in conjunction with normal container resolution to find the most suitable constructor (if one
+        ///     exists).
+        ///     All user supplied parameters must exist in at least one resolvable constructor of RegisterType or resolution will
+        ///     fail.
         /// </summary>
         /// <typeparam name="ResolveType">Type to resolve</typeparam>
         /// <param name="name">Name of registration</param>
         /// <returns>Instance of type</returns>
         /// <exception cref="TinyIoCResolutionException">Unable to resolve the type.</exception>
         public ResolveType Resolve<ResolveType>(string name)
-            where ResolveType : class
-        {
-            return (ResolveType)Resolve(typeof(ResolveType), name);
-        }
+            where ResolveType : class =>
+            (ResolveType)Resolve(typeof(ResolveType), name);
 
         /// <summary>
-        /// Attempts to resolve a type using supplied options and  name.
-        ///
-        /// Parameters are used in conjunction with normal container resolution to find the most suitable constructor (if one exists).
-        /// All user supplied parameters must exist in at least one resolvable constructor of RegisterType or resolution will fail.
+        ///     Attempts to resolve a type using supplied options and  name.
+        ///     Parameters are used in conjunction with normal container resolution to find the most suitable constructor (if one
+        ///     exists).
+        ///     All user supplied parameters must exist in at least one resolvable constructor of RegisterType or resolution will
+        ///     fail.
         /// </summary>
         /// <typeparam name="ResolveType">Type to resolve</typeparam>
         /// <param name="name">Name of registration</param>
@@ -1708,32 +1583,30 @@ namespace RainbowMage.OverlayPlugin
         /// <returns>Instance of type</returns>
         /// <exception cref="TinyIoCResolutionException">Unable to resolve the type.</exception>
         public ResolveType Resolve<ResolveType>(string name, ResolveOptions options)
-            where ResolveType : class
-        {
-            return (ResolveType)Resolve(typeof(ResolveType), name, options);
-        }
+            where ResolveType : class =>
+            (ResolveType)Resolve(typeof(ResolveType), name, options);
 
         /// <summary>
-        /// Attempts to resolve a type using default options and the supplied constructor parameters.
-        ///
-        /// Parameters are used in conjunction with normal container resolution to find the most suitable constructor (if one exists).
-        /// All user supplied parameters must exist in at least one resolvable constructor of RegisterType or resolution will fail.
+        ///     Attempts to resolve a type using default options and the supplied constructor parameters.
+        ///     Parameters are used in conjunction with normal container resolution to find the most suitable constructor (if one
+        ///     exists).
+        ///     All user supplied parameters must exist in at least one resolvable constructor of RegisterType or resolution will
+        ///     fail.
         /// </summary>
         /// <typeparam name="ResolveType">Type to resolve</typeparam>
         /// <param name="parameters">User specified constructor parameters</param>
         /// <returns>Instance of type</returns>
         /// <exception cref="TinyIoCResolutionException">Unable to resolve the type.</exception>
         public ResolveType Resolve<ResolveType>(NamedParameterOverloads parameters)
-            where ResolveType : class
-        {
-            return (ResolveType)Resolve(typeof(ResolveType), parameters);
-        }
+            where ResolveType : class =>
+            (ResolveType)Resolve(typeof(ResolveType), parameters);
 
         /// <summary>
-        /// Attempts to resolve a type using specified options and the supplied constructor parameters.
-        ///
-        /// Parameters are used in conjunction with normal container resolution to find the most suitable constructor (if one exists).
-        /// All user supplied parameters must exist in at least one resolvable constructor of RegisterType or resolution will fail.
+        ///     Attempts to resolve a type using specified options and the supplied constructor parameters.
+        ///     Parameters are used in conjunction with normal container resolution to find the most suitable constructor (if one
+        ///     exists).
+        ///     All user supplied parameters must exist in at least one resolvable constructor of RegisterType or resolution will
+        ///     fail.
         /// </summary>
         /// <typeparam name="ResolveType">Type to resolve</typeparam>
         /// <param name="parameters">User specified constructor parameters</param>
@@ -1741,16 +1614,15 @@ namespace RainbowMage.OverlayPlugin
         /// <returns>Instance of type</returns>
         /// <exception cref="TinyIoCResolutionException">Unable to resolve the type.</exception>
         public ResolveType Resolve<ResolveType>(NamedParameterOverloads parameters, ResolveOptions options)
-            where ResolveType : class
-        {
-            return (ResolveType)Resolve(typeof(ResolveType), parameters, options);
-        }
+            where ResolveType : class =>
+            (ResolveType)Resolve(typeof(ResolveType), parameters, options);
 
         /// <summary>
-        /// Attempts to resolve a type using default options and the supplied constructor parameters and name.
-        ///
-        /// Parameters are used in conjunction with normal container resolution to find the most suitable constructor (if one exists).
-        /// All user supplied parameters must exist in at least one resolvable constructor of RegisterType or resolution will fail.
+        ///     Attempts to resolve a type using default options and the supplied constructor parameters and name.
+        ///     Parameters are used in conjunction with normal container resolution to find the most suitable constructor (if one
+        ///     exists).
+        ///     All user supplied parameters must exist in at least one resolvable constructor of RegisterType or resolution will
+        ///     fail.
         /// </summary>
         /// <typeparam name="ResolveType">Type to resolve</typeparam>
         /// <param name="parameters">User specified constructor parameters</param>
@@ -1758,16 +1630,15 @@ namespace RainbowMage.OverlayPlugin
         /// <returns>Instance of type</returns>
         /// <exception cref="TinyIoCResolutionException">Unable to resolve the type.</exception>
         public ResolveType Resolve<ResolveType>(string name, NamedParameterOverloads parameters)
-            where ResolveType : class
-        {
-            return (ResolveType)Resolve(typeof(ResolveType), name, parameters);
-        }
+            where ResolveType : class =>
+            (ResolveType)Resolve(typeof(ResolveType), name, parameters);
 
         /// <summary>
-        /// Attempts to resolve a named type using specified options and the supplied constructor parameters.
-        ///
-        /// Parameters are used in conjunction with normal container resolution to find the most suitable constructor (if one exists).
-        /// All user supplied parameters must exist in at least one resolvable constructor of RegisterType or resolution will fail.
+        ///     Attempts to resolve a named type using specified options and the supplied constructor parameters.
+        ///     Parameters are used in conjunction with normal container resolution to find the most suitable constructor (if one
+        ///     exists).
+        ///     All user supplied parameters must exist in at least one resolvable constructor of RegisterType or resolution will
+        ///     fail.
         /// </summary>
         /// <typeparam name="ResolveType">Type to resolve</typeparam>
         /// <param name="name">Name of registration</param>
@@ -1776,123 +1647,101 @@ namespace RainbowMage.OverlayPlugin
         /// <returns>Instance of type</returns>
         /// <exception cref="TinyIoCResolutionException">Unable to resolve the type.</exception>
         public ResolveType Resolve<ResolveType>(string name, NamedParameterOverloads parameters, ResolveOptions options)
-            where ResolveType : class
-        {
-            return (ResolveType)Resolve(typeof(ResolveType), name, parameters, options);
-        }
+            where ResolveType : class =>
+            (ResolveType)Resolve(typeof(ResolveType), name, parameters, options);
 
         /// <summary>
-        /// Attempts to predict whether a given type can be resolved with default options.
-        ///
-        /// Note: Resolution may still fail if user defined factory registations fail to construct objects when called.
+        ///     Attempts to predict whether a given type can be resolved with default options.
+        ///     Note: Resolution may still fail if user defined factory registations fail to construct objects when called.
         /// </summary>
         /// <param name="resolveType">Type to resolve</param>
         /// <returns>Bool indicating whether the type can be resolved</returns>
-        public bool CanResolve(Type resolveType)
-        {
-            return CanResolveInternal(new TypeRegistration(resolveType), NamedParameterOverloads.Default,
-                                      ResolveOptions.Default);
-        }
+        public bool CanResolve(Type resolveType) =>
+            CanResolveInternal(new TypeRegistration(resolveType), NamedParameterOverloads.Default,
+                ResolveOptions.Default);
 
         /// <summary>
-        /// Attempts to predict whether a given named type can be resolved with default options.
-        ///
-        /// Note: Resolution may still fail if user defined factory registations fail to construct objects when called.
+        ///     Attempts to predict whether a given named type can be resolved with default options.
+        ///     Note: Resolution may still fail if user defined factory registations fail to construct objects when called.
         /// </summary>
         /// <param name="resolveType">Type to resolve</param>
         /// <param name="name">Name of registration</param>
         /// <returns>Bool indicating whether the type can be resolved</returns>
-        private bool CanResolve(Type resolveType, string name)
-        {
-            return CanResolveInternal(new TypeRegistration(resolveType, name), NamedParameterOverloads.Default,
-                                      ResolveOptions.Default);
-        }
+        private bool CanResolve(Type resolveType, string name) =>
+            CanResolveInternal(new TypeRegistration(resolveType, name), NamedParameterOverloads.Default,
+                ResolveOptions.Default);
 
         /// <summary>
-        /// Attempts to predict whether a given type can be resolved with the specified options.
-        ///
-        /// Note: Resolution may still fail if user defined factory registations fail to construct objects when called.
+        ///     Attempts to predict whether a given type can be resolved with the specified options.
+        ///     Note: Resolution may still fail if user defined factory registations fail to construct objects when called.
         /// </summary>
         /// <param name="resolveType">Type to resolve</param>
         /// <param name="options">Resolution options</param>
         /// <returns>Bool indicating whether the type can be resolved</returns>
-        public bool CanResolve(Type resolveType, ResolveOptions options)
-        {
-            return CanResolveInternal(new TypeRegistration(resolveType), NamedParameterOverloads.Default, options);
-        }
+        public bool CanResolve(Type resolveType, ResolveOptions options) => CanResolveInternal(new TypeRegistration(resolveType), NamedParameterOverloads.Default, options);
 
         /// <summary>
-        /// Attempts to predict whether a given named type can be resolved with the specified options.
-        ///
-        /// Note: Resolution may still fail if user defined factory registations fail to construct objects when called.
+        ///     Attempts to predict whether a given named type can be resolved with the specified options.
+        ///     Note: Resolution may still fail if user defined factory registations fail to construct objects when called.
         /// </summary>
         /// <param name="resolveType">Type to resolve</param>
         /// <param name="name">Name of registration</param>
         /// <param name="options">Resolution options</param>
         /// <returns>Bool indicating whether the type can be resolved</returns>
-        public bool CanResolve(Type resolveType, string name, ResolveOptions options)
-        {
-            return CanResolveInternal(new TypeRegistration(resolveType, name), NamedParameterOverloads.Default,
-                                      options);
-        }
+        public bool CanResolve(Type resolveType, string name, ResolveOptions options) =>
+            CanResolveInternal(new TypeRegistration(resolveType, name), NamedParameterOverloads.Default,
+                options);
 
         /// <summary>
-        /// Attempts to predict whether a given type can be resolved with the supplied constructor parameters and default options.
-        ///
-        /// Parameters are used in conjunction with normal container resolution to find the most suitable constructor (if one exists).
-        /// All user supplied parameters must exist in at least one resolvable constructor of RegisterType or resolution will fail.
-        /// 
-        /// Note: Resolution may still fail if user defined factory registations fail to construct objects when called.
+        ///     Attempts to predict whether a given type can be resolved with the supplied constructor parameters and default
+        ///     options.
+        ///     Parameters are used in conjunction with normal container resolution to find the most suitable constructor (if one
+        ///     exists).
+        ///     All user supplied parameters must exist in at least one resolvable constructor of RegisterType or resolution will
+        ///     fail.
+        ///     Note: Resolution may still fail if user defined factory registations fail to construct objects when called.
         /// </summary>
         /// <param name="resolveType">Type to resolve</param>
         /// <param name="parameters">User supplied named parameter overloads</param>
         /// <returns>Bool indicating whether the type can be resolved</returns>
-        public bool CanResolve(Type resolveType, NamedParameterOverloads parameters)
-        {
-            return CanResolveInternal(new TypeRegistration(resolveType), parameters, ResolveOptions.Default);
-        }
+        public bool CanResolve(Type resolveType, NamedParameterOverloads parameters) => CanResolveInternal(new TypeRegistration(resolveType), parameters, ResolveOptions.Default);
 
         /// <summary>
-        /// Attempts to predict whether a given named type can be resolved with the supplied constructor parameters and default options.
-        ///
-        /// Parameters are used in conjunction with normal container resolution to find the most suitable constructor (if one exists).
-        /// All user supplied parameters must exist in at least one resolvable constructor of RegisterType or resolution will fail.
-        /// 
-        /// Note: Resolution may still fail if user defined factory registations fail to construct objects when called.
+        ///     Attempts to predict whether a given named type can be resolved with the supplied constructor parameters and default
+        ///     options.
+        ///     Parameters are used in conjunction with normal container resolution to find the most suitable constructor (if one
+        ///     exists).
+        ///     All user supplied parameters must exist in at least one resolvable constructor of RegisterType or resolution will
+        ///     fail.
+        ///     Note: Resolution may still fail if user defined factory registations fail to construct objects when called.
         /// </summary>
         /// <param name="resolveType">Type to resolve</param>
         /// <param name="name">Name of registration</param>
         /// <param name="parameters">User supplied named parameter overloads</param>
         /// <returns>Bool indicating whether the type can be resolved</returns>
-        public bool CanResolve(Type resolveType, string name, NamedParameterOverloads parameters)
-        {
-            return CanResolveInternal(new TypeRegistration(resolveType, name), parameters, ResolveOptions.Default);
-        }
+        public bool CanResolve(Type resolveType, string name, NamedParameterOverloads parameters) => CanResolveInternal(new TypeRegistration(resolveType, name), parameters, ResolveOptions.Default);
 
         /// <summary>
-        /// Attempts to predict whether a given type can be resolved with the supplied constructor parameters options.
-        ///
-        /// Parameters are used in conjunction with normal container resolution to find the most suitable constructor (if one exists).
-        /// All user supplied parameters must exist in at least one resolvable constructor of RegisterType or resolution will fail.
-        /// 
-        /// Note: Resolution may still fail if user defined factory registations fail to construct objects when called.
+        ///     Attempts to predict whether a given type can be resolved with the supplied constructor parameters options.
+        ///     Parameters are used in conjunction with normal container resolution to find the most suitable constructor (if one
+        ///     exists).
+        ///     All user supplied parameters must exist in at least one resolvable constructor of RegisterType or resolution will
+        ///     fail.
+        ///     Note: Resolution may still fail if user defined factory registations fail to construct objects when called.
         /// </summary>
         /// <param name="resolveType">Type to resolve</param>
         /// <param name="parameters">User supplied named parameter overloads</param>
         /// <param name="options">Resolution options</param>
         /// <returns>Bool indicating whether the type can be resolved</returns>
-        public bool CanResolve(Type resolveType, NamedParameterOverloads parameters, ResolveOptions options)
-        {
-            return CanResolveInternal(new TypeRegistration(resolveType), parameters, options);
-        }
+        public bool CanResolve(Type resolveType, NamedParameterOverloads parameters, ResolveOptions options) => CanResolveInternal(new TypeRegistration(resolveType), parameters, options);
 
         /// <summary>
-        /// Attempts to predict whether a given named type can be resolved with the supplied constructor parameters options.
-        ///
-        /// Parameters are used in conjunction with normal container resolution to find the most suitable constructor (if one exists).
-        /// All user supplied parameters must exist in at least one resolvable constructor of RegisterType or resolution will fail.
-        /// 
-        /// Note: Resolution may still fail if user defined factory registations fail to construct objects when called.
+        ///     Attempts to predict whether a given named type can be resolved with the supplied constructor parameters options.
+        ///     Parameters are used in conjunction with normal container resolution to find the most suitable constructor (if one
+        ///     exists).
+        ///     All user supplied parameters must exist in at least one resolvable constructor of RegisterType or resolution will
+        ///     fail.
+        ///     Note: Resolution may still fail if user defined factory registations fail to construct objects when called.
         /// </summary>
         /// <param name="resolveType">Type to resolve</param>
         /// <param name="name">Name of registration</param>
@@ -1900,126 +1749,108 @@ namespace RainbowMage.OverlayPlugin
         /// <param name="options">Resolution options</param>
         /// <returns>Bool indicating whether the type can be resolved</returns>
         public bool CanResolve(
-            Type resolveType, string name, NamedParameterOverloads parameters, ResolveOptions options)
-        {
-            return CanResolveInternal(new TypeRegistration(resolveType, name), parameters, options);
-        }
+            Type resolveType, string name, NamedParameterOverloads parameters, ResolveOptions options) =>
+            CanResolveInternal(new TypeRegistration(resolveType, name), parameters, options);
 
         /// <summary>
-        /// Attempts to predict whether a given type can be resolved with default options.
-        ///
-        /// Note: Resolution may still fail if user defined factory registations fail to construct objects when called.
+        ///     Attempts to predict whether a given type can be resolved with default options.
+        ///     Note: Resolution may still fail if user defined factory registations fail to construct objects when called.
         /// </summary>
         /// <typeparam name="ResolveType">Type to resolve</typeparam>
         /// <returns>Bool indicating whether the type can be resolved</returns>
         public bool CanResolve<ResolveType>()
-            where ResolveType : class
-        {
-            return CanResolve(typeof(ResolveType));
-        }
+            where ResolveType : class =>
+            CanResolve(typeof(ResolveType));
 
         /// <summary>
-        /// Attempts to predict whether a given named type can be resolved with default options.
-        ///
-        /// Note: Resolution may still fail if user defined factory registations fail to construct objects when called.
+        ///     Attempts to predict whether a given named type can be resolved with default options.
+        ///     Note: Resolution may still fail if user defined factory registations fail to construct objects when called.
         /// </summary>
         /// <typeparam name="ResolveType">Type to resolve</typeparam>
         /// <returns>Bool indicating whether the type can be resolved</returns>
         public bool CanResolve<ResolveType>(string name)
-            where ResolveType : class
-        {
-            return CanResolve(typeof(ResolveType), name);
-        }
+            where ResolveType : class =>
+            CanResolve(typeof(ResolveType), name);
 
         /// <summary>
-        /// Attempts to predict whether a given type can be resolved with the specified options.
-        ///
-        /// Note: Resolution may still fail if user defined factory registations fail to construct objects when called.
+        ///     Attempts to predict whether a given type can be resolved with the specified options.
+        ///     Note: Resolution may still fail if user defined factory registations fail to construct objects when called.
         /// </summary>
         /// <typeparam name="ResolveType">Type to resolve</typeparam>
         /// <param name="options">Resolution options</param>
         /// <returns>Bool indicating whether the type can be resolved</returns>
         public bool CanResolve<ResolveType>(ResolveOptions options)
-            where ResolveType : class
-        {
-            return CanResolve(typeof(ResolveType), options);
-        }
+            where ResolveType : class =>
+            CanResolve(typeof(ResolveType), options);
 
         /// <summary>
-        /// Attempts to predict whether a given named type can be resolved with the specified options.
-        ///
-        /// Note: Resolution may still fail if user defined factory registations fail to construct objects when called.
+        ///     Attempts to predict whether a given named type can be resolved with the specified options.
+        ///     Note: Resolution may still fail if user defined factory registations fail to construct objects when called.
         /// </summary>
         /// <typeparam name="ResolveType">Type to resolve</typeparam>
         /// <param name="name">Name of registration</param>
         /// <param name="options">Resolution options</param>
         /// <returns>Bool indicating whether the type can be resolved</returns>
         public bool CanResolve<ResolveType>(string name, ResolveOptions options)
-            where ResolveType : class
-        {
-            return CanResolve(typeof(ResolveType), name, options);
-        }
+            where ResolveType : class =>
+            CanResolve(typeof(ResolveType), name, options);
 
         /// <summary>
-        /// Attempts to predict whether a given type can be resolved with the supplied constructor parameters and default options.
-        ///
-        /// Parameters are used in conjunction with normal container resolution to find the most suitable constructor (if one exists).
-        /// All user supplied parameters must exist in at least one resolvable constructor of RegisterType or resolution will fail.
-        /// 
-        /// Note: Resolution may still fail if user defined factory registations fail to construct objects when called.
+        ///     Attempts to predict whether a given type can be resolved with the supplied constructor parameters and default
+        ///     options.
+        ///     Parameters are used in conjunction with normal container resolution to find the most suitable constructor (if one
+        ///     exists).
+        ///     All user supplied parameters must exist in at least one resolvable constructor of RegisterType or resolution will
+        ///     fail.
+        ///     Note: Resolution may still fail if user defined factory registations fail to construct objects when called.
         /// </summary>
         /// <typeparam name="ResolveType">Type to resolve</typeparam>
         /// <param name="parameters">User supplied named parameter overloads</param>
         /// <returns>Bool indicating whether the type can be resolved</returns>
         public bool CanResolve<ResolveType>(NamedParameterOverloads parameters)
-            where ResolveType : class
-        {
-            return CanResolve(typeof(ResolveType), parameters);
-        }
+            where ResolveType : class =>
+            CanResolve(typeof(ResolveType), parameters);
 
         /// <summary>
-        /// Attempts to predict whether a given named type can be resolved with the supplied constructor parameters and default options.
-        ///
-        /// Parameters are used in conjunction with normal container resolution to find the most suitable constructor (if one exists).
-        /// All user supplied parameters must exist in at least one resolvable constructor of RegisterType or resolution will fail.
-        /// 
-        /// Note: Resolution may still fail if user defined factory registations fail to construct objects when called.
+        ///     Attempts to predict whether a given named type can be resolved with the supplied constructor parameters and default
+        ///     options.
+        ///     Parameters are used in conjunction with normal container resolution to find the most suitable constructor (if one
+        ///     exists).
+        ///     All user supplied parameters must exist in at least one resolvable constructor of RegisterType or resolution will
+        ///     fail.
+        ///     Note: Resolution may still fail if user defined factory registations fail to construct objects when called.
         /// </summary>
         /// <typeparam name="ResolveType">Type to resolve</typeparam>
         /// <param name="name">Name of registration</param>
         /// <param name="parameters">User supplied named parameter overloads</param>
         /// <returns>Bool indicating whether the type can be resolved</returns>
         public bool CanResolve<ResolveType>(string name, NamedParameterOverloads parameters)
-            where ResolveType : class
-        {
-            return CanResolve(typeof(ResolveType), name, parameters);
-        }
+            where ResolveType : class =>
+            CanResolve(typeof(ResolveType), name, parameters);
 
         /// <summary>
-        /// Attempts to predict whether a given type can be resolved with the supplied constructor parameters options.
-        ///
-        /// Parameters are used in conjunction with normal container resolution to find the most suitable constructor (if one exists).
-        /// All user supplied parameters must exist in at least one resolvable constructor of RegisterType or resolution will fail.
-        /// 
-        /// Note: Resolution may still fail if user defined factory registations fail to construct objects when called.
+        ///     Attempts to predict whether a given type can be resolved with the supplied constructor parameters options.
+        ///     Parameters are used in conjunction with normal container resolution to find the most suitable constructor (if one
+        ///     exists).
+        ///     All user supplied parameters must exist in at least one resolvable constructor of RegisterType or resolution will
+        ///     fail.
+        ///     Note: Resolution may still fail if user defined factory registations fail to construct objects when called.
         /// </summary>
         /// <typeparam name="ResolveType">Type to resolve</typeparam>
         /// <param name="parameters">User supplied named parameter overloads</param>
         /// <param name="options">Resolution options</param>
         /// <returns>Bool indicating whether the type can be resolved</returns>
         public bool CanResolve<ResolveType>(NamedParameterOverloads parameters, ResolveOptions options)
-            where ResolveType : class
-        {
-            return CanResolve(typeof(ResolveType), parameters, options);
-        }
+            where ResolveType : class =>
+            CanResolve(typeof(ResolveType), parameters, options);
 
         /// <summary>
-        /// Attempts to predict whether a given named type can be resolved with the supplied constructor parameters options.
-        ///
-        /// Parameters are used in conjunction with normal container resolution to find the most suitable constructor (if one exists).
-        /// All user supplied parameters must exist in at least one resolvable constructor of RegisterType or resolution will fail.
-        /// 
-        /// Note: Resolution may still fail if user defined factory registations fail to construct objects when called.
+        ///     Attempts to predict whether a given named type can be resolved with the supplied constructor parameters options.
+        ///     Parameters are used in conjunction with normal container resolution to find the most suitable constructor (if one
+        ///     exists).
+        ///     All user supplied parameters must exist in at least one resolvable constructor of RegisterType or resolution will
+        ///     fail.
+        ///     Note: Resolution may still fail if user defined factory registations fail to construct objects when called.
         /// </summary>
         /// <typeparam name="ResolveType">Type to resolve</typeparam>
         /// <param name="name">Name of registration</param>
@@ -2027,118 +1858,101 @@ namespace RainbowMage.OverlayPlugin
         /// <param name="options">Resolution options</param>
         /// <returns>Bool indicating whether the type can be resolved</returns>
         public bool CanResolve<ResolveType>(string name, NamedParameterOverloads parameters, ResolveOptions options)
-            where ResolveType : class
-        {
-            return CanResolve(typeof(ResolveType), name, parameters, options);
-        }
+            where ResolveType : class =>
+            CanResolve(typeof(ResolveType), name, parameters, options);
 
         /// <summary>
-        /// Attemps to resolve a type using the default options
+        ///     Attemps to resolve a type using the default options
         /// </summary>
         /// <param name="resolveType">Type to resolve</param>
         /// <param name="resolvedType">Resolved type or default if resolve fails</param>
         /// <returns>True if resolved sucessfully, false otherwise</returns>
-        public bool TryResolve(Type resolveType, out object resolvedType)
-        {
-            try
-            {
+        public bool TryResolve(Type resolveType, out object resolvedType) {
+            try {
                 resolvedType = Resolve(resolveType);
                 return true;
             }
-            catch (TinyIoCResolutionException)
-            {
+            catch (TinyIoCResolutionException) {
                 resolvedType = null;
                 return false;
             }
         }
 
         /// <summary>
-        /// Attemps to resolve a type using the given options
+        ///     Attemps to resolve a type using the given options
         /// </summary>
         /// <param name="resolveType">Type to resolve</param>
         /// <param name="options">Resolution options</param>
         /// <param name="resolvedType">Resolved type or default if resolve fails</param>
         /// <returns>True if resolved sucessfully, false otherwise</returns>
-        public bool TryResolve(Type resolveType, ResolveOptions options, out object resolvedType)
-        {
-            try
-            {
+        public bool TryResolve(Type resolveType, ResolveOptions options, out object resolvedType) {
+            try {
                 resolvedType = Resolve(resolveType, options);
                 return true;
             }
-            catch (TinyIoCResolutionException)
-            {
+            catch (TinyIoCResolutionException) {
                 resolvedType = null;
                 return false;
             }
         }
 
         /// <summary>
-        /// Attemps to resolve a type using the default options and given name
+        ///     Attemps to resolve a type using the default options and given name
         /// </summary>
         /// <param name="resolveType">Type to resolve</param>
         /// <param name="name">Name of registration</param>
         /// <param name="resolvedType">Resolved type or default if resolve fails</param>
         /// <returns>True if resolved sucessfully, false otherwise</returns>
-        public bool TryResolve(Type resolveType, string name, out object resolvedType)
-        {
-            try
-            {
+        public bool TryResolve(Type resolveType, string name, out object resolvedType) {
+            try {
                 resolvedType = Resolve(resolveType, name);
                 return true;
             }
-            catch (TinyIoCResolutionException)
-            {
+            catch (TinyIoCResolutionException) {
                 resolvedType = null;
                 return false;
             }
         }
 
         /// <summary>
-        /// Attemps to resolve a type using the given options and name
+        ///     Attemps to resolve a type using the given options and name
         /// </summary>
         /// <param name="resolveType">Type to resolve</param>
         /// <param name="name">Name of registration</param>
         /// <param name="options">Resolution options</param>
         /// <param name="resolvedType">Resolved type or default if resolve fails</param>
         /// <returns>True if resolved sucessfully, false otherwise</returns>
-        public bool TryResolve(Type resolveType, string name, ResolveOptions options, out object resolvedType)
-        {
-            try
-            {
+        public bool TryResolve(Type resolveType, string name, ResolveOptions options, out object resolvedType) {
+            try {
                 resolvedType = Resolve(resolveType, name, options);
                 return true;
             }
-            catch (TinyIoCResolutionException)
-            {
+            catch (TinyIoCResolutionException) {
                 resolvedType = null;
                 return false;
             }
         }
 
         /// <summary>
-        /// Attemps to resolve a type using the default options and supplied constructor parameters
+        ///     Attemps to resolve a type using the default options and supplied constructor parameters
         /// </summary>
         /// <param name="resolveType">Type to resolve</param>
         /// <param name="parameters">User specified constructor parameters</param>
         /// <param name="resolvedType">Resolved type or default if resolve fails</param>
         /// <returns>True if resolved sucessfully, false otherwise</returns>
-        public bool TryResolve(Type resolveType, NamedParameterOverloads parameters, out object resolvedType)
-        {
-            try
-            {
+        public bool TryResolve(Type resolveType, NamedParameterOverloads parameters, out object resolvedType) {
+            try {
                 resolvedType = Resolve(resolveType, parameters);
                 return true;
             }
-            catch (TinyIoCResolutionException)
-            {
+            catch (TinyIoCResolutionException) {
                 resolvedType = null;
                 return false;
             }
         }
 
         /// <summary>
-        /// Attemps to resolve a type using the default options and supplied name and constructor parameters
+        ///     Attemps to resolve a type using the default options and supplied name and constructor parameters
         /// </summary>
         /// <param name="resolveType">Type to resolve</param>
         /// <param name="name">Name of registration</param>
@@ -2146,22 +1960,19 @@ namespace RainbowMage.OverlayPlugin
         /// <param name="resolvedType">Resolved type or default if resolve fails</param>
         /// <returns>True if resolved sucessfully, false otherwise</returns>
         public bool TryResolve(
-            Type resolveType, string name, NamedParameterOverloads parameters, out object resolvedType)
-        {
-            try
-            {
+            Type resolveType, string name, NamedParameterOverloads parameters, out object resolvedType) {
+            try {
                 resolvedType = Resolve(resolveType, name, parameters);
                 return true;
             }
-            catch (TinyIoCResolutionException)
-            {
+            catch (TinyIoCResolutionException) {
                 resolvedType = null;
                 return false;
             }
         }
 
         /// <summary>
-        /// Attemps to resolve a type using the supplied options and constructor parameters
+        ///     Attemps to resolve a type using the supplied options and constructor parameters
         /// </summary>
         /// <param name="resolveType">Type to resolve</param>
         /// <param name="parameters">User specified constructor parameters</param>
@@ -2169,22 +1980,19 @@ namespace RainbowMage.OverlayPlugin
         /// <param name="resolvedType">Resolved type or default if resolve fails</param>
         /// <returns>True if resolved sucessfully, false otherwise</returns>
         public bool TryResolve(
-            Type resolveType, NamedParameterOverloads parameters, ResolveOptions options, out object resolvedType)
-        {
-            try
-            {
+            Type resolveType, NamedParameterOverloads parameters, ResolveOptions options, out object resolvedType) {
+            try {
                 resolvedType = Resolve(resolveType, parameters, options);
                 return true;
             }
-            catch (TinyIoCResolutionException)
-            {
+            catch (TinyIoCResolutionException) {
                 resolvedType = null;
                 return false;
             }
         }
 
         /// <summary>
-        /// Attemps to resolve a type using the supplied name, options and constructor parameters
+        ///     Attemps to resolve a type using the supplied name, options and constructor parameters
         /// </summary>
         /// <param name="resolveType">Type to resolve</param>
         /// <param name="name">Name of registration</param>
@@ -2194,87 +2002,75 @@ namespace RainbowMage.OverlayPlugin
         /// <returns>True if resolved sucessfully, false otherwise</returns>
         public bool TryResolve(
             Type resolveType, string name, NamedParameterOverloads parameters, ResolveOptions options,
-            out object resolvedType)
-        {
-            try
-            {
+            out object resolvedType) {
+            try {
                 resolvedType = Resolve(resolveType, name, parameters, options);
                 return true;
             }
-            catch (TinyIoCResolutionException)
-            {
+            catch (TinyIoCResolutionException) {
                 resolvedType = null;
                 return false;
             }
         }
 
         /// <summary>
-        /// Attemps to resolve a type using the default options
+        ///     Attemps to resolve a type using the default options
         /// </summary>
         /// <typeparam name="ResolveType">Type to resolve</typeparam>
         /// <param name="resolvedType">Resolved type or default if resolve fails</param>
         /// <returns>True if resolved sucessfully, false otherwise</returns>
         public bool TryResolve<ResolveType>(out ResolveType resolvedType)
-            where ResolveType : class
-        {
-            try
-            {
+            where ResolveType : class {
+            try {
                 resolvedType = Resolve<ResolveType>();
                 return true;
             }
-            catch (TinyIoCResolutionException)
-            {
-                resolvedType = default(ResolveType);
+            catch (TinyIoCResolutionException) {
+                resolvedType = default;
                 return false;
             }
         }
 
         /// <summary>
-        /// Attemps to resolve a type using the given options
+        ///     Attemps to resolve a type using the given options
         /// </summary>
         /// <typeparam name="ResolveType">Type to resolve</typeparam>
         /// <param name="options">Resolution options</param>
         /// <param name="resolvedType">Resolved type or default if resolve fails</param>
         /// <returns>True if resolved sucessfully, false otherwise</returns>
         public bool TryResolve<ResolveType>(ResolveOptions options, out ResolveType resolvedType)
-            where ResolveType : class
-        {
-            try
-            {
+            where ResolveType : class {
+            try {
                 resolvedType = Resolve<ResolveType>(options);
                 return true;
             }
-            catch (TinyIoCResolutionException)
-            {
-                resolvedType = default(ResolveType);
+            catch (TinyIoCResolutionException) {
+                resolvedType = default;
                 return false;
             }
         }
 
         /// <summary>
-        /// Attemps to resolve a type using the default options and given name
+        ///     Attemps to resolve a type using the default options and given name
         /// </summary>
         /// <typeparam name="ResolveType">Type to resolve</typeparam>
         /// <param name="name">Name of registration</param>
         /// <param name="resolvedType">Resolved type or default if resolve fails</param>
         /// <returns>True if resolved sucessfully, false otherwise</returns>
         public bool TryResolve<ResolveType>(string name, out ResolveType resolvedType)
-            where ResolveType : class
-        {
-            try
-            {
+            where ResolveType : class {
+            try {
                 resolvedType = Resolve<ResolveType>(name);
                 return true;
             }
-            catch (TinyIoCResolutionException)
-            {
-                resolvedType = default(ResolveType);
+            catch (TinyIoCResolutionException) {
+                resolvedType = default;
                 return false;
             }
         }
 
         /// <summary>
-        /// Attemps to resolve a type using the given options and name
+        ///     Attemps to resolve a type using the given options and name
         /// </summary>
         /// <typeparam name="ResolveType">Type to resolve</typeparam>
         /// <param name="name">Name of registration</param>
@@ -2282,44 +2078,38 @@ namespace RainbowMage.OverlayPlugin
         /// <param name="resolvedType">Resolved type or default if resolve fails</param>
         /// <returns>True if resolved sucessfully, false otherwise</returns>
         public bool TryResolve<ResolveType>(string name, ResolveOptions options, out ResolveType resolvedType)
-            where ResolveType : class
-        {
-            try
-            {
+            where ResolveType : class {
+            try {
                 resolvedType = Resolve<ResolveType>(name, options);
                 return true;
             }
-            catch (TinyIoCResolutionException)
-            {
-                resolvedType = default(ResolveType);
+            catch (TinyIoCResolutionException) {
+                resolvedType = default;
                 return false;
             }
         }
 
         /// <summary>
-        /// Attemps to resolve a type using the default options and supplied constructor parameters
+        ///     Attemps to resolve a type using the default options and supplied constructor parameters
         /// </summary>
         /// <typeparam name="ResolveType">Type to resolve</typeparam>
         /// <param name="parameters">User specified constructor parameters</param>
         /// <param name="resolvedType">Resolved type or default if resolve fails</param>
         /// <returns>True if resolved sucessfully, false otherwise</returns>
         public bool TryResolve<ResolveType>(NamedParameterOverloads parameters, out ResolveType resolvedType)
-            where ResolveType : class
-        {
-            try
-            {
+            where ResolveType : class {
+            try {
                 resolvedType = Resolve<ResolveType>(parameters);
                 return true;
             }
-            catch (TinyIoCResolutionException)
-            {
-                resolvedType = default(ResolveType);
+            catch (TinyIoCResolutionException) {
+                resolvedType = default;
                 return false;
             }
         }
 
         /// <summary>
-        /// Attemps to resolve a type using the default options and supplied name and constructor parameters
+        ///     Attemps to resolve a type using the default options and supplied name and constructor parameters
         /// </summary>
         /// <typeparam name="ResolveType">Type to resolve</typeparam>
         /// <param name="name">Name of registration</param>
@@ -2328,22 +2118,19 @@ namespace RainbowMage.OverlayPlugin
         /// <returns>True if resolved sucessfully, false otherwise</returns>
         public bool TryResolve<ResolveType>(
             string name, NamedParameterOverloads parameters, out ResolveType resolvedType)
-            where ResolveType : class
-        {
-            try
-            {
+            where ResolveType : class {
+            try {
                 resolvedType = Resolve<ResolveType>(name, parameters);
                 return true;
             }
-            catch (TinyIoCResolutionException)
-            {
-                resolvedType = default(ResolveType);
+            catch (TinyIoCResolutionException) {
+                resolvedType = default;
                 return false;
             }
         }
 
         /// <summary>
-        /// Attemps to resolve a type using the supplied options and constructor parameters
+        ///     Attemps to resolve a type using the supplied options and constructor parameters
         /// </summary>
         /// <typeparam name="ResolveType">Type to resolve</typeparam>
         /// <param name="parameters">User specified constructor parameters</param>
@@ -2352,22 +2139,19 @@ namespace RainbowMage.OverlayPlugin
         /// <returns>True if resolved sucessfully, false otherwise</returns>
         public bool TryResolve<ResolveType>(
             NamedParameterOverloads parameters, ResolveOptions options, out ResolveType resolvedType)
-            where ResolveType : class
-        {
-            try
-            {
+            where ResolveType : class {
+            try {
                 resolvedType = Resolve<ResolveType>(parameters, options);
                 return true;
             }
-            catch (TinyIoCResolutionException)
-            {
-                resolvedType = default(ResolveType);
+            catch (TinyIoCResolutionException) {
+                resolvedType = default;
                 return false;
             }
         }
 
         /// <summary>
-        /// Attemps to resolve a type using the supplied name, options and constructor parameters
+        ///     Attemps to resolve a type using the supplied name, options and constructor parameters
         /// </summary>
         /// <typeparam name="ResolveType">Type to resolve</typeparam>
         /// <param name="name">Name of registration</param>
@@ -2377,80 +2161,65 @@ namespace RainbowMage.OverlayPlugin
         /// <returns>True if resolved sucessfully, false otherwise</returns>
         public bool TryResolve<ResolveType>(
             string name, NamedParameterOverloads parameters, ResolveOptions options, out ResolveType resolvedType)
-            where ResolveType : class
-        {
-            try
-            {
+            where ResolveType : class {
+            try {
                 resolvedType = Resolve<ResolveType>(name, parameters, options);
                 return true;
             }
-            catch (TinyIoCResolutionException)
-            {
-                resolvedType = default(ResolveType);
+            catch (TinyIoCResolutionException) {
+                resolvedType = default;
                 return false;
             }
         }
 
         /// <summary>
-        /// Returns all registrations of a type
+        ///     Returns all registrations of a type
         /// </summary>
         /// <param name="resolveType">Type to resolveAll</param>
         /// <param name="includeUnnamed">Whether to include un-named (default) registrations</param>
         /// <returns>IEnumerable</returns>
-        public IEnumerable<object> ResolveAll(Type resolveType, bool includeUnnamed)
-        {
-            return ResolveAllInternal(resolveType, includeUnnamed);
-        }
+        public IEnumerable<object> ResolveAll(Type resolveType, bool includeUnnamed) => ResolveAllInternal(resolveType, includeUnnamed);
 
         /// <summary>
-        /// Returns all registrations of a type, both named and unnamed
+        ///     Returns all registrations of a type, both named and unnamed
         /// </summary>
         /// <param name="resolveType">Type to resolveAll</param>
         /// <returns>IEnumerable</returns>
-        public IEnumerable<object> ResolveAll(Type resolveType)
-        {
-            return ResolveAll(resolveType, false);
-        }
+        public IEnumerable<object> ResolveAll(Type resolveType) => ResolveAll(resolveType, false);
 
         /// <summary>
-        /// Returns all registrations of a type
+        ///     Returns all registrations of a type
         /// </summary>
         /// <typeparam name="ResolveType">Type to resolveAll</typeparam>
         /// <param name="includeUnnamed">Whether to include un-named (default) registrations</param>
         /// <returns>IEnumerable</returns>
         public IEnumerable<ResolveType> ResolveAll<ResolveType>(bool includeUnnamed)
-            where ResolveType : class
-        {
-            return this.ResolveAll(typeof(ResolveType), includeUnnamed).Cast<ResolveType>();
-        }
+            where ResolveType : class =>
+            ResolveAll(typeof(ResolveType), includeUnnamed).Cast<ResolveType>();
 
         /// <summary>
-        /// Returns all registrations of a type, both named and unnamed
+        ///     Returns all registrations of a type, both named and unnamed
         /// </summary>
         /// <typeparam name="ResolveType">Type to resolveAll</typeparam>
         /// <returns>IEnumerable</returns>
         public IEnumerable<ResolveType> ResolveAll<ResolveType>()
-            where ResolveType : class
-        {
-            return ResolveAll<ResolveType>(true);
-        }
+            where ResolveType : class =>
+            ResolveAll<ResolveType>(true);
 
         /// <summary>
-        /// Attempts to resolve all public property dependencies on the given object.
+        ///     Attempts to resolve all public property dependencies on the given object.
         /// </summary>
         /// <param name="input">Object to "build up"</param>
-        public void BuildUp(object input)
-        {
+        public void BuildUp(object input) {
             BuildUpInternal(input, ResolveOptions.Default);
         }
 
         /// <summary>
-        /// Attempts to resolve all public property dependencies on the given object using the given resolve options.
+        ///     Attempts to resolve all public property dependencies on the given object using the given resolve options.
         /// </summary>
         /// <param name="input">Object to "build up"</param>
         /// <param name="resolveOptions">Resolve options to use</param>
-        public void BuildUp(object input, ResolveOptions resolveOptions)
-        {
+        public void BuildUp(object input, ResolveOptions resolveOptions) {
             BuildUpInternal(input, resolveOptions);
         }
 
@@ -2461,50 +2230,47 @@ namespace RainbowMage.OverlayPlugin
         #region Object Factories
 
         /// <summary>
-        /// Provides custom lifetime management for ASP.Net per-request lifetimes etc.
+        ///     Provides custom lifetime management for ASP.Net per-request lifetimes etc.
         /// </summary>
-        public interface ITinyIoCObjectLifetimeProvider
-        {
+        public interface ITinyIoCObjectLifetimeProvider {
             /// <summary>
-            /// Gets the stored object if it exists, or null if not
+            ///     Gets the stored object if it exists, or null if not
             /// </summary>
             /// <returns>Object instance or null</returns>
             object GetObject();
 
             /// <summary>
-            /// Store the object
+            ///     Store the object
             /// </summary>
             /// <param name="value">Object to store</param>
             void SetObject(object value);
 
             /// <summary>
-            /// Release the object
+            ///     Release the object
             /// </summary>
             void ReleaseObject();
         }
 
-        private abstract class ObjectFactoryBase
-        {
+        private abstract class ObjectFactoryBase {
             /// <summary>
-            /// Whether to assume this factory sucessfully constructs its objects
-            /// 
-            /// Generally set to true for delegate style factories as CanResolve cannot delve
-            /// into the delegates they contain.
+            ///     Whether to assume this factory sucessfully constructs its objects
+            ///     Generally set to true for delegate style factories as CanResolve cannot delve
+            ///     into the delegates they contain.
             /// </summary>
             public virtual bool AssumeConstruction => false;
 
             /// <summary>
-            /// The type the factory instantiates
+            ///     The type the factory instantiates
             /// </summary>
             public abstract Type CreatesType { get; }
 
             /// <summary>
-            /// Constructor to use, if specified
+            ///     Constructor to use, if specified
             /// </summary>
             public ConstructorInfo Constructor { get; protected set; }
 
             /// <summary>
-            /// Create the type
+            ///     Create the type
             /// </summary>
             /// <param name="requestedType">Type user requested to be resolved</param>
             /// <param name="container">Container that requested the creation</param>
@@ -2516,46 +2282,39 @@ namespace RainbowMage.OverlayPlugin
                 ResolveOptions options);
 
             public virtual ObjectFactoryBase SingletonVariant =>
-                throw new TinyIoCRegistrationException(this.GetType(), "singleton");
+                throw new TinyIoCRegistrationException(GetType(), "singleton");
 
             public virtual ObjectFactoryBase MultiInstanceVariant =>
-                throw new TinyIoCRegistrationException(this.GetType(), "multi-instance");
+                throw new TinyIoCRegistrationException(GetType(), "multi-instance");
 
             public virtual ObjectFactoryBase StrongReferenceVariant =>
-                throw new TinyIoCRegistrationException(this.GetType(), "strong reference");
+                throw new TinyIoCRegistrationException(GetType(), "strong reference");
 
             public virtual ObjectFactoryBase WeakReferenceVariant =>
-                throw new TinyIoCRegistrationException(this.GetType(), "weak reference");
+                throw new TinyIoCRegistrationException(GetType(), "weak reference");
 
             public virtual ObjectFactoryBase GetCustomObjectLifetimeVariant(
-                ITinyIoCObjectLifetimeProvider lifetimeProvider, string errorString)
-            {
-                throw new TinyIoCRegistrationException(this.GetType(), errorString);
-            }
+                ITinyIoCObjectLifetimeProvider lifetimeProvider, string errorString) =>
+                throw new TinyIoCRegistrationException(GetType(), errorString);
 
-            public virtual void SetConstructor(ConstructorInfo constructor)
-            {
+            public virtual void SetConstructor(ConstructorInfo constructor) {
                 Constructor = constructor;
             }
 
             public virtual ObjectFactoryBase GetFactoryForChildContainer(
-                Type type, TinyIoCContainer parent, TinyIoCContainer child)
-            {
-                return this;
-            }
+                Type type, TinyIoCContainer parent, TinyIoCContainer child) =>
+                this;
         }
 
         /// <summary>
-        /// IObjectFactory that creates new instances of types for each resolution
+        ///     IObjectFactory that creates new instances of types for each resolution
         /// </summary>
-        private class MultiInstanceFactory : ObjectFactoryBase
-        {
+        private class MultiInstanceFactory : ObjectFactoryBase {
             private readonly Type registerType;
             private readonly Type registerImplementation;
-            public override Type CreatesType => this.registerImplementation;
+            public override Type CreatesType => registerImplementation;
 
-            public MultiInstanceFactory(Type registerType, Type registerImplementation)
-            {
+            public MultiInstanceFactory(Type registerType, Type registerImplementation) {
                 //#if NETFX_CORE
                 //				if (registerImplementation.GetTypeInfo().IsAbstract() || registerImplementation.GetTypeInfo().IsInterface())
                 //					throw new TinyIoCRegistrationTypeException(registerImplementation, "MultiInstanceFactory");
@@ -2572,61 +2331,51 @@ namespace RainbowMage.OverlayPlugin
 
             public override object GetObject(
                 Type requestedType, TinyIoCContainer container, NamedParameterOverloads parameters,
-                ResolveOptions options)
-            {
-                try
-                {
-                    return container.ConstructType(requestedType, this.registerImplementation, Constructor, parameters,
-                                                   options);
+                ResolveOptions options) {
+                try {
+                    return container.ConstructType(requestedType, registerImplementation, Constructor, parameters,
+                        options);
                 }
-                catch (TinyIoCResolutionException ex)
-                {
-                    throw new TinyIoCResolutionException(this.registerType, ex);
+                catch (TinyIoCResolutionException ex) {
+                    throw new TinyIoCResolutionException(registerType, ex);
                 }
             }
 
             public override ObjectFactoryBase SingletonVariant =>
-                new SingletonFactory(this.registerType, this.registerImplementation);
+                new SingletonFactory(registerType, registerImplementation);
 
             public override ObjectFactoryBase GetCustomObjectLifetimeVariant(
-                ITinyIoCObjectLifetimeProvider lifetimeProvider, string errorString)
-            {
-                return new CustomObjectLifetimeFactory(this.registerType, this.registerImplementation, lifetimeProvider,
-                                                       errorString);
-            }
+                ITinyIoCObjectLifetimeProvider lifetimeProvider, string errorString) =>
+                new CustomObjectLifetimeFactory(registerType, registerImplementation, lifetimeProvider,
+                    errorString);
 
             public override ObjectFactoryBase MultiInstanceVariant => this;
         }
 
         /// <summary>
-        /// IObjectFactory that invokes a specified delegate to construct the object
+        ///     IObjectFactory that invokes a specified delegate to construct the object
         /// </summary>
-        private class DelegateFactory : ObjectFactoryBase
-        {
+        private class DelegateFactory : ObjectFactoryBase {
             private readonly Type registerType;
 
             private Func<TinyIoCContainer, NamedParameterOverloads, object> _factory;
 
             public override bool AssumeConstruction => true;
 
-            public override Type CreatesType => this.registerType;
+            public override Type CreatesType => registerType;
 
             public override object GetObject(
                 Type requestedType, TinyIoCContainer container, NamedParameterOverloads parameters,
-                ResolveOptions options)
-            {
-                try
-                {
+                ResolveOptions options) {
+                try {
                     return _factory.Invoke(container, parameters);
                 }
-                catch (Exception ex)
-                {
-                    throw new TinyIoCResolutionException(this.registerType, ex);
+                catch (Exception ex) {
+                    throw new TinyIoCResolutionException(registerType, ex);
                 }
             }
 
-            public DelegateFactory(Type registerType, Func<TinyIoCContainer, NamedParameterOverloads, object> factory)
-            {
+            public DelegateFactory(Type registerType, Func<TinyIoCContainer, NamedParameterOverloads, object> factory) {
                 if (factory == null)
                     throw new ArgumentNullException("factory");
 
@@ -2636,53 +2385,47 @@ namespace RainbowMage.OverlayPlugin
             }
 
             public override ObjectFactoryBase WeakReferenceVariant =>
-                new WeakDelegateFactory(this.registerType, _factory);
+                new WeakDelegateFactory(registerType, _factory);
 
             public override ObjectFactoryBase StrongReferenceVariant => this;
 
-            public override void SetConstructor(ConstructorInfo constructor)
-            {
+            public override void SetConstructor(ConstructorInfo constructor) {
                 throw new TinyIoCConstructorResolutionException(
                     "Constructor selection is not possible for delegate factory registrations");
             }
         }
 
         /// <summary>
-        /// IObjectFactory that invokes a specified delegate to construct the object
-        /// Holds the delegate using a weak reference
+        ///     IObjectFactory that invokes a specified delegate to construct the object
+        ///     Holds the delegate using a weak reference
         /// </summary>
-        private class WeakDelegateFactory : ObjectFactoryBase
-        {
+        private class WeakDelegateFactory : ObjectFactoryBase {
             private readonly Type registerType;
 
             private WeakReference _factory;
 
             public override bool AssumeConstruction => true;
 
-            public override Type CreatesType => this.registerType;
+            public override Type CreatesType => registerType;
 
             public override object GetObject(
                 Type requestedType, TinyIoCContainer container, NamedParameterOverloads parameters,
-                ResolveOptions options)
-            {
+                ResolveOptions options) {
                 var factory = _factory.Target as Func<TinyIoCContainer, NamedParameterOverloads, object>;
 
                 if (factory == null)
-                    throw new TinyIoCWeakReferenceException(this.registerType);
+                    throw new TinyIoCWeakReferenceException(registerType);
 
-                try
-                {
+                try {
                     return factory.Invoke(container, parameters);
                 }
-                catch (Exception ex)
-                {
-                    throw new TinyIoCResolutionException(this.registerType, ex);
+                catch (Exception ex) {
+                    throw new TinyIoCResolutionException(registerType, ex);
                 }
             }
 
             public WeakDelegateFactory(
-                Type registerType, Func<TinyIoCContainer, NamedParameterOverloads, object> factory)
-            {
+                Type registerType, Func<TinyIoCContainer, NamedParameterOverloads, object> factory) {
                 if (factory == null)
                     throw new ArgumentNullException("factory");
 
@@ -2698,34 +2441,31 @@ namespace RainbowMage.OverlayPlugin
                     var factory = _factory.Target as Func<TinyIoCContainer, NamedParameterOverloads, object>;
 
                     if (factory == null)
-                        throw new TinyIoCWeakReferenceException(this.registerType);
+                        throw new TinyIoCWeakReferenceException(registerType);
 
-                    return new DelegateFactory(this.registerType, factory);
+                    return new DelegateFactory(registerType, factory);
                 }
             }
 
             public override ObjectFactoryBase WeakReferenceVariant => this;
 
-            public override void SetConstructor(ConstructorInfo constructor)
-            {
+            public override void SetConstructor(ConstructorInfo constructor) {
                 throw new TinyIoCConstructorResolutionException(
                     "Constructor selection is not possible for delegate factory registrations");
             }
         }
 
         /// <summary>
-        /// Stores an particular instance to return for a type
+        ///     Stores an particular instance to return for a type
         /// </summary>
-        private class InstanceFactory : ObjectFactoryBase, IDisposable
-        {
+        private class InstanceFactory : ObjectFactoryBase, IDisposable {
             private readonly Type registerType;
             private readonly Type registerImplementation;
             private object _instance;
 
             public override bool AssumeConstruction => true;
 
-            public InstanceFactory(Type registerType, Type registerImplementation, object instance)
-            {
+            public InstanceFactory(Type registerType, Type registerImplementation, object instance) {
                 if (!IsValidAssignment(registerType, registerImplementation))
                     throw new TinyIoCRegistrationTypeException(registerImplementation, "InstanceFactory");
 
@@ -2734,31 +2474,27 @@ namespace RainbowMage.OverlayPlugin
                 _instance = instance;
             }
 
-            public override Type CreatesType => this.registerImplementation;
+            public override Type CreatesType => registerImplementation;
 
             public override object GetObject(
                 Type requestedType, TinyIoCContainer container, NamedParameterOverloads parameters,
-                ResolveOptions options)
-            {
-                return _instance;
-            }
+                ResolveOptions options) =>
+                _instance;
 
             public override ObjectFactoryBase MultiInstanceVariant =>
-                new MultiInstanceFactory(this.registerType, this.registerImplementation);
+                new MultiInstanceFactory(registerType, registerImplementation);
 
             public override ObjectFactoryBase WeakReferenceVariant =>
-                new WeakInstanceFactory(this.registerType, this.registerImplementation, this._instance);
+                new WeakInstanceFactory(registerType, registerImplementation, _instance);
 
             public override ObjectFactoryBase StrongReferenceVariant => this;
 
-            public override void SetConstructor(ConstructorInfo constructor)
-            {
+            public override void SetConstructor(ConstructorInfo constructor) {
                 throw new TinyIoCConstructorResolutionException(
                     "Constructor selection is not possible for instance factory registrations");
             }
 
-            public void Dispose()
-            {
+            public void Dispose() {
                 var disposable = _instance as IDisposable;
 
                 if (disposable != null)
@@ -2767,18 +2503,15 @@ namespace RainbowMage.OverlayPlugin
         }
 
         /// <summary>
-        /// Stores an particular instance to return for a type
-        /// 
-        /// Stores the instance with a weak reference
+        ///     Stores an particular instance to return for a type
+        ///     Stores the instance with a weak reference
         /// </summary>
-        private class WeakInstanceFactory : ObjectFactoryBase, IDisposable
-        {
+        private class WeakInstanceFactory : ObjectFactoryBase, IDisposable {
             private readonly Type registerType;
             private readonly Type registerImplementation;
             private readonly WeakReference _instance;
 
-            public WeakInstanceFactory(Type registerType, Type registerImplementation, object instance)
-            {
+            public WeakInstanceFactory(Type registerType, Type registerImplementation, object instance) {
                 if (!IsValidAssignment(registerType, registerImplementation))
                     throw new TinyIoCRegistrationTypeException(registerImplementation, "WeakInstanceFactory");
 
@@ -2787,22 +2520,21 @@ namespace RainbowMage.OverlayPlugin
                 _instance = new WeakReference(instance);
             }
 
-            public override Type CreatesType => this.registerImplementation;
+            public override Type CreatesType => registerImplementation;
 
             public override object GetObject(
                 Type requestedType, TinyIoCContainer container, NamedParameterOverloads parameters,
-                ResolveOptions options)
-            {
+                ResolveOptions options) {
                 var instance = _instance.Target;
 
                 if (instance == null)
-                    throw new TinyIoCWeakReferenceException(this.registerType);
+                    throw new TinyIoCWeakReferenceException(registerType);
 
                 return instance;
             }
 
             public override ObjectFactoryBase MultiInstanceVariant =>
-                new MultiInstanceFactory(this.registerType, this.registerImplementation);
+                new MultiInstanceFactory(registerType, registerImplementation);
 
             public override ObjectFactoryBase WeakReferenceVariant => this;
 
@@ -2813,20 +2545,18 @@ namespace RainbowMage.OverlayPlugin
                     var instance = _instance.Target;
 
                     if (instance == null)
-                        throw new TinyIoCWeakReferenceException(this.registerType);
+                        throw new TinyIoCWeakReferenceException(registerType);
 
-                    return new InstanceFactory(this.registerType, this.registerImplementation, instance);
+                    return new InstanceFactory(registerType, registerImplementation, instance);
                 }
             }
 
-            public override void SetConstructor(ConstructorInfo constructor)
-            {
+            public override void SetConstructor(ConstructorInfo constructor) {
                 throw new TinyIoCConstructorResolutionException(
                     "Constructor selection is not possible for instance factory registrations");
             }
 
-            public void Dispose()
-            {
+            public void Dispose() {
                 var disposable = _instance.Target as IDisposable;
 
                 if (disposable != null)
@@ -2835,17 +2565,15 @@ namespace RainbowMage.OverlayPlugin
         }
 
         /// <summary>
-        /// A factory that lazy instantiates a type and always returns the same instance
+        ///     A factory that lazy instantiates a type and always returns the same instance
         /// </summary>
-        private class SingletonFactory : ObjectFactoryBase, IDisposable
-        {
+        private class SingletonFactory : ObjectFactoryBase, IDisposable {
             private readonly Type registerType;
             private readonly Type registerImplementation;
-            private readonly object SingletonLock = new object();
+            private readonly object SingletonLock = new();
             private object _Current;
 
-            public SingletonFactory(Type registerType, Type registerImplementation)
-            {
+            public SingletonFactory(Type registerType, Type registerImplementation) {
                 //#if NETFX_CORE
                 //				if (registerImplementation.GetTypeInfo().IsAbstract() || registerImplementation.GetTypeInfo().IsInterface())
                 //#else
@@ -2860,19 +2588,18 @@ namespace RainbowMage.OverlayPlugin
                 this.registerImplementation = registerImplementation;
             }
 
-            public override Type CreatesType => this.registerImplementation;
+            public override Type CreatesType => registerImplementation;
 
             public override object GetObject(
                 Type requestedType, TinyIoCContainer container, NamedParameterOverloads parameters,
-                ResolveOptions options)
-            {
+                ResolveOptions options) {
                 if (parameters.Count != 0)
                     throw new ArgumentException("Cannot specify parameters for singleton types");
 
                 lock (SingletonLock)
                     if (_Current == null)
-                        _Current = container.ConstructType(requestedType, this.registerImplementation, Constructor,
-                                                           options);
+                        _Current = container.ConstructType(requestedType, registerImplementation, Constructor,
+                            options);
 
                 return _Current;
             }
@@ -2880,18 +2607,15 @@ namespace RainbowMage.OverlayPlugin
             public override ObjectFactoryBase SingletonVariant => this;
 
             public override ObjectFactoryBase GetCustomObjectLifetimeVariant(
-                ITinyIoCObjectLifetimeProvider lifetimeProvider, string errorString)
-            {
-                return new CustomObjectLifetimeFactory(this.registerType, this.registerImplementation, lifetimeProvider,
-                                                       errorString);
-            }
+                ITinyIoCObjectLifetimeProvider lifetimeProvider, string errorString) =>
+                new CustomObjectLifetimeFactory(registerType, registerImplementation, lifetimeProvider,
+                    errorString);
 
             public override ObjectFactoryBase MultiInstanceVariant =>
-                new MultiInstanceFactory(this.registerType, this.registerImplementation);
+                new MultiInstanceFactory(registerType, registerImplementation);
 
             public override ObjectFactoryBase GetFactoryForChildContainer(
-                Type type, TinyIoCContainer parent, TinyIoCContainer child)
-            {
+                Type type, TinyIoCContainer parent, TinyIoCContainer child) {
                 // We make sure that the singleton is constructed before the child container takes the factory.
                 // Otherwise the results would vary depending on whether or not the parent container had resolved
                 // the type before the child container does.
@@ -2899,12 +2623,11 @@ namespace RainbowMage.OverlayPlugin
                 return this;
             }
 
-            public void Dispose()
-            {
-                if (this._Current == null)
+            public void Dispose() {
+                if (_Current == null)
                     return;
 
-                var disposable = this._Current as IDisposable;
+                var disposable = _Current as IDisposable;
 
                 if (disposable != null)
                     disposable.Dispose();
@@ -2912,19 +2635,17 @@ namespace RainbowMage.OverlayPlugin
         }
 
         /// <summary>
-        /// A factory that offloads lifetime to an external lifetime provider
+        ///     A factory that offloads lifetime to an external lifetime provider
         /// </summary>
-        private class CustomObjectLifetimeFactory : ObjectFactoryBase, IDisposable
-        {
-            private readonly object SingletonLock = new object();
+        private class CustomObjectLifetimeFactory : ObjectFactoryBase, IDisposable {
+            private readonly object SingletonLock = new();
             private readonly Type registerType;
             private readonly Type registerImplementation;
             private readonly ITinyIoCObjectLifetimeProvider _LifetimeProvider;
 
             public CustomObjectLifetimeFactory(
                 Type registerType, Type registerImplementation, ITinyIoCObjectLifetimeProvider lifetimeProvider,
-                string errorMessage)
-            {
+                string errorMessage) {
                 if (lifetimeProvider == null)
                     throw new ArgumentNullException("lifetimeProvider", "lifetimeProvider is null.");
 
@@ -2943,21 +2664,18 @@ namespace RainbowMage.OverlayPlugin
                 _LifetimeProvider = lifetimeProvider;
             }
 
-            public override Type CreatesType => this.registerImplementation;
+            public override Type CreatesType => registerImplementation;
 
             public override object GetObject(
                 Type requestedType, TinyIoCContainer container, NamedParameterOverloads parameters,
-                ResolveOptions options)
-            {
+                ResolveOptions options) {
                 object current;
 
-                lock (SingletonLock)
-                {
+                lock (SingletonLock) {
                     current = _LifetimeProvider.GetObject();
-                    if (current == null)
-                    {
-                        current = container.ConstructType(requestedType, this.registerImplementation, Constructor,
-                                                          options);
+                    if (current == null) {
+                        current = container.ConstructType(requestedType, registerImplementation, Constructor,
+                            options);
                         _LifetimeProvider.SetObject(current);
                     }
                 }
@@ -2970,7 +2688,7 @@ namespace RainbowMage.OverlayPlugin
                 get
                 {
                     _LifetimeProvider.ReleaseObject();
-                    return new SingletonFactory(this.registerType, this.registerImplementation);
+                    return new SingletonFactory(registerType, registerImplementation);
                 }
             }
 
@@ -2979,21 +2697,19 @@ namespace RainbowMage.OverlayPlugin
                 get
                 {
                     _LifetimeProvider.ReleaseObject();
-                    return new MultiInstanceFactory(this.registerType, this.registerImplementation);
+                    return new MultiInstanceFactory(registerType, registerImplementation);
                 }
             }
 
             public override ObjectFactoryBase GetCustomObjectLifetimeVariant(
-                ITinyIoCObjectLifetimeProvider lifetimeProvider, string errorString)
-            {
+                ITinyIoCObjectLifetimeProvider lifetimeProvider, string errorString) {
                 _LifetimeProvider.ReleaseObject();
-                return new CustomObjectLifetimeFactory(this.registerType, this.registerImplementation, lifetimeProvider,
-                                                       errorString);
+                return new CustomObjectLifetimeFactory(registerType, registerImplementation, lifetimeProvider,
+                    errorString);
             }
 
             public override ObjectFactoryBase GetFactoryForChildContainer(
-                Type type, TinyIoCContainer parent, TinyIoCContainer child)
-            {
+                Type type, TinyIoCContainer parent, TinyIoCContainer child) {
                 // We make sure that the singleton is constructed before the child container takes the factory.
                 // Otherwise the results would vary depending on whether or not the parent container had resolved
                 // the type before the child container does.
@@ -3001,8 +2717,7 @@ namespace RainbowMage.OverlayPlugin
                 return this;
             }
 
-            public void Dispose()
-            {
+            public void Dispose() {
                 _LifetimeProvider.ReleaseObject();
             }
         }
@@ -3011,37 +2726,36 @@ namespace RainbowMage.OverlayPlugin
 
         #region Singleton Container
 
-        static TinyIoCContainer() { }
+        static TinyIoCContainer() {
+        }
 
         /// <summary>
-        /// Lazy created Singleton instance of the container for simple scenarios
+        ///     Lazy created Singleton instance of the container for simple scenarios
         /// </summary>
-        public static TinyIoCContainer Current { get; } = new TinyIoCContainer();
+        public static TinyIoCContainer Current { get; } = new();
 
         #endregion
 
         #region Type Registrations
 
-        public sealed class TypeRegistration
-        {
+        public sealed class TypeRegistration {
             private int _hashCode;
 
             public Type Type { get; private set; }
             public string Name { get; private set; }
 
             public TypeRegistration(Type type)
-                : this(type, string.Empty) { }
+                : this(type, string.Empty) {
+            }
 
-            public TypeRegistration(Type type, string name)
-            {
+            public TypeRegistration(Type type, string name) {
                 Type = type;
                 Name = name;
 
-                _hashCode = String.Concat(Type.FullName, "|", Name).GetHashCode();
+                _hashCode = string.Concat(Type.FullName, "|", Name).GetHashCode();
             }
 
-            public override bool Equals(object obj)
-            {
+            public override bool Equals(object obj) {
                 var typeRegistration = obj as TypeRegistration;
 
                 if (typeRegistration == null)
@@ -3050,32 +2764,27 @@ namespace RainbowMage.OverlayPlugin
                 if (Type != typeRegistration.Type)
                     return false;
 
-                if (String.Compare(Name, typeRegistration.Name, StringComparison.Ordinal) != 0)
+                if (string.Compare(Name, typeRegistration.Name, StringComparison.Ordinal) != 0)
                     return false;
 
                 return true;
             }
 
-            public override int GetHashCode()
-            {
-                return _hashCode;
-            }
+            public override int GetHashCode() => _hashCode;
         }
 
         private readonly SafeDictionary<TypeRegistration, ObjectFactoryBase> _RegisteredTypes;
 #if USE_OBJECT_CONSTRUCTOR
         private delegate object ObjectConstructor(params object[] parameters);
 
-        private static readonly SafeDictionary<ConstructorInfo, ObjectConstructor> _ObjectConstructorCache =
-            new SafeDictionary<ConstructorInfo, ObjectConstructor>();
+        private static readonly SafeDictionary<ConstructorInfo, ObjectConstructor> _ObjectConstructorCache = new();
 #endif
 
         #endregion
 
         #region Constructors
 
-        public TinyIoCContainer()
-        {
+        public TinyIoCContainer() {
             _RegisteredTypes = new SafeDictionary<TypeRegistration, ObjectFactoryBase>();
 
             RegisterDefaultTypes();
@@ -3084,8 +2793,7 @@ namespace RainbowMage.OverlayPlugin
         private TinyIoCContainer _Parent;
 
         private TinyIoCContainer(TinyIoCContainer parent)
-            : this()
-        {
+            : this() {
             _Parent = parent;
         }
 
@@ -3093,68 +2801,57 @@ namespace RainbowMage.OverlayPlugin
 
         #region Internal Methods
 
-        private readonly object _AutoRegisterLock = new object();
+        private readonly object _AutoRegisterLock = new();
 
         private void AutoRegisterInternal(
             IEnumerable<Assembly> assemblies, DuplicateImplementationActions duplicateAction,
-            Func<Type, bool> registrationPredicate)
-        {
-            lock (_AutoRegisterLock)
-            {
+            Func<Type, bool> registrationPredicate) {
+            lock (_AutoRegisterLock) {
                 var types = assemblies.SelectMany(a => a.SafeGetTypes())
-                                      .Where(t => !IsIgnoredType(t, registrationPredicate)).ToList();
+                    .Where(t => !IsIgnoredType(t, registrationPredicate)).ToList();
 
                 var concreteTypes = types
-                                    .Where(type => type.IsClass() && (type.IsAbstract() == false) &&
-                                                   (type != this.GetType() && (type.DeclaringType != this.GetType()) &&
-                                                    (!type.IsGenericTypeDefinition())))
-                                    .ToList();
+                    .Where(type => type.IsClass() && !type.IsAbstract() &&
+                                   type != GetType() && type.DeclaringType != GetType() &&
+                                   !type.IsGenericTypeDefinition())
+                    .ToList();
 
-                foreach (var type in concreteTypes)
-                {
-                    try
-                    {
+                foreach (var type in concreteTypes) {
+                    try {
                         RegisterInternal(type, string.Empty, GetDefaultObjectFactory(type, type));
                     }
-                    catch (MethodAccessException)
-                    {
+                    catch (MethodAccessException) {
                         // Ignore methods we can't access - added for Silverlight
                     }
                 }
 
                 var abstractInterfaceTypes = from type in types
-                                             where ((type.IsInterface() || type.IsAbstract()) &&
-                                                    (type.DeclaringType != this.GetType()) &&
-                                                    (!type.IsGenericTypeDefinition()))
-                                             select type;
+                    where (type.IsInterface() || type.IsAbstract()) &&
+                          type.DeclaringType != GetType() &&
+                          !type.IsGenericTypeDefinition()
+                    select type;
 
-                foreach (var type in abstractInterfaceTypes)
-                {
+                foreach (var type in abstractInterfaceTypes) {
                     var localType = type;
                     var implementations = from implementationType in concreteTypes
-                                          where localType.IsAssignableFrom(implementationType)
-                                          select implementationType;
+                        where localType.IsAssignableFrom(implementationType)
+                        select implementationType;
 
-                    if (implementations.Skip(1).Any())
-                    {
+                    if (implementations.Skip(1).Any()) {
                         if (duplicateAction == DuplicateImplementationActions.Fail)
                             throw new TinyIoCAutoRegistrationException(type, implementations);
 
-                        if (duplicateAction == DuplicateImplementationActions.RegisterMultiple)
-                        {
+                        if (duplicateAction == DuplicateImplementationActions.RegisterMultiple) {
                             RegisterMultiple(type, implementations);
                         }
                     }
 
                     var firstImplementation = implementations.FirstOrDefault();
-                    if (firstImplementation != null)
-                    {
-                        try
-                        {
+                    if (firstImplementation != null) {
+                        try {
                             RegisterInternal(type, string.Empty, GetDefaultObjectFactory(type, firstImplementation));
                         }
-                        catch (MethodAccessException)
-                        {
+                        catch (MethodAccessException) {
                             // Ignore methods we can't access - added for Silverlight
                         }
                     }
@@ -3162,11 +2859,9 @@ namespace RainbowMage.OverlayPlugin
             }
         }
 
-        private bool IsIgnoredAssembly(Assembly assembly)
-        {
+        private bool IsIgnoredAssembly(Assembly assembly) {
             // TODO - find a better way to remove "system" assemblies from the auto registration
-            var ignoreChecks = new List<Func<Assembly, bool>>()
-            {
+            var ignoreChecks = new List<Func<Assembly, bool>> {
                 asm => asm.FullName.StartsWith("Microsoft.", StringComparison.Ordinal),
                 asm => asm.FullName.StartsWith("System.", StringComparison.Ordinal),
                 asm => asm.FullName.StartsWith("System,", StringComparison.Ordinal),
@@ -3176,8 +2871,7 @@ namespace RainbowMage.OverlayPlugin
                 asm => asm.FullName.StartsWith("DevExpress.CodeRush", StringComparison.Ordinal)
             };
 
-            foreach (var check in ignoreChecks)
-            {
+            foreach (var check in ignoreChecks) {
                 if (check(assembly))
                     return true;
             }
@@ -3185,28 +2879,24 @@ namespace RainbowMage.OverlayPlugin
             return false;
         }
 
-        private bool IsIgnoredType(Type type, Func<Type, bool> registrationPredicate)
-        {
+        private bool IsIgnoredType(Type type, Func<Type, bool> registrationPredicate) {
             // TODO - find a better way to remove "system" types from the auto registration
-            var ignoreChecks = new List<Func<Type, bool>>()
-            {
+            var ignoreChecks = new List<Func<Type, bool>> {
                 t => t.FullName.StartsWith("System.", StringComparison.Ordinal),
                 t => t.FullName.StartsWith("Microsoft.", StringComparison.Ordinal),
                 t => t.IsPrimitive(),
 #if !UNBOUND_GENERICS_GETCONSTRUCTORS
                 t => t.IsGenericTypeDefinition(),
 #endif
-                t => (t.GetConstructors(BindingFlags.Instance | BindingFlags.Public).Length == 0) &&
+                t => t.GetConstructors(BindingFlags.Instance | BindingFlags.Public).Length == 0 &&
                      !(t.IsInterface() || t.IsAbstract())
             };
 
-            if (registrationPredicate != null)
-            {
+            if (registrationPredicate != null) {
                 ignoreChecks.Add(t => !registrationPredicate(t));
             }
 
-            foreach (var check in ignoreChecks)
-            {
+            foreach (var check in ignoreChecks) {
                 if (check(type))
                     return true;
             }
@@ -3214,9 +2904,8 @@ namespace RainbowMage.OverlayPlugin
             return false;
         }
 
-        private void RegisterDefaultTypes()
-        {
-            Register<TinyIoCContainer>(this);
+        private void RegisterDefaultTypes() {
+            Register(this);
 
 #if TINYMESSENGER
             // Only register the TinyMessenger singleton if we are the root container
@@ -3225,8 +2914,7 @@ namespace RainbowMage.OverlayPlugin
 #endif
         }
 
-        private ObjectFactoryBase GetCurrentFactory(TypeRegistration registration)
-        {
+        private ObjectFactoryBase GetCurrentFactory(TypeRegistration registration) {
             ObjectFactoryBase current = null;
 
             _RegisteredTypes.TryGetValue(registration, out current);
@@ -3234,27 +2922,23 @@ namespace RainbowMage.OverlayPlugin
             return current;
         }
 
-        private RegisterOptions RegisterInternal(Type registerType, string name, ObjectFactoryBase factory)
-        {
+        private RegisterOptions RegisterInternal(Type registerType, string name, ObjectFactoryBase factory) {
             var typeRegistration = new TypeRegistration(registerType, name);
 
             return AddUpdateRegistration(typeRegistration, factory);
         }
 
-        private RegisterOptions AddUpdateRegistration(TypeRegistration typeRegistration, ObjectFactoryBase factory)
-        {
+        private RegisterOptions AddUpdateRegistration(TypeRegistration typeRegistration, ObjectFactoryBase factory) {
             _RegisteredTypes[typeRegistration] = factory;
 
             return new RegisterOptions(this, typeRegistration);
         }
 
-        private void RemoveRegistration(TypeRegistration typeRegistration)
-        {
+        private void RemoveRegistration(TypeRegistration typeRegistration) {
             _RegisteredTypes.Remove(typeRegistration);
         }
 
-        private ObjectFactoryBase GetDefaultObjectFactory(Type registerType, Type registerImplementation)
-        {
+        private ObjectFactoryBase GetDefaultObjectFactory(Type registerType, Type registerImplementation) {
             //#if NETFX_CORE
             //			if (registerType.GetTypeInfo().IsInterface() || registerType.GetTypeInfo().IsAbstract())
             //#else
@@ -3266,8 +2950,7 @@ namespace RainbowMage.OverlayPlugin
         }
 
         private bool CanResolveInternal(
-            TypeRegistration registration, NamedParameterOverloads parameters, ResolveOptions options)
-        {
+            TypeRegistration registration, NamedParameterOverloads parameters, ResolveOptions options) {
             if (parameters == null)
                 throw new ArgumentNullException("parameters");
 
@@ -3275,51 +2958,44 @@ namespace RainbowMage.OverlayPlugin
             var name = registration.Name;
 
             ObjectFactoryBase factory;
-            if (_RegisteredTypes.TryGetValue(new TypeRegistration(checkType, name), out factory))
-            {
+            if (_RegisteredTypes.TryGetValue(new TypeRegistration(checkType, name), out factory)) {
                 if (factory.AssumeConstruction)
                     return true;
 
                 if (factory.Constructor == null)
-                    return (GetBestConstructor(factory.CreatesType, parameters, options) != null) ? true : false;
-                else
-                    return CanConstruct(factory.Constructor, parameters, options);
+                    return GetBestConstructor(factory.CreatesType, parameters, options) != null ? true : false;
+                return CanConstruct(factory.Constructor, parameters, options);
             }
 
 #if RESOLVE_OPEN_GENERICS
-            if (checkType.IsInterface && checkType.IsGenericType)
-            {
+            if (checkType.IsInterface && checkType.IsGenericType) {
                 // if the type is registered as an open generic, then see if the open generic is registered
                 if (_RegisteredTypes.TryGetValue(new TypeRegistration(checkType.GetGenericTypeDefinition(), name),
-                                                 out factory))
-                {
+                        out factory)) {
                     if (factory.AssumeConstruction)
                         return true;
 
                     if (factory.Constructor == null)
-                        return (GetBestConstructor(factory.CreatesType, parameters, options) != null) ? true : false;
-                    else
-                        return CanConstruct(factory.Constructor, parameters, options);
+                        return GetBestConstructor(factory.CreatesType, parameters, options) != null ? true : false;
+                    return CanConstruct(factory.Constructor, parameters, options);
                 }
             }
 #endif
 
             // Fail if requesting named resolution and settings set to fail if unresolved
             // Or bubble up if we have a parent
-            if (!String.IsNullOrEmpty(name) &&
+            if (!string.IsNullOrEmpty(name) &&
                 options.NamedResolutionFailureAction == NamedResolutionFailureActions.Fail)
-                return (_Parent != null) ? _Parent.CanResolveInternal(registration, parameters, options) : false;
+                return _Parent != null ? _Parent.CanResolveInternal(registration, parameters, options) : false;
 
             // Attemped unnamed fallback container resolution if relevant and requested
-            if (!String.IsNullOrEmpty(name) && options.NamedResolutionFailureAction ==
-                NamedResolutionFailureActions.AttemptUnnamedResolution)
-            {
-                if (_RegisteredTypes.TryGetValue(new TypeRegistration(checkType), out factory))
-                {
+            if (!string.IsNullOrEmpty(name) && options.NamedResolutionFailureAction ==
+                NamedResolutionFailureActions.AttemptUnnamedResolution) {
+                if (_RegisteredTypes.TryGetValue(new TypeRegistration(checkType), out factory)) {
                     if (factory.AssumeConstruction)
                         return true;
 
-                    return (GetBestConstructor(factory.CreatesType, parameters, options) != null) ? true : false;
+                    return GetBestConstructor(factory.CreatesType, parameters, options) != null ? true : false;
                 }
             }
 
@@ -3333,11 +3009,11 @@ namespace RainbowMage.OverlayPlugin
 
             // Attempt unregistered construction if possible and requested
             // If we cant', bubble if we have a parent
-            if ((options.UnregisteredResolutionAction == UnregisteredResolutionActions.AttemptResolve) ||
-                (checkType.IsGenericType() &&
-                 options.UnregisteredResolutionAction == UnregisteredResolutionActions.GenericsOnly))
-                return (GetBestConstructor(checkType, parameters, options) != null) ? true :
-                       (_Parent != null) ? _Parent.CanResolveInternal(registration, parameters, options) : false;
+            if (options.UnregisteredResolutionAction == UnregisteredResolutionActions.AttemptResolve ||
+                checkType.IsGenericType() &&
+                options.UnregisteredResolutionAction == UnregisteredResolutionActions.GenericsOnly)
+                return GetBestConstructor(checkType, parameters, options) != null ? true :
+                    _Parent != null ? _Parent.CanResolveInternal(registration, parameters, options) : false;
 
             // Bubble resolution up the container tree if we have a parent
             if (_Parent != null)
@@ -3346,8 +3022,7 @@ namespace RainbowMage.OverlayPlugin
             return false;
         }
 
-        private bool IsIEnumerableRequest(Type type)
-        {
+        private bool IsIEnumerableRequest(Type type) {
             if (!type.IsGenericType())
                 return false;
 
@@ -3359,8 +3034,7 @@ namespace RainbowMage.OverlayPlugin
             return false;
         }
 
-        private bool IsAutomaticLazyFactoryRequest(Type type)
-        {
+        private bool IsAutomaticLazyFactoryRequest(Type type) {
             if (!type.IsGenericType())
                 return false;
 
@@ -3374,7 +3048,7 @@ namespace RainbowMage.OverlayPlugin
             //#if NETFX_CORE
             //			if ((genericType == typeof(Func<,>) && type.GetTypeInfo().GenericTypeArguments[0] == typeof(string)))
             //#else
-            if ((genericType == typeof(Func<,>) && type.GetGenericArguments()[0] == typeof(string)))
+            if (genericType == typeof(Func<,>) && type.GetGenericArguments()[0] == typeof(string))
                 //#endif
                 return true;
 
@@ -3382,22 +3056,20 @@ namespace RainbowMage.OverlayPlugin
             //#if NETFX_CORE
             //			if ((genericType == typeof(Func<,,>) && type.GetTypeInfo().GenericTypeArguments[0] == typeof(string) && type.GetTypeInfo().GenericTypeArguments[1] == typeof(IDictionary<String, object>)))
             //#else
-            if ((genericType == typeof(Func<,,>) && type.GetGenericArguments()[0] == typeof(string) &&
-                 type.GetGenericArguments()[1] == typeof(IDictionary<String, object>)))
+            if (genericType == typeof(Func<,,>) && type.GetGenericArguments()[0] == typeof(string) &&
+                type.GetGenericArguments()[1] == typeof(IDictionary<string, object>))
                 //#endif
                 return true;
 
             return false;
         }
 
-        private ObjectFactoryBase GetParentObjectFactory(TypeRegistration registration)
-        {
+        private ObjectFactoryBase GetParentObjectFactory(TypeRegistration registration) {
             if (_Parent == null)
                 return null;
 
             ObjectFactoryBase factory;
-            if (_Parent._RegisteredTypes.TryGetValue(registration, out factory))
-            {
+            if (_Parent._RegisteredTypes.TryGetValue(registration, out factory)) {
                 return factory.GetFactoryForChildContainer(registration.Type, _Parent, this);
             }
 
@@ -3405,46 +3077,36 @@ namespace RainbowMage.OverlayPlugin
         }
 
         private object ResolveInternal(
-            TypeRegistration registration, NamedParameterOverloads parameters, ResolveOptions options)
-        {
+            TypeRegistration registration, NamedParameterOverloads parameters, ResolveOptions options) {
             ObjectFactoryBase factory;
 
             // Attempt container resolution
-            if (_RegisteredTypes.TryGetValue(registration, out factory))
-            {
-                try
-                {
+            if (_RegisteredTypes.TryGetValue(registration, out factory)) {
+                try {
                     return factory.GetObject(registration.Type, this, parameters, options);
                 }
-                catch (TinyIoCResolutionException)
-                {
+                catch (TinyIoCResolutionException) {
                     throw;
                 }
-                catch (Exception ex)
-                {
+                catch (Exception ex) {
                     throw new TinyIoCResolutionException(registration.Type, ex);
                 }
             }
 
 #if RESOLVE_OPEN_GENERICS
             // Attempt container resolution of open generic
-            if (registration.Type.IsGenericType())
-            {
+            if (registration.Type.IsGenericType()) {
                 var openTypeRegistration = new TypeRegistration(registration.Type.GetGenericTypeDefinition(),
-                                                                registration.Name);
+                    registration.Name);
 
-                if (_RegisteredTypes.TryGetValue(openTypeRegistration, out factory))
-                {
-                    try
-                    {
+                if (_RegisteredTypes.TryGetValue(openTypeRegistration, out factory)) {
+                    try {
                         return factory.GetObject(registration.Type, this, parameters, options);
                     }
-                    catch (TinyIoCResolutionException)
-                    {
+                    catch (TinyIoCResolutionException) {
                         throw;
                     }
-                    catch (Exception ex)
-                    {
+                    catch (Exception ex) {
                         throw new TinyIoCResolutionException(registration.Type, ex);
                     }
                 }
@@ -3453,43 +3115,34 @@ namespace RainbowMage.OverlayPlugin
 
             // Attempt to get a factory from parent if we can
             var bubbledObjectFactory = GetParentObjectFactory(registration);
-            if (bubbledObjectFactory != null)
-            {
-                try
-                {
+            if (bubbledObjectFactory != null) {
+                try {
                     return bubbledObjectFactory.GetObject(registration.Type, this, parameters, options);
                 }
-                catch (TinyIoCResolutionException)
-                {
+                catch (TinyIoCResolutionException) {
                     throw;
                 }
-                catch (Exception ex)
-                {
+                catch (Exception ex) {
                     throw new TinyIoCResolutionException(registration.Type, ex);
                 }
             }
 
             // Fail if requesting named resolution and settings set to fail if unresolved
-            if (!String.IsNullOrEmpty(registration.Name) &&
+            if (!string.IsNullOrEmpty(registration.Name) &&
                 options.NamedResolutionFailureAction == NamedResolutionFailureActions.Fail)
                 throw new TinyIoCResolutionException(registration.Type);
 
             // Attemped unnamed fallback container resolution if relevant and requested
-            if (!String.IsNullOrEmpty(registration.Name) && options.NamedResolutionFailureAction ==
-                NamedResolutionFailureActions.AttemptUnnamedResolution)
-            {
-                if (_RegisteredTypes.TryGetValue(new TypeRegistration(registration.Type, string.Empty), out factory))
-                {
-                    try
-                    {
+            if (!string.IsNullOrEmpty(registration.Name) && options.NamedResolutionFailureAction ==
+                NamedResolutionFailureActions.AttemptUnnamedResolution) {
+                if (_RegisteredTypes.TryGetValue(new TypeRegistration(registration.Type, string.Empty), out factory)) {
+                    try {
                         return factory.GetObject(registration.Type, this, parameters, options);
                     }
-                    catch (TinyIoCResolutionException)
-                    {
+                    catch (TinyIoCResolutionException) {
                         throw;
                     }
-                    catch (Exception ex)
-                    {
+                    catch (Exception ex) {
                         throw new TinyIoCResolutionException(registration.Type, ex);
                     }
                 }
@@ -3504,10 +3157,9 @@ namespace RainbowMage.OverlayPlugin
                 return GetIEnumerableRequest(registration.Type);
 
             // Attempt unregistered construction if possible and requested
-            if ((options.UnregisteredResolutionAction == UnregisteredResolutionActions.AttemptResolve) ||
-                (registration.Type.IsGenericType() &&
-                 options.UnregisteredResolutionAction == UnregisteredResolutionActions.GenericsOnly))
-            {
+            if (options.UnregisteredResolutionAction == UnregisteredResolutionActions.AttemptResolve ||
+                registration.Type.IsGenericType() &&
+                options.UnregisteredResolutionAction == UnregisteredResolutionActions.GenericsOnly) {
                 if (!registration.Type.IsAbstract() && !registration.Type.IsInterface())
                     return ConstructType(null, registration.Type, parameters, options);
             }
@@ -3517,8 +3169,7 @@ namespace RainbowMage.OverlayPlugin
         }
 
 #if EXPRESSIONS
-        private object GetLazyAutomaticFactoryRequest(Type type)
-        {
+        private object GetLazyAutomaticFactoryRequest(Type type) {
             if (!type.IsGenericType())
                 return null;
 
@@ -3530,14 +3181,13 @@ namespace RainbowMage.OverlayPlugin
             //#endif
 
             // Just a func
-            if (genericType == typeof(Func<>))
-            {
+            if (genericType == typeof(Func<>)) {
                 var returnType = genericArguments[0];
 
                 //#if NETFX_CORE
                 //				MethodInfo resolveMethod = typeof(TinyIoCContainer).GetTypeInfo().GetDeclaredMethods("Resolve").First(mi => !mi.GetParameters().Any());
                 //#else
-                var resolveMethod = typeof(TinyIoCContainer).GetMethod("Resolve", new Type[] { });
+                var resolveMethod = typeof(TinyIoCContainer).GetMethod("Resolve", []);
                 //#endif
                 resolveMethod = resolveMethod.MakeGenericMethod(returnType);
 
@@ -3549,18 +3199,19 @@ namespace RainbowMage.OverlayPlugin
             }
 
             // 2 parameter func with string as first parameter (name)
-            if ((genericType == typeof(Func<,>)) && (genericArguments[0] == typeof(string)))
-            {
+            if (genericType == typeof(Func<,>) && genericArguments[0] == typeof(string)) {
                 var returnType = genericArguments[1];
 
                 //#if NETFX_CORE
                 //				MethodInfo resolveMethod = typeof(TinyIoCContainer).GetTypeInfo().GetDeclaredMethods("Resolve").First(mi => mi.GetParameters().Length == 1 && mi.GetParameters()[0].GetType() == typeof(String));
                 //#else
-                var resolveMethod = typeof(TinyIoCContainer).GetMethod("Resolve", new Type[] { typeof(String) });
+                var resolveMethod = typeof(TinyIoCContainer).GetMethod("Resolve", [typeof(string)]);
                 //#endif
                 resolveMethod = resolveMethod.MakeGenericMethod(returnType);
 
-                var resolveParameters = new ParameterExpression[] { Expression.Parameter(typeof(String), "name") };
+                var resolveParameters = new[] {
+                    Expression.Parameter(typeof(string), "name")
+                };
                 var resolveCall = Expression.Call(Expression.Constant(this), resolveMethod, resolveParameters);
 
                 var resolveLambda = Expression.Lambda(resolveCall, resolveParameters).Compile();
@@ -3572,8 +3223,8 @@ namespace RainbowMage.OverlayPlugin
             //#if NETFX_CORE
             //			if ((genericType == typeof(Func<,,>) && type.GenericTypeArguments[0] == typeof(string) && type.GenericTypeArguments[1] == typeof(IDictionary<string, object>)))
             //#else
-            if ((genericType == typeof(Func<,,>) && type.GetGenericArguments()[0] == typeof(string) &&
-                 type.GetGenericArguments()[1] == typeof(IDictionary<string, object>)))
+            if (genericType == typeof(Func<,,>) && type.GetGenericArguments()[0] == typeof(string) &&
+                type.GetGenericArguments()[1] == typeof(IDictionary<string, object>))
                 //#endif
             {
                 var returnType = genericArguments[2];
@@ -3586,13 +3237,13 @@ namespace RainbowMage.OverlayPlugin
                 //#else
                 var resolveMethod =
                     typeof(TinyIoCContainer).GetMethod(
-                        "Resolve", new Type[] { typeof(String), typeof(NamedParameterOverloads) });
+                        "Resolve", [typeof(string), typeof(NamedParameterOverloads)]);
                 //#endif
                 resolveMethod = resolveMethod.MakeGenericMethod(returnType);
 
                 var resolveCall = Expression.Call(Expression.Constant(this), resolveMethod, name,
-                                                  Expression.Call(typeof(NamedParameterOverloads), "FromIDictionary",
-                                                                  null, parameters));
+                    Expression.Call(typeof(NamedParameterOverloads), "FromIDictionary",
+                        null, parameters));
 
                 var resolveLambda = Expression.Lambda(resolveCall, name, parameters).Compile();
 
@@ -3602,26 +3253,23 @@ namespace RainbowMage.OverlayPlugin
             throw new TinyIoCResolutionException(type);
         }
 #endif
-        private object GetIEnumerableRequest(Type type)
-        {
+        private object GetIEnumerableRequest(Type type) {
             //#if NETFX_CORE
             //			var genericResolveAllMethod = this.GetType().GetGenericMethod("ResolveAll", type.GenericTypeArguments, new[] { typeof(bool) });
             //#else
-            var genericResolveAllMethod = this.GetType().GetGenericMethod(
+            var genericResolveAllMethod = GetType().GetGenericMethod(
                 BindingFlags.Public | BindingFlags.Instance, "ResolveAll", type.GetGenericArguments(),
-                new[] { typeof(bool) });
+                [typeof(bool)]);
             //#endif
 
-            return genericResolveAllMethod.Invoke(this, new object[] { false });
+            return genericResolveAllMethod.Invoke(this, [false]);
         }
 
-        private bool CanConstruct(ConstructorInfo ctor, NamedParameterOverloads parameters, ResolveOptions options)
-        {
+        private bool CanConstruct(ConstructorInfo ctor, NamedParameterOverloads parameters, ResolveOptions options) {
             if (parameters == null)
                 throw new ArgumentNullException("parameters");
 
-            foreach (var parameter in ctor.GetParameters())
-            {
+            foreach (var parameter in ctor.GetParameters()) {
                 if (string.IsNullOrEmpty(parameter.Name))
                     return false;
 
@@ -3635,7 +3283,7 @@ namespace RainbowMage.OverlayPlugin
                     return false;
 
                 if (!isParameterOverload && !CanResolveInternal(new TypeRegistration(parameter.ParameterType),
-                                                                NamedParameterOverloads.Default, options))
+                        NamedParameterOverloads.Default, options))
                     return false;
             }
 
@@ -3643,8 +3291,7 @@ namespace RainbowMage.OverlayPlugin
         }
 
         private ConstructorInfo GetBestConstructor(
-            Type type, NamedParameterOverloads parameters, ResolveOptions options)
-        {
+            Type type, NamedParameterOverloads parameters, ResolveOptions options) {
             if (parameters == null)
                 throw new ArgumentNullException("parameters");
 
@@ -3657,19 +3304,17 @@ namespace RainbowMage.OverlayPlugin
 
             // Get constructors in reverse order based on the number of parameters
             // i.e. be as "greedy" as possible so we satify the most amount of dependencies possible
-            var ctors = this.GetTypeConstructors(type);
+            var ctors = GetTypeConstructors(type);
 
-            foreach (var ctor in ctors)
-            {
-                if (this.CanConstruct(ctor, parameters, options))
+            foreach (var ctor in ctors) {
+                if (CanConstruct(ctor, parameters, options))
                     return ctor;
             }
 
             return null;
         }
 
-        private IEnumerable<ConstructorInfo> GetTypeConstructors(Type type)
-        {
+        private IEnumerable<ConstructorInfo> GetTypeConstructors(Type type) {
             //#if NETFX_CORE
             //			return type.GetTypeInfo().DeclaredConstructors.OrderByDescending(ctor => ctor.GetParameters().Count());
             //#else
@@ -3677,33 +3322,24 @@ namespace RainbowMage.OverlayPlugin
             //#endif
         }
 
-        private object ConstructType(Type requestedType, Type implementationType, ResolveOptions options)
-        {
-            return ConstructType(requestedType, implementationType, null, NamedParameterOverloads.Default, options);
-        }
+        private object ConstructType(Type requestedType, Type implementationType, ResolveOptions options) => ConstructType(requestedType, implementationType, null, NamedParameterOverloads.Default, options);
 
         private object ConstructType(
-            Type requestedType, Type implementationType, ConstructorInfo constructor, ResolveOptions options)
-        {
-            return ConstructType(requestedType, implementationType, constructor, NamedParameterOverloads.Default,
-                                 options);
-        }
+            Type requestedType, Type implementationType, ConstructorInfo constructor, ResolveOptions options) =>
+            ConstructType(requestedType, implementationType, constructor, NamedParameterOverloads.Default,
+                options);
 
         private object ConstructType(
-            Type requestedType, Type implementationType, NamedParameterOverloads parameters, ResolveOptions options)
-        {
-            return ConstructType(requestedType, implementationType, null, parameters, options);
-        }
+            Type requestedType, Type implementationType, NamedParameterOverloads parameters, ResolveOptions options) =>
+            ConstructType(requestedType, implementationType, null, parameters, options);
 
         private object ConstructType(
             Type requestedType, Type implementationType, ConstructorInfo constructor,
-            NamedParameterOverloads parameters, ResolveOptions options)
-        {
+            NamedParameterOverloads parameters, ResolveOptions options) {
             var typeToConstruct = implementationType;
 
 #if RESOLVE_OPEN_GENERICS
-            if (implementationType.IsGenericTypeDefinition())
-            {
+            if (implementationType.IsGenericTypeDefinition()) {
                 if (requestedType == null || !requestedType.IsGenericType() ||
                     !requestedType.GetGenericArguments().Any())
                     throw new TinyIoCResolutionException(typeToConstruct);
@@ -3711,8 +3347,7 @@ namespace RainbowMage.OverlayPlugin
                 typeToConstruct = typeToConstruct.MakeGenericType(requestedType.GetGenericArguments());
             }
 #endif
-            if (constructor == null)
-            {
+            if (constructor == null) {
                 // Try and get the best constructor that we can construct
                 // if we can't construct any then get the constructor
                 // with the least number of parameters so we can throw a meaningful
@@ -3727,34 +3362,29 @@ namespace RainbowMage.OverlayPlugin
             var ctorParams = constructor.GetParameters();
             var args = new object[ctorParams.Count()];
 
-            for (var parameterIndex = 0; parameterIndex < ctorParams.Count(); parameterIndex++)
-            {
+            for (var parameterIndex = 0; parameterIndex < ctorParams.Count(); parameterIndex++) {
                 var currentParam = ctorParams[parameterIndex];
 
-                try
-                {
-                    args[parameterIndex] = parameters.ContainsKey(currentParam.Name)
-                                               ? parameters[currentParam.Name]
-                                               : ResolveInternal(
-                                                   new TypeRegistration(currentParam.ParameterType),
-                                                   NamedParameterOverloads.Default,
-                                                   options);
+                try {
+                    args[parameterIndex] = parameters.TryGetValue(currentParam.Name, out var parameter)
+                        ? parameter
+                        : ResolveInternal(
+                            new TypeRegistration(currentParam.ParameterType),
+                            NamedParameterOverloads.Default,
+                            options);
                 }
-                catch (TinyIoCResolutionException ex)
-                {
+                catch (TinyIoCResolutionException ex) {
                     // If a constructor parameter can't be resolved
                     // it will throw, so wrap it and throw that this can't
                     // be resolved.
                     throw new TinyIoCResolutionException(typeToConstruct, ex);
                 }
-                catch (Exception ex)
-                {
+                catch (Exception ex) {
                     throw new TinyIoCResolutionException(typeToConstruct, ex);
                 }
             }
 
-            try
-            {
+            try {
 #if USE_OBJECT_CONSTRUCTOR
                 var constructionDelegate = CreateObjectConstructionDelegateWithCache(constructor);
                 return constructionDelegate.Invoke(args);
@@ -3762,15 +3392,13 @@ namespace RainbowMage.OverlayPlugin
                 return constructor.Invoke(args);
 #endif
             }
-            catch (Exception ex)
-            {
+            catch (Exception ex) {
                 throw new TinyIoCResolutionException(typeToConstruct, ex);
             }
         }
 
 #if USE_OBJECT_CONSTRUCTOR
-        private static ObjectConstructor CreateObjectConstructionDelegateWithCache(ConstructorInfo constructor)
-        {
+        private static ObjectConstructor CreateObjectConstructionDelegateWithCache(ConstructorInfo constructor) {
             ObjectConstructor objectConstructor;
             if (_ObjectConstructorCache.TryGetValue(constructor, out objectConstructor))
                 return objectConstructor;
@@ -3783,8 +3411,7 @@ namespace RainbowMage.OverlayPlugin
             var lambdaParams = Expression.Parameter(typeof(object[]), "parameters");
             var newParams = new Expression[constructorParams.Length];
 
-            for (var i = 0; i < constructorParams.Length; i++)
-            {
+            for (var i = 0; i < constructorParams.Length; i++) {
                 var paramsParameter = Expression.ArrayIndex(lambdaParams, Expression.Constant(i));
 
                 newParams[i] = Expression.Convert(paramsParameter, constructorParams[i].ParameterType);
@@ -3801,63 +3428,55 @@ namespace RainbowMage.OverlayPlugin
         }
 #endif
 
-        private void BuildUpInternal(object input, ResolveOptions resolveOptions)
-        {
+        private void BuildUpInternal(object input, ResolveOptions resolveOptions) {
             //#if NETFX_CORE
             //			var properties = from property in input.GetType().GetTypeInfo().DeclaredProperties
             //							 where (property.GetMethod != null) && (property.SetMethod != null) && !property.PropertyType.GetTypeInfo().IsValueType
             //							 select property;
             //#else
             var properties = from property in input.GetType().GetProperties()
-                             where (property.GetGetMethod() != null) && (property.GetSetMethod() != null) &&
-                                   !property.PropertyType.IsValueType()
-                             select property;
+                where property.GetGetMethod() != null && property.GetSetMethod() != null &&
+                      !property.PropertyType.IsValueType()
+                select property;
             //#endif
 
-            foreach (var property in properties)
-            {
-                if (property.GetValue(input, null) == null)
-                {
-                    try
-                    {
+            foreach (var property in properties) {
+                if (property.GetValue(input, null) == null) {
+                    try {
                         property.SetValue(
                             input,
                             ResolveInternal(new TypeRegistration(property.PropertyType),
-                                            NamedParameterOverloads.Default, resolveOptions), null);
+                                NamedParameterOverloads.Default, resolveOptions), null);
                     }
-                    catch (TinyIoCResolutionException)
-                    {
+                    catch (TinyIoCResolutionException) {
                         // Catch any resolution errors and ignore them
                     }
                 }
             }
         }
 
-        private IEnumerable<TypeRegistration> GetParentRegistrationsForType(Type resolveType)
-        {
+        private IEnumerable<TypeRegistration> GetParentRegistrationsForType(Type resolveType) {
             if (_Parent == null)
-                return new TypeRegistration[] { };
+                return [];
 
             var registrations = _Parent._RegisteredTypes.Keys.Where(tr => tr.Type == resolveType);
 
             return registrations.Concat(_Parent.GetParentRegistrationsForType(resolveType));
         }
 
-        private IEnumerable<object> ResolveAllInternal(Type resolveType, bool includeUnnamed)
-        {
+        private IEnumerable<object> ResolveAllInternal(Type resolveType, bool includeUnnamed) {
             var registrations = _RegisteredTypes.Keys.Where(tr => tr.Type == resolveType)
-                                                .Concat(GetParentRegistrationsForType(resolveType));
+                .Concat(GetParentRegistrationsForType(resolveType));
 
             if (!includeUnnamed)
                 registrations = registrations.Where(tr => tr.Name != string.Empty);
 
             return registrations.Select(registration =>
-                                            this.ResolveInternal(registration, NamedParameterOverloads.Default,
-                                                                 ResolveOptions.Default));
+                ResolveInternal(registration, NamedParameterOverloads.Default,
+                    ResolveOptions.Default));
         }
 
-        private static bool IsValidAssignment(Type registerType, Type registerImplementation)
-        {
+        private static bool IsValidAssignment(Type registerType, Type registerImplementation) {
             //#if NETFX_CORE
             //			var registerTypeDef = registerType.GetTypeInfo();
             //			var registerImplementationDef = registerImplementation.GetTypeInfo();
@@ -3880,20 +3499,16 @@ namespace RainbowMage.OverlayPlugin
             //				}
             //			}
             //#else
-            if (!registerType.IsGenericTypeDefinition())
-            {
+            if (!registerType.IsGenericTypeDefinition()) {
                 if (!registerType.IsAssignableFrom(registerImplementation))
                     return false;
             }
-            else
-            {
-                if (registerType.IsInterface())
-                {
-                    if (!registerImplementation.FindInterfaces((t, o) => t.Name == registerType.Name, null).Any())
+            else {
+                if (registerType.IsInterface()) {
+                    if (!registerImplementation.FindInterfaces((t, _) => t.Name == registerType.Name, null).Any())
                         return false;
                 }
-                else if (registerType.IsAbstract() && registerImplementation.BaseType() != registerType)
-                {
+                else if (registerType.IsAbstract() && registerImplementation.BaseType() != registerType) {
                     return false;
                 }
             }
@@ -3905,11 +3520,11 @@ namespace RainbowMage.OverlayPlugin
         #endregion
 
         #region IDisposable Members
-        bool disposed = false;
-        public void Dispose()
-        {
-            if (!disposed)
-            {
+
+        private bool disposed;
+
+        public void Dispose() {
+            if (!disposed) {
                 disposed = true;
 
                 _RegisteredTypes.Dispose();
@@ -3924,64 +3539,32 @@ namespace RainbowMage.OverlayPlugin
 
 // reverse shim for WinRT SR changes...
 #if !NETFX_CORE
-namespace System.Reflection
-{
+namespace System.Reflection {
 #if TINYIOC_INTERNAL
     internal
 #else
     public
 #endif
-        static class ReverseTypeExtender
-    {
-        public static bool IsClass(this Type type)
-        {
-            return type.IsClass;
-        }
+        static class ReverseTypeExtender {
+        public static bool IsClass(this Type type) => type.IsClass;
 
-        public static bool IsAbstract(this Type type)
-        {
-            return type.IsAbstract;
-        }
+        public static bool IsAbstract(this Type type) => type.IsAbstract;
 
-        public static bool IsInterface(this Type type)
-        {
-            return type.IsInterface;
-        }
+        public static bool IsInterface(this Type type) => type.IsInterface;
 
-        public static bool IsPrimitive(this Type type)
-        {
-            return type.IsPrimitive;
-        }
+        public static bool IsPrimitive(this Type type) => type.IsPrimitive;
 
-        public static bool IsValueType(this Type type)
-        {
-            return type.IsValueType;
-        }
+        public static bool IsValueType(this Type type) => type.IsValueType;
 
-        public static bool IsGenericType(this Type type)
-        {
-            return type.IsGenericType;
-        }
+        public static bool IsGenericType(this Type type) => type.IsGenericType;
 
-        public static bool IsGenericParameter(this Type type)
-        {
-            return type.IsGenericParameter;
-        }
+        public static bool IsGenericParameter(this Type type) => type.IsGenericParameter;
 
-        public static bool IsGenericTypeDefinition(this Type type)
-        {
-            return type.IsGenericTypeDefinition;
-        }
+        public static bool IsGenericTypeDefinition(this Type type) => type.IsGenericTypeDefinition;
 
-        public static Type BaseType(this Type type)
-        {
-            return type.BaseType;
-        }
+        public static Type BaseType(this Type type) => type.BaseType;
 
-        public static Assembly Assembly(this Type type)
-        {
-            return type.Assembly;
-        }
+        public static Assembly Assembly(this Type type) => type.Assembly;
     }
 }
 #endif

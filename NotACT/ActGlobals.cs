@@ -1,7 +1,6 @@
 ﻿namespace Advanced_Combat_Tracker;
 
-public static partial class ActGlobals
-{
+public static partial class ActGlobals {
     private static ActLocalization.LocalizationStringsHelper? _trans;
 
     public static bool mainTableShowCommas = true;
@@ -35,16 +34,14 @@ public static partial class ActGlobals
     internal static object ActionDataLock;
 
     internal static ActLocalization.LocalizationStringsHelper Trans => _trans!;
-    
-    public static void Init()
-    {
+
+    public static void Init() {
         _trans = new ActLocalization.LocalizationStringsHelper();
         selectiveList = new SortedDictionary<string, bool>();
         ActionDataLock = new object();
     }
-    
-    public static void Dispose()
-    {
+
+    public static void Dispose() {
         oFormActMain.Exit();
         oFormActMain.Dispose();
         oFormActMain = null!;

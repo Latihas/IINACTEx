@@ -4,17 +4,15 @@ using System.Collections.Generic;
 
 namespace RainbowMage.OverlayPlugin.Handlers.Ipc;
 
-public class IpcHandlerController : IDisposable
-{
-    public IpcHandlerController(TinyIoCContainer container)
-    {
+public class IpcHandlerController : IDisposable {
+    public IpcHandlerController(TinyIoCContainer container) {
         Container = container;
         Logger = container.Resolve<ILogger>();
         Handlers = new ConcurrentDictionary<string, IHandler>();
         HandlerFactory = new HandlerFactory();
         LegacyHandlerFactory = new LegacyHandlerFactory();
     }
-    
+
     private TinyIoCContainer Container { get; }
     private ILogger Logger { get; }
     private ConcurrentDictionary<string, IHandler> Handlers { get; }
@@ -24,13 +22,10 @@ public class IpcHandlerController : IDisposable
     public bool CreateSubscriber(string name) => CreateSubscriber(name, HandlerFactory);
     public bool CreateLegacySubscriber(string name) => CreateSubscriber(name, LegacyHandlerFactory);
 
-    private bool CreateSubscriber(string name, IHandlerFactory handlerFactory)
-    {
-        try
-        {
+    private bool CreateSubscriber(string name, IHandlerFactory handlerFactory) {
+        try {
             var handler = handlerFactory.Create(name, Container);
-            if (Handlers.TryAdd(name, handler))
-            {
+            if (Handlers.TryAdd(name, handler)) {
                 Logger.Log(LogLevel.Debug, $"Successfully added IPC handler {name}");
                 return true;
             }
@@ -38,17 +33,14 @@ public class IpcHandlerController : IDisposable
             handler.Dispose();
             return false;
         }
-        catch (Exception ex)
-        {
+        catch (Exception ex) {
             Logger.Log(LogLevel.Error, $"Failed creating IPC handler {name}: {ex}");
             return false;
         }
     }
 
-    public bool Unsubscribe(string name)
-    {
-        if (!Handlers.Remove(name, out var handler))
-        {
+    public bool Unsubscribe(string name) {
+        if (!Handlers.Remove(name, out var handler)) {
             Logger.Log(LogLevel.Warning, $"Cannot unsubscribe from non-existing IPC handler {name}");
             return false;
         }
@@ -56,8 +48,7 @@ public class IpcHandlerController : IDisposable
         return true;
     }
 
-    public void Dispose()
-    {
+    public void Dispose() {
         foreach (var (_, handler) in Handlers) handler.Dispose();
     }
 }

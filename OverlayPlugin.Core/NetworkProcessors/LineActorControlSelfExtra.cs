@@ -18,41 +18,39 @@ using RainbowMage.OverlayPlugin.NetworkProcessors.PacketHelper;
 // 274|2024-03-21T20:45:41.3680000-04:00|10001234|0210|129D|10001234|F|0|0|0|d274429622d0c27e
 // 00|2024-03-21T20:45:40.0000000-04:00|08BE||You obtain 15 MGP.|97702e809544a633
 
-namespace RainbowMage.OverlayPlugin.NetworkProcessors
-{
-    class LineActorControlSelfExtra : LineBaseSubMachina<LineActorControlSelfExtra.ActorControlSelfExtraPacket>
-    {
-        public const uint LogFileLineID = 274;
-        public const string LogLineName = "ActorControlSelfExtra";
-        public const string MachinaPacketName = "ActorControlSelf";
+namespace RainbowMage.OverlayPlugin.NetworkProcessors;
 
-        // Any category defined in this array will be allowed as an emitted line
-        public static readonly Server_ActorControlCategory[] AllowedActorControlCategories = {
-            // Some `LogMessage` messages can be triggered by both 0x020F and 0x0210 categories, not sure what the difference is
-            // except that 0x0210 messages usually have another actor ID in the parameters
-            Server_ActorControlCategory.DisplayLogMessage,
-            Server_ActorControlCategory.DisplayLogMessageParams
-        };
+internal class LineActorControlSelfExtra : LineBaseSubMachina<LineActorControlSelfExtra.ActorControlSelfExtraPacket> {
+    public const uint LogFileLineID = 274;
+    public const string LogLineName = "ActorControlSelfExtra";
+    public const string MachinaPacketName = "ActorControlSelf";
 
-        internal class ActorControlSelfExtraPacket : MachinaPacketWrapper
-        {
-            public override string ToString(long epoch, uint ActorID)
-            {
-                var category = Get<Server_ActorControlCategory>("category");
+    // Any category defined in this array will be allowed as an emitted line
+    public static readonly Server_ActorControlCategory[] AllowedActorControlCategories = [
+        // Some `LogMessage` messages can be triggered by both 0x020F and 0x0210 categories, not sure what the difference is
+        // except that 0x0210 messages usually have another actor ID in the parameters
+        Server_ActorControlCategory.DisplayLogMessage,
+        Server_ActorControlCategory.DisplayLogMessageParams
+    ];
 
-                if (!AllowedActorControlCategories.Contains(category)) return null;
+    internal class ActorControlSelfExtraPacket : MachinaPacketWrapper {
+        public override string ToString(long epoch, uint ActorID) {
+            var category = Get<Server_ActorControlCategory>("category");
 
-                var param1 = Get<UInt32>("param1");
-                var param2 = Get<UInt32>("param2");
-                var param3 = Get<UInt32>("param3");
-                var param4 = Get<UInt32>("param4");
-                var param5 = Get<UInt32>("param5");
-                var param6 = Get<UInt32>("param6");
+            if (!AllowedActorControlCategories.Contains(category)) return null;
 
-                return $"{ActorID:X8}|{(ushort)category:X4}|{param1:X}|{param2:X}|{param3:X}|{param4:X}|{param5:X}|{param6:X}";
-            }
+            var param1 = Get<uint>("param1");
+            var param2 = Get<uint>("param2");
+            var param3 = Get<uint>("param3");
+            var param4 = Get<uint>("param4");
+            var param5 = Get<uint>("param5");
+            var param6 = Get<uint>("param6");
+
+            return $"{ActorID:X8}|{(ushort)category:X4}|{param1:X}|{param2:X}|{param3:X}|{param4:X}|{param5:X}|{param6:X}";
         }
-        public LineActorControlSelfExtra(TinyIoCContainer container)
-            : base(container, LogFileLineID, LogLineName, MachinaPacketName) { }
+    }
+
+    public LineActorControlSelfExtra(TinyIoCContainer container)
+        : base(container, LogFileLineID, LogLineName, MachinaPacketName) {
     }
 }

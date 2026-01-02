@@ -1,25 +1,25 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-    <PropertyGroup>
-        <EnableWindowsTargeting>true</EnableWindowsTargeting>
-        <OutputType>Library</OutputType>
-        <RootNamespace>RainbowMage.OverlayPlugin</RootNamespace>
-        <UseWindowsForms>true</UseWindowsForms>
-        <ImportWindowsDesktopTargets>true</ImportWindowsDesktopTargets>
-        <ProduceReferenceAssembly>false</ProduceReferenceAssembly>
-        <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
-    </PropertyGroup>
+  <PropertyGroup>
+    <EnableWindowsTargeting>true</EnableWindowsTargeting>
+    <OutputType>Library</OutputType>
+    <RootNamespace>RainbowMage.OverlayPlugin</RootNamespace>
+    <UseWindowsForms>true</UseWindowsForms>
+    <ImportWindowsDesktopTargets>true</ImportWindowsDesktopTargets>
+    <ProduceReferenceAssembly>false</ProduceReferenceAssembly>
+    <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
+  </PropertyGroup>
 
-    <ItemGroup>
-        <Reference Include="Newtonsoft.Json">
-            <HintPath>$(DalamudLibPath)Newtonsoft.Json.dll</HintPath>
-            <Private>false</Private>
-        </Reference>
-    </ItemGroup>
+  <ItemGroup>
+    <Reference Include="Newtonsoft.Json">
+      <HintPath>$(DalamudLibPath)Newtonsoft.Json.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+  </ItemGroup>
 
-    <ItemGroup>
-        <PackageReference Include="System.Data.DataSetExtensions" Version="4.5.0"/>
-    </ItemGroup>
-    <ItemGroup>
-        <ProjectReference Include="..\NotACT\NotACT.csproj"/>
-    </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="System.Data.DataSetExtensions" Version="4.5.0"/>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\NotACT\NotACT.csproj"/>
+  </ItemGroup>
 </Project>

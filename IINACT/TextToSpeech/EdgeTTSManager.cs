@@ -6,81 +6,66 @@ using EdgeTTS.Models;
 
 namespace IINACT.TextToSpeech;
 
-public class EdgeTTSManager
-{
+public class EdgeTTSManager {
     private readonly string _configPath;
-    private string _cachePath = string.Empty;
     private readonly EdgeTTSConfig _config;
     private EdgeTTSEngine _engine = null!;
-    private readonly object _lock = new();
+    private readonly Lock _lock = new();
     private readonly IPluginLog _log;
 
-    public string CurrentCachePath => _cachePath;
+    public string CurrentCachePath { get; private set; } = string.Empty;
 
-    private void ExtractVoicesJson()
-    {
-        try
-        {
+    private void ExtractVoicesJson() {
+        try {
             var assembly = typeof(EdgeTTSManager).Assembly;
             using var stream = assembly.GetManifestResourceStream("IINACTEx.Resources.voices.json");
-            if (stream == null)
-            {
+            if (stream == null) {
                 _log.Error("EdgeTTSManager: voices.json embedded resource not found");
                 return;
             }
 
-            var voicesPath = Path.Combine(_cachePath, "voices.json");
+            var voicesPath = Path.Combine(CurrentCachePath, "voices.json");
             using var reader = new StreamReader(stream);
             var jsonContent = reader.ReadToEnd();
 
             File.WriteAllText(voicesPath, jsonContent);
             _log.Debug($"EdgeTTSManager: Extracted voices.json to {voicesPath}");
         }
-        catch (Exception ex)
-        {
+        catch (Exception ex) {
             _log.Error(ex, "EdgeTTSManager: Failed to extract voices.json from embedded resource");
         }
     }
 
-    public EdgeTTSManager(IPluginLog log, string configPath)
-    {
+    public EdgeTTSManager(IPluginLog log, string configPath) {
         _log = log;
         _configPath = Path.Combine(Path.GetDirectoryName(configPath)!, "IINACTEx", "Notification", "TextToSpeech.json");
         _config = EdgeTTSConfig.Load(_configPath);
-        
+
         UpdateCachePath(_config.CustomCachePath);
     }
 
-    private void UpdateCachePath(string? customPath)
-    {
-        _cachePath = string.IsNullOrEmpty(customPath)
+    private void UpdateCachePath(string? customPath) {
+        CurrentCachePath = string.IsNullOrEmpty(customPath)
             ? Path.Combine(Path.GetDirectoryName(_configPath)!, "Cache")
             : customPath;
 
-        if (!Directory.Exists(_cachePath))
-            Directory.CreateDirectory(_cachePath);
-
-        // Extract voices.json from embedded resource to cache directory
+        if (!Directory.Exists(CurrentCachePath))
+            Directory.CreateDirectory(CurrentCachePath);
         ExtractVoicesJson();
-
-        _engine = new EdgeTTSEngine
-        {
-            CacheFolder = _cachePath,
-            VoiceFolder = _cachePath, // Use cache directory as voice folder
+        _engine = new EdgeTTSEngine {
+            CacheFolder = CurrentCachePath,
+            VoiceFolder = CurrentCachePath,
             LogHandler = message => _log.Debug($"EdgeTTS: {message}")
         };
     }
 
-    public void UpdateConfig(Action<EdgeTTSConfig> updateAction)
-    {
-        lock (_lock)
-        {
+    public void UpdateConfig(Action<EdgeTTSConfig> updateAction) {
+        lock (_lock) {
             var oldCachePath = _config.CustomCachePath;
             updateAction(_config);
             _config.Save(_configPath);
 
-            if (oldCachePath != _config.CustomCachePath)
-            {
+            if (oldCachePath != _config.CustomCachePath) {
                 UpdateCachePath(_config.CustomCachePath);
             }
         }
@@ -90,8 +75,7 @@ public class EdgeTTSManager
 
     public Voice[] GetAvailableVoices() => _engine.Voices;
 
-    public List<AudioDevice> GetAvailableDevices()
-    {
+    public List<AudioDevice> GetAvailableDevices() {
         var devices = _engine.AudioDevices;
         return devices
             .OrderBy(pair => pair.Key)
@@ -99,75 +83,58 @@ public class EdgeTTSManager
             .ToList();
     }
 
-    public async Task Speak(string text)
-    {
+    public async Task Speak(string text) {
         var settings = _config.ToEdgeTTSSettings();
         await _engine.SpeakAsync(text, settings);
     }
 
-    public void CleanupCache()
-    {
-        try
-        {
-            foreach (var file in Directory.GetFiles(_cachePath, "*.mp3"))
-            {
-                try
-                {
+    public void CleanupCache() {
+        try {
+            foreach (var file in Directory.GetFiles(CurrentCachePath, "*.mp3")) {
+                try {
                     File.Delete(file);
                 }
-                catch
-                {
+                catch {
                     // 忽略单个文件删除失败的情况
                 }
             }
         }
-        catch
-        {
+        catch {
             // 忽略缓存清理失败的情况
         }
     }
 
-    public void OpenCacheFolder()
-    {
-        try
-        {
-            Process.Start(new ProcessStartInfo
-            {
-                FileName = _cachePath,
+    public void OpenCacheFolder() {
+        try {
+            Process.Start(new ProcessStartInfo {
+                FileName = CurrentCachePath,
                 UseShellExecute = true,
                 Verb = "open"
             });
         }
-        catch (Exception ex)
-        {
-            _log.Error(ex, $"无法打开缓存文件夹: {_cachePath}");
+        catch (Exception ex) {
+            _log.Error(ex, $"无法打开缓存文件夹: {CurrentCachePath}");
         }
     }
 
-    public void MigrateCacheFiles(string newPath)
-    {
-        try
-        {
+    public void MigrateCacheFiles(string newPath) {
+        try {
             if (!Directory.Exists(newPath))
                 Directory.CreateDirectory(newPath);
 
-            foreach (var file in Directory.GetFiles(_cachePath, "*.mp3"))
-            {
-                try
-                {
+            foreach (var file in Directory.GetFiles(CurrentCachePath, "*.mp3")) {
+                try {
                     var fileName = Path.GetFileName(file);
                     var destPath = Path.Combine(newPath, fileName);
                     File.Move(file, destPath, true);
                 }
-                catch
-                {
+                catch {
                     // 忽略单个文件迁移失败的情况
                 }
             }
         }
-        catch
-        {
+        catch {
             // 忽略整体迁移失败的情况
         }
     }
-} 
+}

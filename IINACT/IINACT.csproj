@@ -1,112 +1,112 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-    <PropertyGroup>
-        <Authors>Usagi</Authors>
-        <Company>Dezent</Company>
-        <Version>7.4.0.0</Version>
-        <Description>A parsing plugin.</Description>
-        <AssemblyName>IINACTEx</AssemblyName>
-        <OutputPath>bin/</OutputPath>
-        <Copyright></Copyright>
-        <PackageProjectUrl>https://github.com/marzent/IINACT</PackageProjectUrl>
-    </PropertyGroup>
-    <PropertyGroup>
-        <Nullable>enable</Nullable>
-        <ImplicitUsings>enable</ImplicitUsings>
-        <EnableWindowsTargeting>true</EnableWindowsTargeting>
-        <ProduceReferenceAssembly>false</ProduceReferenceAssembly>
-        <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
-        <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
-        <UseWindowsForms>true</UseWindowsForms>
-        <UseWpf>true</UseWpf>
-    </PropertyGroup>
-    <ItemGroup>
-        <PackageReference Include="Microsoft.Windows.CsWin32" Version="0.3.264">
-          <PrivateAssets>all</PrivateAssets>
-          <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-        </PackageReference>
-        <PackageReference Include="NAudio" Version="2.2.1" />
-        <PackageReference Include="System.Speech" Version="10.0.1" />
-        <Reference Include="FFXIVClientStructs">
-            <HintPath>$(DalamudLibPath)FFXIVClientStructs.dll</HintPath>
-            <Private>false</Private>
-        </Reference>
-        <Reference Include="Newtonsoft.Json">
-            <HintPath>$(DalamudLibPath)Newtonsoft.Json.dll</HintPath>
-            <Private>false</Private>
-        </Reference>
-        <Reference Include="Dalamud">
-            <HintPath>$(DalamudLibPath)Dalamud.dll</HintPath>
-            <Private>false</Private>
-        </Reference>
-        <Reference Include="Dalamud.Bindings.ImGui">
-            <HintPath>$(DalamudLibPath)Dalamud.Bindings.ImGui.dll</HintPath>
-            <Private>false</Private>
-        </Reference>
-        <Reference Include="ImGuiScene">
-            <HintPath>$(DalamudLibPath)ImGuiScene.dll</HintPath>
-            <Private>false</Private>
-        </Reference>
-        <Reference Include="Lumina">
-            <HintPath>$(DalamudLibPath)Lumina.dll</HintPath>
-            <Private>false</Private>
-        </Reference>
-        <Reference Include="Lumina.Excel">
-            <HintPath>$(DalamudLibPath)Lumina.Excel.dll</HintPath>
-            <Private>false</Private>
-        </Reference>
-    </ItemGroup>
-    <ItemGroup>
-        <ProjectReference Include="../EdgeTTS/EdgeTTS.csproj" />
-        <ProjectReference Include="../FetchDependencies/FetchDependencies.csproj" />
-        <ProjectReference Include="../machina/Machina.FFXIV/Machina.FFXIV.csproj" />
-        <ProjectReference Include="../machina/Machina/Machina.csproj" />
-        <ProjectReference Include="../NotACT/NotACT.csproj" />
-        <ProjectReference Include="../OverlayPlugin.Core/OverlayPlugin.Core.csproj" />
-        <ProjectReference Include="../Triggernometry/Source/Triggernometry/TriggernometryPlugin.csproj"/>
-        <ProjectReference Include="../PostNamazu/PostNamazu/PostNamazu.csproj"/>
-        <ProjectReference Include="../Unscrambler/Unscrambler/Unscrambler.csproj"/>
-    </ItemGroup>
-    <ItemGroup>
-        <EmbeddedResource Include="..\EdgeTTS\voices.json">
-            <Link>Resources\voices.json</Link>
-            <LogicalName>IINACTEx.Resources.voices.json</LogicalName>
-        </EmbeddedResource>
-    </ItemGroup>
-    <ItemGroup>
-        <Reference Include="FFXIV_ACT_Plugin">
-            <HintPath>..\external_dependencies\FFXIV_ACT_Plugin.dll</HintPath>
-        </Reference>
-        <Reference Include="FFXIV_ACT_Plugin.Common">
-            <HintPath>..\external_dependencies\SDK\FFXIV_ACT_Plugin.Common.dll</HintPath>
-        </Reference>
-        <Reference Include="FFXIV_ACT_Plugin.Config">
-            <HintPath>..\external_dependencies\SDK\FFXIV_ACT_Plugin.Config.dll</HintPath>
-        </Reference>
-        <Reference Include="FFXIV_ACT_Plugin.Logfile">
-            <HintPath>..\external_dependencies\SDK\FFXIV_ACT_Plugin.Logfile.dll</HintPath>
-        </Reference>
-        <Reference Include="FFXIV_ACT_Plugin.Memory">
-            <HintPath>..\external_dependencies\SDK\FFXIV_ACT_Plugin.Memory.dll</HintPath>
-        </Reference>
-        <Reference Include="FFXIV_ACT_Plugin.Network">
-            <HintPath>..\external_dependencies\SDK\FFXIV_ACT_Plugin.Network.dll</HintPath>
-        </Reference>
-        <Reference Include="FFXIV_ACT_Plugin.Parse">
-            <HintPath>..\external_dependencies\SDK\FFXIV_ACT_Plugin.Parse.dll</HintPath>
-        </Reference>
-        <Reference Include="FFXIV_ACT_Plugin.Resource">
-            <HintPath>..\external_dependencies\SDK\FFXIV_ACT_Plugin.Resource.dll</HintPath>
-        </Reference>
-    </ItemGroup>
-    <ItemGroup>
-        <Content Include="..\external_dependencies\SafeMemoryReader.dll">
-            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-        </Content>
-        <Content Include="zh-CN.triglations.xml">
-            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-        </Content>
-        <Content Include="IINACTEx.json">
-            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-        </Content>
-    </ItemGroup>
+  <PropertyGroup>
+    <Authors>Usagi</Authors>
+    <Company>Dezent</Company>
+    <Version>7.4.0.0</Version>
+    <Description>A parsing plugin.</Description>
+    <AssemblyName>IINACTEx</AssemblyName>
+    <OutputPath>bin/</OutputPath>
+    <Copyright></Copyright>
+    <PackageProjectUrl>https://github.com/marzent/IINACT</PackageProjectUrl>
+  </PropertyGroup>
+  <PropertyGroup>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <EnableWindowsTargeting>true</EnableWindowsTargeting>
+    <ProduceReferenceAssembly>false</ProduceReferenceAssembly>
+    <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
+    <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
+    <UseWindowsForms>true</UseWindowsForms>
+    <UseWpf>true</UseWpf>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Windows.CsWin32" Version="0.3.264">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="NAudio" Version="2.2.1"/>
+    <PackageReference Include="System.Speech" Version="10.0.1"/>
+    <Reference Include="FFXIVClientStructs">
+      <HintPath>$(DalamudLibPath)FFXIVClientStructs.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="Newtonsoft.Json">
+      <HintPath>$(DalamudLibPath)Newtonsoft.Json.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="Dalamud">
+      <HintPath>$(DalamudLibPath)Dalamud.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="Dalamud.Bindings.ImGui">
+      <HintPath>$(DalamudLibPath)Dalamud.Bindings.ImGui.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="ImGuiScene">
+      <HintPath>$(DalamudLibPath)ImGuiScene.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="Lumina">
+      <HintPath>$(DalamudLibPath)Lumina.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="Lumina.Excel">
+      <HintPath>$(DalamudLibPath)Lumina.Excel.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="../EdgeTTS/EdgeTTS.csproj"/>
+    <ProjectReference Include="../FetchDependencies/FetchDependencies.csproj"/>
+    <ProjectReference Include="../machina/Machina.FFXIV/Machina.FFXIV.csproj"/>
+    <ProjectReference Include="../machina/Machina/Machina.csproj"/>
+    <ProjectReference Include="../NotACT/NotACT.csproj"/>
+    <ProjectReference Include="../OverlayPlugin.Core/OverlayPlugin.Core.csproj"/>
+    <ProjectReference Include="../Triggernometry/Source/Triggernometry/TriggernometryPlugin.csproj"/>
+    <ProjectReference Include="../PostNamazu/PostNamazu/PostNamazu.csproj"/>
+    <ProjectReference Include="../Unscrambler/Unscrambler/Unscrambler.csproj"/>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="..\EdgeTTS\voices.json">
+      <Link>Resources\voices.json</Link>
+      <LogicalName>IINACTEx.Resources.voices.json</LogicalName>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="FFXIV_ACT_Plugin">
+      <HintPath>..\external_dependencies\FFXIV_ACT_Plugin.dll</HintPath>
+    </Reference>
+    <Reference Include="FFXIV_ACT_Plugin.Common">
+      <HintPath>..\external_dependencies\SDK\FFXIV_ACT_Plugin.Common.dll</HintPath>
+    </Reference>
+    <Reference Include="FFXIV_ACT_Plugin.Config">
+      <HintPath>..\external_dependencies\SDK\FFXIV_ACT_Plugin.Config.dll</HintPath>
+    </Reference>
+    <Reference Include="FFXIV_ACT_Plugin.Logfile">
+      <HintPath>..\external_dependencies\SDK\FFXIV_ACT_Plugin.Logfile.dll</HintPath>
+    </Reference>
+    <Reference Include="FFXIV_ACT_Plugin.Memory">
+      <HintPath>..\external_dependencies\SDK\FFXIV_ACT_Plugin.Memory.dll</HintPath>
+    </Reference>
+    <Reference Include="FFXIV_ACT_Plugin.Network">
+      <HintPath>..\external_dependencies\SDK\FFXIV_ACT_Plugin.Network.dll</HintPath>
+    </Reference>
+    <Reference Include="FFXIV_ACT_Plugin.Parse">
+      <HintPath>..\external_dependencies\SDK\FFXIV_ACT_Plugin.Parse.dll</HintPath>
+    </Reference>
+    <Reference Include="FFXIV_ACT_Plugin.Resource">
+      <HintPath>..\external_dependencies\SDK\FFXIV_ACT_Plugin.Resource.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="..\external_dependencies\SafeMemoryReader.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="zh-CN.triglations.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="IINACTEx.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
 </Project>

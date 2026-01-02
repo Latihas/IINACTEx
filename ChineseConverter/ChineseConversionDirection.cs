@@ -1,7 +1,6 @@
 namespace ChineseConverter;
 
-public enum ChineseConversionDirection
-{
-	SimplifiedToTraditional,
-	TraditionalToSimplified
+public enum ChineseConversionDirection {
+    SimplifiedToTraditional,
+    TraditionalToSimplified
 }

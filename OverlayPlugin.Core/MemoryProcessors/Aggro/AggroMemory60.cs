@@ -1,21 +1,18 @@
 ﻿using System;
 using RainbowMage.OverlayPlugin.MemoryProcessors.Enmity;
 
-namespace RainbowMage.OverlayPlugin.MemoryProcessors.Aggro
-{
-    interface IAggroMemory60 : IAggroMemory { }
+namespace RainbowMage.OverlayPlugin.MemoryProcessors.Aggro;
 
-    class AggroMemory60 : AggroMemory, IAggroMemory60
-    {
-        private const int aggroEnmityOffset = -2336;
+internal interface IAggroMemory60 : IAggroMemory {
+}
 
-        // Aggro uses the same signature as Enmity
-        public AggroMemory60(TinyIoCContainer container)
-            : base(container, EnmityMemory60.enmitySignature, aggroEnmityOffset) { }
+internal class AggroMemory60 : AggroMemory, IAggroMemory60 {
+    private const int aggroEnmityOffset = -2336;
 
-        public override Version GetVersion()
-        {
-            return new Version(6, 0);
-        }
+    // Aggro uses the same signature as Enmity
+    public AggroMemory60(TinyIoCContainer container)
+        : base(container, EnmityMemory60.enmitySignature, aggroEnmityOffset) {
     }
+
+    public override Version GetVersion() => new(6, 0);
 }
