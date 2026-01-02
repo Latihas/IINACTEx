@@ -97,8 +97,8 @@ public abstract class EnmityMemory : IEnmityMemory {
                 if (index >= Count) {
                     return new MemoryEnmityListEntry();
                 }
-
-                return *(MemoryEnmityListEntry*)&EntryBuffer[index * MemoryEnmityListEntry.Size];
+                fixed (byte* p = EntryBuffer)
+                    return *(MemoryEnmityListEntry*)&p[index * MemoryEnmityListEntry.Size];
             }
         }
     }

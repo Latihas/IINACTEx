@@ -30,12 +30,6 @@
 #define RESOLVE_OPEN_GENERICS // Platform supports resolving open generics
 #define READER_WRITER_LOCK_SLIM // Platform supports ReaderWriterLockSlim
 
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Reflection;
-
 //// NETFX_CORE
 //#if NETFX_CORE
 //#endif
@@ -73,7 +67,13 @@ using System.Reflection;
 
 #endregion
 
-namespace RainbowMage.OverlayPlugin {
+namespace RainbowMage.OverlayPlugin
+{
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Reflection;
+
 #if EXPRESSIONS
     using System.Linq.Expressions;
     using System.Threading;
@@ -290,7 +290,7 @@ namespace RainbowMage.OverlayPlugin {
             try {
                 assemblies = assembly.GetTypes();
             }
-            catch (FileNotFoundException) {
+            catch (System.IO.FileNotFoundException) {
                 assemblies = [];
             }
             catch (NotSupportedException) {

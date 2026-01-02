@@ -104,8 +104,8 @@ public abstract class AggroMemory : IAggroMemory {
                 if (index >= Count) {
                     return new MemoryAggroListEntry();
                 }
-
-                return *(MemoryAggroListEntry*)&EntryBuffer[index * MemoryAggroListEntry.Size];
+                fixed (byte* p = EntryBuffer)
+                    return *(MemoryAggroListEntry*)&p[index * MemoryAggroListEntry.Size];
             }
         }
     }
