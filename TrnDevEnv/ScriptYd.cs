@@ -9,8 +9,8 @@ public class ScriptYd : IScriptBase
     private string ydStatus = "";
     public override List<TargetIcon> TargetIconList =>
     [
-        new(TTS("点你分散", 1000), TargetId: MeHexID, Id: 0x0017),
-        new(TTS("点你陨石"), TargetId: MeHexID, Id: 0x0083)
+        new(TTS("点你分散", 1000), TargetId: Me_HexID, Id: 0x0017),
+        new(TTS("点你陨石"), TargetId: Me_HexID, Id: 0x0083)
     ];
     public override List<StartsCasting> StartsCastingList =>
     [
@@ -39,7 +39,7 @@ public class ScriptYd : IScriptBase
     [
         new(() => ydStatus = "满月流", EffectId: 0x5FF),
         new(() => ydStatus = "新月流", EffectId: 0x600),
-        new(TTS("去黑"), EffectId: 0x602, TargetId: MeHexID, Count: 0x04),
-        new(TTS("去白"), EffectId: 0x603, TargetId: MeHexID, Count: 0x04)
+        new(TTS("去黑"), EffectId: 0x602, TargetId: Me_HexID, Count: 0x04),
+        new(TTS("去白"), EffectId: 0x603, TargetId: Me_HexID, Count: 0x04)
     ];
 }
