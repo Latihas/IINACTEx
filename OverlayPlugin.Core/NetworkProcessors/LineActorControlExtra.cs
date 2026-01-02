@@ -27,7 +27,7 @@ namespace RainbowMage.OverlayPlugin.NetworkProcessors
             Server_ActorControlCategory.VfxUnknown49,
             Server_ActorControlCategory.SetModelState,
             Server_ActorControlCategory.PlayActionTimeline,
-            Server_ActorControlCategory.EObjAnimation,
+            Server_ActorControlCategory.EObjAnimation
         };
 
         private class RegionalizedInfo
@@ -79,7 +79,7 @@ namespace RainbowMage.OverlayPlugin.NetworkProcessors
                 Name = "ActorControlExtra",
                 Source = "OverlayPlugin",
                 ID = LogFileLineID,
-                Version = 1,
+                Version = 1
             });
         }
 

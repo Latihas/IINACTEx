@@ -219,7 +219,7 @@ namespace RainbowMage.OverlayPlugin.MemoryProcessors.Combatant
                     Stack = mem.Stack,
                     Timer = mem.Timer,
                     ActorID = mem.ActorID,
-                    isOwner = false,
+                    isOwner = false
                 };
 
                 return effectEntry;

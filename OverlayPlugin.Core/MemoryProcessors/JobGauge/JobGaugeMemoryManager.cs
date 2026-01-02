@@ -49,7 +49,7 @@ namespace RainbowMage.OverlayPlugin.MemoryProcessors.JobGauge
         GNB = 37,
         DNC = 38,
         RPR = 39,
-        SGE = 40,
+        SGE = 40
     }
 
     public interface IJobGauge : IEquatable<IJobGauge>

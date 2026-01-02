@@ -78,7 +78,7 @@ public class CactbotEventSource : EventSourceBase
             "onPlayerDied",
             "onPartyWipe",
             "onPlayerChangedEvent",
-            "onUserFileChanged",
+            "onUserFileChanged"
         });
 
         // Broadcast onConfigChanged when a cactbotNotifyConfigChanged message occurs.
@@ -705,7 +705,7 @@ public class CactbotEventSource : EventSourceBase
             {
                 Path = watchDir,
                 NotifyFilter = NotifyFilters.LastWrite | NotifyFilters.FileName,
-                IncludeSubdirectories = true,
+                IncludeSubdirectories = true
             };
 
             // We only care about file changes. New or renamed files don't matter if we don't have a reference to them
@@ -715,7 +715,7 @@ public class CactbotEventSource : EventSourceBase
                 DispatchEvent(JObject.FromObject(new
                 {
                     type = "onUserFileChanged",
-                    file = e.FullPath,
+                    file = e.FullPath
                 }));
             };
 

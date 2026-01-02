@@ -31,7 +31,7 @@ namespace RainbowMage.OverlayPlugin.NetworkProcessors
             // Some `LogMessage` messages can be triggered by both 0x020F and 0x0210 categories, not sure what the difference is
             // except that 0x0210 messages usually have another actor ID in the parameters
             Server_ActorControlCategory.DisplayLogMessage,
-            Server_ActorControlCategory.DisplayLogMessageParams,
+            Server_ActorControlCategory.DisplayLogMessageParams
         };
 
         internal class ActorControlSelfExtraPacket : MachinaPacketWrapper

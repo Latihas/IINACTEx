@@ -198,7 +198,7 @@ namespace RainbowMage.OverlayPlugin.MemoryProcessors
                     pos_x = mem.pos_x,
                     pos_y = mem.pos_y,
                     pos_z = mem.pos_z,
-                    rotation = mem.rotation,
+                    rotation = mem.rotation
                 };
                 if (entity.type == EntityType.PC || entity.type == EntityType.Monster)
                 {
@@ -387,7 +387,7 @@ namespace RainbowMage.OverlayPlugin.MemoryProcessors
                 MinuetLastPlayed = 1 << 2 | 1 << 3,
                 BalladCoda = 1 << 4,
                 PaeonCoda = 1 << 5,
-                MinuetCoda = 1 << 6,
+                MinuetCoda = 1 << 6
             }
 
             [FieldOffset(0x00)]
@@ -439,7 +439,7 @@ namespace RainbowMage.OverlayPlugin.MemoryProcessors
                     {
                         this.songFlags.HasFlag(SongFlags.BalladCoda) ? "Ballad" : "None",
                         this.songFlags.HasFlag(SongFlags.PaeonCoda) ? "Paeon" : "None",
-                        this.songFlags.HasFlag(SongFlags.MinuetCoda) ? "Minuet" : "None",
+                        this.songFlags.HasFlag(SongFlags.MinuetCoda) ? "Minuet" : "None"
                     };
                 }
             }
@@ -454,7 +454,7 @@ namespace RainbowMage.OverlayPlugin.MemoryProcessors
                 Emboite = 1,
                 Entrechat = 2,
                 Jete = 3,
-                Pirouette = 4,
+                Pirouette = 4
             }
 
             [FieldOffset(0x00)]
@@ -562,7 +562,7 @@ namespace RainbowMage.OverlayPlugin.MemoryProcessors
             {
                 None = 0,
                 Enochian = 1,
-                Paradox = 2,
+                Paradox = 2
             }
 
             [FieldOffset(0x00)]
@@ -618,7 +618,7 @@ namespace RainbowMage.OverlayPlugin.MemoryProcessors
              None = 0,
              Ifrit = 1,
              Titan = 2,
-             Garuda = 3,
+             Garuda = 3
            }
 
            [Flags]
@@ -635,9 +635,9 @@ namespace RainbowMage.OverlayPlugin.MemoryProcessors
              SolarBahamut = 1 << 3,
              // 4 bit: Unknown
              // 5-7 bits: Usable Arcanum
-             Ruby = 1 << 5, // Fire/Ifrit
-             Topaz = 1 << 6, // Earth/Titan
-             Emerald = 1 << 7, // Wind/Garuda
+             Ruby = 1 << 5,   // Fire/Ifrit
+             Topaz = 1 << 6,  // Earth/Titan
+             Emerald = 1 << 7 // Wind/Garuda
            }
 
            [FieldOffset(0x00)]
@@ -741,7 +741,7 @@ namespace RainbowMage.OverlayPlugin.MemoryProcessors
                 None = 0,
                 Opo = 1,
                 Raptor = 2,
-                Coeurl = 3,
+                Coeurl = 3
             }
 
             [FieldOffset(0x00)]
@@ -860,7 +860,7 @@ namespace RainbowMage.OverlayPlugin.MemoryProcessors
                 Ewer = 5,
                 Spire = 6,
                 Lord = 7,
-                Lady = 8,
+                Lady = 8
             }
 
             [NonSerialized]
@@ -977,7 +977,7 @@ namespace RainbowMage.OverlayPlugin.MemoryProcessors
                 FirstGeneration = 8,
                 SecondGeneration = 9,
                 ThirdGeneration = 10,
-                FourthGeneration = 11,
+                FourthGeneration = 11
             }
 
             [FieldOffset(0x00)]
@@ -1014,7 +1014,7 @@ namespace RainbowMage.OverlayPlugin.MemoryProcessors
                 Claw = 1 << 2,
                 Maw = 1 << 3,
                 Weapon = 1 << 4,
-                Landscape = 1 << 5,
+                Landscape = 1 << 5
             }
 
             [Flags]
@@ -1026,7 +1026,7 @@ namespace RainbowMage.OverlayPlugin.MemoryProcessors
 
                 // Maw = 1 << 3, // Once you paint the Maw motif, it becomes a Madeen portrait.
                 MooglePortrait = 1 << 4,
-                MadeenPortrait = 1 << 5,
+                MadeenPortrait = 1 << 5
             }
 
             [FieldOffset(0x00)]

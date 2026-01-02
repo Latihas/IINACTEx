@@ -179,7 +179,7 @@ namespace RainbowMage.OverlayPlugin.MemoryProcessors.Aggro
                     Name = c.Name,
                     MaxHP = c.MaxHP,
                     CurrentHP = c.CurrentHP,
-                    Effects = c.Effects,
+                    Effects = c.Effects
                 };
 
                 // TODO: it seems like when your chocobo has aggro, this entry
@@ -198,7 +198,7 @@ namespace RainbowMage.OverlayPlugin.MemoryProcessors.Aggro
                             isMe = mychar.ID == t.ID ? true : false,
                             Enmity = 0,
                             HateRate = 0,
-                            Job = t.Job,
+                            Job = t.Job
                         };
                     }
                 }

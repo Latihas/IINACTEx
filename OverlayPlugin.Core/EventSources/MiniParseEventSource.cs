@@ -28,7 +28,7 @@ namespace RainbowMage.OverlayPlugin.EventSources
             {
                 CombatDataEvent,
                 ImportedLogLinesEvent,
-                BroadcastMessageEvent,
+                BroadcastMessageEvent
             });
 
             RegisterEventHandler("saveData", (msg) =>
@@ -95,7 +95,7 @@ namespace RainbowMage.OverlayPlugin.EventSources
                 {
                     type = BroadcastMessageEvent,
                     source = msg["source"],
-                    msg = msg["msg"],
+                    msg = msg["msg"]
                 }));
 
                 return null;

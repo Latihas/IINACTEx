@@ -76,7 +76,7 @@ namespace RainbowMage.OverlayPlugin
                                 Name = Name,
                                 Source = Source,
                                 Version = Version,
-                                Range = true,
+                                Range = true
                             };
                         }
                     }
@@ -109,7 +109,7 @@ namespace RainbowMage.OverlayPlugin
                             Name = Name,
                             Source = Source,
                             Version = Version,
-                            Range = false,
+                            Range = false
                         };
                     }
                 }

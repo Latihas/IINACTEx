@@ -64,7 +64,7 @@ namespace RainbowMage.OverlayPlugin
         MapEffect,
         FateDirector,
         CEDirector,
-        InCombat,
+        InCombat
     }
 
     internal class FFXIVRepository

@@ -38,7 +38,7 @@ namespace RainbowMage.OverlayPlugin.MemoryProcessors.InCombat
                 Name = "InCombat",
                 Source = "OverlayPlugin",
                 ID = LogFileLineID,
-                Version = 1,
+                Version = 1
             });
         }
 

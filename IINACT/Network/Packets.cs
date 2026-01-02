@@ -39,18 +39,18 @@ internal enum PacketType : ushort {
     KeepAliveResponse = 0x8,
     EncryptionInit = 0x9,
     UnknownA = 0xA,
-    UnknownB = 0xB,
+    UnknownB = 0xB
 }
 
 internal enum PacketProtocol : ushort {
     None = 0x0,
     Zone = 0x1,
     Chat = 0x2,
-    Lobby = 0x3,
+    Lobby = 0x3
 }
 
 internal enum CompressionType : byte {
     None = 0x0,
     Zlib = 0x1,
-    Oodle = 0x2,
+    Oodle = 0x2
 }

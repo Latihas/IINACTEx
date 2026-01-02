@@ -116,7 +116,7 @@ namespace RainbowMage.OverlayPlugin.MemoryProcessors.AtkStage
             { "Synthesis", typeof(global::FFXIVClientStructs.FFXIV.Client.UI.AddonSynthesis) },
             { "Talk", typeof(global::FFXIVClientStructs.FFXIV.Client.UI.AddonTalk) },
             { "WeeklyBingo", typeof(global::FFXIVClientStructs.FFXIV.Client.UI.AddonWeeklyBingo) },
-            { "WeeklyPuzzle", typeof(global::FFXIVClientStructs.FFXIV.Client.UI.AddonWeeklyPuzzle) },
+            { "WeeklyPuzzle", typeof(global::FFXIVClientStructs.FFXIV.Client.UI.AddonWeeklyPuzzle) }
 
 
             // These addons are known to exist but not mapped yet:

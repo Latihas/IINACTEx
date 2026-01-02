@@ -14,8 +14,8 @@
         DisplayPublicContentTextMessage = 0x0834, // 2100
         // Note that these names are used directly as strings in `LineFateControl`
         // Changing them will necessitate updating the logic in that class
-        FateAdd = 0x0942, // 2370
+        FateAdd = 0x0942,    // 2370
         FateRemove = 0x0935, // 2357
-        FateUpdate = 0x093C, // 2364
+        FateUpdate = 0x093C  // 2364
     }
 }

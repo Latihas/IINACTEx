@@ -63,7 +63,7 @@ namespace RainbowMage.OverlayPlugin.MemoryProcessors.EnmityHud
                     ID = mem.ID,
                     HPPercent = mem.HPPercent > 100 ? 0 : mem.HPPercent,
                     EnmityPercent = mem.EnmityPercent > 100 ? 0 : mem.EnmityPercent,
-                    CastPercent = mem.CastPercent > 100 ? 0 : mem.CastPercent,
+                    CastPercent = mem.CastPercent > 100 ? 0 : mem.CastPercent
                 };
 
                 return enmityHudEntry;

@@ -29,7 +29,7 @@ namespace RainbowMage.OverlayPlugin.EventSources
 
             RegisterEventTypes(new List<string>
             {
-                LogLineEvent,
+                LogLineEvent
             });
 
             if (haveRepository)
@@ -40,7 +40,7 @@ namespace RainbowMage.OverlayPlugin.EventSources
                     ChangePrimaryPlayerEvent,
                     ChangeZoneEvent,
                     ChangeMapEvent,
-                    GameVersionEvent,
+                    GameVersionEvent
                 });
             }
 
@@ -101,7 +101,7 @@ namespace RainbowMage.OverlayPlugin.EventSources
                         {
                             type = ChangeZoneEvent,
                             zoneID,
-                            zoneName,
+                            zoneName
                         }));
                         break;
 
@@ -133,7 +133,7 @@ namespace RainbowMage.OverlayPlugin.EventSources
                         {
                             type = ChangePrimaryPlayerEvent,
                             charID,
-                            charName,
+                            charName
                         }));
                         break;
 
@@ -165,7 +165,7 @@ namespace RainbowMage.OverlayPlugin.EventSources
                 {
                     type = LogLineEvent,
                     line,
-                    rawLine = args.originalLogLine,
+                    rawLine = args.originalLogLine
                 }));
             }
             catch (Exception e)

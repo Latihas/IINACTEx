@@ -3173,7 +3173,7 @@ namespace RainbowMage.OverlayPlugin
                 asm => asm.FullName.StartsWith("CR_ExtUnitTest", StringComparison.Ordinal),
                 asm => asm.FullName.StartsWith("mscorlib,", StringComparison.Ordinal),
                 asm => asm.FullName.StartsWith("CR_VSTest", StringComparison.Ordinal),
-                asm => asm.FullName.StartsWith("DevExpress.CodeRush", StringComparison.Ordinal),
+                asm => asm.FullName.StartsWith("DevExpress.CodeRush", StringComparison.Ordinal)
             };
 
             foreach (var check in ignoreChecks)
@@ -3197,7 +3197,7 @@ namespace RainbowMage.OverlayPlugin
                 t => t.IsGenericTypeDefinition(),
 #endif
                 t => (t.GetConstructors(BindingFlags.Instance | BindingFlags.Public).Length == 0) &&
-                     !(t.IsInterface() || t.IsAbstract()),
+                     !(t.IsInterface() || t.IsAbstract())
             };
 
             if (registrationPredicate != null)

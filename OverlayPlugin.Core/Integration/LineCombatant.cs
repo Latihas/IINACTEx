@@ -75,8 +75,8 @@ namespace RainbowMage.OverlayPlugin.MemoryProcessors.Combatant
                     { typeof(Combatant).GetField(nameof(Combatant.TransformationId)), 0 },
                     { typeof(Combatant).GetField(nameof(Combatant.WeaponId)),         0 },
                     { typeof(Combatant).GetField(nameof(Combatant.TargetID)),         0 },
-                    { typeof(Combatant).GetField(nameof(Combatant.ModelStatus)),      0 },
-                }),
+                    { typeof(Combatant).GetField(nameof(Combatant.ModelStatus)),      0 }
+                })
             };
 
             private const uint OutOfCombatDelayDefault = 5000;
@@ -107,8 +107,8 @@ namespace RainbowMage.OverlayPlugin.MemoryProcessors.Combatant
                     { typeof(Combatant).GetField(nameof(Combatant.TransformationId)), 1000 },
                     { typeof(Combatant).GetField(nameof(Combatant.WeaponId)),         1000 },
                     { typeof(Combatant).GetField(nameof(Combatant.TargetID)),         1000 },
-                    { typeof(Combatant).GetField(nameof(Combatant.ModelStatus)),      1000 },
-                }),
+                    { typeof(Combatant).GetField(nameof(Combatant.ModelStatus)),      1000 }
+                })
             };
 
             private static readonly string[] IgnoreFieldNames = new string[] {
@@ -134,7 +134,7 @@ namespace RainbowMage.OverlayPlugin.MemoryProcessors.Combatant
                 nameof(Combatant.CurrentCP),
                 nameof(Combatant.MaxCP),
                 nameof(Combatant.CurrentGP),
-                nameof(Combatant.MaxGP),
+                nameof(Combatant.MaxGP)
             };
 
             // Fields that should be written out for add or full list of changes
@@ -190,7 +190,7 @@ namespace RainbowMage.OverlayPlugin.MemoryProcessors.Combatant
                 Name = "CombatantMemory",
                 Source = "OverlayPlugin",
                 ID = LogFileLineID,
-                Version = 1,
+                Version = 1
             });
 
             var netHelper = container.Resolve<NetworkParser>();
@@ -281,7 +281,7 @@ namespace RainbowMage.OverlayPlugin.MemoryProcessors.Combatant
                     combatantStateMap[combatant.ID] = new CombatantStateInfo()
                     {
                         lastUpdated = now,
-                        combatant = combatant,
+                        combatant = combatant
                     };
                     WriteLine(
                         CombatantMemoryChangeType.Add,
@@ -364,7 +364,7 @@ namespace RainbowMage.OverlayPlugin.MemoryProcessors.Combatant
                     combatantStateMap[combatant.ID] = new CombatantStateInfo()
                     {
                         lastUpdated = now,
-                        combatant = combatant,
+                        combatant = combatant
                     };
                     
                     combatantMemoryManager.ReturnCombatant(oldCombatant);
@@ -490,7 +490,7 @@ namespace RainbowMage.OverlayPlugin.MemoryProcessors.Combatant
         {
             Add,
             Remove,
-            Change,
+            Change
         }
     }
 }

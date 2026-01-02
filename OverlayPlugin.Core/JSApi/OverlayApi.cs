@@ -1,7 +1,5 @@
 ﻿using Advanced_Combat_Tracker;
 using System;
-using System.IO;
-using System.Reflection;
 using System.Threading.Tasks;
 
 namespace RainbowMage.OverlayPlugin

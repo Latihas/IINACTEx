@@ -27,7 +27,7 @@ namespace RainbowMage.OverlayPlugin.EventSources
             { 17, "AFK" },
             { 21, "LookingToMeld" },
             { 22, "RP" },
-            { 23, "LookingForParty" },
+            { 23, "LookingForParty" }
         };
 
         private const string OnlineStatusChangedEvent = "OnlineStatusChanged";
@@ -71,7 +71,7 @@ namespace RainbowMage.OverlayPlugin.EventSources
                 {
                     OnlineStatusChangedEvent,
                     PartyChangedEvent,
-                    JobGaugeChangedEvent,
+                    JobGaugeChangedEvent
                 });
 
                 RegisterEventHandler("getLanguage", (msg) =>
@@ -83,7 +83,7 @@ namespace RainbowMage.OverlayPlugin.EventSources
                         language = lang.ToString("g"),
                         languageId = lang.ToString("d"),
                         region = region.ToString("g"),
-                        regionId = region.ToString("d"),
+                        regionId = region.ToString("d")
                     });
                 });
 
@@ -252,7 +252,7 @@ namespace RainbowMage.OverlayPlugin.EventSources
             AllianceC,
             AllianceD,
             AllianceE,
-            AllianceF,
+            AllianceF
         }
 
         struct PartyMember
@@ -308,7 +308,7 @@ namespace RainbowMage.OverlayPlugin.EventSources
                 PartyType.AllianceC,
                 PartyType.AllianceD,
                 PartyType.AllianceE,
-                PartyType.AllianceF,
+                PartyType.AllianceF
             };
 
             PartyType currentAlliance;
@@ -366,7 +366,7 @@ namespace RainbowMage.OverlayPlugin.EventSources
                     cachedPartyList.partyId_2,
                     cachedPartyList.partyLeaderIndex,
 
-                    cachedPartyList.currentPartyFlags,
+                    cachedPartyList.currentPartyFlags
                 },
 #if DEBUG
                 debugPartyStruct = cachedPartyList,
@@ -399,7 +399,7 @@ namespace RainbowMage.OverlayPlugin.EventSources
                     flags = member.flags,
                     objectId = member.objectId,
                     territoryType = member.territoryType,
-                    partyType = partyType.ToString(),
+                    partyType = partyType.ToString()
                 });
             }
         }
@@ -506,8 +506,8 @@ namespace RainbowMage.OverlayPlugin.EventSources
                         name = currentPlayer.Name,
                         classJob = currentPlayer.Job,
                         level = currentPlayer.Level,
-                        flags = 0x13,
-                    },
+                        flags = 0x13
+                    }
                 };
                 newParty.partyLeaderIndex = 0;
                 combatantMemory.ReturnCombatant(currentPlayer);

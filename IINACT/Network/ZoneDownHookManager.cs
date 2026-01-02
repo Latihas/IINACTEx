@@ -3,7 +3,6 @@ using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using Dalamud.Hooking;
 using Dalamud.Interface.ImGuiNotification;
-using Dalamud.Plugin.Services;
 using Unscrambler;
 using Unscrambler.Constants;
 using Unscrambler.Unscramble;
@@ -154,7 +153,7 @@ public unsafe class ZoneDownHookManager : IDisposable
         Plugin.NotificationManager.AddNotification(new Notification
         {
             Content = content,
-            Title = "IINACT", 
+            Title = "IINACT"
         });
         Plugin.Log.Debug($"[SendNotification] {content}");
     }

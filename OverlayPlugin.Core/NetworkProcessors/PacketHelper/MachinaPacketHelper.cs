@@ -64,7 +64,7 @@ namespace RainbowMage.OverlayPlugin.NetworkProcessors.PacketHelper
                     { GameRegion.Global, new ReadOnlyDictionary<string, Type>(globalDict) },
                     { GameRegion.Chinese, new ReadOnlyDictionary<string, Type>(chineseDict) },
                     { GameRegion.Korean, new ReadOnlyDictionary<string, Type>(koreanDict) },
-                    { GameRegion.Tc, new ReadOnlyDictionary<string, Type>(tcDict) },
+                    { GameRegion.Tc, new ReadOnlyDictionary<string, Type>(tcDict) }
                 });
 
                 MachinaPacketWrapper.InitTypePropertyMap(mType);

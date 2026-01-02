@@ -55,7 +55,7 @@ namespace RainbowMage.OverlayPlugin.NetworkProcessors.PacketHelper
                 Name = logLineName,
                 Source = "OverlayPlugin",
                 ID = logFileLineID,
-                Version = 1,
+                Version = 1
             });
         }
 

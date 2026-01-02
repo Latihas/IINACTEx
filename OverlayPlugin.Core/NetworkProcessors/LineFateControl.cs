@@ -9,7 +9,7 @@ namespace RainbowMage.OverlayPlugin.NetworkProcessors
         public static readonly Server_ActorControlCategory[] FateActorControlCategories = {
             Server_ActorControlCategory.FateAdd,
             Server_ActorControlCategory.FateRemove,
-            Server_ActorControlCategory.FateUpdate,
+            Server_ActorControlCategory.FateUpdate
         };
 
         internal class FateControlPacket : MachinaPacketWrapper

@@ -187,7 +187,7 @@ namespace RainbowMage.OverlayPlugin.MemoryProcessors
                     pos_x = mem.pos_x,
                     pos_y = mem.pos_y,
                     pos_z = mem.pos_z,
-                    rotation = mem.rotation,
+                    rotation = mem.rotation
                 };
                 if (entity.type == EntityType.PC || entity.type == EntityType.Monster)
                 {
@@ -381,9 +381,9 @@ namespace RainbowMage.OverlayPlugin.MemoryProcessors
             private enum Song : byte
             {
                 None = 0,
-                Ballad = 5,  // Mage's Ballad.
-                Paeon = 10,  // Army's Paeon.
-                Minuet = 15, // The Wanderer's Minuet.
+                Ballad = 5, // Mage's Ballad.
+                Paeon = 10, // Army's Paeon.
+                Minuet = 15 // The Wanderer's Minuet.
             }
 
             [FieldOffset(0x00)]
@@ -411,7 +411,7 @@ namespace RainbowMage.OverlayPlugin.MemoryProcessors
                 Emboite = 1,
                 Entrechat = 2,
                 Jete = 3,
-                Pirouette = 4,
+                Pirouette = 4
             }
 
             [FieldOffset(0x00)]
@@ -646,7 +646,7 @@ namespace RainbowMage.OverlayPlugin.MemoryProcessors
                 Arrow = 3,
                 Spear = 4,
                 Ewer = 5,
-                Spire = 6,
+                Spire = 6
             }
 
             public enum Arcanum : byte
@@ -654,7 +654,7 @@ namespace RainbowMage.OverlayPlugin.MemoryProcessors
                 None = 0,
                 Solar = 1,
                 Lunar = 2,
-                Celestial = 3,
+                Celestial = 3
             }
 
             [FieldOffset(0x04)]

@@ -164,7 +164,7 @@ namespace RainbowMage.OverlayPlugin.MemoryProcessors.Enmity
                     Name = c == null ? "Unknown" : c.Name,
                     OwnerID = c == null ? 0 : c.OwnerID,
                     HateRate = (int)(((double)e.Enmity / (double)topEnmity) * 100),
-                    Job = c == null ? (byte)0 : c.Job,
+                    Job = c == null ? (byte)0 : c.Job
                 };
 
                 result.Add(entry);

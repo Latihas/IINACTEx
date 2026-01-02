@@ -50,7 +50,7 @@ namespace RainbowMage.OverlayPlugin.MemoryProcessors
             GatheringNode = 6,
             ClickableObject = 7,
             Minion = 9,
-            Mailbox = 12,
+            Mailbox = 12
         };
 
         // Values found in the EntityStruct's job field.
@@ -98,7 +98,7 @@ namespace RainbowMage.OverlayPlugin.MemoryProcessors
             RPR = 39,
             SGE = 40,
             VPR = 41,
-            PCT = 42,
+            PCT = 42
         };
 
         static internal bool IsGatherer(EntityJob job)

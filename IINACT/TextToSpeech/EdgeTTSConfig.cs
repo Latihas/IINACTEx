@@ -28,7 +28,7 @@ public class EdgeTTSConfig
     public Dictionary<string, string> TextReplacements { get; set; } = new()
     {
         ["欧米茄"] = "欧米加",
-        ["歐米茄"] = "歐米加",
+        ["歐米茄"] = "歐米加"
     };
 
     [JsonProperty("testText")]

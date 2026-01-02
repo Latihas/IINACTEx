@@ -103,7 +103,7 @@ namespace RainbowMage.OverlayPlugin.MemoryProcessors.JobGauge
             {
                 (AstrologianSeal)(3 & (this.Seals >> 0)),
                 (AstrologianSeal)(3 & (this.Seals >> 2)),
-                (AstrologianSeal)(3 & (this.Seals >> 4)),
+                (AstrologianSeal)(3 & (this.Seals >> 4))
             };
 
             short IBaseAstrologianGauge.Timer => Timer;

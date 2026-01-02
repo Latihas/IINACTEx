@@ -140,7 +140,7 @@ namespace RainbowMage.OverlayPlugin.MemoryProcessors.Party
                 alliance2Members = alliance2Members,
                 alliance3Members = alliance3Members,
                 alliance4Members = alliance4Members,
-                alliance5Members = alliance5Members,
+                alliance5Members = alliance5Members
             };
         }
 
@@ -184,7 +184,7 @@ namespace RainbowMage.OverlayPlugin.MemoryProcessors.Party
                     sex = member.Sex,
                     classJob = member.ClassJob,
                     level = member.Level,
-                    flags = member.Flags,
+                    flags = member.Flags
                 };
             }
             return ret;

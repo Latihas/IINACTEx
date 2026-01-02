@@ -1,5 +1,4 @@
 ﻿using System.Diagnostics;
-using System.Globalization;
 using System.IO;
 using System.IO.Compression;
 using System.Numerics;
@@ -20,7 +19,7 @@ namespace IINACT.Latihas;
 
 public static partial class LWindow
 {
-    internal static string WindowPrefix = "IINACTEx ";
+    internal const string WindowPrefix = "IINACTEx ";
 
     internal static void DrawTriggerSettings()
     {
@@ -38,9 +37,7 @@ public static partial class LWindow
         using var tab = ImRaii.TabItem("触发器仓库");
         if (!tab) return;
         if (ImGui.Button("刷新触发器"))
-        {
             UserInterface.BuildTriggerTreeFromConfiguration(null, null);
-        }
         ImGui.SameLine();
         if (ImGui.Button("保存设置") && !RealPlugin.Instance.configBroken)
             RealPlugin.Instance.SaveCurrentConfig();
@@ -150,7 +147,6 @@ public static partial class LWindow
         ImGui.Text("${_me}/${_ffxivplayer} = " + TestContext.ExpandVariables(null, null, false, "${_me}"));
         ImGui.Text("${_me.id} = " + TestContext.ExpandVariables(null, null, false, "${_me.id}"));
         ImGui.Text("${_ffxivzoneid} = " + TestContext.ExpandVariables(null, null, false, "${_ffxivzoneid}"));
-        // ImGui.Text("${_ffxivpartyorder} = "+testContext.ExpandVariables(null, null, false, "${_ffxivpartyorder}"));
         ImGui.Text("${_ffxivprocid} = " + TestContext.ExpandVariables(null, null, false, "${_ffxivprocid}"));
         ImGui.Text("${_ffxivprocname} = " + TestContext.ExpandVariables(null, null, false, "${_ffxivprocname}"));
         ImGui.Text("${_ffxivversion} = " + TestContext.ExpandVariables(null, null, false, "${_ffxivversion}"));
@@ -174,6 +170,7 @@ public static partial class LWindow
             ImGui.Text("Target.EntityId: 0x" + targ.EntityId.ToString("X"));
             ImGui.Text("Target.GameObjectId: 0x" + targ.GameObjectId.ToString("X"));
             ImGui.Text("Target.OwnerId: 0x" + targ.OwnerId.ToString("X"));
+            ImGui.Text($"Target.Position: ({targ.Position.X}, {targ.Position.Y}, {targ.Position.Z})" );
         }
         ImGui.Separator();
         ImGui.Text("...蓝笔了不写了");
@@ -502,6 +499,7 @@ public static partial class LWindow
             }
         }
         else ImGui.Text("处理中");
+        ImGui.SameLine();
         if (!FileDownloaderOpcodes.ContainsKey("[OverlayPlugin]opcodes.jsonc"))
         {
             if (ImGui.Button("[OverlayPlugin]opcodes.jsonc"))
@@ -520,20 +518,19 @@ public static partial class LWindow
             NewTable(["项目", "原始", "替换"], Plugin.Instance.opcodestxtDiff, [
                 i => ImGui.Text(i.Item1),
                 i => ImGui.Text("0x" + i.Item2.ToString("X")),
-                i => ImGui.Text("0x" + i.Item3.ToString("X")),
+                i => ImGui.Text("0x" + i.Item3.ToString("X"))
             ]);
         }
     }
 
     private static readonly Dictionary<string, FileDownloader> FileDownloaderOpcodes = new();
-    // private static FileDownloader? FileDownloaderOpcodestxt, FileDownloaderOpcodesjsonc, FileDownloaderKarashiiro;
 
     private static void TScaler(SerializableDictionary<string, VariableScalar> data) =>
         NewTable(["名称", "值", "时间", "源"], data.ToArray(), [
             i => ImGui.Text(i.Key),
             i => ImGui.Text(i.Value.Value),
             i => ImGui.Text(i.Value.LastChanged.ToString()),
-            i => ImGui.Text(i.Value.LastChanger),
+            i => ImGui.Text(i.Value.LastChanger)
         ]);
 
     internal static void DrawTriggerVarScalerSettings()
@@ -588,7 +585,7 @@ public static partial class LWindow
             i => ImGui.Text(i.Value.Size.ToString()),
             i => ImGui.TextWrapped(string.Join(",", i.Value.Values)),
             i => ImGui.Text(i.Value.LastChanged.ToString()),
-            i => ImGui.Text(i.Value.LastChanger),
+            i => ImGui.Text(i.Value.LastChanger)
         ]);
 
     internal static void DrawTriggerVarListSettings()
@@ -620,7 +617,7 @@ public static partial class LWindow
                 ImGui.TextWrapped(string.Join(';', sb));
             },
             i => ImGui.Text(i.Value.LastChanged.ToString()),
-            i => ImGui.Text(i.Value.LastChanger),
+            i => ImGui.Text(i.Value.LastChanger)
         ]);
 
     internal static void DrawTriggerVarTableSettings()
@@ -651,7 +648,7 @@ public static partial class LWindow
                 ImGui.TextWrapped(string.Join(',', sb));
             },
             i => ImGui.Text(i.Value.LastChanged.ToString()),
-            i => ImGui.Text(i.Value.LastChanger),
+            i => ImGui.Text(i.Value.LastChanger)
         ]);
 
     internal static void DrawTriggerVarDictSettings()
@@ -682,7 +679,7 @@ public static partial class LWindow
             i => ImGui.Text(i.Id.ToString()),
             i => ImGui.Text(i.Name),
             i => ImGui.Text(i.Registrant),
-            i => ImGui.Text(i.RegistrationTime.ToString()),
+            i => ImGui.Text(i.RegistrationTime.ToString())
         ]);
     }
 
@@ -693,7 +690,7 @@ public static partial class LWindow
         NewTable(["悬浮窗名称", "名称", "文本"], RealPlugin._instance.textauras.ToArray(), [
             i => ImGui.Text(i.Key),
             i => ImGui.Text(i.Value.AuraName),
-            i => ImGui.Text(i.Value.TextExpression.ToString()),
+            i => ImGui.Text(i.Value.TextExpression.ToString())
         ]);
     }
 

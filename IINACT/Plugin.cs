@@ -63,6 +63,8 @@ public sealed class Plugin : IDalamudPlugin
     public static ITargetManager TargetManager { get; private set; }
     [PluginService]
     public static IObjectTable ObjectTable { get; private set; }
+    [PluginService]
+    public static IGameGui GameGui  { get; private set; }
     public static Configuration Configuration { get; private set; }
     internal static TextToSpeechProvider TextToSpeechProvider { get; private set; }
     private static MainWindow MainWindow = null!;
@@ -189,7 +191,7 @@ public sealed class Plugin : IDalamudPlugin
         OverlayPlugin = InitOverlayPluginTrn();
         Log.Warning("OverlayPlugin Inited");
         ActGlobals.oFormActMain.TriggernometryPlugin = TriggernometryProxyPlugin = new ProxyPlugin();
-        TriggernometryProxyPlugin.InitPlugin(this, PluginInterface, Log, ClientState, Framework, GameInteropProvider,ObjectTable);
+        TriggernometryProxyPlugin.InitPlugin(this, PluginInterface, Log, ClientState, Framework, GameInteropProvider,ObjectTable,GameGui);
         RealPlugin.Instance.InitAura();
         ActGlobals.oFormActMain.PostNamazuPlugin = PostNamazuPlugin = new PostNamazu.PostNamazu();
         PostNamazuPlugin.InitPlugin(PluginInterface, Log, SigScanner);

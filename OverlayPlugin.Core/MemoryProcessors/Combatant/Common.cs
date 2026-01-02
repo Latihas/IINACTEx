@@ -71,7 +71,7 @@ namespace RainbowMage.OverlayPlugin.MemoryProcessors.Combatant
 
         /// <summary>Indicates that the combatant's model has unloaded from the game's memory, be it from a death or a wipe.</summary>
         Unloaded = 2048,
-        Hidden = 16384,
+        Hidden = 16384
 
         // There are other statuses as well:
         // Manually setting the status 2306 (or 258) hides the model instantly.

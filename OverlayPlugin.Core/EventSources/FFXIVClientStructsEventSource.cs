@@ -26,7 +26,7 @@ namespace RainbowMage.OverlayPlugin.EventSources
             public enum EntryType
             {
                 Party = 0,
-                Trust = 1,
+                Trust = 1
             }
         }
     }
@@ -118,7 +118,7 @@ namespace RainbowMage.OverlayPlugin.EventSources
             {
                 Type = type,
                 Index = index,
-                Name = nameStr,
+                Name = nameStr
             };
         }
 

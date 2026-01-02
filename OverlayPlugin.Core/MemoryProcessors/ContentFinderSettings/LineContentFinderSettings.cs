@@ -24,7 +24,7 @@ namespace RainbowMage.OverlayPlugin.MemoryProcessors.ContentFinderSettings
                 Name = "ContentFinderSettings",
                 Source = "OverlayPlugin",
                 ID = LogFileLineID,
-                Version = 1,
+                Version = 1
             });
 
             ffxiv.RegisterZoneChangeDelegate(OnZoneChange);

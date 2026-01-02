@@ -1,5 +1,0 @@
-﻿MapViewOfFile
-UnmapViewOfFile
-CreateFileMappingW
-CreateFileW
-ReadFile
