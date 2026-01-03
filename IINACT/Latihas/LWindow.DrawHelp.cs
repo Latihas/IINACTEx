@@ -18,7 +18,7 @@ public static partial class LWindow {
         ImGui.Text("重要提醒！！！请一定要先看完介绍再使用，本插件仍然不是很稳定，有炸游戏风险");
         ImGui.Text("重要提醒！！！请一定要先看完介绍再使用，本插件仍然不是很稳定，有炸游戏风险");
         ImGui.Text("重要提醒！！！请一定要先看完介绍再使用，本插件仍然不是很稳定，有炸游戏风险");
-        ImGui.Text("其实最会炸游戏的是VfxModule，设置-Trn设置-启用ModuleBase-取消VfxModule勾选即可禁用");
+        ImGui.Text("其实最会炸游戏的是VfxModule，Trigernometry-Trn设置-启用ModuleBase-取消VfxModule勾选即可禁用；或者启用ImGui替代绘制模式，但是该模式适配可能并不完全，仍然有炸游戏的可能。");
         ImGui.PopStyleColor(1);
         if (ImGui.CollapsingHeader("更新日志", ImGuiTreeNodeFlags.DefaultOpen)) {
             ImGui.Text("多了一个已知问题bug。");
@@ -26,7 +26,7 @@ public static partial class LWindow {
         var s = ImGui.CollapsingHeader("已知问题(没定位到问题所在，可以提Pr之类的协助我修复。)", ImGuiTreeNodeFlags.DefaultOpen);
         if (s) {
             ImGui.Text("插件加载的第一次有时会加载失败，类似于下面，涉及解析插件的初始化，重新加载即可。彻底解决需要重启XIVLauncher。");
-            ImGui.Text("这个问题有时候在更新的时候(也会卸载)触发，且再次载入大概率会炸游戏，请注意。");
+            ImGui.Text("这个问题有时候在更新的时候(也会执行卸载)触发，且再次载入大概率会炸游戏，请注意。");
             ImGui.Indent();
             if (s && ImGui.CollapsingHeader("展开堆栈信息")) {
                 ImGui.Text("11:28:52.526 | 警告 | [IINACTEx] DalamudStartInfo Inited");
@@ -145,7 +145,7 @@ public static partial class LWindow {
     private static readonly FunctionTest Test2 = new();
 
     internal static void DrawTestSettings() {
-        using var tab = ImRaii.TabItem("测试");
+        using var tab = ImRaii.TabItem("IINACT");
         if (!tab) return;
         if (ImGui.Button("打开插件目录"))
             Start(Plugin.Instance.PluginAssemblyDirectory);

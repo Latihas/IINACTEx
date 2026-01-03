@@ -38,10 +38,53 @@ public class MainWindow : Window {
         LWindow.DrawHelpSettings();
         DrawMainWindow();
         DrawParseSettings();
-        DrawTTSSettings();
         LWindow.DrawTriggerSettings();
-        LWindow.DrawTestSettings();
+        DrawSettingsPostnamazu();
+        LWindow. DrawSettingsScripts();
+        LWindow. DrawTriggerDebug();
         LWindow.DrawSettings();
+    }
+
+    private static void DrawSettingsPostnamazu() {
+        using var tab = ImRaii.TabItem("Postnamazu");
+        if (!tab) return;
+        var TextPort = Plugin.Instance.PostNamazuPlugin.PluginUi.TextPort.Text;
+        if (ImGui.InputText("鲇鱼精端口", ref TextPort))
+            Plugin.Instance.PostNamazuPlugin.PluginUi.TextPort.Text = TextPort;
+        ImGui.SameLine();
+        if (Plugin.Instance.PostNamazuPlugin.PluginUi.ButtonStart.Enabled)
+            if (ImGui.Button("鲇鱼精启动监听"))
+                Plugin.Instance.PostNamazuPlugin.ServerStart();
+        if (Plugin.Instance.PostNamazuPlugin.PluginUi.ButtonStop.Enabled)
+            if (ImGui.Button("鲇鱼精停止监听"))
+                Plugin.Instance.PostNamazuPlugin.ServerStop();
+        ImGui.SameLine();
+        if (ImGui.Button("清空")) Plugin.Instance.PostNamazuPlugin.PluginUi.lstMessages.Items.Clear();
+        var PostNamazuAutoStart = Plugin.Instance.PostNamazuPlugin.PluginUi.CheckAutoStart.Checked;
+        if (ImGui.Checkbox("鲇鱼精监听自动启动", ref PostNamazuAutoStart))
+            Plugin.Instance.PostNamazuPlugin.PluginUi.CheckAutoStart.Checked = PostNamazuAutoStart;
+        ImGui.Text("启用功能");
+        var iter = 1;
+        foreach (var c in Plugin.Instance.PostNamazuPlugin.PluginUi.flowLayoutActions.Controls.OfType<CheckBox>()) {
+            var cChecked = c.Checked;
+            if (ImGui.Checkbox(c.Text, ref cChecked)) {
+                c.Checked = cChecked;
+                Plugin.Instance.PostNamazuPlugin.PluginUi.ActionEnabled[c.Text] = cChecked;
+            }
+            if (iter++ != Plugin.Instance.PostNamazuPlugin.PluginUi.flowLayoutActions.Controls.Count) ImGui.SameLine();
+        }
+        ImGui.Separator();
+        var items = Plugin.Instance.PostNamazuPlugin.PluginUi.lstMessages.Items;
+        for (var i = 0; i < items.Count; i++) {
+            var item = items[i];
+            var itemId = $"## copyItem_{i}";
+            if (ImGui.Selectable($"{item}{itemId}")) {
+                ImGui.SetClipboardText(item.ToString());
+                Plugin.NotificationManager.AddNotification(new Notification {
+                    Content = "已复制"
+                });
+            }
+        }
     }
 
     private void DrawMainWindow() {
@@ -300,27 +343,7 @@ public class MainWindow : Window {
         OverlayPluginConfig?.Save();
     }
 
-    private void DrawTTSSettings() {
-        using var tab = ImRaii.TabItem("文字转语音");
-        if (!tab) return;
-
-        ImGui.Spacing();
-        var useEdgeTTS = Plugin.Configuration.UseEdgeTts;
-        if (ImGui.Checkbox("使用EdgeTTS（不勾选则使用本地TTS）", ref useEdgeTTS))
-            Plugin.TextToSpeechProvider.SetUseEdgeTTS(useEdgeTTS);
-        if (useEdgeTTS) {
-            ImGui.SameLine();
-            if (ImGui.Button("打开设置")) {
-                Plugin.OpenEdgeTTSWindow();
-            }
-        }
-        var useLatihasTTS = Plugin.Configuration.UseLatihasTts;
-        if (ImGui.Checkbox("使用LatihasTTS（均不勾选则使用本地TTS）", ref useLatihasTTS))
-            Plugin.TextToSpeechProvider.SetUseLatihasTTS(useLatihasTTS);
-        ImGui.Spacing();
-        ImGui.Separator();
-        ImGui.Spacing();
-    }
+  
 
     private string GetParseFilterModeText(ParseFilterMode mode) {
         return mode switch {

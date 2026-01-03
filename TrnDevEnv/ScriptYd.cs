@@ -4,7 +4,7 @@ using Triggernometry.PScript;
 using static Triggernometry.PScript.ScriptUtils;
 
 public class ScriptYd : IScriptBase {
-    public override string[] TerritoryIds() => ["779", "1318"];
+    public override uint[] TerritoryIds() => [779, 1318];
     private string ydStatus = "";
     public override List<TargetIcon> TargetIconList => [
         new(TTS("点你分散", 1000), Me_HexID, 0x0017),

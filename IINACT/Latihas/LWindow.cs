@@ -7,8 +7,10 @@ using System.Text;
 using System.Text.Json.Nodes;
 using Advanced_Combat_Tracker;
 using Dalamud.Bindings.ImGui;
+using Dalamud.Interface.Colors;
 using Dalamud.Interface.ImGuiNotification;
 using Dalamud.Interface.Utility.Raii;
+using IINACT.Windows;
 using Triggernometry;
 using Triggernometry.Core;
 using Triggernometry.Core.Serialization;
@@ -22,16 +24,17 @@ public static partial class LWindow {
     internal const string WindowPrefix = "IINACTEx ";
 
     internal static void DrawTriggerSettings() {
-        using var tab = ImRaii.TabItem("触发器");
+        using var tab = ImRaii.TabItem("Triggernometry");
         if (!tab) return;
         using var bar = ImRaii.TabBar("TriggerBar");
         if (!bar) return;
         DrawTriggerTriggerSettings();
         DrawTriggerVarSettings();
-        DrawTriggerDebug();
+
+        DrawSettingsTrn();
     }
 
-    internal static void DrawTriggerTriggerSettings() {
+    private static void DrawTriggerTriggerSettings() {
         using var tab = ImRaii.TabItem("触发器仓库");
         if (!tab) return;
         if (ImGui.Button("刷新触发器"))
@@ -44,7 +47,7 @@ public static partial class LWindow {
         UserInterface.BuildRenderTreeFromConfiguration(null, null, false);
     }
 
-    internal static void DrawTriggerVarSettings() {
+    private static void DrawTriggerVarSettings() {
         using var tab = ImRaii.TabItem("变量");
         if (!tab) return;
         using var bar = ImRaii.TabBar("变量Bar");
@@ -62,15 +65,16 @@ public static partial class LWindow {
     }
 
     internal static void DrawTriggerDebug() {
-        using var tab = ImRaii.TabItem("触发器调试");
+        using var tab = ImRaii.TabItem("调试");
         if (!tab) return;
-        using var bar = ImRaii.TabBar("触发器调试Bar");
+        using var bar = ImRaii.TabBar("调试Bar");
         if (!bar) return;
         DrawTriggerDebugLog();
         DrawTriggerDebugTrigger();
         DrawTriggerDebugEvalTest();
         DrawTriggerDebugInternalTest();
         DrawTriggerDebugCommonExpr();
+        DrawTestSettings();
     }
 
     internal static void DrawTriggerDebugLog() {
@@ -230,68 +234,54 @@ public static partial class LWindow {
         }
     }
 
-    internal static void DrawSettingsPostnmz() {
-        using var tab = ImRaii.TabItem("鲇鱼精设置");
-        if (!tab) return;
-        var TextPort = Plugin.Instance.PostNamazuPlugin.PluginUi.TextPort.Text;
-        if (ImGui.InputText("鲇鱼精端口", ref TextPort))
-            Plugin.Instance.PostNamazuPlugin.PluginUi.TextPort.Text = TextPort;
-        ImGui.SameLine();
-        if (Plugin.Instance.PostNamazuPlugin.PluginUi.ButtonStart.Enabled)
-            if (ImGui.Button("鲇鱼精启动监听"))
-                Plugin.Instance.PostNamazuPlugin.ServerStart();
-        if (Plugin.Instance.PostNamazuPlugin.PluginUi.ButtonStop.Enabled)
-            if (ImGui.Button("鲇鱼精停止监听"))
-                Plugin.Instance.PostNamazuPlugin.ServerStop();
-        ImGui.SameLine();
-        if (ImGui.Button("清空")) Plugin.Instance.PostNamazuPlugin.PluginUi.lstMessages.Items.Clear();
-        var PostNamazuAutoStart = Plugin.Instance.PostNamazuPlugin.PluginUi.CheckAutoStart.Checked;
-        if (ImGui.Checkbox("鲇鱼精监听自动启动", ref PostNamazuAutoStart))
-            Plugin.Instance.PostNamazuPlugin.PluginUi.CheckAutoStart.Checked = PostNamazuAutoStart;
-        ImGui.Text("启用功能");
-        var iter = 1;
-        foreach (var c in Plugin.Instance.PostNamazuPlugin.PluginUi.flowLayoutActions.Controls.OfType<CheckBox>()) {
-            var cChecked = c.Checked;
-            if (ImGui.Checkbox(c.Text, ref cChecked)) {
-                c.Checked = cChecked;
-                Plugin.Instance.PostNamazuPlugin.PluginUi.ActionEnabled[c.Text] = cChecked;
-            }
-            if (iter++ != Plugin.Instance.PostNamazuPlugin.PluginUi.flowLayoutActions.Controls.Count) ImGui.SameLine();
-        }
-        ImGui.Separator();
-        var items = Plugin.Instance.PostNamazuPlugin.PluginUi.lstMessages.Items;
-        for (var i = 0; i < items.Count; i++) {
-            var item = items[i];
-            var itemId = $"## copyItem_{i}";
-            if (ImGui.Selectable($"{item}{itemId}")) {
-                ImGui.SetClipboardText(item.ToString());
-                Plugin.NotificationManager.AddNotification(new Notification {
-                    Content = "已复制"
-                });
-            }
-        }
-    }
 
     internal static void DrawSettings() {
-        using var tab = ImRaii.TabItem("设置");
+        using var tab = ImRaii.TabItem("杂项设置");
         if (!tab) return;
         using var bar = ImRaii.TabBar("设置Bar");
         if (!bar) return;
         DrawSettingsIINACT();
-        DrawSettingsTrn();
-        DrawSettingsPostnmz();
-        DrawSettingsScripts();
         DrawSettingsOpCodes();
+        DrawTTSSettings();
+    }
+
+    private static void DrawTTSSettings() {
+        using var tab = ImRaii.TabItem("文字转语音");
+        if (!tab) return;
+
+        ImGui.Spacing();
+        var useEdgeTTS = Plugin.Configuration.UseEdgeTts;
+        if (ImGui.Checkbox("使用EdgeTTS（不勾选则使用本地TTS）", ref useEdgeTTS))
+            Plugin.TextToSpeechProvider.SetUseEdgeTTS(useEdgeTTS);
+        if (useEdgeTTS) {
+            ImGui.SameLine();
+            if (ImGui.Button("打开设置")) {
+                Plugin.OpenEdgeTTSWindow();
+            }
+        }
+        var useLatihasTTS = Plugin.Configuration.UseLatihasTts;
+        if (ImGui.Checkbox("使用LatihasTTS（均不勾选则使用本地TTS）", ref useLatihasTTS))
+            Plugin.TextToSpeechProvider.SetUseLatihasTTS(useLatihasTTS);
+        ImGui.Spacing();
+        ImGui.Separator();
+        ImGui.Spacing();
     }
 
     internal static void DrawSettingsScripts() {
         using var tab = ImRaii.TabItem("脚本设置");
         if (!tab) return;
-        ImGui.Text("脚本一览(待开发)");
+        ImGui.PushStyleColor(ImGuiCol.Text, ImGuiColors.DalamudYellow);
+        ImGui.Text("该设置仍在开发，危险性中等，请自行斟酌使用。");
+        ImGui.PopStyleColor(1);
+        ImGui.Text("支持加载实现IActPluginV1接口的脚本文件(可能支持编译好的dll，没有测试过)。");
+        ImGui.Text("原版ACT插件支持较为有限，银山雀儿，抹茶等无法载入，请用Sonar等插件替换。");
+        ImGui.Text("IScriptBase接口是IActPluginV1接口的扩展，用于快速创建触发器与绘图，可以在https://github.com/Latihas/IINACTEx/tree/cn/TrnDevEnv查看相关开发样例。");
+        ImGui.PushStyleColor(ImGuiCol.Text, ImGuiColors.ParsedGreen);
+        ImGui.Text("“我写的可是ACT插件，我肯定是绿玩。”");
+        ImGui.PopStyleColor(1);
         ImGui.Text(string.Join(",", ActGlobals.oFormActMain.ActPlugins.Select(x => x.pluginFileName)));
         ImGui.SameLine();
         if (ImGui.Button("打开脚本文件夹")) Start(Plugin.Instance.PluginActScriptDirectory);
-        //TODO 检测重复 GetFileNameWithoutExtension
         NewTable(["名称", "状态", "操作"], Directory.GetFiles(Plugin.Instance.PluginActScriptDirectory, "*.cs", SearchOption.TopDirectoryOnly)
             .Concat(Directory.GetFiles(Plugin.Instance.PluginActScriptDirectory, "*.dll", SearchOption.TopDirectoryOnly))
             .Select(Path.GetFileName).Cast<string>().ToArray(), [
@@ -324,7 +314,7 @@ public static partial class LWindow {
         ]);
     }
 
-    internal static void DrawSettingsOpCodes() {
+    private static void DrawSettingsOpCodes() {
         using var tab = ImRaii.TabItem("OpCodes设置");
         if (!tab) return;
         ImGui.PushStyleColor(ImGuiCol.Text, Color.LRed);

@@ -161,6 +161,7 @@ public sealed class Plugin : IDalamudPlugin {
         WindowSystem.AddWindow(TriggernometryLogView = new LWindow.TriggernometryLogView());
         WindowSystem.AddWindow(ACTLogView = new LWindow.ACTLogView());
         Log.Warning("Windows Inited");
+        IpcProviders = new IpcProviders(PluginInterface);
         var info = PluginInterface.GetType().Assembly.GetType("Dalamud.Service`1", true)!.MakeGenericType(PluginInterface.GetType().Assembly.GetType("Dalamud.Dalamud", true)!).GetMethod("Get")!
             .Invoke(null, BindingFlags.Default, null, [], null);
         DalamudStartInfo = info!.GetType().GetField("StartInfo", AllFlags)?.GetValue(info)
@@ -169,8 +170,26 @@ public sealed class Plugin : IDalamudPlugin {
         Log.Warning("DalamudStartInfo Inited");
         FfxivActPluginWrapper = new FfxivActPluginWrapper();
         Log.Warning("FfxivActPlugin Inited");
-        IpcProviders = new IpcProviders(PluginInterface);
-        OverlayPlugin = InitOverlayPluginTrn();
+        var container = new TinyIoCContainer();
+        var logger = new Logger(Log);
+        container.Register(logger);
+        container.Register<ILogger>(logger);
+        container.Register(HttpClient);
+        container.Register(FileDialogManager);
+        container.Register(PluginInterface);
+        OverlayPlugin = new PluginMain(PluginAssemblyDirectory, logger, container);
+        container.Register(OverlayPlugin);
+        ActGlobals.oFormActMain.OverlayPluginContainer = container;
+        opcodesjsoncReplaced = opcodesjsoncCanReplace;
+        OverlayPlugin.InitPlugin(PluginConfigDirectory, opcodesjsoncCanReplace ? File.ReadAllText(opcodesjsoncPath) : null);
+        if (opcodesjsoncReplaced) Log.Warning("opcodesjsonc Replaced");
+        var registry = container.Resolve<Registry>();
+        MainWindow.OverlayPresets = registry.OverlayPresets;
+        MainWindow.Server = WebSocketServer = container.Resolve<ServerController>();
+        IpcProviders.Server = WebSocketServer;
+        IpcProviders.OverlayIpcHandler = container.Resolve<IpcHandlerController>();
+        MainWindow.OverlayPluginConfig = container.Resolve<IPluginConfig>();
+        OverlayWindow.Init(WebSocketServer);
         Log.Warning("OverlayPlugin Inited");
         ActGlobals.oFormActMain.TriggernometryPlugin = TriggernometryProxyPlugin = new ProxyPlugin();
         TriggernometryProxyPlugin.InitPlugin(this, PluginInterface, Log, ClientState, Framework, GameInteropProvider, ObjectTable, GameGui);
@@ -222,15 +241,20 @@ public sealed class Plugin : IDalamudPlugin {
             Log.Warning($"正在加载IActPluginV1 {plugin.pluginFileName}");
             ActGlobals.oFormActMain.ActPlugins.Add(plugin);
             plugin.pluginObj.InitPlugin(plugin.tpPluginSpace, plugin.lblPluginStatus);
+            Configuration.ActScriptsEnabled.Add(plugin.pluginFileName);  Configuration.Save();
         }
         catch (Exception e) {
             Log.Error(e.ToString());
         }
     }
 
-    public static void DeInitIActPluginV1(ActPluginData plugin) {
+    public static void DeInitIActPluginV1(ActPluginData plugin, bool preserveEnableState = false) {
         try {
             Log.Warning($"正在卸载IActPluginV1 {plugin.pluginFileName}");
+            if (!preserveEnableState) {
+                Configuration.ActScriptsEnabled.Remove(plugin.pluginFileName);
+                Configuration.Save();
+            }
             plugin.pluginObj.DeInitPlugin();
         }
         catch (Exception e) {
@@ -288,7 +312,7 @@ public sealed class Plugin : IDalamudPlugin {
         CommandManager.RemoveHandler(OverlayCommandName);
         RealPlugin.Instance.DeInitAura();
         while (ActGlobals.oFormActMain.ActPlugins.Count > 0)
-            DeInitIActPluginV1(ActGlobals.oFormActMain.ActPlugins.Last());
+            DeInitIActPluginV1(ActGlobals.oFormActMain.ActPlugins.Last(), true);
         ActGlobals.Dispose();
     }
 
@@ -297,32 +321,6 @@ public sealed class Plugin : IDalamudPlugin {
         PostNamazuPlugin.DoAction("command", "/bw overlay 设置 reload");
     }
 
-    private PluginMain InitOverlayPluginTrn() {
-        var container = new TinyIoCContainer();
-
-        var logger = new Logger(Log);
-        container.Register(logger);
-        container.Register<ILogger>(logger);
-
-        container.Register(HttpClient);
-        container.Register(FileDialogManager);
-        container.Register(PluginInterface);
-
-        var overlayPlugin = new PluginMain(PluginAssemblyDirectory, logger, container);
-        container.Register(overlayPlugin);
-        ActGlobals.oFormActMain.OverlayPluginContainer = container;
-        opcodesjsoncReplaced = opcodesjsoncCanReplace;
-        overlayPlugin.InitPlugin(PluginConfigDirectory, opcodesjsoncCanReplace ? File.ReadAllText(opcodesjsoncPath) : null);
-        if (opcodesjsoncReplaced) Log.Warning("opcodesjsonc Replaced");
-        var registry = container.Resolve<Registry>();
-        MainWindow.OverlayPresets = registry.OverlayPresets;
-        MainWindow.Server = WebSocketServer = container.Resolve<ServerController>();
-        IpcProviders.Server = WebSocketServer;
-        IpcProviders.OverlayIpcHandler = container.Resolve<IpcHandlerController>();
-        MainWindow.OverlayPluginConfig = container.Resolve<IPluginConfig>();
-        OverlayWindow.Init(WebSocketServer);
-        return overlayPlugin;
-    }
 
     private void OnCommand(string command, string args) {
         if (command == OverlayCommandName) {
