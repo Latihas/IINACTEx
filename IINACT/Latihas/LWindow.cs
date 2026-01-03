@@ -229,6 +229,12 @@ public static partial class LWindow {
                     if (cChecked) RealPlugin.Instance.cfg.PostnamazuModuleDisabled.Remove(name);
                     else RealPlugin.Instance.cfg.PostnamazuModuleDisabled.Add(name);
                 }
+                if (name == "VfxModule") {
+                    ImGui.Indent();
+                    var UseImGui4VfxModule = RealPlugin.Instance.cfg.UseImGui4VfxModule;
+                    if (ImGui.Checkbox(name, ref UseImGui4VfxModule)) RealPlugin.Instance.cfg.UseImGui4VfxModule = UseImGui4VfxModule;
+                    ImGui.Unindent();
+                }
                 ImGui.Unindent();
             }
         }
@@ -248,7 +254,6 @@ public static partial class LWindow {
     private static void DrawTTSSettings() {
         using var tab = ImRaii.TabItem("文字转语音");
         if (!tab) return;
-
         ImGui.Spacing();
         var useEdgeTTS = Plugin.Configuration.UseEdgeTts;
         if (ImGui.Checkbox("使用EdgeTTS（不勾选则使用本地TTS）", ref useEdgeTTS))

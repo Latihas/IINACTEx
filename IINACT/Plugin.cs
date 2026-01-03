@@ -236,12 +236,15 @@ public sealed class Plugin : IDalamudPlugin {
         Log.Warning("IINACTEx Inited");
     }
 
-    public static void InitIActPluginV1(ActPluginData plugin) {
+    public static void InitIActPluginV1(ActPluginData plugin, bool preserveEnableState = false) {
         try {
             Log.Warning($"正在加载IActPluginV1 {plugin.pluginFileName}");
             ActGlobals.oFormActMain.ActPlugins.Add(plugin);
             plugin.pluginObj.InitPlugin(plugin.tpPluginSpace, plugin.lblPluginStatus);
-            Configuration.ActScriptsEnabled.Add(plugin.pluginFileName);  Configuration.Save();
+            if (!preserveEnableState) {
+                Configuration.ActScriptsEnabled.Add(plugin.pluginFileName);
+                Configuration.Save();
+            }
         }
         catch (Exception e) {
             Log.Error(e.ToString());
@@ -277,7 +280,7 @@ public sealed class Plugin : IDalamudPlugin {
             var isIScriptBase = scriptTypes.Any(type => typeof(IScriptBase).IsAssignableFrom(type));
             foreach (var type in scriptTypes)
                 if (Activator.CreateInstance(type) is IActPluginV1 scriptInstance)
-                    InitIActPluginV1(new ActPluginData(name, scriptInstance, isIScriptBase));
+                    InitIActPluginV1(new ActPluginData(name, scriptInstance, isIScriptBase),true);
         }
         catch (Exception ex) {
             Log.Warning($"ActScript {name} 载入失败: {ex}");
@@ -298,6 +301,7 @@ public sealed class Plugin : IDalamudPlugin {
     public const BindingFlags AllFlags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static;
 
     public void Dispose() {
+        Configuration.Save();
         TextToSpeechProvider.Dispose();
         ClientState.EnterPvP -= EnterPvP;
         ClientState.LeavePvP -= LeavePvP;
