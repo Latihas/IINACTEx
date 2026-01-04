@@ -7,8 +7,8 @@ public class ScriptYd : IScriptBase {
     public override uint[] TerritoryIds() => [779, 1318];
     private string ydStatus = "";
     public override List<TargetIcon> TargetIconList => [
-        new(TTS("点你分散", 1000), Me_HexID, 0x0017),
-        new(TTS("点你陨石"), Me_HexID, 0x0083)
+        new(TTS("点你分散", 1000), Me_HexID_F, 0x0017),
+        new(TTS("点你陨石"), Me_HexID_F, 0x0083)
     ];
     public override List<StartsCasting> StartsCastingList => [
         new(TTS("五加三"), 0xB165),
@@ -32,7 +32,7 @@ public class ScriptYd : IScriptBase {
     public override List<StatusAdd> StatusAddList => [
         new(() => ydStatus = "满月流", 0x5FF),
         new(() => ydStatus = "新月流", 0x600),
-        new(TTS("去黑"), 0x602, TargetId: Me_HexID, Count: 0x04),
-        new(TTS("去白"), 0x603, TargetId: Me_HexID, Count: 0x04)
+        new(TTS("去黑"), 0x602, TargetId: Me_HexID_F, Count: 0x04),
+        new(TTS("去白"), 0x603, TargetId: Me_HexID_F, Count: 0x04)
     ];
 }

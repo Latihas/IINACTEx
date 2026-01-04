@@ -35,4 +35,7 @@
       <Private>false</Private>
     </Reference>
   </ItemGroup>
+  <ItemGroup>
+    <Compile Exclude="TesVfx.cs"/>
+  </ItemGroup>
 </Project>

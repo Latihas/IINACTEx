@@ -41,7 +41,7 @@ public static partial class LWindow {
             UserInterface.BuildTriggerTreeFromConfiguration(null, null);
         ImGui.SameLine();
         if (ImGui.Button("保存设置") && !RealPlugin.Instance.configBroken)
-            RealPlugin.Instance.SaveCurrentConfig();
+            Task.Run(RealPlugin.Instance.SaveCurrentConfig);
         ImGui.Text("由于现版本不稳定，不会自动保存配置文件。请导入或修改过任何触发器/配置/...后手动保存。");
         ImGui.ProgressBar(RealPlugin.UProgress / 100f, new Vector2(300, 24), RealPlugin.UState);
         UserInterface.BuildRenderTreeFromConfiguration(null, null, false);
@@ -77,7 +77,7 @@ public static partial class LWindow {
         DrawTestSettings();
     }
 
-    internal static void DrawTriggerDebugLog() {
+    private static void DrawTriggerDebugLog() {
         using var tab = ImRaii.TabItem("日志");
         if (!tab) return;
         var DebugLevel = (int)RealPlugin.Instance.cfg.DebugLevel;
@@ -95,7 +95,7 @@ public static partial class LWindow {
         if (ImGui.Button("清空日志队列")) RealPlugin.Instance.ClearLog();
     }
 
-    internal static void DrawTriggerDebugInternalTest() {
+    private static void DrawTriggerDebugInternalTest() {
         using var tab = ImRaii.TabItem("内置测试表达式");
         if (!tab) return;
         ImGui.Text("内置测试表达式");
@@ -111,7 +111,7 @@ public static partial class LWindow {
 
     private static string Sbe = "", Sb = "";
 
-    internal static void DrawTriggerDebugEvalTest() {
+    private static void DrawTriggerDebugEvalTest() {
         using var tab = ImRaii.TabItem("评估");
         if (!tab) return;
         ImGui.SetNextItemWidth(-1);
@@ -133,7 +133,7 @@ public static partial class LWindow {
         if (!string.IsNullOrEmpty(Sbe)) ImGui.Text(Sbe);
     }
 
-    internal static void DrawTriggerDebugCommonExpr() {
+    private static void DrawTriggerDebugCommonExpr() {
         using var tab = ImRaii.TabItem("常用表达式");
         if (!tab) return;
         ImGui.Text("${_systemtime} = " + TestContext.ExpandVariables(null, null, false, "${_systemtime}"));
@@ -169,32 +169,27 @@ public static partial class LWindow {
         ImGui.Text("...蓝笔了不写了");
     }
 
-    internal static void DrawTriggerDebugTrigger() {
+    private static void DrawTriggerDebugTrigger() {
         using var tab = ImRaii.TabItem("触发器验证");
         if (!tab) return;
         ImGui.InputText("触发器Id", ref TestTriggerId);
         ImGui.SameLine();
         if (ImGui.Button("验证触发器")) {
             Sb = $"总量: {RealPlugin.Instance.Triggers.Count}";
-            foreach (var t in RealPlugin.Instance.Triggers)
-                if (t.Id.ToString() == TestTriggerId)
-                    Sb += "存活于Triggers.";
-            foreach (var t in RealPlugin.Instance.ActiveTextTriggers)
-                if (t.Id.ToString() == TestTriggerId)
-                    Sb += "存活于ActiveTextTriggers.";
-            foreach (var t in RealPlugin.Instance.ActiveACTTriggers)
-                if (t.Id.ToString() == TestTriggerId)
-                    Sb += "存活于ActiveACTTriggers.";
-            foreach (var t in RealPlugin.Instance.ActiveEndpointTriggers)
-                if (t.Id.ToString() == TestTriggerId)
-                    Sb += "存活于ActiveEndpointTriggers.";
-            foreach (var t in RealPlugin.Instance.ActiveFFXIVNetworkTriggers)
-                if (t.Id.ToString() == TestTriggerId)
-                    Sb += "存活于ActiveFFXIVNetworkTriggers.";
+            foreach (var t in RealPlugin.Instance.Triggers.Where(t => t.Id.ToString() == TestTriggerId))
+                Sb += "存活于Triggers.";
+            foreach (var t in RealPlugin.Instance.ActiveTextTriggers.Where(t => t.Id.ToString() == TestTriggerId))
+                Sb += "存活于ActiveTextTriggers.";
+            foreach (var t in RealPlugin.Instance.ActiveACTTriggers.Where(t => t.Id.ToString() == TestTriggerId))
+                Sb += "存活于ActiveACTTriggers.";
+            foreach (var t in RealPlugin.Instance.ActiveEndpointTriggers.Where(t => t.Id.ToString() == TestTriggerId))
+                Sb += "存活于ActiveEndpointTriggers.";
+            foreach (var t in RealPlugin.Instance.ActiveFFXIVNetworkTriggers.Where(t => t.Id.ToString() == TestTriggerId))
+                Sb += "存活于ActiveFFXIVNetworkTriggers.";
         }
     }
 
-    internal static void DrawSettingsIINACT() {
+    private static void DrawSettingsIINACT() {
         using var tab = ImRaii.TabItem("IINACT设置");
         if (!tab) return;
         var ShowWindowOnInit = Plugin.Configuration.ShowWindowOnInit;
@@ -214,8 +209,8 @@ public static partial class LWindow {
         }
     }
 
-    internal static void DrawSettingsTrn() {
-        using var tab = ImRaii.TabItem("Trn设置");
+    private static void DrawSettingsTrn() {
+        using var tab = ImRaii.TabItem("ModuleBase设置");
         if (!tab) return;
         var EnableModuleBase = RealPlugin.Instance.cfg.EnableModuleBase;
         if (ImGui.Checkbox("启用ModuleBase(极有可能炸游戏的功能，如绘图等。尤其是VfxModule，用于管理绘图极其容易爆炸，禁用掉可以大幅提升稳定性)", ref EnableModuleBase))
@@ -229,12 +224,12 @@ public static partial class LWindow {
                     if (cChecked) RealPlugin.Instance.cfg.PostnamazuModuleDisabled.Remove(name);
                     else RealPlugin.Instance.cfg.PostnamazuModuleDisabled.Add(name);
                 }
-                if (name == "VfxModule") {
-                    ImGui.Indent();
-                    var UseImGui4VfxModule = RealPlugin.Instance.cfg.UseImGui4VfxModule;
-                    if (ImGui.Checkbox(name, ref UseImGui4VfxModule)) RealPlugin.Instance.cfg.UseImGui4VfxModule = UseImGui4VfxModule;
-                    ImGui.Unindent();
-                }
+                // if (name == "VfxModule" && cChecked) {
+                //     ImGui.Indent();
+                //     var UseImGui4VfxModule = RealPlugin.Instance.cfg.UseImGui4VfxModule;
+                //     if (ImGui.Checkbox("使用ImGui替代", ref UseImGui4VfxModule)) RealPlugin.Instance.cfg.UseImGui4VfxModule = UseImGui4VfxModule;
+                //     ImGui.Unindent();
+                // }
                 ImGui.Unindent();
             }
         }

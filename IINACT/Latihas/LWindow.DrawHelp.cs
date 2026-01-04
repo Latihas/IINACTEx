@@ -18,7 +18,8 @@ public static partial class LWindow {
         ImGui.Text("重要提醒！！！请一定要先看完介绍再使用，本插件仍然不是很稳定，有炸游戏风险");
         ImGui.Text("重要提醒！！！请一定要先看完介绍再使用，本插件仍然不是很稳定，有炸游戏风险");
         ImGui.Text("重要提醒！！！请一定要先看完介绍再使用，本插件仍然不是很稳定，有炸游戏风险");
-        ImGui.Text("其实最会炸游戏的是VfxModule，Trigernometry-Trn设置-启用ModuleBase-取消VfxModule勾选即可禁用；或者启用ImGui替代绘制模式，但是该模式适配可能并不完全，仍然有炸游戏的可能。");
+        ImGui.Text("其实最会炸游戏的是VfxModule，Trigernometry-ModuleBase设置-启用ModuleBase-取消VfxModule勾选即可禁用");
+        // ImGui.Text("或者启用ImGui替代绘制模式，但是该模式适配可能并不完全，仍然有炸游戏的可能。");
         ImGui.PopStyleColor(1);
         if (ImGui.CollapsingHeader("更新日志", ImGuiTreeNodeFlags.DefaultOpen)) {
             ImGui.Text("多了一个已知问题bug。");
@@ -64,10 +65,8 @@ public static partial class LWindow {
             ImGui.Unindent();
         }
         if (ImGui.CollapsingHeader("TODO", ImGuiTreeNodeFlags.DefaultOpen)) {
-            ImGui.Text("触发器生成器");
             ImGui.Text("触发器搜索器");
-            ImGui.Text("完善脚本");
-            ImGui.Text("VfxModule修复");
+            ImGui.Text("(不一定会完成)ImGui替代Vfx绘制");
         }
         if (ImGui.CollapsingHeader("项目介绍")) {
             ImGui.Text("修改IINACT的初衷旨在尽可能满足日常对ACT的基本需求，替代ACT，假装自己是西瓜玩。");
