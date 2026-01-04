@@ -22,3 +22,6 @@
 	path = Unscrambler
 	url = https://github.com/Latihas/Unscrambler
 	branch = main
+[submodule "TrnDevEnv"]
+	path = TrnDevEnv
+	url = https://github.com/Latihas/TrnDevEnv
