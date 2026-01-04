@@ -12,7 +12,6 @@ using Dalamud.Interface.Windowing;
 using Dalamud.IoC;
 using Dalamud.Plugin;
 using Dalamud.Plugin.Services;
-using IINACT.Latihas;
 using IINACT.Latihas.Overlay;
 using IINACT.Network;
 using IINACT.TextToSpeech;
@@ -26,6 +25,7 @@ using Triggernometry;
 using Triggernometry.Core;
 using Triggernometry.PluginBridges.BridgeNamazu;
 using Triggernometry.PScript;
+using static IINACT.Latihas.LWindow;
 
 namespace IINACT;
 
@@ -64,21 +64,20 @@ public sealed class Plugin : IDalamudPlugin {
     public PluginMain OverlayPlugin { get; set; }
     private ServerController? WebSocketServer { get; set; }
     internal string OverlayPluginStatus => OverlayPlugin.Status;
-    public ProxyPlugin TriggernometryProxyPlugin;
-    public PostNamazu.PostNamazu PostNamazuPlugin;
-    public dynamic? DalamudStartInfo;
+    public readonly ProxyPlugin TriggernometryProxyPlugin;
+    public readonly PostNamazu.PostNamazu PostNamazuPlugin;
+    public readonly dynamic? DalamudStartInfo;
     private PluginLogTraceListener PluginLogTraceListener { get; }
     private HttpClient HttpClient { get; }
-
-    public LWindow.TriggerWindow TriggerWindow = null!;
-    public LWindow.FolderWindow FolderWindow = null!;
-    public LWindow.ActionWindow ActionWindow = null!;
-    public LWindow.ExportWindow ExportWindow = null!;
-    public LWindow.ImportWindow ImportWindow = null!;
-    public LWindow.RepoWindow RepoWindow = null!;
-    public LWindow.TriggernometryLogView TriggernometryLogView = null!;
-    public LWindow.ACTLogView ACTLogView = null!;
-    public OverlayWindow OverlayWindow = null!;
+    public readonly TriggerWindow TriggerWindow;
+    public readonly FolderWindow FolderWindow;
+    public readonly ActionWindow ActionWindow;
+    public readonly ExportWindow ExportWindow;
+    public readonly ImportWindow ImportWindow;
+    public readonly RepoWindow RepoWindow;
+    public readonly TriggernometryLogView TriggernometryLogView;
+    public readonly ACTLogView ACTLogView;
+    public readonly OverlayWindow OverlayWindow;
 
     internal static EdgeTTSWindow EdgeTTSWindow = null!;
     public static Plugin Instance;
@@ -115,7 +114,6 @@ public sealed class Plugin : IDalamudPlugin {
         if (opcodestxtCanReplace) {
             try {
                 var d1 = OpcodeManager.Instance._opcodes[region].ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
-                ;
                 var d2 = OpcodeManager.ConvertOpCode(File.ReadAllText(opcodestxtPath));
                 OpcodeManager.Instance.SetRegion(region, d2);
                 opcodestxtDiff = d2
@@ -152,14 +150,14 @@ public sealed class Plugin : IDalamudPlugin {
         WindowSystem.AddWindow(MainWindow = new MainWindow());
         WindowSystem.AddWindow(OverlayWindow = new OverlayWindow());
         WindowSystem.AddWindow(EdgeTTSWindow = new EdgeTTSWindow(TextToSpeechProvider.GetEdgeTTSManager()!));
-        WindowSystem.AddWindow(TriggerWindow = new LWindow.TriggerWindow());
-        WindowSystem.AddWindow(FolderWindow = new LWindow.FolderWindow());
-        WindowSystem.AddWindow(ActionWindow = new LWindow.ActionWindow());
-        WindowSystem.AddWindow(ExportWindow = new LWindow.ExportWindow());
-        WindowSystem.AddWindow(ImportWindow = new LWindow.ImportWindow());
-        WindowSystem.AddWindow(RepoWindow = new LWindow.RepoWindow());
-        WindowSystem.AddWindow(TriggernometryLogView = new LWindow.TriggernometryLogView());
-        WindowSystem.AddWindow(ACTLogView = new LWindow.ACTLogView());
+        WindowSystem.AddWindow(TriggerWindow = new TriggerWindow());
+        WindowSystem.AddWindow(FolderWindow = new FolderWindow());
+        WindowSystem.AddWindow(ActionWindow = new ActionWindow());
+        WindowSystem.AddWindow(ExportWindow = new ExportWindow());
+        WindowSystem.AddWindow(ImportWindow = new ImportWindow());
+        WindowSystem.AddWindow(RepoWindow = new RepoWindow());
+        WindowSystem.AddWindow(TriggernometryLogView = new TriggernometryLogView());
+        WindowSystem.AddWindow(ACTLogView = new ACTLogView());
         Log.Warning("Windows Inited");
         IpcProviders = new IpcProviders(PluginInterface);
         var info = PluginInterface.GetType().Assembly.GetType("Dalamud.Service`1", true)!.MakeGenericType(PluginInterface.GetType().Assembly.GetType("Dalamud.Dalamud", true)!).GetMethod("Get")!
@@ -192,7 +190,7 @@ public sealed class Plugin : IDalamudPlugin {
         OverlayWindow.Init(WebSocketServer);
         Log.Warning("OverlayPlugin Inited");
         ActGlobals.oFormActMain.TriggernometryPlugin = TriggernometryProxyPlugin = new ProxyPlugin();
-        TriggernometryProxyPlugin.InitPlugin(this, PluginInterface, Log, ClientState, Framework, GameInteropProvider, ObjectTable, GameGui,SigScanner);
+        TriggernometryProxyPlugin.InitPlugin(this, PluginInterface, Log, ClientState, Framework, GameInteropProvider, ObjectTable, GameGui, SigScanner);
         RealPlugin.Instance.InitAura();
         ActGlobals.oFormActMain.PostNamazuPlugin = PostNamazuPlugin = new PostNamazu.PostNamazu();
         PostNamazuPlugin.InitPlugin(PluginInterface, Log, SigScanner);
@@ -224,10 +222,10 @@ public sealed class Plugin : IDalamudPlugin {
         ActGlobals.oFormActMain.ActPlugins.Add(new ActPluginData("_Triggernometry", TriggernometryProxyPlugin, false));
         foreach (var rt in Directory.GetFiles(PluginActScriptDirectory, "*.cs", SearchOption.TopDirectoryOnly).Select(Path.GetFileName).Cast<string>())
             if (Configuration.ActScriptsEnabled.Contains(rt))
-                LoadPScript(rt);
+                LoadPScript(rt, preserveEnableState: true);
         foreach (var rt in Directory.GetFiles(PluginActScriptDirectory, "*.dll", SearchOption.TopDirectoryOnly).Select(Path.GetFileName).Cast<string>())
             if (Configuration.ActScriptsEnabled.Contains(rt))
-                LoadIActPluginV1(rt);
+                LoadIActPluginV1(rt, preserveEnableState: true);
         Log.Warning("ACT Plugin Inited");
         if (Directory.Exists(Path.Combine(PluginConfigDirectory, "cactbot"))) RefreshBw();
         if (Configuration.ShowWindowOnInit) MainWindow.Toggle();
@@ -266,7 +264,7 @@ public sealed class Plugin : IDalamudPlugin {
         ActGlobals.oFormActMain.ActPlugins.Remove(plugin);
     }
 
-    public static void LoadIActPluginV1(string name, string? dllPath = null) {
+    public static void LoadIActPluginV1(string name, string? dllPath = null, bool preserveEnableState = false) {
         try {
             Assembly asm;
             using (var memoryStream = new MemoryStream(File.ReadAllBytes(dllPath ?? Path.Combine(Instance.PluginActScriptDirectory, name)))) {
@@ -280,18 +278,18 @@ public sealed class Plugin : IDalamudPlugin {
             var isIScriptBase = scriptTypes.Any(type => typeof(IScriptBase).IsAssignableFrom(type));
             foreach (var type in scriptTypes)
                 if (Activator.CreateInstance(type) is IActPluginV1 scriptInstance)
-                    InitIActPluginV1(new ActPluginData(name, scriptInstance, isIScriptBase),true);
+                    InitIActPluginV1(new ActPluginData(name, scriptInstance, isIScriptBase), preserveEnableState);
         }
         catch (Exception ex) {
             Log.Warning($"ActScript {name} 载入失败: {ex}");
         }
     }
 
-    public static void LoadPScript(string name) {
+    public static void LoadPScript(string name, bool preserveEnableState = false) {
         try {
             var rs = File.ReadAllText(Path.Combine(Instance.PluginActScriptDirectory, name));
             if (CSharpScriptCompiler.CompileScript(rs, false))
-                LoadIActPluginV1(name, Path.Combine(Instance.PluginConfigDirectory, "Scripts", Path.GetFileName(CSharpScriptCompiler.GetScriptDllPath(rs))));
+                LoadIActPluginV1(name, Path.Combine(Instance.PluginConfigDirectory, "Scripts", Path.GetFileName(CSharpScriptCompiler.GetScriptDllPath(rs))), preserveEnableState);
         }
         catch (Exception ex) {
             Log.Warning($"ActScript {name} 载入失败: {ex}");
@@ -324,7 +322,6 @@ public sealed class Plugin : IDalamudPlugin {
         PostNamazuPlugin.DoAction("command", "/bw overlay 时间轴 reload");
         PostNamazuPlugin.DoAction("command", "/bw overlay 设置 reload");
     }
-
 
     private void OnCommand(string command, string args) {
         if (command == OverlayCommandName) {
@@ -388,6 +385,6 @@ public sealed class Plugin : IDalamudPlugin {
     }
 
     internal static void OpenEdgeTTSWindow() {
-        EdgeTTSWindow?.Show();
+        EdgeTTSWindow.Show();
     }
 }

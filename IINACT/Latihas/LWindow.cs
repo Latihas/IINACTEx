@@ -8,9 +8,7 @@ using System.Text.Json.Nodes;
 using Advanced_Combat_Tracker;
 using Dalamud.Bindings.ImGui;
 using Dalamud.Interface.Colors;
-using Dalamud.Interface.ImGuiNotification;
 using Dalamud.Interface.Utility.Raii;
-using IINACT.Windows;
 using Triggernometry;
 using Triggernometry.Core;
 using Triggernometry.Core.Serialization;
@@ -74,7 +72,8 @@ public static partial class LWindow {
         DrawTriggerDebugEvalTest();
         DrawTriggerDebugInternalTest();
         DrawTriggerDebugCommonExpr();
-        DrawTestSettings();
+        DrawTestIINACTSettings();
+        DrawTestDrawSettings();
     }
 
     private static void DrawTriggerDebugLog() {
@@ -270,6 +269,9 @@ public static partial class LWindow {
     internal static void DrawSettingsScripts() {
         using var tab = ImRaii.TabItem("脚本设置");
         if (!tab) return;
+        if(ImGui.Button("点击查看ACT日志教程"))Start("https://github.com/MnFeN/ACT_Tech_Guide/blob/main/7.0%20ACT%20%E6%97%A5%E5%BF%97%E6%8C%87%E5%8D%97.md");
+       ImGui.SameLine();
+        if(ImGui.Button("点击查看IINACTEx脚本教程"))Start("https://github.com/Latihas/TrnDevEnv");
         ImGui.PushStyleColor(ImGuiCol.Text, ImGuiColors.DalamudYellow);
         ImGui.Text("该设置仍在开发，危险性中等，请自行斟酌使用。");
         ImGui.PopStyleColor(1);

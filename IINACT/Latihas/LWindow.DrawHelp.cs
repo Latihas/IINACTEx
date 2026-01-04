@@ -4,6 +4,7 @@ using Dalamud.Interface.Utility.Raii;
 using Triggernometry;
 using Triggernometry.Core;
 using Triggernometry.Expressions.Tests;
+using static Triggernometry.PScript.ScriptUtils;
 
 namespace IINACT.Latihas;
 
@@ -65,7 +66,6 @@ public static partial class LWindow {
             ImGui.Unindent();
         }
         if (ImGui.CollapsingHeader("TODO", ImGuiTreeNodeFlags.DefaultOpen)) {
-            ImGui.Text("触发器搜索器");
             ImGui.Text("(不一定会完成)ImGui替代Vfx绘制");
         }
         if (ImGui.CollapsingHeader("项目介绍")) {
@@ -143,7 +143,7 @@ public static partial class LWindow {
     private static readonly BasicTest Test1 = new();
     private static readonly FunctionTest Test2 = new();
 
-    internal static void DrawTestSettings() {
+    private static void DrawTestIINACTSettings() {
         using var tab = ImRaii.TabItem("IINACT");
         if (!tab) return;
         if (ImGui.Button("打开插件目录"))
@@ -168,5 +168,16 @@ public static partial class LWindow {
         ImGui.InputText("## 测试TTS", ref TestTts);
         ImGui.SameLine();
         if (ImGui.Button("测试TTS")) ActGlobals.oFormActMain.TTS(TestTts);
+    }
+
+    private static void DrawTestDrawSettings() {
+        using var tab = ImRaii.TabItem("绘图");
+        if (!tab) return;
+        ImGui.Text("均持续5s");
+        if (ImGui.Button("以自己为中心绘制半径5的圆")) DrawShape(new IGCircle(Me_Position, 5, 5000));
+        if (ImGui.Button("以自己为中心绘制半径5的圆(不动)")) DrawShape(new IGCircle(Me_Position(), 5, 5000));
+        if (ImGui.Button("以自己为中心绘制半径7.5, 90度的扇形，随面向改变")) DrawShape(new IGCone(Me_Position, 7.5, Me_Rotation, Deg2Rad(90), 5000));
+        if (ImGui.Button("以自己为中心绘制半径10, 60度的三角形(不动)")) DrawShape(new IGCone(Me_Position(), 10, Me_Rotation(), Deg2Rad(60), 5000, 1));
+        if (ImGui.Button("以自己为中心绘制外径20, 内径10的环形")) DrawShape(new IGRing(Me_Position, 20, 10, 5000));
     }
 }

@@ -20,7 +20,12 @@ public partial class LWindow {
         public override void Draw() {
             ImGui.Text($"共{RealPlugin.Instance.logFlattenTrn.Count}条");
             if (ImGui.InputText("## TrnRegex", ref RegexExpr))
-                Reg = RegexExpr.IsNullOrEmpty() ? null : new Regex(RegexExpr);
+                try {
+                    Reg = RegexExpr.IsNullOrEmpty() ? null : new Regex(RegexExpr);
+                }
+                catch (Exception) {
+                    Reg = null;
+                }
             var i = 1;
             foreach (var k in check.Keys) {
                 var b = check[k];
@@ -84,7 +89,12 @@ public partial class LWindow {
 
             ImGui.Text($"共{(FromFile ? ImportLogs.Count : RealPlugin.Instance.logFlattenACT.Count)}条");
             if (ImGui.InputText("## ActRegex", ref RegexExpr))
-                Reg = RegexExpr.IsNullOrEmpty() ? null : new Regex(RegexExpr);
+                try {
+                    Reg = RegexExpr.IsNullOrEmpty() ? null : new Regex(RegexExpr);
+                }
+                catch (Exception) {
+                    Reg = null;
+                }
             try {
                 NewTable(["Log"], F(FromFile ? ImportLogs : RealPlugin.Instance.logFlattenACT), [
                     i => {
