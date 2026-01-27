@@ -25,6 +25,7 @@ using Triggernometry;
 using Triggernometry.Core;
 using Triggernometry.PluginBridges.BridgeNamazu;
 using Triggernometry.PScript;
+using TriggernometryProxy;
 using static IINACT.Latihas.LWindow;
 
 namespace IINACT;
@@ -218,8 +219,8 @@ public sealed class Plugin : IDalamudPlugin {
         ZoneDownHookManager = new ZoneDownHookManager();
         ActGlobals.oFormActMain.ActPlugins.Add(new ActPluginData("_FFXIV_ACT_Plugin", ActGlobals.oFormActMain.FfxivPlugin, false));
         ActGlobals.oFormActMain.ActPlugins.Add(new ActPluginData("_OverlayPlugin", new PluginLoader(OverlayPlugin), false));
-        ActGlobals.oFormActMain.ActPlugins.Add(new ActPluginData("_PostNamazu", PostNamazuPlugin, false));
         ActGlobals.oFormActMain.ActPlugins.Add(new ActPluginData("_Triggernometry", TriggernometryProxyPlugin, false));
+        ActGlobals.oFormActMain.ActPlugins.Add(new ActPluginData("_PostNamazu", PostNamazuPlugin, false));
         foreach (var rt in Directory.GetFiles(PluginActScriptDirectory, "*.cs", SearchOption.TopDirectoryOnly).Select(Path.GetFileName).Cast<string>())
             if (Configuration.ActScriptsEnabled.Contains(rt))
                 LoadPScript(rt, preserveEnableState: true);

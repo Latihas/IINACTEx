@@ -4,6 +4,7 @@ using Dalamud.Bindings.ImGui;
 using Dalamud.Interface.Windowing;
 using Triggernometry;
 using Triggernometry.Core;
+using TriggernometryProxy;
 
 namespace IINACT.Latihas;
 

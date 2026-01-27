@@ -20,6 +20,21 @@ public static partial class LWindow {
             var Address = Repository.Address;
             if (ImGui.InputText("链接", ref Address))
                 Repository.Address = Address;
+            var AllowProcessLaunch = Repository.AllowProcessLaunch;
+            if (ImGui.Checkbox("允许启动进程", ref AllowProcessLaunch))
+                Repository.AllowProcessLaunch = AllowProcessLaunch;
+            var AllowScriptExecution = Repository.AllowScriptExecution;
+            if (ImGui.Checkbox("允许执行代码", ref AllowScriptExecution))
+                Repository.AllowScriptExecution = AllowScriptExecution;
+            var AllowObsControl = Repository.AllowObsControl;
+            if (ImGui.Checkbox("允许控制OBS", ref AllowObsControl))
+                Repository.AllowObsControl = AllowObsControl;
+            var AllowDiskOperations = Repository.AllowDiskOperations;
+            if (ImGui.Checkbox("允许操作文件", ref AllowDiskOperations))
+                Repository.AllowDiskOperations = AllowDiskOperations;
+            var AllowWindowMessages = Repository.AllowWindowMessages;
+            if (ImGui.Checkbox("允许Windows Message", ref AllowWindowMessages))
+                Repository.AllowWindowMessages = AllowWindowMessages;
         }
 
         public void Open(Repository repository) {
