@@ -25,7 +25,7 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageReference Include="NAudio" Version="2.2.1"/>
-    <PackageReference Include="System.Speech" Version="10.0.2" />
+    <PackageReference Include="System.Speech" Version="10.0.2"/>
     <Reference Include="FFXIVClientStructs">
       <HintPath>$(DalamudLibPath)FFXIVClientStructs.dll</HintPath>
       <Private>false</Private>
@@ -75,27 +75,35 @@
   <ItemGroup>
     <Reference Include="FFXIV_ACT_Plugin">
       <HintPath>..\external_dependencies\FFXIV_ACT_Plugin.dll</HintPath>
+      <Private>False</Private>
     </Reference>
     <Reference Include="FFXIV_ACT_Plugin.Common">
       <HintPath>..\external_dependencies\SDK\FFXIV_ACT_Plugin.Common.dll</HintPath>
+      <Private>False</Private>
     </Reference>
     <Reference Include="FFXIV_ACT_Plugin.Config">
       <HintPath>..\external_dependencies\SDK\FFXIV_ACT_Plugin.Config.dll</HintPath>
+      <Private>False</Private>
     </Reference>
     <Reference Include="FFXIV_ACT_Plugin.Logfile">
       <HintPath>..\external_dependencies\SDK\FFXIV_ACT_Plugin.Logfile.dll</HintPath>
+      <Private>False</Private>
     </Reference>
     <Reference Include="FFXIV_ACT_Plugin.Memory">
       <HintPath>..\external_dependencies\SDK\FFXIV_ACT_Plugin.Memory.dll</HintPath>
+      <Private>False</Private>
     </Reference>
     <Reference Include="FFXIV_ACT_Plugin.Network">
       <HintPath>..\external_dependencies\SDK\FFXIV_ACT_Plugin.Network.dll</HintPath>
+      <Private>False</Private>
     </Reference>
     <Reference Include="FFXIV_ACT_Plugin.Parse">
       <HintPath>..\external_dependencies\SDK\FFXIV_ACT_Plugin.Parse.dll</HintPath>
+      <Private>False</Private>
     </Reference>
     <Reference Include="FFXIV_ACT_Plugin.Resource">
       <HintPath>..\external_dependencies\SDK\FFXIV_ACT_Plugin.Resource.dll</HintPath>
+      <Private>False</Private>
     </Reference>
   </ItemGroup>
   <ItemGroup>

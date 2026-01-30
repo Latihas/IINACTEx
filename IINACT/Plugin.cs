@@ -6,6 +6,7 @@ using System.Net.Http;
 using System.Reflection;
 using System.Runtime.Loader;
 using Advanced_Combat_Tracker;
+using Dalamud.Game;
 using Dalamud.Game.Command;
 using Dalamud.Interface.ImGuiFileDialog;
 using Dalamud.Interface.Windowing;
@@ -35,13 +36,13 @@ namespace IINACT;
 public sealed class Plugin : IDalamudPlugin {
     public string Name => "IINACTEx";
     public Version Version { get; }
-
+    internal const string WindowPrefix = "IINACTEx ";
     private const string MainWindowCommandName = "/iinact";
     private const string EndEncCommandName = "/endenc";
     internal const string OverlayCommandName = "/iinactoverlay";
     public readonly WindowSystem WindowSystem = new("IINACT");
     [PluginService] public static IDalamudPluginInterface PluginInterface { get; private set; }
-    [PluginService] public static ICommandManager CommandManager { get; private set; }
+    [PluginService]public static ICommandManager CommandManager { get; private set; }
     [PluginService] public static IClientState ClientState { get; private set; }
     [PluginService] public static IDataManager DataManager { get; private set; }
     [PluginService] public static IChatGui ChatGui { get; private set; }
@@ -108,10 +109,18 @@ public sealed class Plugin : IDalamudPlugin {
     }
 
     public Plugin() {
+        Version = Assembly.GetExecutingAssembly().GetName().Version!;
+        FileDialogManager = new FileDialogManager();
+        HttpClient = new HttpClient();
+        var fetchDeps =
+            new FetchDependencies.FetchDependencies(Version, PluginAssemblyDirectory,
+                DataManager.Language.ToString() == "ChineseSimplified", HttpClient);
+        fetchDeps.GetFfxivPlugin();
+        Log.Warning("Depedencies Fetched");
         Log.Warning("IINACTEx Start Init...");
         Instance = this;
         if (!Directory.Exists(PluginActScriptDirectory)) Directory.CreateDirectory(PluginActScriptDirectory);
-        var region = DataManager.Language.ToString() == "ChineseSimplified" ? GameRegion.Chinese : GameRegion.Global;
+        var region = DataManager.Language == ClientLanguage.ChineseSimplified ? GameRegion.Chinese : GameRegion.Global;
         if (opcodestxtCanReplace) {
             try {
                 var d1 = OpcodeManager.Instance._opcodes[region].ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
@@ -131,14 +140,7 @@ public sealed class Plugin : IDalamudPlugin {
         }
         else
             OpcodeManager.Instance.SetRegion(region);
-        Version = Assembly.GetExecutingAssembly().GetName().Version!;
-        FileDialogManager = new FileDialogManager();
-        HttpClient = new HttpClient();
-        var fetchDeps =
-            new FetchDependencies.FetchDependencies(Version, PluginAssemblyDirectory,
-                DataManager.Language.ToString() == "ChineseSimplified", HttpClient);
-        fetchDeps.GetFfxivPlugin();
-        Log.Warning("Depedencies Fetched");
+
         PluginLogTraceListener = new PluginLogTraceListener();
         Trace.Listeners.Add(PluginLogTraceListener);
         ActGlobals.Init();
@@ -192,7 +194,6 @@ public sealed class Plugin : IDalamudPlugin {
         Log.Warning("OverlayPlugin Inited");
         ActGlobals.oFormActMain.TriggernometryPlugin = TriggernometryProxyPlugin = new ProxyPlugin();
         TriggernometryProxyPlugin.InitPlugin(this, PluginInterface, Log, ClientState, Framework, GameInteropProvider, ObjectTable, GameGui, SigScanner);
-        RealPlugin.Instance.InitAura();
         ActGlobals.oFormActMain.PostNamazuPlugin = PostNamazuPlugin = new PostNamazu.PostNamazu();
         PostNamazuPlugin.InitPlugin(PluginInterface, Log, SigScanner);
         BridgeNamazu.InitializeModules();
@@ -312,7 +313,7 @@ public sealed class Plugin : IDalamudPlugin {
         CommandManager.RemoveHandler(MainWindowCommandName);
         CommandManager.RemoveHandler(EndEncCommandName);
         CommandManager.RemoveHandler(OverlayCommandName);
-       
+
         ActGlobals.oFormActMain.ActPlugins.RemoveAt(0);
         while (ActGlobals.oFormActMain.ActPlugins.Count > 0)
             DeInitIActPluginV1(ActGlobals.oFormActMain.ActPlugins.Last(), true);
