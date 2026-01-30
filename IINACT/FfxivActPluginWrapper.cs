@@ -1,6 +1,7 @@
 using System.Globalization;
 using System.Runtime.InteropServices;
 using Advanced_Combat_Tracker;
+using Dalamud.Game;
 using Dalamud.Game.ClientState.Conditions;
 using Dalamud.Game.Text;
 using Dalamud.Game.Text.SeStringHandling;
@@ -12,12 +13,13 @@ using FFXIV_ACT_Plugin.Logfile;
 using FFXIV_ACT_Plugin.Memory;
 using FFXIV_ACT_Plugin.Memory.MemoryProcessors;
 using FFXIV_ACT_Plugin.Memory.MemoryReader;
-using FFXIV_ACT_Plugin.Memory.Models;
+using FFXIV_ACT_Plugin.Memory.Models.Global;
 using FFXIV_ACT_Plugin.Parse;
 using FFXIV_ACT_Plugin.Resource;
 using IINACT.Network;
 using Microsoft.MinIoC;
 using ACTWrapper = FFXIV_ACT_Plugin.Common.ACTWrapper;
+using Region = FFXIV_ACT_Plugin.Config.Region;
 
 namespace IINACT;
 
@@ -138,9 +140,7 @@ public partial class FfxivActPluginWrapper : IDisposable {
 
         DataCollectionSettings = new DataCollectionSettingsEventArgs {
             LogFileFolder = ActGlobals.oFormActMain.LogFilePath,
-            UseSocketFilter = false,
-            UseWinPCap = false,
-            UseDeucalion = true,
+            RegionID = Region.Global,
             ProcessID = Environment.ProcessId
         };
         settingsMediator.DataCollectionSettings = DataCollectionSettings;
@@ -168,7 +168,8 @@ public partial class FfxivActPluginWrapper : IDisposable {
         var line2 = logFormat.FormatMemorySettings(DataCollectionSettings.ProcessID,
             DataCollectionSettings.LogFileFolder,
             DataCollectionSettings.LogAllNetworkData,
-            DataCollectionSettings.DisableCombatLog);
+            DataCollectionSettings.DisableCombatLog,
+            DataCollectionSettings.RegionID);
         logOutput.WriteLine(LogMessageType.Settings, DateTime.MinValue, line2);
 
         logOutput.CallMethod("ConfigureLogFile", null);
