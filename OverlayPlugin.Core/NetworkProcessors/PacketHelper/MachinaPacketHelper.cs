@@ -64,7 +64,7 @@ internal static class MachinaMap {
                 }, {
                     GameRegion.Korean, new ReadOnlyDictionary<string, Type>(koreanDict)
                 }, {
-                    GameRegion.Tc, new ReadOnlyDictionary<string, Type>(tcDict)
+                    GameRegion.TraditionalChinese, new ReadOnlyDictionary<string, Type>(tcDict)
                 }
             });
 
@@ -127,7 +127,7 @@ internal class MachinaRegionalizedPacketHelper<PacketType>
         if (!opcodes.TryGetValue(GameRegion.Korean, out var krOpcodes)) {
             return false;
         }
-        if (!opcodes.TryGetValue(GameRegion.Tc, out var tcOpcodes)) {
+        if (!opcodes.TryGetValue(GameRegion.TraditionalChinese, out var tcOpcodes)) {
             // @TODO: Once FFXIV_ACT_Plugin has TC opcodes for global release, remove this default
             tcOpcodes = new Dictionary<string, ushort>();
             // return false;
@@ -142,7 +142,7 @@ internal class MachinaRegionalizedPacketHelper<PacketType>
         if (!MachinaMap.GetPacketType(GameRegion.Korean, packetTypeName, out var krPacketType)) {
             return false;
         }
-        if (!MachinaMap.GetPacketType(GameRegion.Tc, packetTypeName, out var tcPacketType)) {
+        if (!MachinaMap.GetPacketType(GameRegion.TraditionalChinese, packetTypeName, out var tcPacketType)) {
             // @TODO: Once FFXIV_ACT_Plugin has TC opcodes for global release, remove this default
             tcPacketType = globalPacketType;
             // return false;
@@ -179,7 +179,7 @@ internal class MachinaRegionalizedPacketHelper<PacketType>
                 case GameRegion.Global: return global;
                 case GameRegion.Chinese: return cn;
                 case GameRegion.Korean: return kr;
-                case GameRegion.Tc: return tc;
+                case GameRegion.TraditionalChinese: return tc;
 
                 default: return global;
             }
