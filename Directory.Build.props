@@ -13,10 +13,10 @@
     <LangVersion>latest</LangVersion>
     <GenerateSatelliteAssembliesForCore>false</GenerateSatelliteAssembliesForCore>
     <Optimize>true</Optimize>
-<!--    <DebugType>none</DebugType>-->
-<!--    <DebugSymbols>false</DebugSymbols>-->
-    <DebugType>full</DebugType>
-    <DebugSymbols>true</DebugSymbols>
+    <DebugType>none</DebugType>
+    <DebugSymbols>false</DebugSymbols>
+<!--    <DebugType>full</DebugType>-->
+<!--    <DebugSymbols>true</DebugSymbols>-->
     <DalamudLibPath>$(appdata)\XIVLauncherCN\addon\Hooks\dev\</DalamudLibPath>
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
   </PropertyGroup>

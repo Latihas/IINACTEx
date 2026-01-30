@@ -23,47 +23,11 @@ public static partial class LWindow {
         // ImGui.Text("或者启用ImGui替代绘制模式，但是该模式适配可能并不完全，仍然有炸游戏的可能。");
         ImGui.PopStyleColor(1);
         if (ImGui.CollapsingHeader("更新日志", ImGuiTreeNodeFlags.DefaultOpen)) {
-            ImGui.Text("多了一个已知问题bug。");
+            ImGui.Text("修复了大量bug。");
         }
         var s = ImGui.CollapsingHeader("已知问题(没定位到问题所在，可以提Pr之类的协助我修复。)", ImGuiTreeNodeFlags.DefaultOpen);
         if (s) {
-            ImGui.Text("插件加载的第一次有时会加载失败，类似于下面，涉及解析插件的初始化，重新加载即可。彻底解决需要重启XIVLauncher。");
-            ImGui.Text("这个问题有时候在更新的时候(也会执行卸载)触发，且再次载入大概率会炸游戏，请注意。");
-            ImGui.Indent();
-            if (s && ImGui.CollapsingHeader("展开堆栈信息")) {
-                ImGui.Text("11:28:52.526 | 警告 | [IINACTEx] DalamudStartInfo Inited");
-                ImGui.Text("11:28:52.527 | 错误 | [LOCALPLUGIN] 加载 \"IINACTEx\" 时出错，绑定并调用插件构造函数失败");
-                ImGui.Text("	System.AggregateException: Failed to create IINACT.Plugin (ctor invocation) (Exception has been thrown by the target of an invocation.)");
-                ImGui.Text("	 ---> System.Reflection.TargetInvocationException: Exception has been thrown by the target of an invocation.");
-                ImGui.Text("	 ---> System.TypeInitializationException: The type initializer for '<Module>' threw an exception.");
-                ImGui.Text("	 ---> System.NullReferenceException: Object reference not set to an instance of an object.");
-                ImGui.Text("	   at .cctor()");
-                ImGui.Text("	   --- End of inner exception stack trace ---");
-                ImGui.Text("	   at IINACT.FfxivActPluginWrapper..ctor()");
-                ImGui.Text("	   at IINACT.FfxivActPluginWrapper..ctor()");
-                ImGui.Text("	   at IINACT.Plugin..ctor()");
-                ImGui.Text("	   at System.RuntimeMethodHandle.InvokeMethod(ObjectHandleOnStack target, Void** arguments, ObjectHandleOnStack sig, BOOL isConstructor, ObjectHandleOnStack result)");
-                ImGui.Text("	   at System.Reflection.MethodBaseInvoker.InvokeConstructorWithoutAlloc(Object obj, Boolean wrapInTargetInvocationException)");
-                ImGui.Text("	   --- End of inner exception stack trace ---");
-                ImGui.Text("	   at System.Reflection.MethodBaseInvoker.InvokeConstructorWithoutAlloc(Object obj, Boolean wrapInTargetInvocationException)");
-                ImGui.Text("	   at System.Reflection.MethodBase.Invoke(Object obj, Object[] parameters)");
-                ImGui.Text("	   at Dalamud.IoC.Internal.ServiceContainer.<>c__DisplayClass10_0.<CreateAsync>b__0() in /_/Dalamud/IoC/Internal/ServiceContainer.cs:line 120");
-                ImGui.Text("	   at System.Threading.Tasks.Task`1.InnerInvoke()");
-                ImGui.Text("	   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)");
-                ImGui.Text("	--- End of stack trace from previous location ---");
-                ImGui.Text("	   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)");
-                ImGui.Text("	   at System.Threading.Tasks.Task.ExecuteWithThreadLocal(Task& currentTaskSlot, Thread threadPoolThread)");
-                ImGui.Text("	--- End of stack trace from previous location ---");
-                ImGui.Text("	   at Dalamud.IoC.Internal.ServiceContainer.CreateAsync(Type objectType, ObjectInstanceVisibility allowedVisibility, Object[] scopedObjects, IServiceScope scope) in /_/Dalamud/IoC/Internal/ServiceContainer.cs:line 119");
-                ImGui.Text("	   --- End of inner exception stack trace ---");
-                ImGui.Text("	   at Dalamud.IoC.Internal.ServiceContainer.CreateAsync(Type objectType, ObjectInstanceVisibility allowedVisibility, Object[] scopedObjects, IServiceScope scope) in /_/Dalamud/IoC/Internal/ServiceContainer.cs:line 129");
-                ImGui.Text("	   at Dalamud.Plugin.Internal.Types.LocalPlugin.<>c__DisplayClass78_0.<<CreatePluginInstance>g__Create|0>d.MoveNext() in /_/Dalamud/Plugin/Internal/Types/LocalPlugin.cs:line 601");
-                ImGui.Text("	--- End of stack trace from previous location ---");
-                ImGui.Text(
-                    "	   at Dalamud.Plugin.Internal.Types.LocalPlugin.CreatePluginInstance(LocalPluginManifest manifest, IServiceScope scope, Type type, DalamudPluginInterface dalamudInterface) in /_/Dalamud/Plugin/Internal/Types/LocalPlugin.cs:line 599");
-                ImGui.Text("	   at Dalamud.Plugin.Internal.Types.LocalPlugin.LoadAsync(PluginLoadReason reason, Boolean reloading) in /_/Dalamud/Plugin/Internal/Types/LocalPlugin.cs:line 399");
-            }
-            ImGui.Unindent();
+            ImGui.Text("待测试");
         }
         if (ImGui.CollapsingHeader("TODO", ImGuiTreeNodeFlags.DefaultOpen)) {
             ImGui.Text("(不一定会完成)ImGui替代Vfx绘制");

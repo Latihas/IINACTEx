@@ -23,7 +23,7 @@ using Region = FFXIV_ACT_Plugin.Config.Region;
 
 namespace IINACT;
 
-public partial class FfxivActPluginWrapper : IDisposable {
+public partial class FfxivActPluginWrapper : IActPluginV1 {
     private readonly FFXIV_ACT_Plugin.FFXIV_ACT_Plugin ffxivActPlugin;
     private readonly Container iocContainer;
     private ISettingsMediator settingsMediator = null!;
@@ -127,7 +127,7 @@ public partial class FfxivActPluginWrapper : IDisposable {
             _ => Language.English
         };
 
-    public void Dispose() {
+    public void DeInitPlugin() {
         cancellationTokenSource.Cancel();
         cancellationTokenSource.Dispose();
         Plugin.Framework.Update -= MobDataRefresh;
@@ -138,6 +138,8 @@ public partial class FfxivActPluginWrapper : IDisposable {
         Marshal.FreeHGlobal(mobData);
     }
 
+    public void InitPlugin(TabPage pluginScreenSpace, Label pluginStatusText) {
+    }
     private void SetupSettingsMediator() {
         settingsMediator = ffxivActPlugin._dataCollection._settingsMediator;
 

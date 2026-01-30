@@ -42,7 +42,7 @@ public sealed class Plugin : IDalamudPlugin {
     internal const string OverlayCommandName = "/iinactoverlay";
     public readonly WindowSystem WindowSystem = new("IINACT");
     [PluginService] public static IDalamudPluginInterface PluginInterface { get; private set; }
-    [PluginService]public static ICommandManager CommandManager { get; private set; }
+    [PluginService] public static ICommandManager CommandManager { get; private set; }
     [PluginService] public static IClientState ClientState { get; private set; }
     [PluginService] public static IDataManager DataManager { get; private set; }
     [PluginService] public static IChatGui ChatGui { get; private set; }
@@ -109,14 +109,6 @@ public sealed class Plugin : IDalamudPlugin {
     }
 
     public Plugin() {
-        Version = Assembly.GetExecutingAssembly().GetName().Version!;
-        FileDialogManager = new FileDialogManager();
-        HttpClient = new HttpClient();
-        var fetchDeps =
-            new FetchDependencies.FetchDependencies(Version, PluginAssemblyDirectory,
-                DataManager.Language.ToString() == "ChineseSimplified", HttpClient);
-        fetchDeps.GetFfxivPlugin();
-        Log.Warning("Depedencies Fetched");
         Log.Warning("IINACTEx Start Init...");
         Instance = this;
         if (!Directory.Exists(PluginActScriptDirectory)) Directory.CreateDirectory(PluginActScriptDirectory);
@@ -141,6 +133,15 @@ public sealed class Plugin : IDalamudPlugin {
         else
             OpcodeManager.Instance.SetRegion(region);
 
+
+        Version = Assembly.GetExecutingAssembly().GetName().Version!;
+        FileDialogManager = new FileDialogManager();
+        HttpClient = new HttpClient();
+        var fetchDeps =
+            new FetchDependencies.FetchDependencies(Version, PluginAssemblyDirectory,
+                DataManager.Language.ToString() == "ChineseSimplified", HttpClient);
+        fetchDeps.GetFfxivPlugin();
+        Log.Warning("Depedencies Fetched");
         PluginLogTraceListener = new PluginLogTraceListener();
         Trace.Listeners.Add(PluginLogTraceListener);
         ActGlobals.Init();
@@ -218,7 +219,7 @@ public sealed class Plugin : IDalamudPlugin {
         ClientState.EnterPvP += EnterPvP;
         ClientState.LeavePvP += LeavePvP;
         ZoneDownHookManager = new ZoneDownHookManager();
-        ActGlobals.oFormActMain.ActPlugins.Add(new ActPluginData("_FFXIV_ACT_Plugin", ActGlobals.oFormActMain.FfxivPlugin, false));
+        ActGlobals.oFormActMain.ActPlugins.Add(new ActPluginData("_FFXIV_ACT_Plugin", FfxivActPluginWrapper, false));
         ActGlobals.oFormActMain.ActPlugins.Add(new ActPluginData("_OverlayPlugin", new PluginLoader(OverlayPlugin), false));
         ActGlobals.oFormActMain.ActPlugins.Add(new ActPluginData("_Triggernometry", TriggernometryProxyPlugin, false));
         ActGlobals.oFormActMain.ActPlugins.Add(new ActPluginData("_PostNamazu", PostNamazuPlugin, false));
@@ -314,10 +315,8 @@ public sealed class Plugin : IDalamudPlugin {
         CommandManager.RemoveHandler(EndEncCommandName);
         CommandManager.RemoveHandler(OverlayCommandName);
 
-        ActGlobals.oFormActMain.ActPlugins.RemoveAt(0);
         while (ActGlobals.oFormActMain.ActPlugins.Count > 0)
             DeInitIActPluginV1(ActGlobals.oFormActMain.ActPlugins.Last(), true);
-        FfxivActPluginWrapper.Dispose();
         ActGlobals.Dispose();
     }
 
