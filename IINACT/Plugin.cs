@@ -86,11 +86,11 @@ public sealed class Plugin : IDalamudPlugin {
     public string PluginAssemblyDirectory => PluginInterface.AssemblyLocation.Directory!.ToString();
     public string PluginConfigDirectory => PluginInterface.ConfigDirectory.ToString();
     public string PluginActScriptDirectory => Path.Combine(PluginConfigDirectory, "ActScript");
-    public (string, ushort, ushort)[] opcodestxtDiff = [];
-    public bool opcodestxtReplaced;
+    public readonly (string, ushort, ushort)[] opcodestxtDiff = [];
+    public readonly bool opcodestxtReplaced;
     public bool opcodestxtCanReplace => File.Exists(opcodestxtPath);
     public string opcodestxtPath => Path.Combine(PluginAssemblyDirectory, "opcodes.txt");
-    public bool opcodesjsoncReplaced;
+    public readonly bool opcodesjsoncReplaced;
     public bool opcodesjsoncCanReplace => File.Exists(opcodesjsoncPath);
     public string opcodesjsoncPath => Path.Combine(PluginAssemblyDirectory, "opcodes.jsonc");
 
@@ -306,16 +306,17 @@ public sealed class Plugin : IDalamudPlugin {
         ClientState.LeavePvP -= LeavePvP;
         IpcProviders.Dispose();
         ZoneDownHookManager.Dispose();
-        FfxivActPluginWrapper.Dispose();
         Trace.Listeners.Remove(PluginLogTraceListener);
         WindowSystem.RemoveAllWindows();
         OverlayWindow.Dispose();
         CommandManager.RemoveHandler(MainWindowCommandName);
         CommandManager.RemoveHandler(EndEncCommandName);
         CommandManager.RemoveHandler(OverlayCommandName);
-        RealPlugin.Instance.DeInitAura();
+       
+        ActGlobals.oFormActMain.ActPlugins.RemoveAt(0);
         while (ActGlobals.oFormActMain.ActPlugins.Count > 0)
             DeInitIActPluginV1(ActGlobals.oFormActMain.ActPlugins.Last(), true);
+        FfxivActPluginWrapper.Dispose();
         ActGlobals.Dispose();
     }
 

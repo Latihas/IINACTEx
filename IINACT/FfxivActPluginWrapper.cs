@@ -123,7 +123,8 @@ public partial class FfxivActPluginWrapper : IDisposable {
             Dalamud.Game.ClientLanguage.English => Language.English,
             Dalamud.Game.ClientLanguage.German => Language.German,
             Dalamud.Game.ClientLanguage.French => Language.French,
-            _ => Plugin.DataManager.Language.ToString() == "ChineseSimplified" ? Language.Chinese : Language.English
+            Dalamud.Game.ClientLanguage.ChineseSimplified => Language.Chinese,
+            _ => Language.English
         };
 
     public void Dispose() {
@@ -132,6 +133,8 @@ public partial class FfxivActPluginWrapper : IDisposable {
         Plugin.Framework.Update -= MobDataRefresh;
         Plugin.ChatGui.ChatMessage -= OnChatMessage;
         ActGlobals.oFormActMain.BeforeLogLineRead -= OFormActMain_BeforeLogLineRead;
+        ffxivActPlugin.DeInitPlugin();
+        ffxivActPlugin.Dispose();
         Marshal.FreeHGlobal(mobData);
     }
 
