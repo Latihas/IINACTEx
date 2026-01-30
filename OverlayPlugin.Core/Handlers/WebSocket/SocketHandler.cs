@@ -16,7 +16,7 @@ internal class SocketHandler : Handler, ISocketHandler {
         Session = session;
     }
 
-    protected override void Send(JObject e) => Session.SendTextAsync(e.ToString(Formatting.None));
+    protected override void Send(JObject e) => Session.SendTextAsync(e.ToString());
 
     public void OnError(SocketError error) {
         Logger.Log(LogLevel.Error, Resources.WSMessageSendFailed, Enum.GetName(error));

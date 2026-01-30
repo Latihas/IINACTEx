@@ -17,7 +17,7 @@ internal class LegacySocketHandler : LegacyHandler, ISocketHandler {
         Start();
     }
 
-    protected override void Send(JObject data) => Session.SendTextAsync(data.ToString(Formatting.None));
+    protected override void Send(JObject data) => Session.SendTextAsync(data.ToString());
 
 
     public void OnError(SocketError error) {

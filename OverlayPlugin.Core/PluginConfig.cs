@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using Newtonsoft.Json;
@@ -332,8 +332,8 @@ public class PluginConfig : IPluginConfig {
                     throw new Exception($"Type {typeName} not found!");
                 }
 
-                Overlays.Add((IOverlayConfig)JsonConvert.DeserializeObject(
-                    item.ToString(Formatting.None),
+                    this.Overlays.Add((IOverlayConfig)JsonConvert.DeserializeObject(
+                                          item.ToString(),
                     type,
                     new ConfigCreationConverter(_container)
                 ));

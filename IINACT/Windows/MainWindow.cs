@@ -125,7 +125,21 @@ public class MainWindow : Window {
         }
 
         var selectedOverlay = OverlayPresets?[selectedOverlayIndex];
-        Uri.TryCreate($"ws://{Server?.Address}:{Server?.Port}/ws", UriKind.Absolute, out var webSocketServer);
+
+        Uri? webSocketServer = null;
+        if (Server?.Address is not null && Server.Port is not null)
+        {
+            Uri.TryCreate($"ws://{Server.Address}:{Server.Port}/ws", UriKind.Absolute, out webSocketServer);
+        }
+        else if (OverlayPluginConfig is not null &&
+                 !string.IsNullOrEmpty(OverlayPluginConfig.WSServerIP) &&
+                 OverlayPluginConfig.WSServerPort > 0)
+        {
+            Uri.TryCreate($"ws://{OverlayPluginConfig.WSServerIP}:{OverlayPluginConfig.WSServerPort}/ws",
+                          UriKind.Absolute,
+                          out webSocketServer);
+        }
+
         var overlayUri = selectedOverlay?.ToOverlayUri(webSocketServer);
         var overlayUriString = overlayUri?.ToString() ?? "<生成URI失败>";
 
@@ -205,18 +219,37 @@ public class MainWindow : Window {
 
         if (Server?.Running ?? false) {
             if (ImGui.Button("停止"))
+            {
                 Server.Stop();
+                if (OverlayPluginConfig is not null)
+                {
+                    OverlayPluginConfig.WSServerRunning = false;
+                    OverlayPluginConfig.Save();
+                }
+            }
 
             ImGui.SameLine();
 
             if (ImGui.Button("重启")) {
                 Server.Restart();
                 Plugin.Instance.OverlayWindow.Init(Server);
+                if (OverlayPluginConfig is not null)
+                {
+                    OverlayPluginConfig.WSServerRunning = true;
+                    OverlayPluginConfig.Save();
+                }
             }
         }
         else if (Server is not null) {
             if (ImGui.Button("启动"))
+            {
                 Server.Start();
+                if (OverlayPluginConfig is not null)
+                {
+                    OverlayPluginConfig.WSServerRunning = true;
+                    OverlayPluginConfig.Save();
+                }
+            }
         }
         DrawWebSocketSettings();
     }

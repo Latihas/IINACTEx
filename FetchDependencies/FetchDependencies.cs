@@ -23,27 +23,24 @@ public class FetchDependencies {
     public void GetFfxivPlugin() {
         var pluginZipPath = Path.Combine(DependenciesDir, "FFXIV_ACT_Plugin.zip");
         var pluginPath = Path.Combine(DependenciesDir, "FFXIV_ACT_Plugin.dll");
+
         if (!NeedsUpdate(pluginPath))
             return;
 
-        if (IsChinese)
-            DownloadFile(PluginUrlChinese, pluginPath);
-        else {
-            if (!File.Exists(pluginZipPath))
-                DownloadFile(PluginUrlGlobal, pluginZipPath);
-            try {
-                ZipFile.ExtractToDirectory(pluginZipPath, DependenciesDir, true);
-            }
-            catch (InvalidDataException) {
-                File.Delete(pluginZipPath);
-                DownloadFile(PluginUrlGlobal, pluginZipPath);
-                ZipFile.ExtractToDirectory(pluginZipPath, DependenciesDir, true);
-            }
-            File.Delete(pluginZipPath);
+        // true ：统一使用 Global ZIP 逻辑
+        // false ：国服使用独立 DLL (PluginUrlChinese)
+        bool useUnifiedGlobalZip = true; 
 
-            foreach (var deucalionDll in Directory.GetFiles(DependenciesDir, "deucalion*.dll"))
-                File.Delete(deucalionDll);
+        if (useUnifiedGlobalZip || !IsChinese)
+        {
+            HandleZipDownloadAndExtract(PluginUrlGlobal, pluginZipPath);
         }
+        else
+        {
+            DownloadFile(PluginUrlChinese, pluginPath);
+        }
+
+        CleanupDeucalion();
 
         var patcher = new Patcher(PluginVersion, DependenciesDir);
         patcher.MainPlugin();
@@ -51,31 +48,64 @@ public class FetchDependencies {
         patcher.MemoryPlugin();
     }
 
-    private bool NeedsUpdate(string dllPath) {
+    private void HandleZipDownloadAndExtract(string url, string zipPath)
+    {
+        if (!File.Exists(zipPath))
+            DownloadFile(url, zipPath);
+
+        try
+        {
+            ZipFile.ExtractToDirectory(zipPath, DependenciesDir, true);
+        }
+        catch (InvalidDataException)
+        {
+            File.Delete(zipPath);
+            DownloadFile(url, zipPath);
+            ZipFile.ExtractToDirectory(zipPath, DependenciesDir, true);
+        }
+        finally
+        {
+            if (File.Exists(zipPath)) File.Delete(zipPath);
+        }
+    }
+
+    private void CleanupDeucalion()
+    {
+        foreach (var deucalionDll in Directory.GetFiles(DependenciesDir, "deucalion*.dll"))
+        {
+            try { File.Delete(deucalionDll); } catch {}
+        }
+    }
+
+    private bool NeedsUpdate(string dllPath)
+    {
         if (!File.Exists(dllPath)) return true;
-        try {
+        try
+        {
             using var plugin = new TargetAssembly(dllPath);
 
             if (!plugin.ApiVersionMatches())
                 return true;
-
+            
             using var cancelAfterDelay = new CancellationTokenSource(TimeSpan.FromSeconds(3));
             var remoteVersionString = HttpClient
-                .GetStringAsync(IsChinese ? VersionUrlChinese : VersionUrlGlobal,
-                    cancelAfterDelay.Token).Result;
+                                      .GetStringAsync(IsChinese ? VersionUrlChinese : VersionUrlGlobal,
+                                                      cancelAfterDelay.Token).Result;
             var remoteVersion = new Version(remoteVersionString);
             return remoteVersion > plugin.Version;
         }
-        catch {
+        catch
+        {
             return false;
         }
     }
 
-    private void DownloadFile(string url, string path) {
+    private void DownloadFile(string url, string path)
+    {
         using var cancelAfterDelay = new CancellationTokenSource(TimeSpan.FromSeconds(30));
         using var downloadStream = HttpClient
-            .GetStreamAsync(url,
-                cancelAfterDelay.Token).Result;
+                                   .GetStreamAsync(url,
+                                                   cancelAfterDelay.Token).Result;
         using var zipFileStream = new FileStream(path, FileMode.Create);
         downloadStream.CopyTo(zipFileStream);
         zipFileStream.Close();
