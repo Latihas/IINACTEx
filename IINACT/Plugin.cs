@@ -139,7 +139,7 @@ public sealed class Plugin : IDalamudPlugin {
         HttpClient = new HttpClient();
         var fetchDeps =
             new FetchDependencies.FetchDependencies(Version, PluginAssemblyDirectory,
-                DataManager.Language==Dalamud.Game.ClientLanguage.ChineseSimplified, HttpClient,Log);
+                DataManager.Language==ClientLanguage.ChineseSimplified, HttpClient,Log);
         fetchDeps.GetFfxivPlugin();
         Log.Warning("Depedencies Fetched");
         PluginLogTraceListener = new PluginLogTraceListener();
@@ -219,10 +219,7 @@ public sealed class Plugin : IDalamudPlugin {
         ClientState.EnterPvP += EnterPvP;
         ClientState.LeavePvP += LeavePvP;
         ZoneDownHookManager = new ZoneDownHookManager();
-        ActGlobals.oFormActMain.ActPlugins.Add(new ActPluginData("_FFXIV_ACT_Plugin", FfxivActPluginWrapper, false));
-        ActGlobals.oFormActMain.ActPlugins.Add(new ActPluginData("_OverlayPlugin", new PluginLoader(OverlayPlugin), false));
-        ActGlobals.oFormActMain.ActPlugins.Add(new ActPluginData("_Triggernometry", TriggernometryProxyPlugin, false));
-        ActGlobals.oFormActMain.ActPlugins.Add(new ActPluginData("_PostNamazu", PostNamazuPlugin, false));
+        FormActMain.AddDefaultPlugins(FfxivActPluginWrapper, new PluginLoader(OverlayPlugin),TriggernometryProxyPlugin,PostNamazuPlugin);
         foreach (var rt in Directory.GetFiles(PluginActScriptDirectory, "*.cs", SearchOption.TopDirectoryOnly).Select(Path.GetFileName).Cast<string>())
             if (Configuration.ActScriptsEnabled.Contains(rt))
                 LoadPScript(rt, preserveEnableState: true);
@@ -314,9 +311,10 @@ public sealed class Plugin : IDalamudPlugin {
         CommandManager.RemoveHandler(MainWindowCommandName);
         CommandManager.RemoveHandler(EndEncCommandName);
         CommandManager.RemoveHandler(OverlayCommandName);
-
+        ActGlobals.oFormActMain.ActPlugins.RemoveAt(0);
         while (ActGlobals.oFormActMain.ActPlugins.Count > 0)
             DeInitIActPluginV1(ActGlobals.oFormActMain.ActPlugins.Last(), true);
+        FfxivActPluginWrapper.Dispose();
         ActGlobals.Dispose();
     }
 
