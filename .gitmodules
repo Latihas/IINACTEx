@@ -14,10 +14,6 @@
 	path = Triggernometry
 	url = https://github.com/Latihas/Triggernometry.git
 	branch = new
-[submodule "PostNamazu"]
-	path = PostNamazu
-	url = https://github.com/Latihas/PostNamazu.git
-	branch = master
 [submodule "Unscrambler"]
 	path = Unscrambler
 	url = https://github.com/Latihas/Unscrambler.git
