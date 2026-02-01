@@ -6,10 +6,6 @@
 	path = OverlayPlugin.Core/resources/act-overlays
 	url = https://github.com/MeowZWR/act-overlays.git
 	branch = cn
-[submodule "EdgeTTS"]
-	path = EdgeTTS
-	url = https://github.com/MeowZWR/EdgeTTS.git
-	branch = iinact
 [submodule "Triggernometry"]
 	path = Triggernometry
 	url = https://github.com/Latihas/Triggernometry.git

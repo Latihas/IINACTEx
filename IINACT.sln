@@ -17,8 +17,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Machina", "machina\Machina\
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Machina.FFXIV", "machina\Machina.FFXIV\Machina.FFXIV.csproj", "{1AAD30B3-55ED-4C10-94BF-41889B6BD44A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EdgeTTS", "EdgeTTS\EdgeTTS.csproj", "{BB017420-51D4-F934-C0CB-CFA471B943AC}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TriggernometryPlugin", "Triggernometry\Source\Triggernometry\TriggernometryPlugin.csproj", "{CA86FD05-FB30-4923-BB27-638CA9CBAFCD}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TrnDevEnv", "TrnDevEnv\TrnDevEnv.csproj", "{44635E6A-679D-4934-8A79-E69A54A3960D}"
@@ -71,10 +69,6 @@ Global
 		{1AAD30B3-55ED-4C10-94BF-41889B6BD44A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{1AAD30B3-55ED-4C10-94BF-41889B6BD44A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{1AAD30B3-55ED-4C10-94BF-41889B6BD44A}.Release|Any CPU.Build.0 = Release|Any CPU
-		{BB017420-51D4-F934-C0CB-CFA471B943AC}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{BB017420-51D4-F934-C0CB-CFA471B943AC}.Release|Any CPU.Build.0 = Release|Any CPU
-		{BB017420-51D4-F934-C0CB-CFA471B943AC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{BB017420-51D4-F934-C0CB-CFA471B943AC}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{CA86FD05-FB30-4923-BB27-638CA9CBAFCD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{CA86FD05-FB30-4923-BB27-638CA9CBAFCD}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{CA86FD05-FB30-4923-BB27-638CA9CBAFCD}.Release|Any CPU.ActiveCfg = Release|Any CPU
