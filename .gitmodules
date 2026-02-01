@@ -21,3 +21,7 @@
 [submodule "TrnDevEnv"]
 	path = TrnDevEnv
 	url = https://github.com/Latihas/TrnDevEnv.git
+[submodule "PostNamazu"]
+	path = PostNamazu
+	url = https://github.com/Latihas/PostNamazu.git
+	branch = master
