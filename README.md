@@ -40,6 +40,11 @@ Plugin以适配现代.NET。与此同时，也添加了大量修改的Triggernom
 
 仓库目录中TrnDevEnv项目为Triggernometry脚本编写环境，喜欢用IDE的小朋友可以用这个开发。
 
+虽然Github页面看起来有点奇怪，但是
+```shell
+git clone --recurse-submodules https://github.com/Latihas/IINACTEx.git
+```
+可以正常获取源码
 # Unscrambler
 
 见 https://github.com/Latihas/Unscrambler
