@@ -139,7 +139,7 @@ public sealed class Plugin : IDalamudPlugin {
         HttpClient = new HttpClient();
         var fetchDeps =
             new FetchDependencies.FetchDependencies(Version, PluginAssemblyDirectory,
-                DataManager.Language.ToString() == "ChineseSimplified", HttpClient);
+                DataManager.Language==Dalamud.Game.ClientLanguage.ChineseSimplified, HttpClient,Log);
         fetchDeps.GetFfxivPlugin();
         Log.Warning("Depedencies Fetched");
         PluginLogTraceListener = new PluginLogTraceListener();

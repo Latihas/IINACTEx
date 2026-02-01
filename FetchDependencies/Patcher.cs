@@ -4,14 +4,9 @@ using Mono.Cecil.Cil;
 
 namespace FetchDependencies;
 
-internal class Patcher {
-    private Version PluginVersion { get; }
-    private string WorkPath { get; }
-
-    public Patcher(Version version, string workPath) {
-        PluginVersion = version;
-        WorkPath = workPath;
-    }
+internal class Patcher(Version version, string workPath) {
+    private Version PluginVersion { get; } = version;
+    private string WorkPath { get; } = workPath;
 
     public void MainPlugin() {
         var plugin = new TargetAssembly(Path.Combine(WorkPath, "FFXIV_ACT_Plugin.dll"));

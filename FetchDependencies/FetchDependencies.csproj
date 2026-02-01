@@ -11,5 +11,9 @@
       <HintPath>$(DalamudLibPath)Mono.Cecil.dll</HintPath>
       <Private>false</Private>
     </Reference>
+    <Reference Include="Dalamud">
+      <HintPath>$(DalamudLibPath)Dalamud.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
   </ItemGroup>
 </Project>

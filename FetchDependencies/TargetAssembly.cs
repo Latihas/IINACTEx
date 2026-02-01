@@ -96,6 +96,9 @@ internal class TargetAssembly : IDisposable {
         return false;
     }
 
+    public string? GetDieMoeBuildVersion() =>
+        (from field in from type in Assembly.MainModule.Types from field in type.Fields where field.Name == "DieMoeBuildVersion" select field select field.Constant.ToString() ?? null).FirstOrDefault();
+
     public void WriteOut() {
         if (!ApiVersionMatches()) {
             // Log.WriteLine($"[PatchWasHere] Adding type {ApiVersion.NamespaceIdentifier}.WasHere");
@@ -104,7 +107,14 @@ internal class TargetAssembly : IDisposable {
             };
             Assembly.MainModule.Types.Add(wasHere);
         }
-
+        if (!string.IsNullOrEmpty(FetchDependencies.RemoteDieMoeBuildVersion)) {
+            var field = new FieldDefinition("DieMoeBuildVersion", FieldAttributes.Public | FieldAttributes.Static | FieldAttributes.InitOnly, Assembly.MainModule.TypeSystem.String) {
+                Constant = FetchDependencies.RemoteDieMoeBuildVersion
+            };
+            FetchDependencies.Log.Warning($"WriteOut Version {FetchDependencies.RemoteDieMoeBuildVersion}");
+            if (string.IsNullOrEmpty(GetDieMoeBuildVersion()))
+                Assembly.MainModule.Types.First().Fields.Add(field);
+        }
         var patchedPath = AssemblyPath + ".patched";
         Assembly.Write(patchedPath);
         Assembly.Dispose();
