@@ -1,27 +1,27 @@
 ﻿[submodule "machina"]
 	path = machina
-	url = https://github.com/Latihas/machina
+	url = https://github.com/Latihas/machina.git
 	branch = cn
 [submodule "OverlayPlugin.Core/resources/act-overlays"]
 	path = OverlayPlugin.Core/resources/act-overlays
-	url = https://github.com/MeowZWR/act-overlays
+	url = https://github.com/MeowZWR/act-overlays.git
 	branch = cn
 [submodule "EdgeTTS"]
 	path = EdgeTTS
-	url = https://github.com/MeowZWR/EdgeTTS
+	url = https://github.com/MeowZWR/EdgeTTS.git
 	branch = iinact
 [submodule "Triggernometry"]
 	path = Triggernometry
-	url = https://github.com/Latihas/Triggernometry
+	url = https://github.com/Latihas/Triggernometry.git
 	branch = new
 [submodule "PostNamazu"]
 	path = PostNamazu
-	url = https://github.com/Latihas/PostNamazu
+	url = https://github.com/Latihas/PostNamazu.git
 	branch = master
 [submodule "Unscrambler"]
 	path = Unscrambler
-	url = https://github.com/Latihas/Unscrambler
+	url = https://github.com/Latihas/Unscrambler.git
 	branch = main
 [submodule "TrnDevEnv"]
 	path = TrnDevEnv
-	url = https://github.com/Latihas/TrnDevEnv
+	url = https://github.com/Latihas/TrnDevEnv.git
