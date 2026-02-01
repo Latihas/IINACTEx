@@ -21,3 +21,6 @@
 	path = PostNamazu
 	url = https://github.com/Latihas/PostNamazu.git
 	branch = master
+[submodule "EdgeTTS"]
+	path = EdgeTTS
+	url = https://github.com/Latihas/EdgeTTS.git
