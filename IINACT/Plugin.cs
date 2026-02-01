@@ -80,7 +80,7 @@ public sealed class Plugin : IDalamudPlugin {
     public readonly TriggernometryLogView TriggernometryLogView;
     public readonly ACTLogView ACTLogView;
     public readonly OverlayWindow OverlayWindow;
-
+    private DateTime lastLogTick=DateTime.Now;
     internal static EdgeTTSWindow EdgeTTSWindow = null!;
     public static Plugin Instance;
 
@@ -108,8 +108,13 @@ public sealed class Plugin : IDalamudPlugin {
         }
     }
 
+    private void LogTick(string s) {
+        Log.Warning($"{s}({( DateTime.Now-lastLogTick).TotalSeconds}s)");
+        lastLogTick = DateTime.Now;
+    }
+
     public Plugin() {
-        Log.Warning("IINACTEx Start Init...");
+        LogTick("IINACTEx Start Init...");
         Instance = this;
         if (!Directory.Exists(PluginActScriptDirectory)) Directory.CreateDirectory(PluginActScriptDirectory);
         var region = DataManager.Language == ClientLanguage.ChineseSimplified ? GameRegion.Chinese : GameRegion.Global;
@@ -141,7 +146,7 @@ public sealed class Plugin : IDalamudPlugin {
             new FetchDependencies.FetchDependencies(Version, PluginAssemblyDirectory,
                 DataManager.Language==ClientLanguage.ChineseSimplified, HttpClient,Log);
         fetchDeps.GetFfxivPlugin();
-        Log.Warning("Depedencies Fetched");
+        LogTick("Depedencies Fetched");
         PluginLogTraceListener = new PluginLogTraceListener();
         Trace.Listeners.Add(PluginLogTraceListener);
         ActGlobals.Init();
@@ -149,7 +154,7 @@ public sealed class Plugin : IDalamudPlugin {
         ActGlobals.oFormActMain.DalamudPlugin = this;
         Configuration = PluginInterface.GetPluginConfig() as Configuration ?? new Configuration();
         TextToSpeechProvider = new TextToSpeechProvider();
-        Log.Warning("TTS Inited");
+        LogTick("TTS Inited");
         ActGlobals.oFormActMain.LogFilePath = Configuration.LogFilePath;
         WindowSystem.AddWindow(MainWindow = new MainWindow());
         WindowSystem.AddWindow(OverlayWindow = new OverlayWindow());
@@ -162,16 +167,16 @@ public sealed class Plugin : IDalamudPlugin {
         WindowSystem.AddWindow(RepoWindow = new RepoWindow());
         WindowSystem.AddWindow(TriggernometryLogView = new TriggernometryLogView());
         WindowSystem.AddWindow(ACTLogView = new ACTLogView());
-        Log.Warning("Windows Inited");
+        LogTick("Windows Inited");
         IpcProviders = new IpcProviders(PluginInterface);
         var info = PluginInterface.GetType().Assembly.GetType("Dalamud.Service`1", true)!.MakeGenericType(PluginInterface.GetType().Assembly.GetType("Dalamud.Dalamud", true)!).GetMethod("Get")!
             .Invoke(null, BindingFlags.Default, null, [], null);
         DalamudStartInfo = info!.GetType().GetField("StartInfo", AllFlags)?.GetValue(info)
                            ?? info.GetType().GetProperty("StartInfo", AllFlags)?.GetValue(info);
         Log.Info(DalamudStartInfo?.ToString());
-        Log.Warning("DalamudStartInfo Inited");
+        LogTick("DalamudStartInfo Inited");
         FfxivActPluginWrapper = new FfxivActPluginWrapper();
-        Log.Warning("FfxivActPlugin Inited");
+        LogTick("FfxivActPlugin Inited");
         var container = new TinyIoCContainer();
         var logger = new Logger(Log);
         container.Register(logger);
@@ -192,14 +197,14 @@ public sealed class Plugin : IDalamudPlugin {
         IpcProviders.OverlayIpcHandler = container.Resolve<IpcHandlerController>();
         MainWindow.OverlayPluginConfig = container.Resolve<IPluginConfig>();
         OverlayWindow.Init(WebSocketServer);
-        Log.Warning("OverlayPlugin Inited");
+        LogTick("OverlayPlugin Inited");
         ActGlobals.oFormActMain.TriggernometryPlugin = TriggernometryProxyPlugin = new ProxyPlugin();
         TriggernometryProxyPlugin.InitPlugin(this, PluginInterface, Log, ClientState, Framework, GameInteropProvider, ObjectTable, GameGui, SigScanner);
         ActGlobals.oFormActMain.PostNamazuPlugin = PostNamazuPlugin = new PostNamazu.PostNamazu();
         PostNamazuPlugin.InitPlugin(PluginInterface, Log, SigScanner);
         BridgeNamazu.InitializeModules();
         BridgeNamazu.RegisterAnnotatedMethods();
-        Log.Warning("Triggernometry & PostNamazu Inited");
+        LogTick("Triggernometry & PostNamazu Inited");
         CommandManager.AddHandler(MainWindowCommandName, new CommandInfo(OnCommand) {
             HelpMessage = "显示IINACT主窗口"
         });
@@ -226,12 +231,12 @@ public sealed class Plugin : IDalamudPlugin {
         foreach (var rt in Directory.GetFiles(PluginActScriptDirectory, "*.dll", SearchOption.TopDirectoryOnly).Select(Path.GetFileName).Cast<string>())
             if (Configuration.ActScriptsEnabled.Contains(rt))
                 LoadIActPluginV1(rt, preserveEnableState: true);
-        Log.Warning("ACT Plugin Inited");
+        LogTick("ACT Plugin Inited");
         if (Directory.Exists(Path.Combine(PluginConfigDirectory, "cactbot"))) RefreshBw();
         if (Configuration.ShowWindowOnInit) MainWindow.Toggle();
         if (Configuration.ShowOverlayOnInit) OverlayWindow.Toggle();
         if (Configuration.TtsOnInit) ActGlobals.oFormActMain.TTS("插件加载完成");
-        Log.Warning("IINACTEx Inited");
+        LogTick("IINACTEx Inited");
     }
 
     public static void InitIActPluginV1(ActPluginData plugin, bool preserveEnableState = false) {
