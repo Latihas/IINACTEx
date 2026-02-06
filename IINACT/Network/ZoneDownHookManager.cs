@@ -227,7 +227,6 @@ public unsafe class ZoneDownHookManager : IDisposable {
         var opcodes = OpcodeManager.Instance.CurrentOpcodes;
         return new VersionConstants {
             GameVersion = GetRunningGameVersion(),
-            InitZoneOpcode = 0x0,
             UnknownObfuscationInitOpcode = 0x0,
             OpcodeKeyTableOffset = opcodeKeyTableOffset,
             OpcodeKeyTableSize = opcodeKeyTableSize,
