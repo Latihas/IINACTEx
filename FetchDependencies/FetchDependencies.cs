@@ -78,16 +78,21 @@ public partial class FetchDependencies {
     private bool NeedsUpdate(string dllPath) {
         if (!File.Exists(dllPath)) {
             if (!IsChinese) return true;
-            using var cancelAfterDelay = new CancellationTokenSource(TimeSpan.FromSeconds(3));
-            var remoteVersionString = HttpClient.GetStringAsync(VersionUrlChinese, cancelAfterDelay.Token).Result;
-            var match = DieMoeBuildVersionRegex().Match(remoteVersionString);
-            var buildVersion = match.Success ? match.Groups[1].Value : string.Empty;
-            if (string.IsNullOrEmpty(buildVersion)) {
-                Log.Error($"Failed to parse DieMoe Plugin version string: {remoteVersionString}");
+            try {
+                using var cancelAfterDelay = new CancellationTokenSource(TimeSpan.FromSeconds(3));
+                var remoteVersionString = HttpClient.GetStringAsync(VersionUrlChinese, cancelAfterDelay.Token).Result;
+                var match = DieMoeBuildVersionRegex().Match(remoteVersionString);
+                var buildVersion = match.Success ? match.Groups[1].Value : string.Empty;
+                if (string.IsNullOrEmpty(buildVersion)) {
+                    Log.Error($"Failed to parse DieMoe Plugin version string: {remoteVersionString}");
+                    return true;
+                }
+                RemoteDieMoeBuildVersion = buildVersion;
                 return true;
             }
-            RemoteDieMoeBuildVersion = buildVersion;
-            return true;
+            catch {
+                return true;
+            }
         }
         try {
             using var plugin = new TargetAssembly(dllPath);

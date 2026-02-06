@@ -111,7 +111,7 @@ internal class TargetAssembly : IDisposable {
             var field = new FieldDefinition("DieMoeBuildVersion", FieldAttributes.Public | FieldAttributes.Static | FieldAttributes.InitOnly, Assembly.MainModule.TypeSystem.String) {
                 Constant = FetchDependencies.RemoteDieMoeBuildVersion
             };
-            FetchDependencies.Log.Warning($"WriteOut Version {FetchDependencies.RemoteDieMoeBuildVersion}");
+            FetchDependencies.Log.Warning($"WriteOut Version {AssemblyPath}->{FetchDependencies.RemoteDieMoeBuildVersion}");
             if (string.IsNullOrEmpty(GetDieMoeBuildVersion()))
                 Assembly.MainModule.Types.First().Fields.Add(field);
         }

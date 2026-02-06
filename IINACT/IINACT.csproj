@@ -65,6 +65,7 @@
     <ProjectReference Include="../Triggernometry/Source/Triggernometry/TriggernometryPlugin.csproj"/>
     <ProjectReference Include="../PostNamazu/PostNamazu/PostNamazu.csproj"/>
     <ProjectReference Include="../Unscrambler/Unscrambler/Unscrambler.csproj"/>
+<!--    <PackageReference Include="Unscrambler.XIV.CN" Version="7.41.1" />-->
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="..\EdgeTTS\voices.json">
