@@ -1,17 +1,17 @@
 {
-	"version": 1,
-	"dependencies": {
-		"net10.0-windows8.0": {
-			"System.Data.DataSetExtensions": {
-				"type": "Direct",
-				"requested": "[4.5.0, )",
-				"resolved": "4.5.0",
-				"contentHash": "221clPs1445HkTBZPL+K9sDBdJRB8UN8rgjO3ztB0CQ26z//fmJXtlsr6whGatscsKGBrhJl5bwJuKSA8mwFOw=="
-			},
-			"Advanced Combat Tracker": {
-				"type": "Project"
-			}
-		},
-		"net10.0-windows8.0/win-x64": {}
-	}
+  "version": 1,
+  "dependencies": {
+    "net10.0-windows8.0": {
+      "System.Data.DataSetExtensions": {
+        "type": "Direct",
+        "requested": "[4.5.0, )",
+        "resolved": "4.5.0",
+        "contentHash": "221clPs1445HkTBZPL+K9sDBdJRB8UN8rgjO3ztB0CQ26z//fmJXtlsr6whGatscsKGBrhJl5bwJuKSA8mwFOw=="
+      },
+      "Advanced Combat Tracker": {
+        "type": "Project"
+      }
+    },
+    "net10.0-windows8.0/win-x64": {}
+  }
 }
