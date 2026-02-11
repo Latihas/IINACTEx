@@ -32,10 +32,10 @@ public partial class FormActMain : Form, ISynchronizeInvoke {
 
     public FormActMain(IPluginLog pluginLog) {
         PluginLog = pluginLog;
-        InitializeComponent();
+        // InitializeComponent();
         AppDataFolder = new DirectoryInfo(".");
-        ActGlobals.ActLocalization.Init();
-        ActGlobals.ActLocalization.AddPrebuild();
+        // ActGlobals.ActLocalization.Init();
+        // ActGlobals.ActLocalization.AddPrebuild();
         NotActMainFormatter.SetupEnvironment();
         LastKnownTime = DateTime.Now;
         StartAfterCombatActionThread();

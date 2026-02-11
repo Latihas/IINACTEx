@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Globalization;
-using System.Linq;
 using RainbowMage.OverlayPlugin.NetworkProcessors.PacketHelper;
 
 // The easiest place to test SetAnimationState is Lunar Subteranne.

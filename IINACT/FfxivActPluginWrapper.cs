@@ -1,7 +1,6 @@
 using System.Globalization;
 using System.Runtime.InteropServices;
 using Advanced_Combat_Tracker;
-using Dalamud.Game;
 using Dalamud.Game.ClientState.Conditions;
 using Dalamud.Game.Text;
 using Dalamud.Game.Text.SeStringHandling;
@@ -60,20 +59,19 @@ public partial class FfxivActPluginWrapper : IDisposable {
         ffxivActPlugin = new FFXIV_ACT_Plugin.FFXIV_ACT_Plugin();
         Plugin.Log.Information($"Initializing FFXIV_ACT_Plugin version {typeof(FFXIV_ACT_Plugin.FFXIV_ACT_Plugin).Assembly.GetName().Version}");
         ffxivActPlugin.ConfigureIOC();
-
         iocContainer = ffxivActPlugin._iocContainer;
+        Plugin.LogTick("FFXIV_ACT_Plugin IOC Configured");
         iocContainer.Resolve<ResourceManager>().LoadResources();
-
+        Plugin.LogTick("FFXIV_ACT_Plugin Resources Loaded");
         Subscription = iocContainer.Resolve<DataSubscription>();
         ffxivActPlugin.SetProperty("DataSubscription", Subscription);
-
         parseMediator = iocContainer.Resolve<ParseMediator>();
 
         ffxivActPlugin._dataCollection = iocContainer.Resolve<DataCollection>();
-
+        
         logOutput = ffxivActPlugin._dataCollection._logOutput;
         logFormat = ffxivActPlugin._dataCollection._logFormat;
-
+       
         var scanMemory = (ScanMemory)ffxivActPlugin._dataCollection._scanMemory;
 
         processManager = scanMemory._processManager;
@@ -83,13 +81,11 @@ public partial class FfxivActPluginWrapper : IDisposable {
         combatantManager = (CombatantManager)scanMemory._combatantManager;
         playerProcessor = scanMemory._playerProcessor;
         partyProcessor = scanMemory._partyProcessor;
-
         SetupActWrapper();
 
         SetupDataSubscription();
 
         SetupSettingsMediator();
-
         Repository = iocContainer.Resolve<IDataRepository>();
         ffxivActPlugin.SetProperty("DataRepository", Repository);
 

@@ -55,7 +55,7 @@ public class WebSocketClient : IDisposable {
             }
         }
         catch (Exception ex) {
-            Plugin.Log.Warning(ex.ToString());
+            Plugin.Log.Debug(ex.ToString());
         }
         finally {
             _ws.Dispose();
@@ -66,6 +66,7 @@ public class WebSocketClient : IDisposable {
     public void Dispose() {
         try {
             _cts.Cancel();
+            _cts.Dispose();
             if (_ws.State is WebSocketState.Open or WebSocketState.Connecting) {
                 _ws.CloseOutputAsync(
                     WebSocketCloseStatus.NormalClosure,
@@ -73,7 +74,6 @@ public class WebSocketClient : IDisposable {
                     CancellationToken.None
                 ).ConfigureAwait(false).GetAwaiter().GetResult();
             }
-            _cts.Dispose();
         }
         catch (Exception) {
             //
