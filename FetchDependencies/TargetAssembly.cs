@@ -2,7 +2,7 @@
 
 namespace FetchDependencies;
 
-internal class TargetAssembly : IDisposable {
+public class TargetAssembly : IDisposable {
     public TargetAssembly(string assemblyPath) {
         AssemblyPath = assemblyPath;
 
@@ -88,18 +88,13 @@ internal class TargetAssembly : IDisposable {
         }
     }
 
-    public bool ApiVersionMatches() {
-        foreach (var type in Assembly.MainModule.Types)
-            if (type.Namespace == ApiVersion.NamespaceIdentifier && type.Name == "WasHere")
-                return true;
+    public bool ApiVersionMatches() => Assembly.MainModule.Types.Any(type => type.Namespace == ApiVersion.NamespaceIdentifier && type.Name == "WasHere");
 
-        return false;
-    }
 
     public string? GetDieMoeBuildVersion() =>
         (from field in from type in Assembly.MainModule.Types from field in type.Fields where field.Name == "DieMoeBuildVersion" select field select field.Constant.ToString() ?? null).FirstOrDefault();
 
-    public void WriteOut() {
+    public void WriteOut(string?outp=null) {
         if (!ApiVersionMatches()) {
             // Log.WriteLine($"[PatchWasHere] Adding type {ApiVersion.NamespaceIdentifier}.WasHere");
             var wasHere = new TypeDefinition(ApiVersion.NamespaceIdentifier, "WasHere", TypeAttributes.Public | TypeAttributes.Class) {
@@ -118,6 +113,6 @@ internal class TargetAssembly : IDisposable {
         var patchedPath = AssemblyPath + ".patched";
         Assembly.Write(patchedPath);
         Assembly.Dispose();
-        File.Move(patchedPath, AssemblyPath, true);
+        File.Move(patchedPath, outp??AssemblyPath, true);
     }
 }

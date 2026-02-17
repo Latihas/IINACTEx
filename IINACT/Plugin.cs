@@ -3,6 +3,7 @@ using System.IO;
 using System.IO.Compression;
 using System.Net.Http;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using System.Runtime.Loader;
 using Advanced_Combat_Tracker;
 using Dalamud.Game;
@@ -12,6 +13,7 @@ using Dalamud.Interface.Windowing;
 using Dalamud.IoC;
 using Dalamud.Plugin;
 using Dalamud.Plugin.Services;
+using FetchDependencies;
 using IINACT.Latihas.Overlay;
 using IINACT.Network;
 using IINACT.TextToSpeech;
@@ -82,8 +84,6 @@ public sealed class Plugin : IDalamudPlugin {
     private readonly DateTime startLogTick = DateTime.Now;
     internal static EdgeTTSWindow EdgeTTSWindow = null!;
     public static Plugin Instance;
-    private readonly CancellationTokenSource ctsPostnamazu;
-    private readonly Thread threadPostnamazu;
 
     public string PluginAssemblyDirectory => PluginInterface.AssemblyLocation.Directory!.ToString();
     public string PluginConfigDirectory => PluginInterface.ConfigDirectory.ToString();
@@ -95,6 +95,7 @@ public sealed class Plugin : IDalamudPlugin {
     public readonly bool opcodesjsoncReplaced;
     public bool opcodesjsoncCanReplace => File.Exists(opcodesjsoncPath);
     public string opcodesjsoncPath => Path.Combine(PluginAssemblyDirectory, "opcodes.jsonc");
+    private List<IntPtr> NativeLibs = [];
 
     public static void UnzipWithoutPassword(string zipFilePath, string extractDir, bool overwrite = false) {
         try {
@@ -148,8 +149,7 @@ public sealed class Plugin : IDalamudPlugin {
         // PluginLogTraceListener = new PluginLogTraceListener();
         // Trace.Listeners.Add(PluginLogTraceListener);
         ActGlobals.Init();
-        ActGlobals.oFormActMain = new FormActMain(Log);
-        ActGlobals.oFormActMain.DalamudPlugin = this;
+        ActGlobals.oFormActMain = new FormActMain(this, Log);
         Configuration = PluginInterface.GetPluginConfig() as Configuration ?? new Configuration();
         ActGlobals.oFormActMain.LogFilePath = Configuration.LogFilePath;
         TextToSpeechProvider = new TextToSpeechProvider();
@@ -222,25 +222,24 @@ public sealed class Plugin : IDalamudPlugin {
         ClientState.LeavePvP += LeavePvP;
         ZoneDownHookManager = new ZoneDownHookManager();
         FormActMain.AddDefaultPlugins(FfxivActPluginWrapper, new PluginLoader(OverlayPlugin), TriggernometryProxyPlugin, PostNamazuPlugin);
-        foreach (var rt in Directory.GetFiles(PluginActScriptDirectory, "*.cs", SearchOption.TopDirectoryOnly).Select(Path.GetFileName).Cast<string>())
-            if (Configuration.ActScriptsEnabled.Contains(rt))
-                LoadPScript(rt, preserveEnableState: true);
         foreach (var rt in Directory.GetFiles(PluginActScriptDirectory, "*.dll", SearchOption.TopDirectoryOnly).Select(Path.GetFileName).Cast<string>())
             if (Configuration.ActScriptsEnabled.Contains(rt))
                 LoadIActPluginV1(rt, preserveEnableState: true);
         PostNamazuPlugin.InitPlugin(PluginInterface, Log, SigScanner);
-        ctsPostnamazu = new CancellationTokenSource();
         LogTick("Waiting Triggernometry");
         taskTrn.Wait();
         LogTick("Triggernometry & PostNamazu & Callback Initialized");
-        threadPostnamazu = new Thread(() => {
+        foreach (var rt in Directory.GetFiles(PluginActScriptDirectory, "*.cs", SearchOption.TopDirectoryOnly).Select(Path.GetFileName).Cast<string>())
+            if (Configuration.ActScriptsEnabled.Contains(rt))
+                LoadPScript(rt, preserveEnableState: true);
+        var threadPostnamazu1 = new Thread(() => {
             BridgeNamazu.InitializeModules();
             BridgeNamazu.RegisterAnnotatedMethods();
             LogTick("Asyc BridgeNamazu Initialized");
         }) {
             IsBackground = true
         };
-        threadPostnamazu.Start();
+        threadPostnamazu1.Start();
         if (Directory.Exists(Path.Combine(PluginConfigDirectory, "cactbot"))) RefreshBw();
         if (Configuration.ShowWindowOnInit) MainWindow.Toggle();
         if (Configuration.ShowOverlayOnInit) OverlayWindow.Toggle();
@@ -313,8 +312,6 @@ public sealed class Plugin : IDalamudPlugin {
     public const BindingFlags AllFlags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static;
 
     public void Dispose() {
-        ctsPostnamazu.Cancel();
-        ctsPostnamazu.Dispose();
         Configuration.Save();
         TextToSpeechProvider.Dispose();
         ClientState.EnterPvP -= EnterPvP;

@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <AssemblyName>SilverDasher.Core</AssemblyName>
+    <UseWindowsForms>True</UseWindowsForms>
+    <PlatformTarget>x64</PlatformTarget>
+    <UseWpf>true</UseWpf>
+    <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
+    <RootNamespace>SilverDasher</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="FFXIV_ACT_Plugin.Common">
+      <HintPath>..\..\external_dependencies\SDK\FFXIV_ACT_Plugin.Common.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <ProjectReference Include="..\..\NotACT\NotACT.csproj"/>
+    <PackageReference Include="Microsoft.Toolkit.Uwp.Notifications" Version="7.1.3" />
+    <PackageReference Include="MQTTnet" Version="4.3.7.1207" />
+    <Reference Include="Newtonsoft.Json">
+      <HintPath>$(DalamudLibPath)Newtonsoft.Json.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Zodiark\Zodiark.csproj" />
+  </ItemGroup>
+</Project>

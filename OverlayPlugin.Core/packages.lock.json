@@ -1,12 +1,12 @@
 {
   "version": 1,
   "dependencies": {
-    "net10.0-windows8.0": {
+    "net10.0-windows10.0.17763": {
       "Microsoft.Extensions.ObjectPool": {
         "type": "Direct",
-        "requested": "[10.0.2, )",
-        "resolved": "10.0.2",
-        "contentHash": "kpCp4m7nwJVBcRKWXYHdVK/W0dkKyyFOjCmKVdO+zKThWvUxP1V+jVEP9FGpqRu4GPl9041SEXu2f+U/l825nQ=="
+        "requested": "[10.0.3, )",
+        "resolved": "10.0.3",
+        "contentHash": "dQKlVXzqflsv5X8iDlAN5YmTL1GcLCrOLKo1s9PNdfjqxeu0S/jmWTfiLGno+8+o1qFL3+VFAH5/ftmypN+sPw=="
       },
       "NetCoreServer": {
         "type": "Direct",
@@ -40,6 +40,6 @@
         }
       }
     },
-    "net10.0-windows8.0/win-x64": {}
+    "net10.0-windows10.0.17763/win-x64": {}
   }
 }

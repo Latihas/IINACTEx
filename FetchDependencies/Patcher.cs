@@ -4,7 +4,7 @@ using Mono.Cecil.Cil;
 
 namespace FetchDependencies;
 
-internal class Patcher(Version version, string workPath) {
+public class Patcher(Version version, string workPath) {
     private Version PluginVersion { get; } = version;
     private string WorkPath { get; } = workPath;
 
@@ -177,5 +177,18 @@ internal class Patcher(Version version, string workPath) {
         }
 
         memory.WriteOut();
+    }
+
+    public static bool SilverDasherPlugin(string dll,string outdll) {
+        var plugin = new TargetAssembly(dll);
+        if (plugin.ApiVersionMatches()) return false;
+        var wasHere = new TypeDefinition(ApiVersion.NamespaceIdentifier, "WasHere", TypeAttributes.Public | TypeAttributes.Class) {
+            BaseType = plugin.Assembly.MainModule.TypeSystem.Object
+        };
+        plugin.Assembly.MainModule.Types.Add(wasHere);
+        plugin.RemoveStrongNaming();
+        plugin.MakePublic();
+        plugin.WriteOut(outdll);
+        return true;
     }
 }

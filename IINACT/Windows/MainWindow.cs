@@ -2,6 +2,7 @@ using System.IO;
 using System.Net;
 using System.Net.Sockets;
 using System.Numerics;
+using Advanced_Combat_Tracker;
 using Dalamud.Bindings.ImGui;
 using Dalamud.Interface;
 using Dalamud.Interface.Colors;
@@ -40,8 +41,9 @@ public class MainWindow : Window {
         DrawParseSettings();
         LWindow.DrawTriggerSettings();
         DrawSettingsPostnamazu();
-        LWindow. DrawSettingsScripts();
-        LWindow. DrawTriggerDebug();
+        DrawSilverDasher();
+        LWindow.DrawSettingsScripts();
+        LWindow.DrawTriggerDebug();
         LWindow.DrawSettings();
     }
 
@@ -87,6 +89,41 @@ public class MainWindow : Window {
         }
     }
 
+    private static void InstallSilverDasher() {
+        var sourceDir = Path.Combine(Plugin.Instance.PluginAssemblyDirectory, "data");
+        var targetDir = Path.Combine(Plugin.Instance.PluginActScriptDirectory, "data");
+        Directory.CreateDirectory(targetDir);
+        CopyDirectoryContents(sourceDir, targetDir, overwrite: true);
+    }
+
+    private static void CopyDirectoryContents(string sourceDir, string targetDir, bool overwrite) {
+        foreach (var filePath in Directory.GetFiles(sourceDir)) {
+            var fileName = Path.GetFileName(filePath);
+            var targetFilePath = Path.Combine(targetDir, fileName);
+            File.Copy(filePath, targetFilePath, overwrite);
+        }
+        foreach (var subDirPath in Directory.GetDirectories(sourceDir)) {
+            var subDirName = Path.GetFileName(subDirPath);
+            var targetSubDirPath = Path.Combine(targetDir, subDirName);
+            Directory.CreateDirectory(targetSubDirPath);
+            CopyDirectoryContents(subDirPath, targetSubDirPath, overwrite);
+        }
+    }
+
+
+    private static void DrawSilverDasher() {
+        using var tab = ImRaii.TabItem("SilverDasher");
+        if (!tab) return;
+
+        if (ImGui.Button("启用")) {
+            InstallSilverDasher();
+            var sd = new SilverDasher.Loader.Loader();
+            var plug = new ActPluginData("SilverDasher.dll", sd, false);
+            ActGlobals.oFormActMain.ActPlugins.Add(plug);
+            sd.InitPlugin(new(), new());
+        }
+    }
+
     private void DrawMainWindow() {
         using var tab = ImRaii.TabItem("运行状态");
         if (!tab) return;
@@ -127,17 +164,15 @@ public class MainWindow : Window {
         var selectedOverlay = OverlayPresets?[selectedOverlayIndex];
 
         Uri? webSocketServer = null;
-        if (Server?.Address is not null && Server.Port is not null)
-        {
+        if (Server?.Address is not null && Server.Port is not null) {
             Uri.TryCreate($"ws://{Server.Address}:{Server.Port}/ws", UriKind.Absolute, out webSocketServer);
         }
         else if (OverlayPluginConfig is not null &&
                  !string.IsNullOrEmpty(OverlayPluginConfig.WSServerIP) &&
-                 OverlayPluginConfig.WSServerPort > 0)
-        {
+                 OverlayPluginConfig.WSServerPort > 0) {
             Uri.TryCreate($"ws://{OverlayPluginConfig.WSServerIP}:{OverlayPluginConfig.WSServerPort}/ws",
-                          UriKind.Absolute,
-                          out webSocketServer);
+                UriKind.Absolute,
+                out webSocketServer);
         }
 
         var overlayUri = selectedOverlay?.ToOverlayUri(webSocketServer);
@@ -218,11 +253,9 @@ public class MainWindow : Window {
         ImGui.GetWindowDpiScale();
 
         if (Server?.Running ?? false) {
-            if (ImGui.Button("停止"))
-            {
+            if (ImGui.Button("停止")) {
                 Server.Stop();
-                if (OverlayPluginConfig is not null)
-                {
+                if (OverlayPluginConfig is not null) {
                     OverlayPluginConfig.WSServerRunning = false;
                     OverlayPluginConfig.Save();
                 }
@@ -233,19 +266,16 @@ public class MainWindow : Window {
             if (ImGui.Button("重启")) {
                 Server.Restart();
                 Plugin.Instance.OverlayWindow.Init(Server);
-                if (OverlayPluginConfig is not null)
-                {
+                if (OverlayPluginConfig is not null) {
                     OverlayPluginConfig.WSServerRunning = true;
                     OverlayPluginConfig.Save();
                 }
             }
         }
         else if (Server is not null) {
-            if (ImGui.Button("启动"))
-            {
+            if (ImGui.Button("启动")) {
                 Server.Start();
-                if (OverlayPluginConfig is not null)
-                {
+                if (OverlayPluginConfig is not null) {
                     OverlayPluginConfig.WSServerRunning = true;
                     OverlayPluginConfig.Save();
                 }
@@ -376,7 +406,6 @@ public class MainWindow : Window {
         OverlayPluginConfig?.Save();
     }
 
-  
 
     private string GetParseFilterModeText(ParseFilterMode mode) {
         return mode switch {

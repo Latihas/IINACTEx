@@ -1,0 +1,214 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<UserControl x:Class="SilverDasher.ACT.Views.PluginControl" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:local="clr-namespace:SilverDasher.ACT.Views" xmlns:model="clr-namespace:SilverDasher.ACT.ViewModels">
+  <FrameworkElement.DataContext>
+    <model:PluginViewModel />
+  </FrameworkElement.DataContext>
+  <Grid>
+    <Grid.RowDefinitions>
+      <RowDefinition Height="1*" />
+      <RowDefinition Height="30" />
+    </Grid.RowDefinitions>
+    <TabControl HorizontalAlignment="Stretch" Margin="0,0,0,0" VerticalAlignment="Stretch">
+      <TabItem Header="订阅">
+        <Grid Background="#FFE5E5E5">
+          <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="1*" />
+            <ColumnDefinition Width="1*" />
+          </Grid.ColumnDefinitions>
+          <DockPanel Grid.Column="0">
+            <Grid>
+              <Grid.RowDefinitions>
+                <RowDefinition Height="1*" />
+                <RowDefinition Height="5*" />
+              </Grid.RowDefinitions>
+            </Grid>
+            <DockPanel Dock="Top" Grid.Row="0">
+              <Grid />
+              <ComboBox HorizontalAlignment="Left" Margin="60,25,0,0" VerticalAlignment="Top" Width="200" SelectedIndex="0">
+                <ComboBoxItem>管理订阅</ComboBoxItem>
+              </ComboBox>
+            </DockPanel>
+            <GroupBox Grid.Row="1" Header="狩猎" Margin="50,10,10,30">
+              <TreeView Name="treeAvailable" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" ItemsSource="{Binding HuntRoot}">
+                <ItemsControl.ItemTemplate>
+                  <HierarchicalDataTemplate DataType="{x:Type local:CheckTreeNode}" ItemsSource="{Binding Nodes}">
+                    <StackPanel Orientation="Horizontal">
+                      <CheckBox IsTabStop="False" Focusable="False" HorizontalAlignment="Center" ClickMode="Press" IsChecked="{Binding Path=ViewChecked}" Tag="{Binding Path=ID}" Click="checkAvailable_CheckedChanged" />
+                      <TextBlock Foreground="#FF000000" FontSize="12" HorizontalAlignment="Center" Text="{Binding Path=Name}" />
+                    </StackPanel>
+                  </HierarchicalDataTemplate>
+                </ItemsControl.ItemTemplate>
+              </TreeView>
+            </GroupBox>
+          </DockPanel>
+          <DockPanel Grid.Column="1">
+            <Grid>
+              <Grid.RowDefinitions>
+                <RowDefinition Height="1*" />
+                <RowDefinition Height="5*" />
+              </Grid.RowDefinitions>
+            </Grid>
+            <DockPanel Dock="Top" Grid.Row="0">
+              <Label Content="状态：" HorizontalAlignment="Left" Margin="0,25,0,0" VerticalAlignment="Top" Width="40" />
+              <Label Name="lblStatus" Content="SLEEPING" HorizontalAlignment="Left" Margin="0,25,0,0" VerticalAlignment="Top" Width="90" Height="25">
+                <FrameworkElement.Style>
+                  <Style TargetType="{x:Type Label}">
+                    <Setter Property="Foreground" Value="#FF000000" />
+                    <Style.Triggers>
+                      <Trigger Property="Content" Value="SLEEPING">
+                        <Setter Property="Foreground" Value="#FF000000" />
+                      </Trigger>
+                      <Trigger Property="Content" Value="INITIALIZED">
+                        <Setter Property="Foreground" Value="#FF000000" />
+                      </Trigger>
+                      <Trigger Property="Content" Value="CONNECTING">
+                        <Setter Property="Foreground" Value="#FFFFFF00" />
+                      </Trigger>
+                      <Trigger Property="Content" Value="FAILED">
+                        <Setter Property="Foreground" Value="#FFFF0000" />
+                      </Trigger>
+                      <Trigger Property="Content" Value="EXPIRED">
+                        <Setter Property="Foreground" Value="#FFFF0000" />
+                      </Trigger>
+                      <Trigger Property="Content" Value="CONNECTED">
+                        <Setter Property="Foreground" Value="#FF008000" />
+                      </Trigger>
+                      <Trigger Property="Content" Value="BANNED">
+                        <Setter Property="Foreground" Value="#FFFF4500" />
+                      </Trigger>
+                      <Trigger Property="Content" Value="BLOCKED">
+                        <Setter Property="Foreground" Value="#FFCD5C5C" />
+                      </Trigger>
+                      <Trigger Property="Content" Value="LEFT">
+                        <Setter Property="Foreground" Value="#FFFF0000" />
+                      </Trigger>
+                    </Style.Triggers>
+                  </Style>
+                </FrameworkElement.Style>
+              </Label>
+            </DockPanel>
+            <GroupBox Grid.Row="1" Header="Fate" Margin="10,5,50,30">
+              <TreeView Name="treeSubscribed" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" ItemsSource="{Binding FateRoot}">
+                <ItemsControl.ItemTemplate>
+                  <HierarchicalDataTemplate DataType="{x:Type local:CheckTreeNode}" ItemsSource="{Binding Nodes}">
+                    <StackPanel Orientation="Horizontal">
+                      <CheckBox IsTabStop="False" Focusable="False" HorizontalAlignment="Center" ClickMode="Press" IsChecked="{Binding Path=ViewChecked}" Tag="{Binding Path=ID}" Click="checkAvailable_CheckedChanged" />
+                      <TextBlock FontSize="12" HorizontalAlignment="Center" Text="{Binding Path=Name}" />
+                    </StackPanel>
+                  </HierarchicalDataTemplate>
+                </ItemsControl.ItemTemplate>
+              </TreeView>
+            </GroupBox>
+          </DockPanel>
+        </Grid>
+      </TabItem>
+      <TabItem Header="设置">
+        <Grid Background="#FFE5E5E5">
+          <GroupBox Header="TTS" HorizontalAlignment="Left" Height="75" Margin="40,25,0,0" VerticalAlignment="Top" Width="500">
+            <Grid>
+              <CheckBox Content="启用TTS" Margin="5,5,0,0" HorizontalAlignment="Left" Width="63" IsChecked="{Binding Config.TTS}" Checked="CheckBoxTTSChecked" Unchecked="CheckBoxTTSChecked" />
+              <Button Name="ButtonTestTTS" Content="测试" HorizontalAlignment="Left" Margin="120,3,0,0" VerticalAlignment="Top" Click="ButtonTestTTSClicked" />
+              <CheckBox Name="TTSHealthy" Content="健康" HorizontalAlignment="Left" Margin="185,5,0,0" IsChecked="{Binding Config.NotifySpottedTTS}" />
+              <CheckBox Name="TTSTaunted" Content="开怪" HorizontalAlignment="Left" Margin="255,5,0,0" IsChecked="{Binding Config.NotifyTauntedTTS}" />
+              <CheckBox Name="TTSBullying" Content="暴打" HorizontalAlignment="Left" Margin="325,5,0,0" IsChecked="{Binding Config.NotifyBullyingTTS}" />
+              <CheckBox Name="TTSDied" Content="死亡" HorizontalAlignment="Left" Margin="395,5,0,0" IsChecked="{Binding Config.NotifyDiedTTS}" />
+              <CheckBox Content="播报拓展信息（坐标）" HorizontalAlignment="Left" Margin="5,30,0,0" IsChecked="{Binding Config.TTSExtend}" />
+            </Grid>
+          </GroupBox>
+          <GroupBox Header="桌面通知" HorizontalAlignment="Left" Height="75" Margin="40,100,0,0" VerticalAlignment="Top" Width="500">
+            <Grid>
+              <CheckBox Content="启用桌面通知" HorizontalAlignment="Left" Margin="5,5,0,0" VerticalAlignment="Top" IsChecked="{Binding Config.SystemToast}" Checked="CheckBoxToastChecked" Unchecked="CheckBoxToastChecked" />
+              <Button Name="ButtonTestToast" Content="测试" HorizontalAlignment="Left" Margin="120,3,0,0" VerticalAlignment="Top" Click="ButtonTestToastClicked" />
+              <CheckBox Name="ToastHealthy" Content="健康" HorizontalAlignment="Left" Margin="185,5,0,0" IsChecked="{Binding Config.NotifySpottedToast}" />
+              <CheckBox Name="ToastTaunted" Content="开怪" HorizontalAlignment="Left" Margin="255,5,0,0" IsChecked="{Binding Config.NotifyTauntedToast}" />
+              <CheckBox Name="ToastBullying" Content="暴打" HorizontalAlignment="Left" Margin="325,5,0,0" IsChecked="{Binding Config.NotifyBullyingToast}" />
+              <CheckBox Name="ToastDied" Content="死亡" HorizontalAlignment="Left" Margin="395,5,0,0" IsChecked="{Binding Config.NotifyDiedToast}" />
+              <Label Content="通知报送模式" HorizontalAlignment="Left" Margin="20,25,0,0" VerticalAlignment="Top" />
+              <RadioButton Name="ToastTypeUWP" GroupName="ToastType" Content="使用 UWP API" HorizontalAlignment="Left" Margin="185,30,0,0" VerticalAlignment="Top" Checked="RadioButtonToastTypeChecked" />
+              <RadioButton Name="ToastTypeLegacy" GroupName="ToastType" Content="传统" HorizontalAlignment="Left" Margin="325,30,0,0" VerticalAlignment="Top" Checked="RadioButtonToastTypeChecked" />
+            </Grid>
+          </GroupBox>
+          <GroupBox Header="大区接收" HorizontalAlignment="Left" Height="100" Margin="40,175,0,0" VerticalAlignment="Top" Width="500">
+            <Grid>
+              <CheckBox Name="CrossWorldHunt" Content="跨服接收狩猎" HorizontalAlignment="Left" Margin="5,5,0,0" VerticalAlignment="Top" IsChecked="{Binding Config.CrossWorldHunt}" Checked="CheckBoxCWHChecked" Unchecked="CheckBoxCWHChecked" />
+              <CheckBox Name="CWHuntSS" Content="SS" HorizontalAlignment="Left" Margin="185,5,0,0" Tag="hunt" IsChecked="{Binding Config.CWHuntSS}" Checked="CheckBoxCrossWorld" Unchecked="CheckBoxCrossWorld" />
+              <CheckBox Name="CWHuntS" Content="S" HorizontalAlignment="Left" Margin="255,5,0,0" Tag="hunt" IsChecked="{Binding Config.CWHuntS}" Checked="CheckBoxCrossWorld" Unchecked="CheckBoxCrossWorld" />
+              <CheckBox Name="CWHuntA" Content="A" HorizontalAlignment="Left" Margin="325,5,0,0" Tag="hunt" IsChecked="{Binding Config.CWHuntA}" Checked="CheckBoxCrossWorld" Unchecked="CheckBoxCrossWorld" />
+              <CheckBox Name="CWHuntB" Content="B" HorizontalAlignment="Left" Margin="395,5,0,0" Tag="hunt" IsChecked="{Binding Config.CWHuntB}" Checked="CheckBoxCrossWorld" Unchecked="CheckBoxCrossWorld" />
+              <CheckBox Name="CrossDCHunt" Content="跨大区接收狩猎" HorizontalAlignment="Left" Margin="5,30,0,0" VerticalAlignment="Top" IsEnabled="False" IsChecked="{Binding Config.CrossDCHunt}" Checked="CheckBoxCDCHChecked" Unchecked="CheckBoxCDCHChecked" />
+              <CheckBox Name="CDCHuntSS" Content="SS" HorizontalAlignment="Left" Margin="185,30,0,0" Tag="hunt" IsEnabled="False" IsChecked="{Binding Config.CDCHuntSS}" Checked="CheckBoxCrossDC" Unchecked="CheckBoxCrossDC" />
+              <CheckBox Name="CDCHuntS" Content="S" HorizontalAlignment="Left" Margin="255,30,0,0" Tag="hunt" IsEnabled="False" IsChecked="{Binding Config.CDCHuntS}" Checked="CheckBoxCrossDC" Unchecked="CheckBoxCrossDC" />
+              <CheckBox Name="CDCHuntA" Content="A" HorizontalAlignment="Left" Margin="325,30,0,0" Tag="hunt" IsEnabled="False" IsChecked="{Binding Config.CDCHuntA}" Checked="CheckBoxCrossDC" Unchecked="CheckBoxCrossDC" />
+              <CheckBox Name="CDCHuntB" Content="B" HorizontalAlignment="Left" Margin="395,30,0,0" Tag="hunt" IsEnabled="False" IsChecked="{Binding Config.CDCHuntB}" Checked="CheckBoxCrossDC" Unchecked="CheckBoxCrossDC" />
+              <CheckBox Name="CrossWorldFate" Content="跨服接收Fate" HorizontalAlignment="Left" Margin="5,55,0,0" VerticalAlignment="Top" IsChecked="{Binding Config.CrossWorldFate}" Checked="CheckBoxCWFChecked" Unchecked="CheckBoxCWFChecked" />
+              <CheckBox Name="CWFateC" Content="普通Fate" HorizontalAlignment="Left" Margin="185,55,0,0" Tag="fate" IsChecked="{Binding Config.CWFateCommon}" Checked="CheckBoxCrossWorld" Unchecked="CheckBoxCrossWorld" />
+              <CheckBox Name="CWFateS" Content="特殊Fate" HorizontalAlignment="Left" Margin="325,55,0,0" Tag="fate" IsChecked="{Binding Config.CWFateSpecial}" Checked="CheckBoxCrossWorld" Unchecked="CheckBoxCrossWorld" />
+              <Label Name="CWStatus" Content="请稍候" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="435,0,0,0" />
+            </Grid>
+          </GroupBox>
+          <CheckBox Content="副本任务中暂停推送" HorizontalAlignment="Left" Margin="50,285,0,0" VerticalAlignment="Top" IsChecked="{Binding Config.PauseInDuty}" />
+          <Button Name="ButtonRestart" Content="刷新配置并重新连接" HorizontalAlignment="Left" Margin="400,283,0,0" VerticalAlignment="Top" Click="ButtonRestartClicked" />
+          <Expander Header="高级选项" HorizontalAlignment="Left" Height="74" Margin="10,310,0,0" VerticalAlignment="Top">
+            <Grid Background="#FFE5E5E5">
+              <CheckBox Content="将消息内容写入ACT日志行（Beta）" HorizontalAlignment="Left" Margin="50,10,0,0" IsChecked="{Binding Config.WriteACTLog}" />
+              <ComboBox HorizontalAlignment="Left" Margin="160,38,0,0" VerticalAlignment="Top" Width="310" SelectedIndex="{Binding Config.ServerSelection}">
+                <ComboBoxItem>线路1</ComboBoxItem>
+              </ComboBox>
+              <Label Content="选择连接服务器" HorizontalAlignment="Left" Margin="50,35,0,0" VerticalAlignment="Top" Width="116" />
+              <CheckBox Content="指定连接服务器" HorizontalAlignment="Left" Margin="50,70,0,0" VerticalAlignment="Top" IsChecked="{Binding Config.UseExtraServer}" />
+              <TextBox HorizontalAlignment="Left" Height="23" Margin="160,65,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="309" Text="{Binding Config.ExtraServer}" />
+            </Grid>
+          </Expander>
+        </Grid>
+      </TabItem>
+      <TabItem Header="日志">
+        <Grid Background="#FFE5E5E5">
+          <CheckBox Name="checkExtended" Content="调试模式" HorizontalAlignment="Left" Margin="75,50,0,0" VerticalAlignment="Top" IsChecked="{Binding Config.ExtendedReport}" />
+          <TextBox Name="textLog" Background="#FFFFFFFF" TextWrapping="Wrap" Text="" Margin="75,90,75,60" Padding="5" VerticalScrollBarVisibility="Auto" />
+        </Grid>
+      </TabItem>
+    </TabControl>
+    <StatusBar HorizontalAlignment="Stretch" Margin="0,0,0,0" VerticalAlignment="Stretch" Grid.Row="1">
+      <TextBlock Text="{Binding Config.VersionString}">SilverDasher v0.6.0.4</TextBlock>
+      <Separator />
+      <TextBlock>免费插件请勿倒卖</TextBlock>
+      <Separator />
+      <Label Name="lblStatusBottom" Content="睡觉中">
+        <FrameworkElement.Style>
+          <Style TargetType="{x:Type Label}">
+            <Setter Property="Foreground" Value="#FF000000" />
+            <Style.Triggers>
+              <Trigger Property="Content" Value="睡觉中">
+                <Setter Property="Foreground" Value="#FF000000" />
+              </Trigger>
+              <Trigger Property="Content" Value="待命">
+                <Setter Property="Foreground" Value="#FF000000" />
+              </Trigger>
+              <Trigger Property="Content" Value="连线中">
+                <Setter Property="Foreground" Value="#FFFFFF00" />
+              </Trigger>
+              <Trigger Property="Content" Value="连接失败">
+                <Setter Property="Foreground" Value="#FFFF0000" />
+              </Trigger>
+              <Trigger Property="Content" Value="已过期">
+                <Setter Property="Foreground" Value="#FFFF0000" />
+              </Trigger>
+              <Trigger Property="Content" Value="在线">
+                <Setter Property="Foreground" Value="#FF008000" />
+              </Trigger>
+              <Trigger Property="Content" Value="封印中">
+                <Setter Property="Foreground" Value="#FFFF4500" />
+              </Trigger>
+              <Trigger Property="Content" Value="迷路中">
+                <Setter Property="Foreground" Value="#FFCD5C5C" />
+              </Trigger>
+              <Trigger Property="Content" Value="消失了">
+                <Setter Property="Foreground" Value="#FFFF0000" />
+              </Trigger>
+            </Style.Triggers>
+          </Style>
+        </FrameworkElement.Style>
+      </Label>
+    </StatusBar>
+  </Grid>
+</UserControl>

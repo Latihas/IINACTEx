@@ -1,0 +1,174 @@
+{
+  "version": "20221225",
+  "data": {
+
+    "1042": {
+      "name": "拉诺西亚",
+      "name_label": "LaNuoXiYa",
+      "dc": "陆行鸟",
+      "dc_label": "LuXingNiao"
+    },
+    "1043": {
+      "name": "紫水栈桥",
+      "name_label": "ZiShuiZhanQiao",
+      "dc": "猫小胖",
+      "dc_label": "MaoXiaoPang"
+    },
+    "1044": {
+      "name": "幻影群岛",
+      "name_label": "HuanYingQunDao",
+      "dc": "陆行鸟",
+      "dc_label": "LuXingNiao"
+    },
+    "1045": {
+      "name": "摩杜纳",
+      "name_label": "MoDuNa",
+      "dc": "猫小胖",
+      "dc_label": "MaoXiaoPang"
+    },
+    "1060": {
+      "name": "萌芽池",
+      "name_label": "MengYaChi",
+      "dc": "陆行鸟",
+      "dc_label": "LuXingNiao"
+    },
+    "1076": {
+      "name": "白金幻象",
+      "name_label": "BaiJinHuanXiang",
+      "dc": "莫古力",
+      "dc_label": "MoGuLi"
+    },
+    "1081": {
+      "name": "神意之地",
+      "name_label": "ShenYiZhiDi",
+      "dc": "陆行鸟",
+      "dc_label": "LuXingNiao"
+    },
+    "1106": {
+      "name": "静语庄园",
+      "name_label": "JingYuZhuangYuan",
+      "dc": "猫小胖",
+      "dc_label": "MaoXiaoPang"
+    },
+    "1113": {
+      "name": "旅人栈桥",
+      "name_label": "LvRenZhanQiao",
+      "dc": "莫古力",
+      "dc_label": "MoGuLi"
+    },
+    "1121": {
+      "name": "拂晓之间",
+      "name_label": "FuXiaoZhiJian",
+      "dc": "莫古力",
+      "dc_label": "MoGuLi"
+    },
+    "1166": {
+      "name": "龙巢神殿",
+      "name_label": "LongChaoShenDian",
+      "dc": "莫古力",
+      "dc_label": "MoGuLi"
+    },
+    "1167": {
+      "name": "红玉海",
+      "name_label": "HongYuHai",
+      "dc": "陆行鸟",
+      "dc_label": "LuXingNiao"
+    },
+    "1169": {
+      "name": "延夏",
+      "name_label": "YanXia",
+      "dc": "猫小胖",
+      "dc_label": "MaoXiaoPang"
+    },
+    "1170": {
+      "name": "潮风亭",
+      "name_label": "ChaoFengTing",
+      "dc": "莫古力",
+      "dc_label": "MoGuLi"
+    },
+    "1171": {
+      "name": "神拳痕",
+      "name_label": "ShenQuanHen",
+      "dc": "莫古力",
+      "dc_label": "MoGuLi"
+    },
+    "1172": {
+      "name": "白银乡",
+      "name_label": "BaiYinXiang",
+      "dc": "莫古力",
+      "dc_label": "MoGuLi"
+    },
+    "1173": {
+      "name": "宇宙和音",
+      "name_label": "YuZhouHeYin",
+      "dc": "陆行鸟",
+      "dc_label": "LuXingNiao"
+    },
+    "1174": {
+      "name": "沃仙曦染",
+      "name_label": "WoXianXiRan",
+      "dc": "陆行鸟",
+      "dc_label": "LuXingNiao"
+    },
+    "1175": {
+      "name": "晨曦王座",
+      "name_label": "ChenXiWangZuo",
+      "dc": "陆行鸟",
+      "dc_label": "LuXingNiao"
+    },
+    "1176": {
+      "name": "梦羽宝境",
+      "name_label": "MengYuBaoJing",
+      "dc": "莫古力",
+      "dc_label": "MoGuLi"
+    },
+    "1177": {
+      "name": "海猫茶屋",
+      "name_label": "HaiMaoChaWu",
+      "dc": "猫小胖",
+      "dc_label": "MaoXiaoPang"
+    },
+    "1178": {
+      "name": "柔风海湾",
+      "name_label": "RouFengHaiWan",
+      "dc": "猫小胖",
+      "dc_label": "MaoXiaoPang"
+    },
+    "1179": {
+      "name": "琥珀原",
+      "name_label": "HuPoYuan",
+      "dc": "猫小胖",
+      "dc_label": "MaoXiaoPang"
+    },
+    "1180": {
+      "name": "太阳海岸",
+      "name_label": "TaiYangHaiAn2",
+      "dc": "豆豆柴",
+      "dc_label": "DouDouChai"
+    },
+    "1183": {
+      "name": "银泪湖",
+      "name_label": "YinLeiHu2",
+      "dc": "豆豆柴",
+      "dc_label": "DouDouChai"
+    },
+    "1186": {
+      "name": "伊修加德",
+      "name_label": "YiXiuJiaDe2",
+      "dc": "豆豆柴",
+      "dc_label": "DouDouChai"
+    },
+    "1192": {
+      "name": "水晶塔",
+      "name_label": "ShuiJingTa2",
+      "dc": "豆豆柴",
+      "dc_label": "DouDouChai"
+    },
+    "1201": {
+      "name": "红茶川",
+      "name_label": "HongChaChuan2",
+      "dc": "豆豆柴",
+      "dc_label": "DouDouChai"
+    }
+  }
+}

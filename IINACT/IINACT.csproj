@@ -24,8 +24,9 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
+    <PackageReference Include="MQTTnet" Version="4.3.7.1207"/>
     <PackageReference Include="NAudio" Version="2.2.1"/>
-    <PackageReference Include="System.Speech" Version="10.0.2"/>
+    <PackageReference Include="System.Speech" Version="10.0.3"/>
     <Reference Include="FFXIVClientStructs">
       <HintPath>$(DalamudLibPath)FFXIVClientStructs.dll</HintPath>
       <Private>false</Private>
@@ -64,8 +65,10 @@
     <ProjectReference Include="../OverlayPlugin.Core/OverlayPlugin.Core.csproj"/>
     <ProjectReference Include="../Triggernometry/Source/Triggernometry/TriggernometryPlugin.csproj"/>
     <ProjectReference Include="../PostNamazu/PostNamazu/PostNamazu.csproj"/>
+    <ProjectReference Include="../SilverDasher/SilverDasher/SilverDasher.csproj"/>
+    <ProjectReference Include="../SilverDasher/Zodiark/Zodiark.csproj"/>
     <ProjectReference Include="../Unscrambler/Unscrambler/Unscrambler.csproj"/>
-<!--    <PackageReference Include="Unscrambler.XIV.CN" Version="7.41.1" />-->
+    <!--    <PackageReference Include="Unscrambler.XIV.CN" Version="7.41.1" />-->
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="..\EdgeTTS\voices.json">
@@ -111,11 +114,12 @@
     <Content Include="..\external_dependencies\SafeMemoryReader.dll">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="zh-CN.triglations.xml">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
     <Content Include="IINACTEx.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Res/**/*">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <TargetPath>$([System.String]::Copy('%(RecursiveDir)').Replace('Res\', ''))%(Filename)%(Extension)</TargetPath>
     </Content>
   </ItemGroup>
 </Project>

@@ -1,0 +1,35 @@
+{
+  "version": "20250923",
+  "data": [
+    {
+      "group": "test",
+      "name": "Test Group",
+      "subGroups": [
+        {
+          "group": "anothertest",
+          "name": "Another Test Group",
+          "items": [
+            "2962",
+            "2963"
+          ]
+        }
+      ]
+    },
+    {
+      "group": "rank100B",
+      "name": "测试用-100级-B怪",
+      "items": [
+        "13150",
+        "13151"
+      ]
+    },
+    {
+      "group": "rank100A",
+      "name": "测试用-100级A怪",
+      "items": [
+        "13400",
+        "13401"
+      ]
+    }
+  ]
+}

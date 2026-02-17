@@ -37,6 +37,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ChineseConverter", "Chinese
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EdgeTTS", "EdgeTTS\EdgeTTS.csproj", "{EB385ACD-D87F-4EBC-9FC4-114C2CFEAB1B}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Zodiark", "SilverDasher\Zodiark\Zodiark.csproj", "{DD165459-11B6-47B4-812D-5BE9ACFC8B4F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SilverDasher", "SilverDasher\SilverDasher\SilverDasher.csproj", "{D7ECF953-9D2C-4C06-B494-24916F91A9F3}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -111,6 +115,14 @@ Global
 		{EB385ACD-D87F-4EBC-9FC4-114C2CFEAB1B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{EB385ACD-D87F-4EBC-9FC4-114C2CFEAB1B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{EB385ACD-D87F-4EBC-9FC4-114C2CFEAB1B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DD165459-11B6-47B4-812D-5BE9ACFC8B4F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DD165459-11B6-47B4-812D-5BE9ACFC8B4F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DD165459-11B6-47B4-812D-5BE9ACFC8B4F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DD165459-11B6-47B4-812D-5BE9ACFC8B4F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D7ECF953-9D2C-4C06-B494-24916F91A9F3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D7ECF953-9D2C-4C06-B494-24916F91A9F3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D7ECF953-9D2C-4C06-B494-24916F91A9F3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D7ECF953-9D2C-4C06-B494-24916F91A9F3}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

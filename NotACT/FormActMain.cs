@@ -4,6 +4,7 @@ using System.Globalization;
 using System.Media;
 using System.Text.RegularExpressions;
 using Advanced_Combat_Tracker.Resources;
+using Dalamud.Plugin;
 using Dalamud.Plugin.Services;
 using FFXIV_ACT_Plugin.Logfile;
 
@@ -30,10 +31,11 @@ public partial class FormActMain : Form, ISynchronizeInvoke {
 
     internal volatile bool refreshTree;
 
-    public FormActMain(IPluginLog pluginLog) {
+    public FormActMain(IDalamudPlugin plugin, IPluginLog pluginLog) {
         PluginLog = pluginLog;
+        DalamudPlugin = plugin;
         // InitializeComponent();
-        AppDataFolder = new DirectoryInfo(".");
+        AppDataFolder = new DirectoryInfo(DalamudPlugin.PluginConfigDirectory);
         // ActGlobals.ActLocalization.Init();
         // ActGlobals.ActLocalization.AddPrebuild();
         NotActMainFormatter.SetupEnvironment();
