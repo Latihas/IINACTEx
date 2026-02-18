@@ -227,20 +227,22 @@ public sealed class Plugin : IDalamudPlugin {
                 LoadIActPluginV1(rt, preserveEnableState: true);
         PostNamazuPlugin.InitPlugin(PluginInterface, Log, SigScanner);
         LogTick("Waiting Triggernometry");
-        if (Configuration.LoadSilverDasherOnInit) MainWindow.EnableSilverDasher();
         taskTrn.Wait();
         LogTick("Triggernometry & PostNamazu & Callback Initialized");
         foreach (var rt in Directory.GetFiles(PluginActScriptDirectory, "*.cs", SearchOption.TopDirectoryOnly).Select(Path.GetFileName).Cast<string>())
             if (Configuration.ActScriptsEnabled.Contains(rt))
                 LoadPScript(rt, preserveEnableState: true);
-        var threadPostnamazu1 = new Thread(() => {
+        var threadPost = new Thread(() => {
             BridgeNamazu.InitializeModules();
             BridgeNamazu.RegisterAnnotatedMethods();
-            LogTick("Asyc BridgeNamazu Initialized");
+            LogTick("Asyc Post Process Done");
         }) {
             IsBackground = true
         };
-        threadPostnamazu1.Start();
+        Framework.RunOnFrameworkThread(() => {
+            if (Configuration.LoadSilverDasherOnInit) MainWindow.EnableSilverDasher();
+        });
+        threadPost.Start();
         if (Directory.Exists(Path.Combine(PluginConfigDirectory, "cactbot"))) RefreshBw();
         if (Configuration.ShowWindowOnInit) MainWindow.Toggle();
         if (Configuration.ShowOverlayOnInit) OverlayWindow.Toggle();

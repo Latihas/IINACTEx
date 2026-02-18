@@ -5,6 +5,7 @@ using System.Reflection;
 using System.Runtime.Loader;
 using System.Speech.Synthesis;
 using Advanced_Combat_Tracker;
+using Dalamud.Plugin.Services;
 using Dalamud.Utility;
 using IINACT.TextToSpeech;
 using NAudio.Wave;
@@ -52,6 +53,7 @@ internal class TextToSpeechProvider : IDisposable {
         SetUseLatihasTTS(Plugin.Configuration.UseLatihasTts);
     }
 
+
     public void SetUseEdgeTTS(bool useEdgeTTS) {
         if (useEdgeTTS) Plugin.Configuration.UseLatihasTts = useLatihasTTS = false;
         Plugin.Configuration.UseEdgeTts = this.useEdgeTTS = useEdgeTTS;
@@ -71,9 +73,14 @@ internal class TextToSpeechProvider : IDisposable {
         Plugin.Configuration.Save();
     }
 
+    private static readonly Dictionary<string, DateTime> time = new();
+
     public void Speak(string message) {
         if (string.IsNullOrEmpty(message)) return;
-
+        lock (time) {
+            if (time.TryGetValue(message, out var value) && (DateTime.Now - value).TotalSeconds < Plugin.Configuration.TtsInterval) return;
+            time[message] = DateTime.Now;
+        }
         if (useEdgeTTS && edgeTTSManager != null) {
             try {
                 Task.Run(() => edgeTTSManager.Speak(message));

@@ -264,17 +264,20 @@ public static partial class LWindow {
         var useLatihasTTS = Plugin.Configuration.UseLatihasTts;
         if (ImGui.Checkbox("使用LatihasTTS（均不勾选则使用本地TTS）", ref useLatihasTTS))
             Plugin.TextToSpeechProvider.SetUseLatihasTTS(useLatihasTTS);
-        ImGui.Spacing();
         ImGui.Separator();
-        ImGui.Spacing();
+        var TtsInterval = Plugin.Configuration.TtsInterval;
+        if (ImGui.InputFloat("同一句话最小间隔(s)", ref TtsInterval)) {
+            Plugin.Configuration.TtsInterval = TtsInterval;
+            Plugin.Configuration.Save();
+        }
     }
 
     internal static void DrawSettingsScripts() {
         using var tab = ImRaii.TabItem("脚本设置");
         if (!tab) return;
-        if(ImGui.Button("点击查看ACT日志教程"))Start("https://github.com/MnFeN/ACT_Tech_Guide/blob/main/7.0%20ACT%20%E6%97%A5%E5%BF%97%E6%8C%87%E5%8D%97.md");
-       ImGui.SameLine();
-        if(ImGui.Button("点击查看IINACTEx脚本教程"))Start("https://github.com/Latihas/TrnDevEnv");
+        if (ImGui.Button("点击查看ACT日志教程")) Start("https://github.com/MnFeN/ACT_Tech_Guide/blob/main/7.0%20ACT%20%E6%97%A5%E5%BF%97%E6%8C%87%E5%8D%97.md");
+        ImGui.SameLine();
+        if (ImGui.Button("点击查看IINACTEx脚本教程")) Start("https://github.com/Latihas/TrnDevEnv");
         ImGui.PushStyleColor(ImGuiCol.Text, ImGuiColors.DalamudYellow);
         ImGui.Text("该设置仍在开发，危险性中等，请自行斟酌使用。");
         ImGui.PopStyleColor(1);
@@ -287,7 +290,7 @@ public static partial class LWindow {
         ImGui.Separator();
         if (ImGui.Button("打开脚本文件夹")) Start(Plugin.Instance.PluginActScriptDirectory);
         ImGui.Text("已载入插件");
-        foreach (var actPluginData in ActGlobals.oFormActMain.ActPlugins) 
+        foreach (var actPluginData in ActGlobals.oFormActMain.ActPlugins)
             ImGui.Text(actPluginData.pluginFileName);
         ImGui.Separator();
         NewTable(["名称", "状态", "操作"], Directory.GetFiles(Plugin.Instance.PluginActScriptDirectory, "*.cs", SearchOption.TopDirectoryOnly)
