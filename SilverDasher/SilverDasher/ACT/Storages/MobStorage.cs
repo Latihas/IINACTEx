@@ -7,9 +7,9 @@ namespace SilverDasher.ACT.Storages;
 
 internal class MobStorage : BaseStorage<HuntMob>
 {
-	internal Dictionary<int, HuntMob> HuntByBnpcNameID = new Dictionary<int, HuntMob>();
+	internal Dictionary<int, HuntMob> HuntByBnpcNameID = new();
 
-	internal Dictionary<(int, Rank), List<int>> HuntsByPatchRank = new Dictionary<(int, Rank), List<int>>();
+	internal Dictionary<(int, Rank), List<int>> HuntsByPatchRank = new();
 
 	internal override string ResourceFileName => "hunts.json";
 
@@ -41,7 +41,7 @@ internal class MobStorage : BaseStorage<HuntMob>
 
 	internal List<string> Query(int patch = 0, Rank rank = Rank.Unknown, int map = 0)
 	{
-		List<string> list = new List<string>();
+		List<string> list = [];
 		foreach (int key in HuntByBnpcNameID.Keys)
 		{
 			HuntMob huntMob = HuntByBnpcNameID[key];
@@ -106,7 +106,7 @@ internal class MobStorage : BaseStorage<HuntMob>
 			huntMob.Storage = this;
 			if (!HuntsByPatchRank.TryGetValue((huntMob.Patch, huntMob.Rank), out var value))
 			{
-				value = new List<int>();
+				value = [];
 				HuntsByPatchRank[(huntMob.Patch, huntMob.Rank)] = value;
 			}
 			value.Add(key);

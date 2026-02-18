@@ -18,8 +18,7 @@ internal class Negotiator : Doppelganger
 
 	internal IDataRepository ffdata;
 
-	internal Dictionary<char, int> InstanceMap = new Dictionary<char, int>
-	{
+	internal Dictionary<char, int> InstanceMap = new() {
 		{ '\ue0b1', 1 },
 		{ '\ue0b2', 2 },
 		{ '\ue0b3', 3 },
@@ -52,7 +51,7 @@ internal class Negotiator : Doppelganger
 		dynamic fFXIVACTPlugin = FFXIVACTPlugin;
 		ffevents = fFXIVACTPlugin.DataSubscription as IDataSubscription;
 		ffevents.ZoneChanged += GetPlayerInfo;
-		ffevents.NetworkReceived += base.Overseer.OnNetworkReceive;
+		ffevents.NetworkReceived += Overseer.OnNetworkReceive;
 		ffevents.ProcessChanged += ProcessChanged;
 		ffevents.LogLine += OnInGameLoglineRead;
 		ffdata = fFXIVACTPlugin.DataRepository;
@@ -63,7 +62,7 @@ internal class Negotiator : Doppelganger
 		dynamic fFXIVACTPlugin = FFXIVACTPlugin;
 		IDataSubscription obj = fFXIVACTPlugin.DataSubscription as IDataSubscription;
 		obj.ZoneChanged -= GetPlayerInfo;
-		obj.NetworkReceived -= base.Overseer.OnNetworkReceive;
+		obj.NetworkReceived -= Overseer.OnNetworkReceive;
 		obj.ProcessChanged -= ProcessChanged;
 	}
 
@@ -84,63 +83,63 @@ internal class Negotiator : Doppelganger
 		}
 		if (combatant != null && combatant.WorldID != 0)
 		{
-			base.Keeper.PlayerName = combatant.Name;
-			base.Keeper.PlayerWorld = combatant.WorldName;
-			base.Keeper.PlayerWorldID = combatant.WorldID;
-			base.Keeper.CurrentWorldID = combatant.CurrentWorldID;
+			Keeper.PlayerName = combatant.Name;
+			Keeper.PlayerWorld = combatant.WorldName;
+			Keeper.PlayerWorldID = combatant.WorldID;
+			Keeper.CurrentWorldID = combatant.CurrentWorldID;
 			if (ZoneID != 0)
 			{
-				base.Keeper.CurrentMapID = ZoneID;
+				Keeper.CurrentMapID = ZoneID;
 			}
 			else
 			{
-				base.Keeper.CurrentMapID = dataRepository.GetCurrentTerritoryID();
+				Keeper.CurrentMapID = dataRepository.GetCurrentTerritoryID();
 			}
-			if (base.Keeper.Worlds.TryGetByLabel(base.Keeper.PlayerWorld, out var w))
+			if (Keeper.Worlds.TryGetByLabel(Keeper.PlayerWorld, out var w))
 			{
-				base.Keeper.PlayerWorld = w.Name;
+				Keeper.PlayerWorld = w.Name;
 			}
 		}
 	}
 
 	internal void ProcessChanged(Process process)
 	{
-		base.Keeper.CurrentMobs.Clear();
-		base.Keeper.CurrentFates.Clear();
+		Keeper.CurrentMobs.Clear();
+		Keeper.CurrentFates.Clear();
 		Self.RestartLoop();
-		base.Primal.ChangeProcess(process);
+		Primal.ChangeProcess(process);
 	}
 
 	internal List<Message> ScanMobs()
 	{
 		dynamic fFXIVACTPlugin = FFXIVACTPlugin;
 		uint currentTerritoryID = ffdata.GetCurrentTerritoryID();
-		uint currentInstance = base.Primal.GetCurrentInstance();
+		uint currentInstance = Primal.GetCurrentInstance();
 		ReadOnlyCollection<Combatant> readOnlyCollection = fFXIVACTPlugin.DataRepository.GetCombatantList();
-		List<Message> result = new List<Message>();
-		HashSet<string> hashSet = new HashSet<string>();
+		List<Message> result = [];
+		HashSet<string> hashSet = [];
 		uint currentTerritoryID2 = ffdata.GetCurrentTerritoryID();
-		uint currentInstance2 = base.Primal.GetCurrentInstance();
-		base.Keeper.CurrentMapID = currentTerritoryID2;
-		base.Keeper.CurrentInstance = currentInstance2;
-		base.Logger.Debug($"Scanned Territory {currentTerritoryID2}");
-		if (currentTerritoryID != currentTerritoryID2 || currentInstance != currentInstance2 || base.Keeper.CurrentMapID == 255 || base.Keeper.CurrentInstance == 255)
+		uint currentInstance2 = Primal.GetCurrentInstance();
+		Keeper.CurrentMapID = currentTerritoryID2;
+		Keeper.CurrentInstance = currentInstance2;
+		Logger.Debug($"Scanned Territory {currentTerritoryID2}");
+		if (currentTerritoryID != currentTerritoryID2 || currentInstance != currentInstance2 || Keeper.CurrentMapID == 255 || Keeper.CurrentInstance == 255)
 		{
-			base.Keeper.CurrentFates.Clear();
-			base.Keeper.CurrentMobs.Clear();
+			Keeper.CurrentFates.Clear();
+			Keeper.CurrentMobs.Clear();
 			Log("Map or instance changed while detecting mobs, Messages will be disposed.");
 			return result;
 		}
 		if (readOnlyCollection.Count > 0)
 		{
-			base.Keeper.CurrentWorldID = readOnlyCollection[0].CurrentWorldID;
+			Keeper.CurrentWorldID = readOnlyCollection[0].CurrentWorldID;
 		}
 		foreach (Combatant item2 in readOnlyCollection)
 		{
 			string item = $"{currentTerritoryID2}-{(int)item2.BNpcNameID}-{currentInstance2}";
-			if (!hashSet.Contains(item) && base.Keeper.Mobs.Contains((int)item2.BNpcNameID))
+			if (!hashSet.Contains(item) && Keeper.Mobs.Contains((int)item2.BNpcNameID))
 			{
-				base.Keeper.MobUpdate((int)item2.BNpcNameID, (int)Math.Ceiling((double)item2.CurrentHP / (double)item2.MaxHP * 100.0), new Coordinate
+				Keeper.MobUpdate((int)item2.BNpcNameID, (int)Math.Ceiling((double)item2.CurrentHP / (double)item2.MaxHP * 100.0), new Coordinate
 				{
 					x = (int)(((double)item2.PosX * 0.02 + 21.5) * 100.0),
 					y = (int)(((double)item2.PosY * 0.02 + 21.5) * 100.0)
@@ -148,8 +147,8 @@ internal class Negotiator : Doppelganger
 				hashSet.Add(item);
 			}
 		}
-		List<string> list = new List<string>();
-		foreach (string key in base.Keeper.CurrentMobs.Keys)
+		List<string> list = [];
+		foreach (string key in Keeper.CurrentMobs.Keys)
 		{
 			if (!hashSet.Contains(key))
 			{
@@ -158,7 +157,7 @@ internal class Negotiator : Doppelganger
 		}
 		foreach (string item3 in list)
 		{
-			base.Keeper.CurrentMobs.Remove(item3);
+			Keeper.CurrentMobs.Remove(item3);
 		}
 		return result;
 	}
@@ -168,13 +167,13 @@ internal class Negotiator : Doppelganger
 		if (logline.StartsWith("当前所在副本区为"))
 		{
 			Debug(logline);
-			base.Keeper.CurrentMobs.Clear();
-			base.Keeper.CurrentFates.Clear();
+			Keeper.CurrentMobs.Clear();
+			Keeper.CurrentFates.Clear();
 			string text = logline.Substring(logline.IndexOf("“"), logline.IndexOf("”"));
 			text.Substring(0, text.Length - 1);
 			char key = text[text.Length - 1];
 			int chatLogInstance = InstanceMap[key];
-			base.Keeper.ChatLogInstance = (uint)chatLogInstance;
+			Keeper.ChatLogInstance = (uint)chatLogInstance;
 		}
 	}
 

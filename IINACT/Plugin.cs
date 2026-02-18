@@ -227,6 +227,7 @@ public sealed class Plugin : IDalamudPlugin {
                 LoadIActPluginV1(rt, preserveEnableState: true);
         PostNamazuPlugin.InitPlugin(PluginInterface, Log, SigScanner);
         LogTick("Waiting Triggernometry");
+        if (Configuration.LoadSilverDasherOnInit) MainWindow.EnableSilverDasher();
         taskTrn.Wait();
         LogTick("Triggernometry & PostNamazu & Callback Initialized");
         foreach (var rt in Directory.GetFiles(PluginActScriptDirectory, "*.cs", SearchOption.TopDirectoryOnly).Select(Path.GetFileName).Cast<string>())
@@ -251,6 +252,7 @@ public sealed class Plugin : IDalamudPlugin {
         try {
             Log.Warning($"正在加载IActPluginV1 {plugin.pluginFileName}");
             ActGlobals.oFormActMain.ActPlugins.Add(plugin);
+            plugin.PluginForm?.Show();
             plugin.pluginObj.InitPlugin(plugin.tpPluginSpace, plugin.lblPluginStatus);
             if (!preserveEnableState) {
                 Configuration.ActScriptsEnabled.Add(plugin.pluginFileName);
@@ -270,6 +272,11 @@ public sealed class Plugin : IDalamudPlugin {
                 Configuration.Save();
             }
             plugin.pluginObj.DeInitPlugin();
+            if (plugin.PluginForm != null) {
+                plugin.PluginForm.canClose = true;
+                plugin.PluginForm.Close();
+                plugin.PluginForm.Dispose();
+            }
         }
         catch (Exception e) {
             Log.Error(e.ToString());

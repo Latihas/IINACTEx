@@ -6,9 +6,9 @@ namespace SilverDasher.ACT.Storages;
 
 internal class WorldStorage : BaseStorage<World>
 {
-	private Dictionary<int, World> WorldByID = new Dictionary<int, World>();
+	private Dictionary<int, World> WorldByID = new();
 
-	private Dictionary<string, World> WorldByLabel = new Dictionary<string, World>();
+	private Dictionary<string, World> WorldByLabel = new();
 
 	internal override string ResourceFileName => "worlds.json";
 

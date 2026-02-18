@@ -8,7 +8,7 @@ internal class TerritoryStorage : BaseStorage<Territory>
 {
 	internal static TerritoryStorage Instance;
 
-	private Dictionary<int, Territory> TerritoryById = new Dictionary<int, Territory>();
+	private Dictionary<int, Territory> TerritoryById = new();
 
 	internal override string ResourceFileName => "territories.json";
 

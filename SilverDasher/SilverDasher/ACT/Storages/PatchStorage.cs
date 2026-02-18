@@ -8,7 +8,7 @@ internal class PatchStorage : BaseStorage<Patch>
 {
 	private List<Patch> _patches;
 
-	public Dictionary<int, Patch> PatchByCode = new Dictionary<int, Patch>();
+	public Dictionary<int, Patch> PatchByCode = new();
 
 	internal override string ResourceFileName => "patches.json";
 

@@ -49,9 +49,9 @@ internal class Painter : Doppelganger
 	{
 		PluginViewModel obj = pluginControl.DataContext as PluginViewModel;
 		obj.ClearAllNodes();
-		obj.SetPatchNames(base.Painter.Keeper.Patches.PatchByCode);
-		obj.SetupHuntMobs(base.Painter.Keeper.Mobs.HuntByBnpcNameID, base.Painter.Keeper.SpHunts.HuntGroupsTree, Keeper.Config.HuntSubscriptions);
-		obj.SetupFates(base.Painter.Keeper.Fates.FateByID, base.Painter.Keeper.SpFates.FateGroupsTree, Keeper.Config.FateSubscriptions);
+		obj.SetPatchNames(Painter.Keeper.Patches.PatchByCode);
+		obj.SetupHuntMobs(Painter.Keeper.Mobs.HuntByBnpcNameID, Painter.Keeper.SpHunts.HuntGroupsTree, Keeper.Config.HuntSubscriptions);
+		obj.SetupFates(Painter.Keeper.Fates.FateByID, Painter.Keeper.SpFates.FateGroupsTree, Keeper.Config.FateSubscriptions);
 	}
 
 	internal void SetPluginStatus(string text)

@@ -7,13 +7,13 @@ namespace SilverDasher.ACT.Storages;
 
 internal class SpHuntStorage : BaseStorage
 {
-	internal HashSet<int> SpHunts = new HashSet<int>();
+	internal HashSet<int> SpHunts = [];
 
-	internal List<ItemGroup> HuntGroupsTree = new List<ItemGroup>();
+	internal List<ItemGroup> HuntGroupsTree = [];
 
-	internal HashSet<ItemGroup> HuntGroupsAll = new HashSet<ItemGroup>();
+	internal HashSet<ItemGroup> HuntGroupsAll = [];
 
-	internal Dictionary<string, ItemGroup> HuntGroupById = new Dictionary<string, ItemGroup>();
+	internal Dictionary<string, ItemGroup> HuntGroupById = new();
 
 	internal override string ResourceFileName => "sphunts.json";
 

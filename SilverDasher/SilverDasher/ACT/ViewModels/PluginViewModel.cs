@@ -15,13 +15,13 @@ public class PluginViewModel : UIBinded
 
 	internal CheckTreeNode fateRoot;
 
-	internal Dictionary<string, CheckTreeNode> HuntNodeIndex = new Dictionary<string, CheckTreeNode>();
+	internal Dictionary<string, CheckTreeNode> HuntNodeIndex = new();
 
-	internal Dictionary<int, List<CheckTreeNode>> HuntNodesById = new Dictionary<int, List<CheckTreeNode>>();
+	internal Dictionary<int, List<CheckTreeNode>> HuntNodesById = new();
 
-	internal Dictionary<string, CheckTreeNode> FateNodeIndex = new Dictionary<string, CheckTreeNode>();
+	internal Dictionary<string, CheckTreeNode> FateNodeIndex = new();
 
-	internal Dictionary<int, List<CheckTreeNode>> FateNodesById = new Dictionary<int, List<CheckTreeNode>>();
+	internal Dictionary<int, List<CheckTreeNode>> FateNodesById = new();
 
 	public Config Config => Keeper.Config;
 
@@ -60,8 +60,8 @@ public class PluginViewModel : UIBinded
 
 	public PluginViewModel()
 	{
-		HuntRoot = new ObservableCollection<CheckTreeNode>();
-		FateRoot = new ObservableCollection<CheckTreeNode>();
+		HuntRoot = [];
+		FateRoot = [];
 	}
 
 	public void ClearAllNodes()
@@ -109,7 +109,7 @@ public class PluginViewModel : UIBinded
 	public void SetupHuntMobs(Dictionary<int, HuntMob> huntEntries, List<ItemGroup> huntGroupsTree, List<int> subs)
 	{
 		CheckTreeNode.BUILDING = true;
-		List<CheckTreeNode> list = new List<CheckTreeNode>();
+		List<CheckTreeNode> list = [];
 		new List<CheckTreeNode>();
 		new List<CheckTreeNode>();
 		if (!HuntNodeIndex.TryGetValue("hunt-all-0", out var value))
@@ -141,7 +141,7 @@ public class PluginViewModel : UIBinded
 			HuntNodesById.TryGetValue(key, out var value5);
 			if (value5 == null)
 			{
-				value5 = new List<CheckTreeNode>();
+				value5 = [];
 			}
 			value5.Add(checkTreeNode);
 			HuntNodesById[key] = value5;
@@ -176,8 +176,8 @@ public class PluginViewModel : UIBinded
 	public void SetupFates(Dictionary<int, Fate> fateEntries, List<ItemGroup> fateGroupsTree, List<int> subs)
 	{
 		CheckTreeNode.BUILDING = true;
-		List<CheckTreeNode> list = new List<CheckTreeNode>();
-		List<CheckTreeNode> list2 = new List<CheckTreeNode>();
+		List<CheckTreeNode> list = [];
+		List<CheckTreeNode> list2 = [];
 		if (!FateNodeIndex.TryGetValue("fate-all", out var value))
 		{
 			value = new CheckTreeNode("全部Fate", "fate-all-0");
@@ -214,7 +214,7 @@ public class PluginViewModel : UIBinded
 			FateNodesById.TryGetValue(key, out var value6);
 			if (value6 == null)
 			{
-				value6 = new List<CheckTreeNode>();
+				value6 = [];
 			}
 			value6.Add(checkTreeNode);
 			FateNodesById[key] = value6;

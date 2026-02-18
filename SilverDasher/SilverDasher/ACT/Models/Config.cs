@@ -14,8 +14,7 @@ public class Config : UIBinded
 	public readonly string VersionString = string.Join(".", BitConverter.GetBytes(DataStorage.Version));
 
 	[JsonProperty("TTSNotifications")]
-	public Dictionary<HuntState, bool> TTSNotifications = new Dictionary<HuntState, bool>
-	{
+	public Dictionary<HuntState, bool> TTSNotifications = new() {
 		{
 			HuntState.Healthy,
 			true
@@ -37,8 +36,7 @@ public class Config : UIBinded
 	private string toastType = "UWP";
 
 	[JsonProperty("ToastNotifications")]
-	public Dictionary<HuntState, bool> ToastNotifications = new Dictionary<HuntState, bool>
-	{
+	public Dictionary<HuntState, bool> ToastNotifications = new() {
 		{
 			HuntState.Healthy,
 			true
@@ -58,8 +56,7 @@ public class Config : UIBinded
 	};
 
 	[JsonProperty("CWHunts")]
-	public Dictionary<Rank, bool> CWHunts = new Dictionary<Rank, bool>
-	{
+	public Dictionary<Rank, bool> CWHunts = new() {
 		{
 			Rank.SS,
 			true
@@ -83,8 +80,7 @@ public class Config : UIBinded
 	};
 
 	[JsonIgnore]
-	public Dictionary<Rank, bool> CDCHunts = new Dictionary<Rank, bool>
-	{
+	public Dictionary<Rank, bool> CDCHunts = new() {
 		{
 			Rank.SS,
 			false
@@ -108,17 +104,16 @@ public class Config : UIBinded
 	};
 
 	[JsonProperty("CWFates")]
-	public Dictionary<string, bool> CWFates = new Dictionary<string, bool>
-	{
+	public Dictionary<string, bool> CWFates = new() {
 		{ "common", false },
 		{ "special", true }
 	};
 
 	[JsonProperty("hunts")]
-	public List<int> HuntSubscriptions = new List<int>();
+	public List<int> HuntSubscriptions = [];
 
 	[JsonProperty("fates")]
-	public List<int> FateSubscriptions = new List<int>();
+	public List<int> FateSubscriptions = [];
 
 	[JsonProperty("extend")]
 	public bool ExtendedReport { get; set; }
@@ -579,7 +574,7 @@ public class Config : UIBinded
 			Config config = JsonConvert.DeserializeObject<Config>(File.ReadAllText(DataStorage.ConfigPath));
 			if (config.HuntSubscriptions == null)
 			{
-				config.HuntSubscriptions = new List<int>();
+				config.HuntSubscriptions = [];
 			}
 			HashSet<int> source = new HashSet<int>(config.HuntSubscriptions);
 			HashSet<int> source2 = new HashSet<int>(config.FateSubscriptions);

@@ -8,6 +8,6 @@ public class UIBinded : INotifyPropertyChanged
 
 	public void NotifyPropertyChanged(string info)
 	{
-		this.PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(info));
+		PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(info));
 	}
 }

@@ -14,8 +14,7 @@ internal class Notifier : Doppelganger
 {
 	private bool ToastFailed;
 
-	private readonly JsonSerializerSettings unpackSettings = new JsonSerializerSettings
-	{
+	private readonly JsonSerializerSettings unpackSettings = new() {
 		NullValueHandling = NullValueHandling.Ignore,
 		ContractResolver = StrNullToEmptyContractResolver.DefaultInstance
 	};
@@ -38,7 +37,7 @@ internal class Notifier : Doppelganger
 		dynamic val = JsonConvert.DeserializeObject<JObject>(message, unpackSettings);
 		string[] array = topic.Split('/');
 		string text = array[1];
-		if (!base.Keeper.Worlds.TryGetByLabel(text, out var w))
+		if (!Keeper.Worlds.TryGetByLabel(text, out var w))
 		{
 			Log("Invalid world " + text + " for topic " + topic + ".");
 			return;
@@ -70,7 +69,7 @@ internal class Notifier : Doppelganger
 			catch (Exception)
 			{
 			}
-			base.Keeper.ReceivedMobUpdate(w, map, num2, num, hp, coords);
+			Keeper.ReceivedMobUpdate(w, map, num2, num, hp, coords);
 			if (Keeper.Config.ExtendedReport)
 			{
 				string s2 = $"{w.Name} - {val.m.Value}{num2} - {num}";
@@ -102,7 +101,7 @@ internal class Notifier : Doppelganger
 			catch (Exception)
 			{
 			}
-			base.Keeper.ReceivedFateUpdate(w, map2, num4, num3, hp2, coords2);
+			Keeper.ReceivedFateUpdate(w, map2, num4, num3, hp2, coords2);
 			if (Keeper.Config.ExtendedReport)
 			{
 				string s3 = $"{w.Name} - {val.m.Value}{num4} - {num3}";
@@ -127,13 +126,13 @@ internal class Notifier : Doppelganger
 
 	public void Notify(string worldId, int instance, GameDynamicObject gobj, HuntState status)
 	{
-		if (base.Keeper.InDuty() && Keeper.Config.PauseInDuty)
+		if (Keeper.InDuty() && Keeper.Config.PauseInDuty)
 		{
 			return;
 		}
-		World byLabel = base.Keeper.Worlds.GetByLabel(worldId);
+		World byLabel = Keeper.Worlds.GetByLabel(worldId);
 		string text = "";
-		if (!base.Keeper.Territories.TryGet((int)gobj.TerritoryID, out var item))
+		if (!Keeper.Territories.TryGet((int)gobj.TerritoryID, out var item))
 		{
 			Log($"处理信息时收到未能识别的地图编码。{gobj.TerritoryID}");
 			return;
@@ -150,7 +149,7 @@ internal class Notifier : Doppelganger
 		}
 		SendToast(text2, status, coord);
 		SendTTS(text2, status, coord);
-		Log("已尝试推送 " + text2 + ", " + base.Keeper.Mobs.GetStateName(status));
+		Log("已尝试推送 " + text2 + ", " + Keeper.Mobs.GetStateName(status));
 	}
 
 	public void WriteLogline(World world, int instance, GameDynamicObject gobj)
@@ -158,7 +157,7 @@ internal class Notifier : Doppelganger
 		if (Keeper.Config.WriteACTLog)
 		{
 			string logLine = "";
-			Territory territory = base.Keeper.Territories.Get(gobj.TerritoryID);
+			Territory territory = Keeper.Territories.Get(gobj.TerritoryID);
 			if (gobj is HuntMob)
 			{
 				HuntMob huntMob = gobj as HuntMob;
@@ -182,7 +181,7 @@ internal class Notifier : Doppelganger
 			{
 				message += coord;
 			}
-			ActGlobals.oFormActMain.TTS(message + base.Keeper.Mobs.GetStateName(status));
+			ActGlobals.oFormActMain.TTS(message + Keeper.Mobs.GetStateName(status));
 		}
 	}
 
@@ -209,11 +208,10 @@ internal class Notifier : Doppelganger
 				{
 					XmlDocument templateContent = ToastNotificationManager.GetTemplateContent(ToastTemplateType.ToastText02);
 					XmlNodeList elementsByTagName = templateContent.GetElementsByTagName("text");
-					string[] array = new string[2]
-					{
+					string[] array = [
 						message,
-						coord + base.Keeper.Mobs.GetStateName(status)
-					};
+						coord + Keeper.Mobs.GetStateName(status)
+					];
 					for (int i = 0; i < elementsByTagName.Length; i++)
 					{
 						if (i < array.Length)
@@ -231,7 +229,7 @@ internal class Notifier : Doppelganger
 			}
 			else if ("UWP" == Keeper.Config.ToastType)
 			{
-				new ToastContentBuilder().AddText(message).AddText(coord + base.Keeper.Mobs.GetStateName(status)).Show();
+				new ToastContentBuilder().AddText(message).AddText(coord + Keeper.Mobs.GetStateName(status)).Show();
 			}
 			return true;
 		}

@@ -35,13 +35,13 @@ internal class Keeper : Doppelganger
 
 	internal bool INITIALIZED;
 
-	internal Dictionary<int, Fate> CurrentFates = new Dictionary<int, Fate>();
+	internal Dictionary<int, Fate> CurrentFates = new();
 
-	internal Dictionary<string, HuntMob> CurrentMobs = new Dictionary<string, HuntMob>();
+	internal Dictionary<string, HuntMob> CurrentMobs = new();
 
-	internal Dictionary<(string, int, int), HuntMob> ReceivedMobs = new Dictionary<(string, int, int), HuntMob>();
+	internal Dictionary<(string, int, int), HuntMob> ReceivedMobs = new();
 
-	internal Dictionary<(string, int, int), Fate> ReceivedFates = new Dictionary<(string, int, int), Fate>();
+	internal Dictionary<(string, int, int), Fate> ReceivedFates = new();
 
 	internal FateStorage Fates;
 
@@ -78,7 +78,7 @@ internal class Keeper : Doppelganger
 			}
 			if (!Self.badWorldMessageShown)
 			{
-				base.Notifier.SendToast($"银山雀儿没能找到你所在的服务区 {value}。请进群寻求帮助。");
+				Notifier.SendToast($"银山雀儿没能找到你所在的服务区 {value}。请进群寻求帮助。");
 				Self.badWorldMessageShown = true;
 			}
 			throw new KeyNotFoundException($"Unable to find world with id {value}.");
@@ -254,8 +254,8 @@ internal class Keeper : Doppelganger
 			value.Health = hp;
 			value.TerritoryID = (uint)map;
 			ReceivedMobs.Add(key, value);
-			base.Notifier.NotifyMobStatusChanged(world.Label, instance, value);
-			base.Notifier.WriteLogline(world, instance, value);
+			Notifier.NotifyMobStatusChanged(world.Label, instance, value);
+			Notifier.WriteLogline(world, instance, value);
 		}
 		else
 		{
@@ -263,13 +263,13 @@ internal class Keeper : Doppelganger
 			if (value.State != Mobs.GetState(hp))
 			{
 				value.Health = hp;
-				base.Notifier.NotifyMobStatusChanged(world.Label, instance, value);
+				Notifier.NotifyMobStatusChanged(world.Label, instance, value);
 			}
 			if (hp != 0)
 			{
 				value.Health = hp;
 			}
-			base.Notifier.WriteLogline(world, instance, value);
+			Notifier.WriteLogline(world, instance, value);
 		}
 	}
 
@@ -287,26 +287,26 @@ internal class Keeper : Doppelganger
 			value.Coordinate = coords;
 			value.Progress = hp;
 			ReceivedFates.Add(key, value);
-			base.Notifier.NotifyFateStatusChanged(world.Label, instance, value);
-			base.Notifier.WriteLogline(world, instance, value);
+			Notifier.NotifyFateStatusChanged(world.Label, instance, value);
+			Notifier.WriteLogline(world, instance, value);
 			return;
 		}
 		value.Coordinate = coords;
 		if (value.State != Fates.GetState(hp))
 		{
 			value.Progress = hp;
-			base.Notifier.NotifyFateStatusChanged(world.Label, instance, value);
+			Notifier.NotifyFateStatusChanged(world.Label, instance, value);
 		}
 		if (hp != 100)
 		{
 			value.Progress = hp;
 		}
-		base.Notifier.WriteLogline(world, instance, value);
+		Notifier.WriteLogline(world, instance, value);
 	}
 
 	internal void ReportFateEnd(int fateId)
 	{
-		base.Messager.QueueMessage(new FateMessage
+		Messager.QueueMessage(new FateMessage
 		{
 			id = fateId,
 			Progress = 100,
@@ -317,7 +317,7 @@ internal class Keeper : Doppelganger
 
 	internal void ReportMobDied(HuntMob mob)
 	{
-		base.Messager.QueueMessage(new HuntMessage
+		Messager.QueueMessage(new HuntMessage
 		{
 			id = mob.Id,
 			health = 0,
@@ -333,7 +333,7 @@ internal class Keeper : Doppelganger
 		foreach (int key in CurrentFates.Keys)
 		{
 			Fate fate = CurrentFates[key];
-			base.Messager.QueueMessage(new FateMessage
+			Messager.QueueMessage(new FateMessage
 			{
 				id = key,
 				Progress = fate.Progress,
@@ -350,7 +350,7 @@ internal class Keeper : Doppelganger
 		foreach (string key in CurrentMobs.Keys)
 		{
 			HuntMob huntMob = CurrentMobs[key];
-			base.Messager.QueueMessage(new HuntMessage
+			Messager.QueueMessage(new HuntMessage
 			{
 				id = huntMob.Id,
 				health = huntMob.Health,
@@ -382,6 +382,6 @@ internal class Keeper : Doppelganger
 
 	internal List<BaseStorage> GetStorages()
 	{
-		return new List<BaseStorage> { Worlds, Territories, Patches, Opcodes, Mobs, SpHunts, Fates, SpFates };
+		return [Worlds, Territories, Patches, Opcodes, Mobs, SpHunts, Fates, SpFates];
 	}
 }

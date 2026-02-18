@@ -90,8 +90,9 @@ public class MainWindow : Window {
     }
 
     private static void InstallSilverDasher() {
-        var sourceDir = Path.Combine(Plugin.Instance.PluginAssemblyDirectory, "data");
         var targetDir = Path.Combine(Plugin.Instance.PluginActScriptDirectory, "data");
+        if (Directory.Exists(targetDir)) return;
+        var sourceDir = Path.Combine(Plugin.Instance.PluginAssemblyDirectory, "data");
         Directory.CreateDirectory(targetDir);
         CopyDirectoryContents(sourceDir, targetDir, overwrite: true);
     }
@@ -110,17 +111,25 @@ public class MainWindow : Window {
         }
     }
 
+    internal static void EnableSilverDasher() {
+        InstallSilverDasher();
+        Plugin.InitIActPluginV1(new ActPluginData("SilverDasher.dll", new SilverDasher.Loader.Loader(), false));
+    }
 
     private static void DrawSilverDasher() {
         using var tab = ImRaii.TabItem("SilverDasher");
         if (!tab) return;
-
-        if (ImGui.Button("启用")) {
-            InstallSilverDasher();
-            var sd = new SilverDasher.Loader.Loader();
-            var plug = new ActPluginData("SilverDasher.dll", sd, false);
-            ActGlobals.oFormActMain.ActPlugins.Add(plug);
-            sd.InitPlugin(new(), new());
+        if (ActGlobals.oFormActMain.ActPlugins.All(actPlugin => actPlugin.pluginFile.Name != "SilverDasher.dll")) {
+            if (ImGui.Button("启用")) EnableSilverDasher();
+        }
+        else {
+            if (ImGui.Button("禁用"))
+                Plugin.DeInitIActPluginV1(ActGlobals.oFormActMain.ActPlugins.First(x => x.pluginFile.Name == "SilverDasher.dll"));
+        }
+        var LoadSilverDasherOnInit = Plugin.Configuration.LoadSilverDasherOnInit;
+        if (ImGui.Checkbox("启动时加载", ref LoadSilverDasherOnInit)) {
+            Plugin.Configuration.LoadSilverDasherOnInit = LoadSilverDasherOnInit;
+            Plugin.Configuration.Save();
         }
     }
 

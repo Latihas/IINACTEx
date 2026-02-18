@@ -284,9 +284,12 @@ public static partial class LWindow {
         ImGui.PushStyleColor(ImGuiCol.Text, ImGuiColors.ParsedGreen);
         ImGui.Text("“我写的可是ACT插件，我肯定是绿玩。”");
         ImGui.PopStyleColor(1);
-        ImGui.Text(string.Join(",", ActGlobals.oFormActMain.ActPlugins.Select(x => x.pluginFileName)));
-        ImGui.SameLine();
+        ImGui.Separator();
         if (ImGui.Button("打开脚本文件夹")) Start(Plugin.Instance.PluginActScriptDirectory);
+        ImGui.Text("已载入插件");
+        foreach (var actPluginData in ActGlobals.oFormActMain.ActPlugins) 
+            ImGui.Text(actPluginData.pluginFileName);
+        ImGui.Separator();
         NewTable(["名称", "状态", "操作"], Directory.GetFiles(Plugin.Instance.PluginActScriptDirectory, "*.cs", SearchOption.TopDirectoryOnly)
             .Concat(Directory.GetFiles(Plugin.Instance.PluginActScriptDirectory, "*.dll", SearchOption.TopDirectoryOnly))
             .Select(Path.GetFileName).Cast<string>().ToArray(), [

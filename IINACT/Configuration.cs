@@ -29,6 +29,7 @@ public class Configuration : IPluginConfiguration {
     public bool ShowWindowOnInit { get; set; } = true;
     public bool ShowOverlayOnInit { get; set; } = true;
     public bool TtsOnInit { get; set; } = true;
+    public bool LoadSilverDasherOnInit { get; set; }
 
     public string LogFilePath
     {

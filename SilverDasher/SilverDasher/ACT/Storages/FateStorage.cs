@@ -6,7 +6,7 @@ namespace SilverDasher.ACT.Storages;
 
 internal class FateStorage : BaseStorage<Fate>
 {
-	internal Dictionary<int, Fate> FateByID = new Dictionary<int, Fate>();
+	internal Dictionary<int, Fate> FateByID = new();
 
 	internal override string ResourceFileName => "fates.json";
 
@@ -32,7 +32,7 @@ internal class FateStorage : BaseStorage<Fate>
 
 	internal List<string> Query(int patch = 0, int map = 0)
 	{
-		List<string> list = new List<string>();
+		List<string> list = [];
 		foreach (int key in FateByID.Keys)
 		{
 			Fate fate = FateByID[key];

@@ -8,13 +8,13 @@ namespace SilverDasher.ACT.Storages;
 
 internal class OpcodeStorage : BaseStorage<int, OpcodeType>
 {
-	internal List<Opcode> Opcodes = new List<Opcode>();
+	internal List<Opcode> Opcodes = [];
 
-	internal Dictionary<OpcodeType, Opcode> OpcodeBytype = new Dictionary<OpcodeType, Opcode>();
+	internal Dictionary<OpcodeType, Opcode> OpcodeBytype = new();
 
-	internal Dictionary<ushort, OpcodeType> TypeByOpcodeGlobal = new Dictionary<ushort, OpcodeType>();
+	internal Dictionary<ushort, OpcodeType> TypeByOpcodeGlobal = new();
 
-	internal Dictionary<ushort, OpcodeType> TypeByOpcodeCn = new Dictionary<ushort, OpcodeType>();
+	internal Dictionary<ushort, OpcodeType> TypeByOpcodeCn = new();
 
 	private Region region = Region.China;
 
@@ -66,7 +66,7 @@ internal class OpcodeStorage : BaseStorage<int, OpcodeType>
 
 	internal List<int> GetOpcodes()
 	{
-		List<int> list = new List<int>();
+		List<int> list = [];
 		foreach (OpcodeType item in Keys())
 		{
 			list.Add(Get(item));

@@ -5,8 +5,7 @@ namespace SilverDasher.ACT.Models;
 
 public abstract class GameDynamicObject
 {
-	private static readonly Territory DefaultMultiTerritory = new Territory
-	{
+	private static readonly Territory DefaultMultiTerritory = new() {
 		Content = 0,
 		IsDataCenterMap = false,
 		Name = "",

@@ -4,7 +4,7 @@ using System.Text;
 
 namespace SilverDasher.ACT.Doppelgangers;
 
-internal static class Tailor
+public static class Tailor
 {
 	[DllImport("SilverDasher.Weaver.dll", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Unicode)]
 	public static extern IntPtr Weave(ref byte a, ref byte b);

@@ -20,11 +20,11 @@ internal class Messager : Doppelganger
 {
 	private IMqttClient Tomestone;
 
-	private ConcurrentQueue<Message> Messages = new ConcurrentQueue<Message>();
+	private ConcurrentQueue<Message> Messages = new();
 
-	private List<(string, string)> Subscriptions = new List<(string, string)>();
+	private List<(string, string)> Subscriptions = [];
 
-	private Dictionary<(string, string), string> SubDict = new Dictionary<(string, string), string>();
+	private Dictionary<(string, string), string> SubDict = new();
 
 	internal Messager(SilverDasher plugin)
 		: base(plugin)
@@ -53,18 +53,18 @@ internal class Messager : Doppelganger
 				Tomestone.DisconnectAsync();
 			}
 			Tomestone.Dispose();
-			base.Painter.pluginControl.SetPluginStatus(PluginStatus.INITIALIZED);
+			Painter.pluginControl.SetPluginStatus(PluginStatus.INITIALIZED);
 		}
 	}
 
 	public void StartLoop()
 	{
-		if (string.IsNullOrEmpty(base.Agent.session))
+		if (string.IsNullOrEmpty(Agent.session))
 		{
 			Log("You should not launch before authentication successes.");
 			return;
 		}
-		MqttClientOptions tomestoneConfig = new MqttClientOptionsBuilder().WithCredentials(Tailor.Judge() + Convert.ToBase64String(Encoding.UTF8.GetBytes(base.Keeper.PlayerName)) + base.Keeper.PlayerWorldID, Tailor.Seal(base.Agent.session, base.Keeper.PlayerName + base.Keeper.PlayerWorld)).WithTls(delegate(MqttClientOptionsBuilderTlsParameters o)
+		MqttClientOptions tomestoneConfig = new MqttClientOptionsBuilder().WithCredentials(Tailor.Judge() + Convert.ToBase64String(Encoding.UTF8.GetBytes(Keeper.PlayerName)) + Keeper.PlayerWorldID, Tailor.Seal(Agent.session, Keeper.PlayerName + Keeper.PlayerWorld)).WithTls(delegate(MqttClientOptionsBuilderTlsParameters o)
 		{
 			o.SslProtocol = SslProtocols.Tls12;
 		}).WithWebSocketServer(DataStorage.SilverDasherTree)
@@ -73,7 +73,7 @@ internal class Messager : Doppelganger
 		Task.Run(async delegate
 		{
 			int i = 0;
-			while (base.Keeper.RUNNING)
+			while (Keeper.RUNNING)
 			{
 				try
 				{
@@ -82,23 +82,23 @@ internal class Messager : Doppelganger
 					{
 						if (!Tomestone.IsConnected)
 						{
-							base.Painter.pluginControl.SetPluginStatus(PluginStatus.CONNECTING);
+							Painter.pluginControl.SetPluginStatus(PluginStatus.CONNECTING);
 							await Tomestone.ConnectAsync(tomestoneConfig);
-							base.Painter.pluginControl.SetPluginStatus(PluginStatus.CONNECTED);
+							Painter.pluginControl.SetPluginStatus(PluginStatus.CONNECTED);
 							await Subscribe(Subscriptions);
 						}
-						base.Negotiator.GetPlayerInfo(0u, "");
-						base.Negotiator.ScanMobs();
+						Negotiator.GetPlayerInfo(0u, "");
+						Negotiator.ScanMobs();
 						if (i == 1)
 						{
-							base.Keeper.ReportFateStatus();
-							base.Keeper.CurrentFates.Clear();
+							Keeper.ReportFateStatus();
+							Keeper.CurrentFates.Clear();
 						}
-						base.Keeper.ReportMobStatus();
+						Keeper.ReportMobStatus();
 						Message result;
 						while (Messages.TryDequeue(out result))
 						{
-							await Tomestone.PublishAsync(new MqttApplicationMessageBuilder().WithTopic("upload/u/" + base.Agent.session).WithPayload(Tailor.Weave(JsonConvert.SerializeObject(result), base.Agent.session)).Build());
+							await Tomestone.PublishAsync(new MqttApplicationMessageBuilder().WithTopic("upload/u/" + Agent.session).WithPayload(Tailor.Weave(JsonConvert.SerializeObject(result), Agent.session)).Build());
 						}
 					}
 					catch (Exception ex)
@@ -126,26 +126,26 @@ internal class Messager : Doppelganger
 		{
 			if (subscriptions.Count != 0)
 			{
-				List<List<string>> list = new List<List<string>>();
-				List<string> list2 = new List<string>();
+				List<List<string>> list = [];
+				List<string> list2 = [];
 				list.Add(list2);
 				int num = 0;
 				foreach (var subscription in subscriptions)
 				{
 					if (num > 40)
 					{
-						list2 = new List<string>();
+						list2 = [];
 						list.Add(list2);
 						num = 0;
 					}
-					string text = base.Keeper.GetCurrentWorld().Label;
+					string text = Keeper.GetCurrentWorld().Label;
 					var (text2, _) = subscription;
 					HuntMob item3;
 					if (text2 == "fate")
 					{
-						if (base.Keeper.Fates.TryGet(int.Parse(subscription.Item2), out var item))
+						if (Keeper.Fates.TryGet(int.Parse(subscription.Item2), out var item))
 						{
-							if (base.Keeper.Territories.TryGet((int)item.TerritoryID, out var item2) && item2.IsDataCenterMap)
+							if (Keeper.Territories.TryGet((int)item.TerritoryID, out var item2) && item2.IsDataCenterMap)
 							{
 								text = "+";
 							}
@@ -155,11 +155,11 @@ internal class Messager : Doppelganger
 							}
 						}
 					}
-					else if (text2 == "hunt" && Keeper.Config.CrossWorldHunt && base.Keeper.Mobs.TryGet(int.Parse(subscription.Item2), out item3) && Keeper.Config.CWHunts[item3.Rank])
+					else if (text2 == "hunt" && Keeper.Config.CrossWorldHunt && Keeper.Mobs.TryGet(int.Parse(subscription.Item2), out item3) && Keeper.Config.CWHunts[item3.Rank])
 					{
 						text = "+";
 					}
-					string text3 = base.Keeper.GetCurrentWorld().DataCenterLabel + "/" + text + "/" + subscription.Item1 + "/" + subscription.Item2;
+					string text3 = Keeper.GetCurrentWorld().DataCenterLabel + "/" + text + "/" + subscription.Item1 + "/" + subscription.Item2;
 					Debug("Adding " + text3 + " to subscription.");
 					SubDict[subscription] = text3;
 					list2.Add(text3);
@@ -199,24 +199,24 @@ internal class Messager : Doppelganger
 	{
 		return Task.Run(async delegate
 		{
-			List<List<string>> list = new List<List<string>>();
-			List<string> list2 = new List<string>();
+			List<List<string>> list = [];
+			List<string> list2 = [];
 			list.Add(list2);
 			int num = 0;
 			foreach (var unsubscription in unsubscriptions)
 			{
 				if (num > 20)
 				{
-					list2 = new List<string>();
+					list2 = [];
 					list.Add(list2);
 					num = 0;
 				}
-				_ = base.Keeper.GetCurrentWorld().Label;
+				_ = Keeper.GetCurrentWorld().Label;
 				SubDict.TryGetValue(unsubscription, out var value);
-				string text = base.Keeper.GetCurrentWorld().DataCenterLabel + "/+/" + unsubscription.Item1 + "/" + unsubscription.Item2;
+				string text = Keeper.GetCurrentWorld().DataCenterLabel + "/+/" + unsubscription.Item1 + "/" + unsubscription.Item2;
 				if (value == null)
 				{
-					value = base.Keeper.GetCurrentWorld().DataCenterLabel + "/" + base.Keeper.GetCurrentWorld().Label + "/" + unsubscription.Item1 + "/" + unsubscription.Item2;
+					value = Keeper.GetCurrentWorld().DataCenterLabel + "/" + Keeper.GetCurrentWorld().Label + "/" + unsubscription.Item1 + "/" + unsubscription.Item2;
 				}
 				list2.Add(value);
 				list2.Add(text);
@@ -251,7 +251,7 @@ internal class Messager : Doppelganger
 				Tomestone.DisconnectAsync();
 			}
 			Tomestone.ApplicationMessageReceivedAsync -= Unpack;
-			base.Painter.pluginControl.SetPluginStatus(PluginStatus.INITIALIZED);
+			Painter.pluginControl.SetPluginStatus(PluginStatus.INITIALIZED);
 		}
 	}
 
@@ -263,12 +263,12 @@ internal class Messager : Doppelganger
 	public void AddSubscription(string type, string id)
 	{
 		Subscriptions.Add((type, id));
-		Subscribe(new List<(string, string)> { (type, id) });
+		Subscribe([(type, id)]);
 	}
 
 	public void AddSubscriptions(string type, List<string> ids)
 	{
-		List<(string, string)> list = new List<(string, string)>();
+		List<(string, string)> list = [];
 		foreach (string id in ids)
 		{
 			Subscriptions.Add((type, id));
@@ -280,12 +280,12 @@ internal class Messager : Doppelganger
 	public void RemoveSubscription(string type, string id)
 	{
 		Subscriptions.Remove((type, id));
-		Unsubscribe(new List<(string, string)> { (type, id) });
+		Unsubscribe([(type, id)]);
 	}
 
 	public void RemoveSubscriptions(string type, List<string> ids)
 	{
-		List<(string, string)> list = new List<(string, string)>();
+		List<(string, string)> list = [];
 		foreach (string id in ids)
 		{
 			Subscriptions.Remove((type, id));
@@ -300,8 +300,8 @@ internal class Messager : Doppelganger
 		{
 			return;
 		}
-		base.Painter?.pluginControl?.CheckBoxCrossWorldToggle(enabled: false);
-		List<(string, string)> filteredSub = new List<(string, string)>();
+		Painter?.pluginControl?.CheckBoxCrossWorldToggle(enabled: false);
+		List<(string, string)> filteredSub = [];
 		if (tag == "")
 		{
 			filteredSub = Subscriptions;
@@ -314,7 +314,7 @@ internal class Messager : Doppelganger
 		{
 			await Unsubscribe(filteredSub);
 			await Subscribe(filteredSub);
-			base.Painter?.pluginControl?.CheckBoxCrossWorldToggle(enabled: true);
+			Painter?.pluginControl?.CheckBoxCrossWorldToggle(enabled: true);
 		});
 	}
 
@@ -353,7 +353,7 @@ internal class Messager : Doppelganger
 		}
 		try
 		{
-			base.Notifier.Unpack(topic, @string);
+			Notifier.Unpack(topic, @string);
 		}
 		catch (Exception ex)
 		{

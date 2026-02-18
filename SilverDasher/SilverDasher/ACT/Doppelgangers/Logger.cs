@@ -40,9 +40,9 @@ internal class Logger : Doppelganger
 
 	internal void LogToView(string s)
 	{
-		if (base.Painter.pluginControl != null)
+		if (Painter.pluginControl != null)
 		{
-			base.Painter.pluginControl.Log(s);
+			Painter.pluginControl.Log(s);
 		}
 	}
 

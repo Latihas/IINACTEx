@@ -39,7 +39,7 @@ internal class Agent : Doppelganger
 			bool flag = false;
 			if (force)
 			{
-				foreach (BaseStorage storage in base.Keeper.GetStorages())
+				foreach (BaseStorage storage in Keeper.GetStorages())
 				{
 					UpdateResource(storage);
 				}
@@ -50,7 +50,7 @@ internal class Agent : Doppelganger
 				try
 				{
 					JObject jObject = JsonConvert.DeserializeObject<JObject>(new StreamReader((request.GetResponse() as HttpWebResponse).GetResponseStream(), encoding).ReadToEnd());
-					foreach (BaseStorage storage2 in base.Keeper.GetStorages())
+					foreach (BaseStorage storage2 in Keeper.GetStorages())
 					{
 						if (jObject[storage2.ResourceFileName.Split('.')[0]]!.ToObject<int>() > storage2.Version)
 						{
@@ -73,9 +73,9 @@ internal class Agent : Doppelganger
 			if (flag)
 			{
 				Log("检测到狩猎/FATE列表有更新，重绘界面树。");
-				base.Painter.pluginControl.Dispatcher.Invoke(delegate
+				Painter.pluginControl.Dispatcher.Invoke(delegate
 				{
-					base.Painter.RepaintNodes();
+					Painter.RepaintNodes();
 				});
 			}
 		});
@@ -103,9 +103,9 @@ internal class Agent : Doppelganger
 
 	public async Task<AuthResult> Setup()
 	{
-		string name = base.Keeper.PlayerName;
-		string server = base.Keeper.PlayerWorld;
-		uint serverID = base.Keeper.PlayerWorldID;
+		string name = Keeper.PlayerName;
+		string server = Keeper.PlayerWorld;
+		uint serverID = Keeper.PlayerWorldID;
 		string url = DataStorage.SilverDasherNest + "wake";
 		Encoding encoding = Encoding.UTF8;
 		HttpWebRequest request = WebRequest.Create(url) as HttpWebRequest;

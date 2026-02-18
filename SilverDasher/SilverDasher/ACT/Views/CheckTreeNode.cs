@@ -9,7 +9,7 @@ public class CheckTreeNode : UIBinded
 
 	public CheckTreeNode Parent;
 
-	public List<CheckTreeNode> Related = new List<CheckTreeNode>();
+	public List<CheckTreeNode> Related = [];
 
 	public bool changing;
 
@@ -59,7 +59,7 @@ public class CheckTreeNode : UIBinded
 	{
 		Name = name;
 		ID = id;
-		Nodes = new ObservableCollection<CheckTreeNode>();
+		Nodes = [];
 	}
 
 	internal void Add(CheckTreeNode node)

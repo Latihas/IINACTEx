@@ -8,7 +8,7 @@ public static class DataStorage
 {
 	public static int SelectedNest = 0;
 
-	private static string[] nests = new string[3] { "garlandtools.cn", "silverdasher.com", "" };
+	private static string[] nests = ["garlandtools.cn", "silverdasher.com", ""];
 
 	public static string LogFile = Path.Combine(LogPath, $"{DateTime.Now.ToFileTime()}.log");
 

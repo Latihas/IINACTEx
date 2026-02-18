@@ -7,13 +7,13 @@ namespace SilverDasher.ACT.Storages;
 
 internal class SpFateStorage : BaseStorage
 {
-	internal HashSet<int> Spfates = new HashSet<int>();
+	internal HashSet<int> Spfates = [];
 
-	internal List<ItemGroup> FateGroupsTree = new List<ItemGroup>();
+	internal List<ItemGroup> FateGroupsTree = [];
 
-	internal HashSet<ItemGroup> FateGroupsAll = new HashSet<ItemGroup>();
+	internal HashSet<ItemGroup> FateGroupsAll = [];
 
-	internal Dictionary<string, ItemGroup> FateGroupById = new Dictionary<string, ItemGroup>();
+	internal Dictionary<string, ItemGroup> FateGroupById = new();
 
 	internal override string ResourceFileName => "spfates.json";
 

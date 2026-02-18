@@ -15,7 +15,7 @@ public class Fate : GameDynamicObject
 	public int Duration;
 
 	[JsonIgnore]
-	public List<FateGroup> Groups = new List<FateGroup>();
+	public List<FateGroup> Groups = [];
 
 	[JsonIgnore]
 	internal HuntState State

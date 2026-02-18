@@ -50,7 +50,7 @@ internal class Primal : Doppelganger
 
 	internal override void Init()
 	{
-		ChangeProcess(base.Negotiator.ffdata.GetCurrentFFXIVProcess());
+		ChangeProcess(Negotiator.ffdata.GetCurrentFFXIVProcess());
 	}
 
 	internal override void Deinit()
@@ -83,8 +83,8 @@ internal class Primal : Doppelganger
 		}
 		catch (Exception ex)
 		{
-			base.Logger.Debug(ex.ToString());
-			base.Logger.Debug(ex.StackTrace);
+			Logger.Debug(ex.ToString());
+			Logger.Debug(ex.StackTrace);
 		}
 		return byte.MaxValue;
 	}

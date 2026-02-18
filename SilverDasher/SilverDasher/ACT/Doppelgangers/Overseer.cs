@@ -19,7 +19,7 @@ internal class Overseer : Doppelganger
 	internal void OnNetworkReceive(string connection, long epoch, byte[] message)
 	{
 		OpcodeType packetOpcodeType = GetPacketOpcodeType(message);
-		Opcode opcode = base.Keeper.Opcodes.GetOpcode(packetOpcodeType);
+		Opcode opcode = Keeper.Opcodes.GetOpcode(packetOpcodeType);
 		switch (packetOpcodeType)
 		{
 		case OpcodeType.ActorControlSelf:
@@ -38,7 +38,7 @@ internal class Overseer : Doppelganger
 	{
 		if (message.Length != opcode.CnLength)
 		{
-			base.Logger.Debug($"Packet {opcode.Name} received unpredicted length. Expected {opcode.CnLength}, Received {message.Length}.");
+			Logger.Debug($"Packet {opcode.Name} received unpredicted length. Expected {opcode.CnLength}, Received {message.Length}.");
 			return;
 		}
 		byte[] array = message.Skip(32).ToArray();
@@ -49,22 +49,22 @@ internal class Overseer : Doppelganger
 		{
 			ushort num3 = BitConverter.ToUInt16(array, 4);
 			byte b = array[8];
-			base.Keeper.FateUpdate(num3, b);
-			base.Logger.Debug($"ActorControlSelf FateProgress handled. Fate {num3} Progress {b}.");
+			Keeper.FateUpdate(num3, b);
+			Logger.Debug($"ActorControlSelf FateProgress handled. Fate {num3} Progress {b}.");
 			break;
 		}
 		case "FateEnd":
 		{
 			ushort num2 = BitConverter.ToUInt16(array, 4);
-			base.Keeper.CurrentFates.Remove(num2);
-			base.Logger.Debug($"ActorControlSelf FateEnd handled. Fate {num2} ended.");
+			Keeper.CurrentFates.Remove(num2);
+			Logger.Debug($"ActorControlSelf FateEnd handled. Fate {num2} ended.");
 			break;
 		}
 		case "FateStart":
 		{
 			ushort num = BitConverter.ToUInt16(array, 4);
-			base.Keeper.FateUpdate(num, 0);
-			base.Logger.Debug($"ActorControlSelf FateStart handled. Fate {num} started.");
+			Keeper.FateUpdate(num, 0);
+			Logger.Debug($"ActorControlSelf FateStart handled. Fate {num} started.");
 			break;
 		}
 		}
@@ -74,21 +74,21 @@ internal class Overseer : Doppelganger
 	{
 		if (message.Length != opcode.CnLength)
 		{
-			base.Logger.Debug($"Packet {opcode.Name} received unpredicted length. Expected {opcode.CnLength}, Received {message.Length}.");
+			Logger.Debug($"Packet {opcode.Name} received unpredicted length. Expected {opcode.CnLength}, Received {message.Length}.");
 			return;
 		}
 		byte[] value = message.Skip(32).ToArray();
 		ushort fateId = BitConverter.ToUInt16(value, 0);
 		uint startTime = BitConverter.ToUInt32(value, 8);
 		uint duration = BitConverter.ToUInt32(value, 16);
-		base.Keeper.FateUpdate(fateId, -1, null, startTime, duration);
+		Keeper.FateUpdate(fateId, -1, null, startTime, duration);
 	}
 
 	private void HandleInitZone(byte[] message, Opcode opcode)
 	{
 		if (message.Length != opcode.CnLength)
 		{
-			base.Logger.Debug($"Packet {opcode.Name} received unpredicted length. Expected {opcode.CnLength}, Received {message.Length}.");
+			Logger.Debug($"Packet {opcode.Name} received unpredicted length. Expected {opcode.CnLength}, Received {message.Length}.");
 			return;
 		}
 		byte[] value = message.Skip(32).ToArray();
@@ -97,10 +97,10 @@ internal class Overseer : Doppelganger
 		ushort num2 = BitConverter.ToUInt16(value, 4);
 		if (num2 <= 3)
 		{
-			base.Keeper.NetworkInstance = num2;
-			base.Keeper.NetworkMapID = num;
-			base.Keeper.CurrentMobs.Clear();
-			base.Keeper.CurrentFates.Clear();
+			Keeper.NetworkInstance = num2;
+			Keeper.NetworkMapID = num;
+			Keeper.CurrentMobs.Clear();
+			Keeper.CurrentFates.Clear();
 			Log($"Network map changes to {num}");
 			Log($"Network instance changes to {num2}");
 		}
@@ -112,7 +112,7 @@ internal class Overseer : Doppelganger
 
 	internal OpcodeType GetPacketOpcodeType(byte[] message)
 	{
-		return base.Keeper.Opcodes.GetOpcodeType(BitConverter.ToUInt16(message, 18));
+		return Keeper.Opcodes.GetOpcodeType(BitConverter.ToUInt16(message, 18));
 	}
 
 	internal override void Deinit()
