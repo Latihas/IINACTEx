@@ -68,10 +68,10 @@ public partial class FfxivActPluginWrapper : IDisposable {
         parseMediator = iocContainer.Resolve<ParseMediator>();
 
         ffxivActPlugin._dataCollection = iocContainer.Resolve<DataCollection>();
-        
+
         logOutput = ffxivActPlugin._dataCollection._logOutput;
         logFormat = ffxivActPlugin._dataCollection._logFormat;
-       
+
         var scanMemory = (ScanMemory)ffxivActPlugin._dataCollection._scanMemory;
 
         processManager = scanMemory._processManager;

@@ -31,7 +31,7 @@ public class Configuration : IPluginConfiguration {
     public bool TtsOnInit { get; set; } = true;
     public bool LoadSilverDasherOnInit { get; set; }
     public float TtsInterval { get; set; } = 1.5f;
-    
+
 
     public string LogFilePath
     {

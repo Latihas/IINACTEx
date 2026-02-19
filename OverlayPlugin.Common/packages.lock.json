@@ -1,23 +1,23 @@
 {
-  "version": 1,
-  "dependencies": {
-    "net10.0-windows10.0.17763": {
-      "Microsoft.NET.ILLink.Tasks": {
-        "type": "Direct",
-        "requested": "[10.0.2, )",
-        "resolved": "10.0.2",
-        "contentHash": "sXdDtMf2qcnbygw9OdE535c2lxSxrZP8gO4UhDJ0xiJbl1wIqXS1OTcTDFTIJPOFd6Mhcm8gPEthqWGUxBsTqw=="
-      },
-      "System.Data.DataSetExtensions": {
-        "type": "Direct",
-        "requested": "[4.5.0, )",
-        "resolved": "4.5.0",
-        "contentHash": "221clPs1445HkTBZPL+K9sDBdJRB8UN8rgjO3ztB0CQ26z//fmJXtlsr6whGatscsKGBrhJl5bwJuKSA8mwFOw=="
-      },
-      "Advanced Combat Tracker": {
-        "type": "Project"
-      }
-    },
-    "net10.0-windows10.0.17763/win-x64": {}
-  }
+	"version": 1,
+	"dependencies": {
+		"net10.0-windows10.0.26100": {
+			"Microsoft.NET.ILLink.Tasks": {
+				"type": "Direct",
+				"requested": "[10.0.2, )",
+				"resolved": "10.0.2",
+				"contentHash": "sXdDtMf2qcnbygw9OdE535c2lxSxrZP8gO4UhDJ0xiJbl1wIqXS1OTcTDFTIJPOFd6Mhcm8gPEthqWGUxBsTqw=="
+			},
+			"System.Data.DataSetExtensions": {
+				"type": "Direct",
+				"requested": "[4.5.0, )",
+				"resolved": "4.5.0",
+				"contentHash": "221clPs1445HkTBZPL+K9sDBdJRB8UN8rgjO3ztB0CQ26z//fmJXtlsr6whGatscsKGBrhJl5bwJuKSA8mwFOw=="
+			},
+			"Advanced Combat Tracker": {
+				"type": "Project"
+			}
+		},
+		"net10.0-windows10.0.26100/win-x64": {}
+	}
 }

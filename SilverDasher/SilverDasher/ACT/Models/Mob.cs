@@ -1,5 +1,5 @@
-namespace SilverDasher.ACT.Models;
+// namespace SilverDasher.ACT.Models;
+//
+// internal class Mob {
+// }
 
-internal class Mob
-{
-}

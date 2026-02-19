@@ -6,101 +6,60 @@ using SilverDasher.ACT.Models;
 
 namespace SilverDasher.ACT.Storages;
 
-internal class OpcodeStorage : BaseStorage<int, OpcodeType>
-{
-	internal List<Opcode> Opcodes = [];
+internal class OpcodeStorage(Keeper kp) : BaseStorage<int, OpcodeType>(kp) {
+    private List<Opcode> Opcodes = [];
 
-	internal Dictionary<OpcodeType, Opcode> OpcodeBytype = new();
+    private readonly Dictionary<OpcodeType, Opcode> OpcodeBytype = new();
 
-	internal Dictionary<ushort, OpcodeType> TypeByOpcodeGlobal = new();
+    private Dictionary<ushort, OpcodeType> TypeByOpcodeGlobal = new();
 
-	internal Dictionary<ushort, OpcodeType> TypeByOpcodeCn = new();
+    private Dictionary<ushort, OpcodeType> TypeByOpcodeCn = new();
 
-	private Region region = Region.China;
+    internal override string ResourceFileName => "opcodes.json";
 
-	internal override string ResourceFileName => "opcodes.json";
+    private Dictionary<ushort, OpcodeType> TypeByOpcode => Region switch {
+        Region.China => TypeByOpcodeCn,
+        Region.Global => TypeByOpcodeGlobal,
+        _ => throw new NotImplementedException()
+    };
 
-	internal Dictionary<ushort, OpcodeType> TypeByOpcode => Region switch
-	{
-		Region.China => TypeByOpcodeCn, 
-		Region.Global => TypeByOpcodeGlobal, 
-		_ => throw new NotImplementedException(), 
-	};
+    internal Region Region { get; set; } = Region.China;
 
-	internal Region Region
-	{
-		get
-		{
-			return region;
-		}
-		set
-		{
-			region = value;
-		}
-	}
+    internal override bool Contains(OpcodeType name) => OpcodeBytype.ContainsKey(name);
 
-	internal OpcodeStorage(Keeper kp)
-		: base(kp)
-	{
-	}
+    internal override int Get(OpcodeType id) => OpcodeBytype[id].GetOpcode(Region);
 
-	internal override bool Contains(OpcodeType name)
-	{
-		return OpcodeBytype.ContainsKey(name);
-	}
+    internal Opcode GetOpcode(OpcodeType id) => OpcodeBytype[id];
 
-	internal override int Get(OpcodeType id)
-	{
-		return OpcodeBytype[id].GetOpcode(Region);
-	}
+    // internal IEnumerable<OpcodeType> Keys() => OpcodeBytype.Keys;
 
-	internal Opcode GetOpcode(OpcodeType id)
-	{
-		return OpcodeBytype[id];
-	}
+    // internal List<int> GetOpcodes() {
+    //     List<int> list = [];
+    //     list.AddRange(Keys().Select(item => Get(item)));
+    //     return list;
+    // }
 
-	internal override IEnumerable<OpcodeType> Keys()
-	{
-		return OpcodeBytype.Keys;
-	}
+    internal OpcodeType GetOpcodeType(ushort packetCode) {
+        TypeByOpcode.TryGetValue(packetCode, out var value);
+        return value;
+    }
 
-	internal List<int> GetOpcodes()
-	{
-		List<int> list = [];
-		foreach (OpcodeType item in Keys())
-		{
-			list.Add(Get(item));
-		}
-		return list;
-	}
-
-	internal OpcodeType GetOpcodeType(ushort packetCode)
-	{
-		TypeByOpcode.TryGetValue(packetCode, out var value);
-		return value;
-	}
-
-	internal override void Load()
-	{
-		try
-		{
-			LoadData<List<Opcode>>(ResourceFileName, out Opcodes);
-		}
-		catch (Exception ex)
-		{
-			Keeper.Log("Failed to load opcodes. Corrupted json file?");
-			Keeper.Log(ex.ToString());
-		}
-		foreach (Opcode opcode in Opcodes)
-		{
-			OpcodeBytype[(OpcodeType)Enum.Parse(OpcodeType.InitZone.GetType(), opcode.Name)] = opcode;
-		}
-		TypeByOpcodeGlobal = new Dictionary<ushort, OpcodeType>();
-		TypeByOpcodeCn = new Dictionary<ushort, OpcodeType>();
-		foreach (Opcode opcode2 in Opcodes)
-		{
-			TypeByOpcodeGlobal[opcode2.GetOpcode(Region.Global)] = (OpcodeType)Enum.Parse(typeof(OpcodeType), opcode2.Name);
-			TypeByOpcodeCn[opcode2.GetOpcode(Region.China)] = (OpcodeType)Enum.Parse(typeof(OpcodeType), opcode2.Name);
-		}
-	}
+    internal override void Load() {
+        try {
+            LoadData(ResourceFileName, out Opcodes);
+        }
+        catch (Exception ex) {
+            Keeper.Log("Failed to load opcodes. Corrupted json file?");
+            Keeper.Log(ex.ToString());
+        }
+        foreach (var opcode in Opcodes) {
+            OpcodeBytype[(OpcodeType)Enum.Parse(OpcodeType.InitZone.GetType(), opcode.Name)] = opcode;
+        }
+        TypeByOpcodeGlobal = new Dictionary<ushort, OpcodeType>();
+        TypeByOpcodeCn = new Dictionary<ushort, OpcodeType>();
+        foreach (var opcode2 in Opcodes) {
+            TypeByOpcodeGlobal[opcode2.GetOpcode(Region.Global)] = (OpcodeType)Enum.Parse(typeof(OpcodeType), opcode2.Name);
+            TypeByOpcodeCn[opcode2.GetOpcode(Region.China)] = (OpcodeType)Enum.Parse(typeof(OpcodeType), opcode2.Name);
+        }
+    }
 }

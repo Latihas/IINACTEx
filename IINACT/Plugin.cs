@@ -3,7 +3,6 @@ using System.IO;
 using System.IO.Compression;
 using System.Net.Http;
 using System.Reflection;
-using System.Runtime.InteropServices;
 using System.Runtime.Loader;
 using Advanced_Combat_Tracker;
 using Dalamud.Game;
@@ -13,7 +12,6 @@ using Dalamud.Interface.Windowing;
 using Dalamud.IoC;
 using Dalamud.Plugin;
 using Dalamud.Plugin.Services;
-using FetchDependencies;
 using IINACT.Latihas.Overlay;
 using IINACT.Network;
 using IINACT.TextToSpeech;
@@ -95,7 +93,6 @@ public sealed class Plugin : IDalamudPlugin {
     public readonly bool opcodesjsoncReplaced;
     public bool opcodesjsoncCanReplace => File.Exists(opcodesjsoncPath);
     public string opcodesjsoncPath => Path.Combine(PluginAssemblyDirectory, "opcodes.jsonc");
-    private List<IntPtr> NativeLibs = [];
 
     public static void UnzipWithoutPassword(string zipFilePath, string extractDir, bool overwrite = false) {
         try {
@@ -227,22 +224,21 @@ public sealed class Plugin : IDalamudPlugin {
                 LoadIActPluginV1(rt, preserveEnableState: true);
         PostNamazuPlugin.InitPlugin(PluginInterface, Log, SigScanner);
         LogTick("Waiting Triggernometry");
+        CancellationTokenSource postCts = new();
+        var token = postCts.Token;
         taskTrn.Wait();
         LogTick("Triggernometry & PostNamazu & Callback Initialized");
         foreach (var rt in Directory.GetFiles(PluginActScriptDirectory, "*.cs", SearchOption.TopDirectoryOnly).Select(Path.GetFileName).Cast<string>())
             if (Configuration.ActScriptsEnabled.Contains(rt))
-                LoadPScript(rt, preserveEnableState: true);
-        var threadPost = new Thread(() => {
+                LoadPScript(rt, true);
+        Task.Run(() => {
             BridgeNamazu.InitializeModules();
             BridgeNamazu.RegisterAnnotatedMethods();
             LogTick("Asyc Post Process Done");
-        }) {
-            IsBackground = true
-        };
+        }, token);
         Framework.RunOnFrameworkThread(() => {
             if (Configuration.LoadSilverDasherOnInit) MainWindow.EnableSilverDasher();
         });
-        threadPost.Start();
         if (Directory.Exists(Path.Combine(PluginConfigDirectory, "cactbot"))) RefreshBw();
         if (Configuration.ShowWindowOnInit) MainWindow.Toggle();
         if (Configuration.ShowOverlayOnInit) OverlayWindow.Toggle();

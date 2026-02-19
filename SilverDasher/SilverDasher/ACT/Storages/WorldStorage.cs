@@ -4,52 +4,29 @@ using SilverDasher.ACT.Models;
 
 namespace SilverDasher.ACT.Storages;
 
-internal class WorldStorage : BaseStorage<World>
-{
-	private Dictionary<int, World> WorldByID = new();
+internal class WorldStorage(Keeper kp) : BaseStorage<World>(kp) {
+    private Dictionary<int, World> WorldByID = new();
 
-	private Dictionary<string, World> WorldByLabel = new();
+    private readonly Dictionary<string, World> WorldByLabel = new();
 
-	internal override string ResourceFileName => "worlds.json";
+    internal override string ResourceFileName => "worlds.json";
 
-	internal WorldStorage(Keeper kp)
-		: base(kp)
-	{
-	}
+    internal override World Get(int id) => WorldByID[id];
 
-	internal override World Get(int id)
-	{
-		return WorldByID[id];
-	}
+    internal World GetByLabel(string label) => WorldByLabel[label];
 
-	internal World GetByLabel(string label)
-	{
-		return WorldByLabel[label];
-	}
+    internal bool TryGetByLabel(string label, out World w) => WorldByLabel.TryGetValue(label, out w);
 
-	internal bool TryGetByLabel(string label, out World w)
-	{
-		return WorldByLabel.TryGetValue(label, out w);
-	}
+    private Dictionary<int, World>.KeyCollection Keys() => WorldByID.Keys;
 
-	internal override IEnumerable<int> Keys()
-	{
-		return WorldByID.Keys;
-	}
+    internal override bool Contains(int id) => WorldByID.ContainsKey(id);
 
-	internal override bool Contains(int id)
-	{
-		return WorldByID.ContainsKey(id);
-	}
-
-	internal override void Load()
-	{
-		LoadData<Dictionary<int, World>>(ResourceFileName, out WorldByID);
-		foreach (int item in Keys())
-		{
-			World world = Get(item);
-			world.Id = item;
-			WorldByLabel[world.Label] = world;
-		}
-	}
+    internal override void Load() {
+        LoadData(ResourceFileName, out WorldByID);
+        foreach (var item in Keys()) {
+            var world = Get(item);
+            world.Id = item;
+            WorldByLabel[world.Label] = world;
+        }
+    }
 }

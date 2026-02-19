@@ -1,8 +1,7 @@
 namespace SilverDasher.ACT.Enums;
 
-public enum Region
-{
-	Global,
-	China,
-	Korean
+public enum Region {
+    Global,
+    China,
+    Korean
 }

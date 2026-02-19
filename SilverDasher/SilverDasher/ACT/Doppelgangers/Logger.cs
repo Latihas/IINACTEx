@@ -1,61 +1,32 @@
 #define TRACE
 using System;
 using System.Diagnostics;
-using System.IO;
-using SilverDasher.ACT.Storages;
 
 namespace SilverDasher.ACT.Doppelgangers;
 
-internal class Logger : Doppelganger
-{
-	internal Logger(SilverDasher self)
-		: base(self)
-	{
-	}
+internal class Logger(SilverDasher self) : Doppelganger(self) {
+    internal override void Init() {
+    }
 
-	internal override void Init()
-	{
-	}
+    internal override void Deinit() {
+    }
 
-	internal override void Deinit()
-	{
-	}
+    internal new void Log(string s) {
+        var s2 = DateTime.Now.ToString("[yyyy-MM-dd HH:mm:ss] ") + s;
+        LogToView(s2);
+        LogToFile(s2);
+    }
 
-	internal new void Log(string s)
-	{
-		string s2 = DateTime.Now.ToString("[yyyy-MM-dd HH:mm:ss] ") + s;
-		LogToView(s2);
-		LogToFile(s2);
-	}
+    internal new void Debug(string s) {
+        var s2 = DateTime.Now.ToString("[yyyy-MM-dd HH:mm:ss] ") + s;
+        LogToFile(s2);
+        if (Keeper.Config.ExtendedReport) LogToView(s2);
+    }
 
-	internal new void Debug(string s)
-	{
-		string s2 = DateTime.Now.ToString("[yyyy-MM-dd HH:mm:ss] ") + s;
-		LogToFile(s2);
-		if (Keeper.Config.ExtendedReport)
-		{
-			LogToView(s2);
-		}
-	}
+    private void LogToView(string s) => Painter.pluginControl?.Log(s);
 
-	internal void LogToView(string s)
-	{
-		if (Painter.pluginControl != null)
-		{
-			Painter.pluginControl.Log(s);
-		}
-	}
-
-	internal void LogToFile(string s)
-	{
-		Trace.WriteLine(s);
-		lock (this)
-		{
-			if (!Directory.Exists(DataStorage.LogPath))
-			{
-				Directory.CreateDirectory(DataStorage.LogPath);
-			}
-			File.AppendAllText(DataStorage.LogFile, s + "\n");
-		}
-	}
+    private static void LogToFile(string s) {
+        Trace.WriteLine(s);
+        lock (SilverDasher.FileLogs) SilverDasher.FileLogs.Add(s);
+    }
 }

@@ -283,31 +283,27 @@ internal class FFXIVRepository {
         ConversionUtility.EpochToDateTime(epoch).ToLocalTime();
 
     /**
-     * Convert a coordinate expressed as a uint16 to a float.
-     * 
-         * See https://github.com/ravahn/FFXIV_ACT_Plugin/issues/298, though this has been
-         * updated to be more accurate.
+     * * Convert a coordinate expressed as a uint16 to a float.
+     * *
+     * * See https://github.com/ravahn/FFXIV_ACT_Plugin/issues/298, though this has been
+     * * updated to be more accurate.
      */
-        public static float ConvertUInt16Coordinate(ushort value)
-        {
-            // This is the exact same formula the game client uses
-            return (float)(value * 3.0518043 * 0.0099999998 - 1000.0);
-        }
+    public static float ConvertUInt16Coordinate(ushort value) =>
+        // This is the exact same formula the game client uses
+        (float)(value * 3.0518043 * 0.0099999998 - 1000.0);
 
     /**
-     * Convert a packet heading to an in-game headiung.
-     * 
-     * When a heading is sent in certain packets, the heading is expressed as a uint16, where
-     * 0=north and each increment is 1/65536 of a turn in the CCW direction.
-     * 
-         * See https://github.com/ravahn/FFXIV_ACT_Plugin/issues/298, though this has been
-         * updated to be more accurate.
+     * * Convert a packet heading to an in-game headiung.
+     * *
+     * * When a heading is sent in certain packets, the heading is expressed as a uint16, where
+     * * 0=north and each increment is 1/65536 of a turn in the CCW direction.
+     * *
+     * * See https://github.com/ravahn/FFXIV_ACT_Plugin/issues/298, though this has been
+     * * updated to be more accurate.
      */
-        public static double ConvertHeading(ushort heading)
-        {
-            // This is the exact same formula the game client uses
-            return heading * 0.009587526 * 0.0099999998 - Math.PI;
-        }
+    public static double ConvertHeading(ushort heading) =>
+        // This is the exact same formula the game client uses
+        heading * 0.009587526 * 0.0099999998 - Math.PI;
 
     private ILogOutput _logOutput;
 

@@ -21,6 +21,10 @@
     <Content Include="SilverDasher.Weaver.dll">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <Reference Include="Dalamud">
+      <HintPath>$(DalamudLibPath)Dalamud.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
     <ProjectReference Include="..\..\NotACT\NotACT.csproj"/>
     <ProjectReference Include="..\Zodiark\Zodiark.csproj"/>
   </ItemGroup>

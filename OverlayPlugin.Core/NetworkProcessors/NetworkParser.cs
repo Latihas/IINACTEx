@@ -3,84 +3,71 @@ using System.Diagnostics;
 using Machina.FFXIV;
 using RainbowMage.OverlayPlugin.NetworkProcessors.PacketHelper;
 
-namespace RainbowMage.OverlayPlugin.NetworkProcessors
-{
-    class NetworkParser
-    {
-        public event EventHandler<OnlineStatusChangedArgs> OnOnlineStatusChanged;
+namespace RainbowMage.OverlayPlugin.NetworkProcessors;
 
-        public class ActorControlPacket : MachinaPacketWrapper
-        {
-            public override string ToString(long epoch, uint ActorID)
-            {
-                return "";
-            }
-        }
+internal class NetworkParser {
+    public event EventHandler<OnlineStatusChangedArgs> OnOnlineStatusChanged;
 
-        private MachinaRegionalizedPacketHelper<ActorControlPacket> actorControlPacketHelper;
+    public class ActorControlPacket : MachinaPacketWrapper {
+        public override string ToString(long epoch, uint ActorID) => "";
+    }
 
-        private static FFXIVRepository ffxiv;
-        private GameRegion? currentRegion;
+    private MachinaRegionalizedPacketHelper<ActorControlPacket> actorControlPacketHelper;
 
-        private const string machinaPacketName = "ActorControl";
+    private static FFXIVRepository ffxiv;
+    private GameRegion? currentRegion;
 
-        public NetworkParser(TinyIoCContainer container)
-        {
-            var logger = container.Resolve<ILogger>();
+    private const string machinaPacketName = "ActorControl";
 
-            ffxiv = ffxiv ?? container.Resolve<FFXIVRepository>();
-            ffxiv.RegisterNetworkParser(Parse);
-            ffxiv.RegisterProcessChangedHandler(ProcessChanged);
+    public NetworkParser(TinyIoCContainer container) {
+        var logger = container.Resolve<ILogger>();
 
-            if (!MachinaRegionalizedPacketHelper<ActorControlPacket>.Create(machinaPacketName, out actorControlPacketHelper))
-            {
-                logger.Log(LogLevel.Error, $"Failed to initialize NetworkParser: Failed to create {machinaPacketName} packet helper from Machina structs");
-            }
-        }
+        ffxiv = ffxiv ?? container.Resolve<FFXIVRepository>();
+        ffxiv.RegisterNetworkParser(Parse);
+        ffxiv.RegisterProcessChangedHandler(ProcessChanged);
 
-        private void ProcessChanged(Process process)
-        {
-            if (!ffxiv.IsFFXIVPluginPresent())
-                return;
-
-            currentRegion = null;
-        }
-
-        private unsafe void Parse(string id, long epoch, byte[] message)
-        {
-            if (actorControlPacketHelper == null)
-                return;
-
-            if (currentRegion == null)
-                currentRegion = ffxiv.GetMachinaRegion();
-
-            if (currentRegion == null)
-                return;
-
-            MachinaPacketHelper<ActorControlPacket> helper = (MachinaPacketHelper<ActorControlPacket>)actorControlPacketHelper[currentRegion.Value];
-
-            if (helper.ToStructs(message, out var header, out var packet))
-            {
-                var category = packet.Get<Server_ActorControlCategory>("category");
-                if (category != Server_ActorControlCategory.StatusUpdate) return;
-
-                var actorID = header.ActorID;
-                var param1 = packet.Get<UInt32>("param1");
-
-                OnOnlineStatusChanged?.Invoke(null, new OnlineStatusChangedArgs(actorID, param1));
-            }
+        if (!MachinaRegionalizedPacketHelper<ActorControlPacket>.Create(machinaPacketName, out actorControlPacketHelper)) {
+            logger.Log(LogLevel.Error, $"Failed to initialize NetworkParser: Failed to create {machinaPacketName} packet helper from Machina structs");
         }
     }
 
-    public class OnlineStatusChangedArgs : EventArgs
-    {
-        public uint Target { get; private set; }
-        public uint Status { get; private set; }
+    private void ProcessChanged(Process process) {
+        if (!ffxiv.IsFFXIVPluginPresent())
+            return;
 
-        public OnlineStatusChangedArgs(uint target, uint status)
-        {
-            this.Target = target;
-            this.Status = status;
+        currentRegion = null;
+    }
+
+    private void Parse(string id, long epoch, byte[] message) {
+        if (actorControlPacketHelper == null)
+            return;
+
+        if (currentRegion == null)
+            currentRegion = ffxiv.GetMachinaRegion();
+
+        if (currentRegion == null)
+            return;
+
+        var helper = (MachinaPacketHelper<ActorControlPacket>)actorControlPacketHelper[currentRegion.Value];
+
+        if (helper.ToStructs(message, out var header, out var packet)) {
+            var category = packet.Get<Server_ActorControlCategory>("category");
+            if (category != Server_ActorControlCategory.StatusUpdate) return;
+
+            var actorID = header.ActorID;
+            var param1 = packet.Get<uint>("param1");
+
+            OnOnlineStatusChanged?.Invoke(null, new OnlineStatusChangedArgs(actorID, param1));
         }
+    }
+}
+
+public class OnlineStatusChangedArgs : EventArgs {
+    public uint Target { get; private set; }
+    public uint Status { get; private set; }
+
+    public OnlineStatusChangedArgs(uint target, uint status) {
+        Target = target;
+        Status = status;
     }
 }

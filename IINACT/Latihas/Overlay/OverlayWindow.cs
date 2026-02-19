@@ -63,7 +63,7 @@ public class OverlayWindow() : Window("IINACTEx Overlay###IINACTEx Overlay"), ID
     }
 
     public override void Draw() {
-        if(webSocketClient is not { Ready: true }){
+        if (webSocketClient is not { Ready: true }) {
             ImGui.Text("等待连接...");
             return;
         }

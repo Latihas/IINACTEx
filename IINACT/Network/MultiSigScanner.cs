@@ -456,7 +456,7 @@ public class MultiSigScanner : IDisposable {
         return sb.ToString();
     }
 
-    private void SetupCopy() {
+    private unsafe void SetupCopy() {
         var handle = PInvoke.CreateFile(Module.FileName,
             GenericRead,
             FILE_SHARE_MODE.FILE_SHARE_READ,
@@ -489,29 +489,25 @@ public class MultiSigScanner : IDisposable {
         // .text
         moduleCopyPtr = Marshal.AllocHGlobal(Module.ModuleMemorySize);
 
-        unsafe {
-            if (view.Value == null) {
-                Plugin.Log.Error($"[MultiSigScanner] Failed to map view of file for {Module.FileName}");
-                Plugin.Log.Error($"[MultiSigScanner] Marshal.GetLastWin32Error(): {Marshal.GetLastWin32Error()}");
-                Plugin.Log.Error($"[MultiSigScanner] Marshal.GetLastPInvokeError(): {Marshal.GetLastPInvokeError()}");
-                Plugin.Log.Error($"[MultiSigScanner] Marshal.GetLastPInvokeErrorMessage(): {Marshal.GetLastPInvokeErrorMessage()}");
-                return;
-            }
 
-            Buffer.MemoryCopy(
-                (byte*)view.Value,
-                moduleCopyPtr.ToPointer(),
-                Module.ModuleMemorySize,
-                Module.ModuleMemorySize);
-            Plugin.Log.Debug($"[MultiSigScanner] First 16 bytes of data: {ByteString((byte*)moduleCopyPtr, 0, 16)}");
+        if (view.Value == null) {
+            Plugin.Log.Error($"[MultiSigScanner] Failed to map view of file for {Module.FileName}");
+            Plugin.Log.Error($"[MultiSigScanner] Marshal.GetLastWin32Error(): {Marshal.GetLastWin32Error()}");
+            Plugin.Log.Error($"[MultiSigScanner] Marshal.GetLastPInvokeError(): {Marshal.GetLastPInvokeError()}");
+            Plugin.Log.Error($"[MultiSigScanner] Marshal.GetLastPInvokeErrorMessage(): {Marshal.GetLastPInvokeErrorMessage()}");
+            return;
         }
 
+        Buffer.MemoryCopy(
+            (byte*)view.Value,
+            moduleCopyPtr.ToPointer(),
+            Module.ModuleMemorySize,
+            Module.ModuleMemorySize);
+        Plugin.Log.Debug($"[MultiSigScanner] First 16 bytes of data: {ByteString((byte*)moduleCopyPtr, 0, 16)}");
         moduleCopyOffset = moduleCopyPtr.ToInt64() - Module.BaseAddress.ToInt64();
         Plugin.Log.Debug($"[MultiSigScanner] Offset is 0x{moduleCopyOffset:X} ({moduleCopyPtr.ToInt64()} - {Module.BaseAddress.ToInt64()})");
         Plugin.Log.Debug("[MultiSigScanner] Unmapping.");
-        unsafe {
-            PInvoke.UnmapViewOfFile((MEMORY_MAPPED_VIEW_ADDRESS)view.Value);
-        }
+        PInvoke.UnmapViewOfFile((MEMORY_MAPPED_VIEW_ADDRESS)view.Value);
         Plugin.Log.Debug("[MultiSigScanner] Unmapped. Closing handles.");
         PInvoke.CloseHandle((HANDLE)handle.DangerousGetHandle());
         PInvoke.CloseHandle((HANDLE)map.DangerousGetHandle());

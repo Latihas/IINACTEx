@@ -6,56 +6,35 @@ using SilverDasher.ACT.Views;
 
 namespace SilverDasher.ACT.Doppelgangers;
 
-internal class Painter : Doppelganger
-{
-	internal PluginControl pluginControl;
+internal class Painter(SilverDasher silverDasher, Label pluginStatusText, TabPage pluginScreenSpace) : Doppelganger(silverDasher) {
+    internal PluginControl pluginControl;
 
-	internal ElementHost controlHost;
+    private ElementHost controlHost;
 
-	internal Label lblStatus;
+    internal override void Init() {
+        if (pluginControl == null) {
+            pluginControl = new PluginControl(this);
+            controlHost = new ElementHost {
+                Dock = DockStyle.Fill,
+                Child = pluginControl
+            };
+        }
+        pluginScreenSpace.Text = DataStorage.Title;
+        pluginScreenSpace.Controls.Clear();
+        pluginScreenSpace.Controls.Add(controlHost);
+        pluginControl.SetPluginStatus(PluginStatus.INITIALIZED);
+    }
 
-	internal TabPage pagePlugin;
+    internal override void Deinit() => pluginStatusText.Text = "收回了银山雀儿。(Exited)";
 
-	internal Painter(SilverDasher silverDasher, Label pluginStatusText, TabPage pluginScreenSpace)
-		: base(silverDasher)
-	{
-		lblStatus = pluginStatusText;
-		pagePlugin = pluginScreenSpace;
-	}
 
-	internal override void Init()
-	{
-		if (pluginControl == null)
-		{
-			pluginControl = new PluginControl(this);
-			controlHost = new ElementHost
-			{
-				Dock = DockStyle.Fill,
-				Child = pluginControl
-			};
-		}
-		pagePlugin.Text = DataStorage.Title;
-		pagePlugin.Controls.Clear();
-		pagePlugin.Controls.Add(controlHost);
-		pluginControl.SetPluginStatus(PluginStatus.INITIALIZED);
-	}
+    internal void RepaintNodes() {
+        var obj = pluginControl.DataContext as PluginViewModel;
+        obj.ClearAllNodes();
+        obj.SetPatchNames(Painter.Keeper.Patches.PatchByCode);
+        obj.SetupHuntMobs(Painter.Keeper.Mobs.HuntByBnpcNameID, Painter.Keeper.SpHunts.HuntGroupsTree, Keeper.Config.HuntSubscriptions);
+        obj.SetupFates(Painter.Keeper.Fates.FateByID, Painter.Keeper.SpFates.FateGroupsTree, Keeper.Config.FateSubscriptions);
+    }
 
-	internal override void Deinit()
-	{
-		lblStatus.Text = "收回了银山雀儿。(Exited)";
-	}
-
-	internal void RepaintNodes()
-	{
-		PluginViewModel obj = pluginControl.DataContext as PluginViewModel;
-		obj.ClearAllNodes();
-		obj.SetPatchNames(Painter.Keeper.Patches.PatchByCode);
-		obj.SetupHuntMobs(Painter.Keeper.Mobs.HuntByBnpcNameID, Painter.Keeper.SpHunts.HuntGroupsTree, Keeper.Config.HuntSubscriptions);
-		obj.SetupFates(Painter.Keeper.Fates.FateByID, Painter.Keeper.SpFates.FateGroupsTree, Keeper.Config.FateSubscriptions);
-	}
-
-	internal void SetPluginStatus(string text)
-	{
-		lblStatus.Text = text;
-	}
+    internal void SetPluginStatus(string text) => pluginStatusText.Text = text;
 }

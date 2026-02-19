@@ -1,91 +1,53 @@
-using System;
-using System.Diagnostics;
-using Zodiark;
-
 namespace SilverDasher.ACT.Doppelgangers;
 
-internal class Primal : Doppelganger
-{
-	private ZodiarkProcess zame;
+internal class Primal(SilverDasher self) : Doppelganger(self) {
+    // public static IntPtr Handle { get; private set; }
 
-	private IntPtr? instance;
+    // public IntPtr Instance
+    // {
+    //     get
+    //     {
+    //         if (instance.HasValue) {
+    //             return instance.Value;
+    //         }
+    //         _ = IntPtr.Zero;
+    //         instance = zame.Scanner.GetStaticAddressFromSig("48 8D 0D ?? ?? ?? ?? E8 ?? ?? ?? ?? 40 3A C7 75 ?? 48 8D 0D", 2) + 32;
+    //         var intPtr = instance;
+    //         var zero = IntPtr.Zero;
+    //         if (!intPtr.HasValue) {
+    //             _ = 1;
+    //         }
+    //         else if (intPtr.HasValue) {
+    //             if (intPtr.GetValueOrDefault() != zero) {
+    //                 _ = 1;
+    //             }
+    //             else
+    //                 _ = 0;
+    //         }
+    //         else
+    //             _ = 0;
+    //         return instance.Value;
+    //     }
+    // }
 
-	public static IntPtr Handle { get; private set; }
+    internal override void Init() {
+        // ChangeProcess(Negotiator.ffdata.GetCurrentFFXIVProcess());
+    }
 
-	public IntPtr Instance
-	{
-		get
-		{
-			if (instance.HasValue)
-			{
-				return instance.Value;
-			}
-			_ = IntPtr.Zero;
-			instance = zame.Scanner.GetStaticAddressFromSig("48 8D 0D ?? ?? ?? ?? E8 ?? ?? ?? ?? 40 3A C7 75 ?? 48 8D 0D", 2) + 32;
-			IntPtr? intPtr = instance;
-			IntPtr zero = IntPtr.Zero;
-			if (!intPtr.HasValue)
-			{
-				_ = 1;
-			}
-			else if (intPtr.HasValue)
-			{
-				if (intPtr.GetValueOrDefault() != zero)
-				{
-					_ = 1;
-				}
-				else
-					_ = 0;
-			}
-			else
-				_ = 0;
-			return instance.Value;
-		}
-	}
+    internal override void Deinit() {
+    }
 
-	internal Primal(SilverDasher self)
-		: base(self)
-	{
-	}
+    // private static void ChangeProcess(Process game) {
+    //     if (game == null || game.HasExited) {
+    //     }
+    //     else {
+    //         new ZodiarkProcess(game);
+    //     }
+    // }
 
-	internal override void Init()
-	{
-		ChangeProcess(Negotiator.ffdata.GetCurrentFFXIVProcess());
-	}
-
-	internal override void Deinit()
-	{
-		zame = null;
-	}
-
-	internal void ChangeProcess(Process game)
-	{
-		if (game == null || game.HasExited)
-		{
-			zame = null;
-		}
-		else
-		{
-			zame = new ZodiarkProcess(game);
-		}
-	}
-
-	internal byte GetCurrentInstance()
-	{
-		try
-		{
-			if (zame != null && zame.Process != null && !zame.Process.HasExited)
-			{
-				byte b = zame.Memory.Read<byte>(Instance);
-				Debug($"Scanned instance {b}");
-				return b;
-			}
-		}
-		catch (Exception ex)
-		{
-			Logger.Debug(ex.ToString());
-			Logger.Debug(ex.StackTrace);
-		}
-		return byte.MaxValue;
-	}
+    internal uint GetCurrentInstance() {
+        var b = SilverDasher.ClientState.Instance;
+        Debug($"Scanned instance {b}");
+        return b;
+    }
 }

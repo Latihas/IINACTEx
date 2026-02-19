@@ -179,7 +179,7 @@ public class Patcher(Version version, string workPath) {
         memory.WriteOut();
     }
 
-    public static bool SilverDasherPlugin(string dll,string outdll) {
+    public static bool SilverDasherPlugin(string dll, string outdll) {
         var plugin = new TargetAssembly(dll);
         if (plugin.ApiVersionMatches()) return false;
         var wasHere = new TypeDefinition(ApiVersion.NamespaceIdentifier, "WasHere", TypeAttributes.Public | TypeAttributes.Class) {

@@ -1,5 +1,5 @@
-namespace SilverDasher.ACT.Models;
+// namespace SilverDasher.ACT.Models;
+//
+// public class HuntGroup : ItemGroup {
+// }
 
-public class HuntGroup : ItemGroup
-{
-}

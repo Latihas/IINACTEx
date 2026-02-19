@@ -79,8 +79,7 @@ public unsafe class ZoneDownHookManager : IDisposable {
         Enable();
     }
 
-    private bool IsVtablePattern(ReadOnlySpan<byte> memory, int offset)
-    {
+    private bool IsVtablePattern(ReadOnlySpan<byte> memory, int offset) {
         for (var i = 1; i < 5; i++)
             if (memory[offset + i] == 0)
                 return false;

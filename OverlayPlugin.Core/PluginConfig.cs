@@ -332,8 +332,8 @@ public class PluginConfig : IPluginConfig {
                     throw new Exception($"Type {typeName} not found!");
                 }
 
-                    this.Overlays.Add((IOverlayConfig)JsonConvert.DeserializeObject(
-                                          item.ToString(),
+                Overlays.Add((IOverlayConfig)JsonConvert.DeserializeObject(
+                    item.ToString(),
                     type,
                     new ConfigCreationConverter(_container)
                 ));

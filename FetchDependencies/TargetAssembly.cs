@@ -94,7 +94,7 @@ public class TargetAssembly : IDisposable {
     public string? GetDieMoeBuildVersion() =>
         (from field in from type in Assembly.MainModule.Types from field in type.Fields where field.Name == "DieMoeBuildVersion" select field select field.Constant.ToString() ?? null).FirstOrDefault();
 
-    public void WriteOut(string?outp=null) {
+    public void WriteOut(string? outp = null) {
         if (!ApiVersionMatches()) {
             // Log.WriteLine($"[PatchWasHere] Adding type {ApiVersion.NamespaceIdentifier}.WasHere");
             var wasHere = new TypeDefinition(ApiVersion.NamespaceIdentifier, "WasHere", TypeAttributes.Public | TypeAttributes.Class) {
@@ -113,6 +113,6 @@ public class TargetAssembly : IDisposable {
         var patchedPath = AssemblyPath + ".patched";
         Assembly.Write(patchedPath);
         Assembly.Dispose();
-        File.Move(patchedPath, outp??AssemblyPath, true);
+        File.Move(patchedPath, outp ?? AssemblyPath, true);
     }
 }

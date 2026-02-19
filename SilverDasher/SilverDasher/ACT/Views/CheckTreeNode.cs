@@ -3,114 +3,73 @@ using System.Collections.ObjectModel;
 
 namespace SilverDasher.ACT.Views;
 
-public class CheckTreeNode : UIBinded
-{
-	internal static bool BUILDING;
+public class CheckTreeNode(string name, string id) : UIBinded {
+    internal static bool BUILDING;
 
-	public CheckTreeNode Parent;
+    private CheckTreeNode Parent;
 
-	public List<CheckTreeNode> Related = [];
+    internal readonly List<CheckTreeNode> Related = [];
 
-	public bool changing;
+    private bool changing;
 
-	public bool? isChecked = false;
+    public string Name { get; } = name;
 
-	public string Name { get; set; }
+    public string ID { get; } = id;
 
-	public string ID { get; set; }
+    public ObservableCollection<CheckTreeNode> Nodes { get; set; } = [];
 
-	public ObservableCollection<CheckTreeNode> Nodes { get; set; }
+    public bool? ViewChecked
+    {
+        get;
+        set
+        {
+            if (field == value) return;
+            field = value;
+            foreach (var item in Related) {
+                item.ViewChecked = value;
+            }
+            NotifyPropertyChanged("ViewChecked");
+            if (Nodes is { Count: > 0 } && field.HasValue) {
+                changing = true;
+                foreach (var node in Nodes) {
+                    node.ViewChecked = field;
+                }
+                changing = false;
+            }
+            if (Parent is { changing: false }) Parent.ValidateStatus();
+        }
+    } = false;
 
-	public bool? ViewChecked
-	{
-		get
-		{
-			return isChecked;
-		}
-		set
-		{
-			if (isChecked == value)
-			{
-				return;
-			}
-			isChecked = value;
-			foreach (CheckTreeNode item in Related)
-			{
-				item.ViewChecked = value;
-			}
-			NotifyPropertyChanged("ViewChecked");
-			if (Nodes != null && Nodes.Count > 0 && isChecked.HasValue)
-			{
-				changing = true;
-				foreach (CheckTreeNode node in Nodes)
-				{
-					node.ViewChecked = isChecked;
-				}
-				changing = false;
-			}
-			if (Parent != null && !Parent.changing)
-			{
-				Parent.ValidateStatus();
-			}
-		}
-	}
+    internal void Add(CheckTreeNode node) {
+        if (Nodes.Contains(node) || Parent == node) return;
+        node.Parent = this;
+        Nodes.Add(node);
+        if (!BUILDING && Parent != null) Parent.ValidateStatus();
+        NotifyPropertyChanged("Nodes");
+    }
 
-	public CheckTreeNode(string name, string id, bool deleteOnUncheck = false)
-	{
-		Name = name;
-		ID = id;
-		Nodes = [];
-	}
+    // internal void Add(string name, string id, bool c) {
+    //     var node = new CheckTreeNode(name, id) {
+    //         isChecked = c
+    //     };
+    //     Add(node);
+    // }
 
-	internal void Add(CheckTreeNode node)
-	{
-		if (!Nodes.Contains(node) && Parent != node)
-		{
-			node.Parent = this;
-			Nodes.Add(node);
-			if (!BUILDING && Parent != null)
-			{
-				Parent.ValidateStatus();
-			}
-			NotifyPropertyChanged("Nodes");
-		}
-	}
-
-	internal void Add(string name, string id, bool c)
-	{
-		CheckTreeNode node = new CheckTreeNode(name, id)
-		{
-			isChecked = c
-		};
-		Add(node);
-	}
-
-	internal void ValidateStatus()
-	{
-		int num = 0;
-		int num2 = 0;
-		foreach (CheckTreeNode node in Nodes)
-		{
-			if (node.ViewChecked == true)
-			{
-				num++;
-			}
-			else if (node.ViewChecked == false)
-			{
-				num2++;
-			}
-		}
-		if (num == Nodes.Count)
-		{
-			ViewChecked = true;
-		}
-		else if (num2 == Nodes.Count)
-		{
-			ViewChecked = false;
-		}
-		else
-		{
-			ViewChecked = null;
-		}
-	}
+    internal void ValidateStatus() {
+        var num = 0;
+        var num2 = 0;
+        foreach (var node in Nodes) {
+            switch (node.ViewChecked) {
+                case true:
+                    num++;
+                    break;
+                case false:
+                    num2++;
+                    break;
+            }
+        }
+        if (num == Nodes.Count) ViewChecked = true;
+        else if (num2 == Nodes.Count) ViewChecked = false;
+        else ViewChecked = null;
+    }
 }

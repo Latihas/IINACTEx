@@ -1,5 +1,3 @@
 namespace SilverDasher.ACT.Models;
 
-public class FateGroup : ItemGroup
-{
-}
+public abstract class FateGroup : ItemGroup;

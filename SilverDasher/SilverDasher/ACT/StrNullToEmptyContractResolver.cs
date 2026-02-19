@@ -4,66 +4,29 @@ using Newtonsoft.Json.Serialization;
 
 namespace SilverDasher.ACT;
 
-public class StrNullToEmptyContractResolver : DefaultContractResolver
-{
-	private class DynamicStrNullToEmptyValueProvider : DynamicValueProvider, IValueProvider
-	{
-		public DynamicStrNullToEmptyValueProvider(MemberInfo memberInfo)
-			: base(memberInfo)
-		{
-		}
+public class StrNullToEmptyContractResolver : DefaultContractResolver {
+    private class DynamicStrNullToEmptyValueProvider(MemberInfo memberInfo) : DynamicValueProvider(memberInfo), IValueProvider {
+        public new object GetValue(object target) => base.GetValue(target) ?? string.Empty;
+    }
 
-		public new object GetValue(object target)
-		{
-			object value = base.GetValue(target);
-			if (value == null)
-			{
-				return string.Empty;
-			}
-			return value;
-		}
-	}
+    private class ReflectionStrNullToEmptyValueProvider(MemberInfo memberInfo) : ReflectionValueProvider(memberInfo), IValueProvider {
+        public new object GetValue(object target) => base.GetValue(target) ?? string.Empty;
+    }
 
-	private class ReflectionStrNullToEmptyValueProvider : ReflectionValueProvider, IValueProvider
-	{
-		public ReflectionStrNullToEmptyValueProvider(MemberInfo memberInfo)
-			: base(memberInfo)
-		{
-		}
+    internal static StrNullToEmptyContractResolver DefaultInstance;
 
-		public new object GetValue(object target)
-		{
-			object value = base.GetValue(target);
-			if (value == null)
-			{
-				return string.Empty;
-			}
-			return value;
-		}
-	}
+    static StrNullToEmptyContractResolver() {
+        DefaultInstance = new StrNullToEmptyContractResolver();
+    }
 
-	public static StrNullToEmptyContractResolver DefaultInstance;
-
-	static StrNullToEmptyContractResolver()
-	{
-		DefaultInstance = new StrNullToEmptyContractResolver();
-	}
-
-	protected override JsonProperty CreateProperty(MemberInfo member, MemberSerialization memberSerialization)
-	{
-		JsonProperty jsonProperty = base.CreateProperty(member, memberSerialization);
-		if (jsonProperty.PropertyType != typeof(string))
-		{
-			return jsonProperty;
-		}
-		if (jsonProperty.ValueProvider is ReflectionValueProvider)
-		{
-			jsonProperty.ValueProvider = new ReflectionStrNullToEmptyValueProvider(member);
-		}
-		else if (jsonProperty.ValueProvider is DynamicValueProvider)
-		{
-			jsonProperty.ValueProvider = new DynamicStrNullToEmptyValueProvider(member);
-		}
-		return jsonProperty;
-	}
+    protected override JsonProperty CreateProperty(MemberInfo member, MemberSerialization memberSerialization) {
+        var jsonProperty = base.CreateProperty(member, memberSerialization);
+        if (jsonProperty.PropertyType != typeof(string)) return jsonProperty;
+        jsonProperty.ValueProvider = jsonProperty.ValueProvider switch {
+            ReflectionValueProvider => new ReflectionStrNullToEmptyValueProvider(member),
+            DynamicValueProvider => new DynamicStrNullToEmptyValueProvider(member),
+            _ => jsonProperty.ValueProvider
+        };
+        return jsonProperty;
+    }
 }

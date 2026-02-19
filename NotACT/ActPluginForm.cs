@@ -1,8 +1,8 @@
 ﻿namespace Advanced_Combat_Tracker;
 
 public class ActPluginForm : Form {
-    public Label lblPluginStatus;
-    public TabPage tpPluginSpace;
+    public readonly Label lblPluginStatus = new();
+    public readonly TabPage tpPluginSpace = new();
     public bool canClose;
 
     public ActPluginForm() {
@@ -11,7 +11,6 @@ public class ActPluginForm : Form {
         Size = new Size(800, 600);
         StartPosition = FormStartPosition.CenterScreen;
 
-        lblPluginStatus = new Label();
         lblPluginStatus.Dock = DockStyle.Top;
         lblPluginStatus.Height = 150;
         lblPluginStatus.Padding = new Padding(10, 0, 0, 0);
@@ -22,7 +21,6 @@ public class ActPluginForm : Form {
         tabControl1.AllowDrop = false;
         tabControl1.Multiline = false;
 
-        tpPluginSpace = new TabPage();
         tpPluginSpace.Text = "插件界面";
         tpPluginSpace.UseVisualStyleBackColor = true;
 

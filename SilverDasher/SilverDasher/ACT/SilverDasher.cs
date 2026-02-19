@@ -1,18 +1,21 @@
-#define TRACE
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using Advanced_Combat_Tracker;
+using Dalamud.Plugin.Services;
 using SilverDasher.ACT.Doppelgangers;
+using SilverDasher.ACT.Storages;
 using SilverDasher.ACT.Views;
 
 namespace SilverDasher.ACT;
 
 public class SilverDasher : IActPluginV1 {
+    internal static SilverDasher Instance;
     internal Painter Painter;
 
     internal Negotiator Negotiator;
@@ -31,106 +34,114 @@ public class SilverDasher : IActPluginV1 {
 
     internal Logger Logger;
 
-    internal Task Feed;
+    // internal Task Feed;
 
-    internal CancellationTokenSource tokenSource = new();
+    private CancellationTokenSource tokenSource = new();
 
     internal bool badWorldMessageShown;
-
+    internal static IClientState ClientState;
+    private static IFramework Framework;
     private readonly List<Doppelganger> Doppelgangers = [];
-    public static Form FormContainer;
+    internal static Form FormContainer;
+    internal static string Datadir;
 
-    public SilverDasher() {
-        foreach (var actPlugin in ActGlobals.oFormActMain.ActPlugins.Where(actPlugin => actPlugin.pluginFile.Name == "SilverDasher.dll"))
-            FormContainer = actPlugin.PluginForm;
+    public SilverDasher(string datadir, IClientState clientState, IFramework framework) {
+        Datadir = datadir;
+        ClientState = clientState;
+        Framework = framework;
+        Instance = this;
+    }
+
+    public static readonly List<string> FileLogs = [];
+
+    private static void WriteLog(IFramework _) {
+        if (!Directory.Exists(DataStorage.LogPath)) Directory.CreateDirectory(DataStorage.LogPath);
+        lock (FileLogs) {
+            File.AppendAllText(DataStorage.LogFile, string.Join("\n", FileLogs) + '\n');
+            FileLogs.Clear();
+        }
     }
 
     public void InitPlugin(TabPage pluginScreenSpace, Label pluginStatusText) {
+        foreach (var actPlugin in ActGlobals.oFormActMain.ActPlugins.Where(actPlugin => actPlugin.pluginFile.Name == "SilverDasher.dll"))
+            FormContainer = actPlugin.PluginForm;
         SummonDoppelgangers(pluginScreenSpace, pluginStatusText);
-        StartLoop();
+        StartLoop(tokenSource.Token);
         Painter.SetPluginStatus("召唤出了银山雀儿。(Initialized)");
+        Framework.Update += WriteLog;
     }
 
     public void DeInitPlugin() {
         DismissDoppelgangers();
+        Framework.Update -= WriteLog;
     }
 
+
     private void SummonDoppelgangers(TabPage pluginScreenSpace, Label pluginStatusText) {
-        Logger = new Logger(this);
-        Keeper = new Keeper(this);
-        Painter = new Painter(this, pluginStatusText, pluginScreenSpace);
-        Negotiator = new Negotiator(this);
-        Overseer = new Overseer(this);
-        Notifier = new Notifier(this);
-        Agent = new Agent(this);
-        Messager = new Messager(this);
-        Primal = new Primal(this);
-        Doppelgangers.Add(Logger);
-        Doppelgangers.Add(Agent);
-        Doppelgangers.Add(Keeper);
-        Doppelgangers.Add(Painter);
-        Doppelgangers.Add(Negotiator);
-        Doppelgangers.Add(Overseer);
-        Doppelgangers.Add(Notifier);
-        Doppelgangers.Add(Messager);
-        Doppelgangers.Add(Primal);
-        foreach (Doppelganger doppelganger in Doppelgangers) {
-            doppelganger.Init();
-        }
-        Resignal();
+        Doppelgangers.Add(Logger = new Logger(this));
+        Doppelgangers.Add(Agent = new Agent(this));
+        Doppelgangers.Add(Keeper = new Keeper(this));
+        Doppelgangers.Add(Painter = new Painter(this, pluginStatusText, pluginScreenSpace));
+        Doppelgangers.Add(Negotiator = new Negotiator(this));
+        Doppelgangers.Add(Overseer = new Overseer(this));
+        Doppelgangers.Add(Notifier = new Notifier(this));
+        Doppelgangers.Add(Messager = new Messager(this));
+        Doppelgangers.Add(Primal = new Primal(this));
+        foreach (var doppelganger in Doppelgangers) doppelganger.Init();
+        Resignal(tokenSource.Token);
     }
 
     private void DismissDoppelgangers() {
-        foreach (Doppelganger doppelganger in Doppelgangers) {
-            doppelganger.Deinit();
-        }
         tokenSource.Cancel();
+        tokenSource.Dispose();
+        tokenSource = null;
+        foreach (var doppelganger in Doppelgangers) doppelganger.Deinit();
     }
 
-    internal void Resignal() {
-        Feed = Task.Run(async delegate {
-            while (true) {
-                await Task.Delay(TimeSpan.FromSeconds(28800.0));
+    private void Resignal(CancellationToken token) {
+        _ = Task.Run(async () => {
+            while (!token.IsCancellationRequested) {
+                await Task.Delay(TimeSpan.FromSeconds(28800.0), token);
                 RestartLoop();
             }
-        }, tokenSource.Token);
+        }, token);
     }
 
-    internal void StartLoop(bool refresh = false) {
+    private void StartLoop(CancellationToken token, bool refresh = false) {
         badWorldMessageShown = false;
-        Task.Run(async delegate {
-            await Agent.UpdateData(refresh);
-            while (Keeper.RUNNING) {
+        Task.Run(async () => {
+            await Agent.UpdateData(refresh, token);
+            while (!token.IsCancellationRequested && Keeper.RUNNING) {
                 try {
-                    if (Keeper.PlayerWorldID == 0) {
-                        Negotiator.GetPlayerInfo(0u, "");
-                    }
-                    if (Keeper.PlayerWorldID != 0 && Keeper.CurrentWorldID != 0 && Keeper.PlayerName != "") {
-                        Auth();
-                    }
-                    else {
-                        Logger.Log("Game isn't running. Retrying in 5 seconds.");
-                    }
+                    if (Keeper.PlayerWorldID == 0) Negotiator.GetPlayerInfo(0u, "");
+                    if (Keeper.PlayerWorldID != 0 && Keeper.CurrentWorldID != 0 && Keeper.PlayerName != "") await Auth(token);
+                    // else {
+                    //     Logger.Log("Game isn't running. Retrying in 5 seconds.");
+                    // }
                 }
                 catch (Exception ex) {
                     Trace.WriteLine(ex.ToString());
                     Logger.Log(ex.StackTrace);
                 }
                 finally {
-                    await Task.Delay(TimeSpan.FromSeconds(5.0));
+                    await Task.Delay(TimeSpan.FromSeconds(5.0), token);
                 }
             }
-        });
+        }, token);
     }
 
-    internal void Auth() {
-        Task.Run(async delegate {
-            AuthResult r = AuthResult.ERROR;
-            while (r == AuthResult.ERROR && Keeper.RUNNING) {
+    private Task Auth(CancellationToken token) {
+        return Task.Run(async () => {
+            var r = AuthResult.ERROR;
+            while (!token.IsCancellationRequested && r == AuthResult.ERROR && Keeper.RUNNING) {
                 try {
-                    r = await Agent.Setup();
+                    r = await Agent.Setup(token);
                     Painter.pluginControl.SetPluginStatus(PluginStatus.CONNECTING);
-                    if (r != 0) {
+                    if (r == AuthResult.SUCCESS) {
+                        Painter.pluginControl.SetPluginStatus(PluginStatus.CONNECTED);
+                        Messager.StartLoop();
+                    }
+                    else {
                         Logger.Log("Authentication Failed! Status " + Enum.GetName(r.GetType(), r) + ".");
                         switch (r) {
                             case AuthResult.BLOCKED:
@@ -163,37 +174,32 @@ public class SilverDasher : IActPluginV1 {
                                 break;
                         }
                     }
-                    else {
-                        Painter.pluginControl.SetPluginStatus(PluginStatus.CONNECTING);
-                        Messager.StartLoop();
-                    }
                 }
                 catch (Exception ex) {
                     Trace.WriteLine(ex.ToString());
                     Logger.Log(ex.StackTrace);
                 }
                 finally {
-                    await Task.Delay(TimeSpan.FromSeconds(15.0));
+                    await Task.Delay(TimeSpan.FromSeconds(15.0), token);
                 }
             }
-        });
+        }, token);
     }
 
     internal void RestartLoop(bool refresh = false) {
-        Painter.pluginControl.ButtonRestartToggle("请等待1分钟左右……", enabled: false);
-        Painter.pluginControl.CheckBoxCrossWorldToggle(enabled: false);
-        if (Messager.IsRunning()) {
-            Messager.Disconnect();
-        }
+        Painter.pluginControl.ButtonRestartToggle("请等待1分钟左右……", false);
+        Painter.pluginControl.CheckBoxCrossWorldToggle(false);
+        if (Messager.IsRunning()) Messager.Disconnect();
         Agent.session = "";
         Keeper.RUNNING = false;
         Painter.pluginControl.SetPluginStatus(PluginStatus.SLEEPING);
-        Task.Run(async delegate {
-            await Task.Delay(TimeSpan.FromSeconds(30.0));
+        var token = tokenSource.Token;
+        Task.Run(async () => {
+            await Task.Delay(TimeSpan.FromSeconds(30.0), token);
             Keeper.RUNNING = true;
-            StartLoop(refresh);
-            Painter.pluginControl.ButtonRestartToggle("刷新配置并重新连接", enabled: true);
-            Painter.pluginControl.CheckBoxCrossWorldToggle(enabled: true);
-        });
+            StartLoop(token, refresh);
+            Painter.pluginControl.ButtonRestartToggle("刷新配置并重新连接", true);
+            Painter.pluginControl.CheckBoxCrossWorldToggle(true);
+        }, token);
     }
 }

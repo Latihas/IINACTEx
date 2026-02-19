@@ -5,7 +5,6 @@ using System.Reflection;
 using System.Runtime.Loader;
 using System.Speech.Synthesis;
 using Advanced_Combat_Tracker;
-using Dalamud.Plugin.Services;
 using Dalamud.Utility;
 using IINACT.TextToSpeech;
 using NAudio.Wave;

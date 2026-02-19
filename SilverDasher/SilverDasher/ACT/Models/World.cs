@@ -4,53 +4,28 @@ using SilverDasher.ACT.Enums;
 
 namespace SilverDasher.ACT.Models;
 
-public class World
-{
-	[JsonIgnore]
-	public int Id;
+public class World {
+    [JsonIgnore] public int Id;
 
-	[JsonProperty("name")]
-	public string Name;
+    [JsonProperty("name")] public string Name;
 
-	[JsonProperty("name_label")]
-	public string Label;
+    [JsonProperty("name_label")] public string Label;
 
-	[JsonProperty("dc")]
-	public string DataCenter;
+    [JsonProperty("dc")] public string DataCenter;
 
-	[JsonProperty("dc_label")]
-	public string DataCenterLabel;
+    [JsonProperty("dc_label")] public string DataCenterLabel;
 
-	[JsonIgnore]
-	public Region Region
-	{
-		get
-		{
-			switch (DataCenterLabel)
-			{
-			case "Mana":
-			case "Elemental":
-			case "Gaia":
-			case "Light":
-			case "Crystal":
-			case "Chaos":
-			case "Primal":
-			case "Aether":
-			case "Materia":
-				return Region.Global;
-			case "LuXingNiao":
-			case "MaoXiaoPang":
-			case "MoGuLi":
-			case "DouDouChai":
-				return Region.China;
-			default:
-				throw new NotImplementedException("Unable to find Region for DataCenter " + DataCenter + ", " + DataCenterLabel + ". ");
-			}
-		}
-	}
+    [JsonIgnore] public Region Region
+    {
+        get
+        {
+            return DataCenterLabel switch {
+                "Mana" or "Elemental" or "Gaia" or "Light" or "Crystal" or "Chaos" or "Primal" or "Aether" or "Materia" => Region.Global,
+                "LuXingNiao" or "MaoXiaoPang" or "MoGuLi" or "DouDouChai" => Region.China,
+                _ => throw new NotImplementedException("Unable to find Region for DataCenter " + DataCenter + ", " + DataCenterLabel + ". ")
+            };
+        }
+    }
 
-	public override string ToString()
-	{
-		return Name;
-	}
+    public override string ToString() => Name;
 }
