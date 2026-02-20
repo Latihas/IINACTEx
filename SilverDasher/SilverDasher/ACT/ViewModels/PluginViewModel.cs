@@ -73,17 +73,15 @@ public class PluginViewModel : UIBinded {
     }
 
     private static CheckTreeNode BuildGroupNode<T>(Dictionary<int, T> itemEntries, ItemGroup itemGroup, string type, Dictionary<int, List<CheckTreeNode>> nodeIndex) where T : GameDynamicObject {
-        var checkTreeNode = new CheckTreeNode(itemGroup.Name, type + "-group-" + itemGroup.Group);
+        var checkTreeNode = new CheckTreeNode(itemGroup.Name, $"{type}-group-{itemGroup.Group}");
         foreach (var subGroup in itemGroup.SubGroups) {
             checkTreeNode.Add(BuildGroupNode(itemEntries, subGroup, type, nodeIndex));
         }
         foreach (var item in itemGroup.Items) {
-            if (!itemEntries.TryGetValue(item, out var value)) {
-                continue;
-            }
+            if (!itemEntries.TryGetValue(item, out var value)) continue;
             var checkTreeNode2 = new CheckTreeNode($"{value.Territory.Name}-{value.Name}", $"{type}-gid-{itemGroup.Group}-{value.Id}");
             checkTreeNode.Add(checkTreeNode2);
-            nodeIndex.TryGetValue(item, out var value2);
+            if (!nodeIndex.TryGetValue(item, out var value2)) continue;
             foreach (var item2 in value2) {
                 item2.Related.Add(checkTreeNode2);
                 checkTreeNode2.Related.Add(item2);
@@ -128,17 +126,13 @@ public class PluginViewModel : UIBinded {
             value2.Add(BuildHuntGroupNode(huntEntries, item));
         }
         CheckTreeNode.BUILDING = false;
-        foreach (var sub in subs) {
-            if (HuntNodeIndex.TryGetValue($"hunt-id-{sub}", out var value6)) {
+        foreach (var sub in subs)
+            if (HuntNodeIndex.TryGetValue($"hunt-id-{sub}", out var value6))
                 value6.ViewChecked = true;
-            }
-        }
-        foreach (var item2 in list) {
+        foreach (var item2 in list)
             item2.ValidateStatus();
-        }
-        foreach (var node in value2.Nodes) {
+        foreach (var node in value2.Nodes)
             node.ValidateStatus();
-        }
     }
 
     private CheckTreeNode BuildFateGroupNode(Dictionary<int, Fate> fateEntries, ItemGroup fateGroup) => BuildGroupNode(fateEntries, fateGroup, "fate", FateNodesById);
@@ -180,23 +174,14 @@ public class PluginViewModel : UIBinded {
             value6.Add(checkTreeNode);
             FateNodesById[key] = value6;
         }
-        foreach (var item in fateGroupsTree) {
+        foreach (var item in fateGroupsTree)
             value2.Add(BuildFateGroupNode(fateEntries, item));
-        }
         CheckTreeNode.BUILDING = false;
-        foreach (var sub in subs) {
-            if (FateNodeIndex.TryGetValue($"fate-id-{sub}", out var value7)) {
+        foreach (var sub in subs)
+            if (FateNodeIndex.TryGetValue($"fate-id-{sub}", out var value7))
                 value7.ViewChecked = true;
-            }
-        }
-        foreach (var item2 in list2) {
-            item2.ValidateStatus();
-        }
-        foreach (var item3 in list) {
-            item3.ValidateStatus();
-        }
-        foreach (var node in value2.Nodes) {
-            node.ValidateStatus();
-        }
+        foreach (var item2 in list2) item2.ValidateStatus();
+        foreach (var item3 in list) item3.ValidateStatus();
+        foreach (var node in value2.Nodes) node.ValidateStatus();
     }
 }

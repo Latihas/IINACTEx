@@ -90,7 +90,7 @@ public class MainWindow : Window {
     }
 
     internal static void EnableSilverDasher() {
-        Plugin.InitIActPluginV1(new ActPluginData("SilverDasher.dll", new SilverDasher.ACT.SilverDasher(Plugin.Instance.PluginActScriptDirectory, Plugin.ClientState, Plugin.Framework), false));
+        Plugin.InitIActPluginV1(new ActPluginData("SilverDasher.dll", new SilverDasher.ACT.SilverDasher(Plugin.Instance.PluginActScriptDirectory, Plugin.ClientState,Plugin.ObjectTable, Plugin.Framework), false));
     }
 
     private static void DrawSilverDasher() {

@@ -25,11 +25,9 @@ internal class SpFateStorage(Keeper kp) : BaseStorage(kp) {
             FateGroupsAll.UnionWith(item2.TraverseSubGroups());
             Spfates.UnionWith(item2.TraverseGetItems());
         }
-        foreach (var spfate in Spfates) {
-            if (Keeper.Fates.TryGet(spfate, out var item)) {
+        foreach (var spfate in Spfates)
+            if (Keeper.Fates.TryGet(spfate, out var item))
                 item.Special = true;
-            }
-        }
         FateGroupById = FateGroupsAll.ToDictionary(group => group.Group);
     }
 }

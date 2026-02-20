@@ -22,7 +22,7 @@ public class World {
             return DataCenterLabel switch {
                 "Mana" or "Elemental" or "Gaia" or "Light" or "Crystal" or "Chaos" or "Primal" or "Aether" or "Materia" => Region.Global,
                 "LuXingNiao" or "MaoXiaoPang" or "MoGuLi" or "DouDouChai" => Region.China,
-                _ => throw new NotImplementedException("Unable to find Region for DataCenter " + DataCenter + ", " + DataCenterLabel + ". ")
+                _ => throw new NotImplementedException($"Unable to find Region for DataCenter {DataCenter}, {DataCenterLabel}. ")
             };
         }
     }

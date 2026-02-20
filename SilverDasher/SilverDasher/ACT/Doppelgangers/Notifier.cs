@@ -28,7 +28,7 @@ internal class Notifier(SilverDasher self) : Doppelganger(self) {
         var array = topic.Split('/');
         var text = array[1];
         if (!Keeper.Worlds.TryGetByLabel(text, out var w)) {
-            Log("Invalid world " + text + " for topic " + topic + ".");
+            Log($"Invalid world {text} for topic {topic}.");
             return;
         }
         var text2 = array[2];
@@ -91,7 +91,7 @@ internal class Notifier(SilverDasher self) : Doppelganger(self) {
                 break;
             }
             default:
-                Log("Unknown packet type " + text2 + ".");
+                Log($"Unknown packet type {text2}.");
                 break;
         }
     }
@@ -120,10 +120,10 @@ internal class Notifier(SilverDasher self) : Doppelganger(self) {
         var text2 = !item.IsDataCenterMap ? $"{byLabel.Name} - {item}{text} - {gobj.Name}" : $"{byLabel.DataCenter} - {item}{text} - {gobj.Name}";
         var coord = "";
         if (gobj.Coordinate != null)
-            coord = "(" + gobj.Coordinate.displayX + ", " + gobj.Coordinate.displayY + ") ";
+            coord = $"({gobj.Coordinate.displayX}, {gobj.Coordinate.displayY}) ";
         SendToast(text2, status, coord);
         SendTTS(text2, status, coord);
-        Log("已尝试推送 " + text2 + ", " + MobStorage.GetStateName(status));
+        Log($"已尝试推送 {text2}, {MobStorage.GetStateName(status)}");
     }
 
     public void WriteLogline(World world, int instance, GameDynamicObject gobj) {
@@ -147,39 +147,33 @@ internal class Notifier(SilverDasher self) : Doppelganger(self) {
     }
 
     private void SendToast(string message, HuntState status, string coord = "", bool checkPermit = true) {
-        if (checkPermit && (!Keeper.Config.SystemToast || !Keeper.Config.StatusPushable("Toast", status))) return;
-        try {
-            if ("Legacy" == Keeper.Config.ToastType || ToastFailed) {
-                var version = Environment.OSVersion.Version;
-                var value = new Version("6.2");
-                if (version.CompareTo(value) >= 0) {
-                    var templateContent = ToastNotificationManager.GetTemplateContent(ToastTemplateType.ToastText02);
-                    var elementsByTagName = templateContent.GetElementsByTagName("text");
-                    string[] array = [
-                        message,
-                        coord + MobStorage.GetStateName(status)
-                    ];
-                    for (var i = 0; i < elementsByTagName.Length; i++) {
-                        if (i < array.Length) {
-                            elementsByTagName[i].AppendChild(templateContent.CreateTextNode(array[i]));
-                        }
+        lock (this) {
+            if (checkPermit && (!Keeper.Config.SystemToast || !Keeper.Config.StatusPushable("Toast", status))) return;
+            try {
+                if ("Legacy" == Keeper.Config.ToastType || ToastFailed) {
+                    if (Environment.OSVersion.Version.CompareTo(new Version("6.2")) >= 0) {
+                        var templateContent = ToastNotificationManager.GetTemplateContent(ToastTemplateType.ToastText02);
+                        var elementsByTagName = templateContent.GetElementsByTagName("text");
+                        string[] array = [message, coord + MobStorage.GetStateName(status)];
+                        for (var i = 0; i < elementsByTagName.Length; i++)
+                            if (i < array.Length)
+                                elementsByTagName[i].AppendChild(templateContent.CreateTextNode(array[i]));
+                        ToastNotificationManager.CreateToastNotifier("Advanced Combat Tracker").Show(new ToastNotification(templateContent));
                     }
-                    var notification = new ToastNotification(templateContent);
-                    ToastNotificationManager.CreateToastNotifier("Advanced Combat Tracker").Show(notification);
+                    else Log("您的系统不受支持。");
                 }
-                else Log("您的系统不受支持。");
+                else if ("UWP" == Keeper.Config.ToastType) new ToastContentBuilder().AddText(message).AddText(coord + MobStorage.GetStateName(status)).Show();
             }
-            else if ("UWP" == Keeper.Config.ToastType) new ToastContentBuilder().AddText(message).AddText(coord + MobStorage.GetStateName(status)).Show();
-        }
-        catch {
-            Log("Failed to push toast message " + message + ".");
-            if (ToastFailed && checkPermit) return;
-            ToastFailed = true;
-            Utils.ShowMessageBox("推送通知消息失败。您可尝试在设置中修改通知消息推送类型来尝试解决该问题。");
+            catch (Exception ex) {
+                Log($"Failed to push toast message {message} {ex}.");
+                if (ToastFailed && checkPermit) return;
+                ToastFailed = true;
+                Utils.ShowMessageBox("推送通知消息失败。您可尝试在设置中修改通知消息推送类型来尝试解决该问题。");
+            }
         }
     }
 
-    public void SendToast(string message) => SendToast(message, HuntState.Unknown);
+    // public void SendToast(string message) => SendToast(message, HuntState.Unknown);
 
     public static void TestTTS() => ActGlobals.oFormActMain.TTS("亚以太利斯 - 艾欧泽亚 - 光之战士 (1.0，1.0) 健康");
 

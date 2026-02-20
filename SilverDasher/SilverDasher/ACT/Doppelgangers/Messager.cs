@@ -38,13 +38,13 @@ internal class Messager(SilverDasher plugin) : Doppelganger(plugin) {
         Painter.pluginControl.SetPluginStatus(PluginStatus.INITIALIZED);
     }
 
-    public void StartLoop() {
+    public void StartLoop(CancellationToken token) {
         if (string.IsNullOrEmpty(Agent.session)) {
             Log("You should not launch before authentication successes.");
             return;
         }
         var tomestoneConfig = new MqttClientOptionsBuilder().WithCredentials(Tailor.Judge() + Convert.ToBase64String(Encoding.UTF8.GetBytes(Keeper.PlayerName)) + Keeper.PlayerWorldID, Tailor.Seal(Agent.session, Keeper.PlayerName + Keeper.PlayerWorld))
-            .WithTls(delegate(MqttClientOptionsBuilderTlsParameters o) { o.SslProtocol = SslProtocols.Tls12; }).WithWebSocketServer(DataStorage.SilverDasherTree)
+            .WithTlsOptions(o => o.WithSslProtocols(SslProtocols.Tls12)).WithWebSocketServer(o => o.WithUri(DataStorage.SilverDasherTree))
             .Build();
         Tomestone.ApplicationMessageReceivedAsync += Unpack;
         Task.Run(async delegate {
@@ -55,11 +55,11 @@ internal class Messager(SilverDasher plugin) : Doppelganger(plugin) {
                     try {
                         if (!Tomestone.IsConnected) {
                             Painter.pluginControl.SetPluginStatus(PluginStatus.CONNECTING);
-                            await Tomestone.ConnectAsync(tomestoneConfig);
+                            await Tomestone.ConnectAsync(tomestoneConfig, token);
                             Painter.pluginControl.SetPluginStatus(PluginStatus.CONNECTED);
-                            await Subscribe(Subscriptions);
+                            await Subscribe(Subscriptions, token);
                         }
-                        Negotiator.GetPlayerInfo(0u, "");
+                        // Negotiator.GetPlayerInfo(0u, "");
                         Negotiator.ScanMobs();
                         if (i == 1) {
                             Keeper.ReportFateStatus();
@@ -67,7 +67,7 @@ internal class Messager(SilverDasher plugin) : Doppelganger(plugin) {
                         }
                         Keeper.ReportMobStatus();
                         while (Messages.TryDequeue(out var result)) {
-                            await Tomestone.PublishAsync(new MqttApplicationMessageBuilder().WithTopic("upload/u/" + Agent.session).WithPayload(Tailor.Weave(JsonConvert.SerializeObject(result), Agent.session)).Build());
+                            await Tomestone.PublishAsync(new MqttApplicationMessageBuilder().WithTopic($"upload/u/{Agent.session}").WithPayload(Tailor.Weave(JsonConvert.SerializeObject(result), Agent.session)).Build(), token);
                         }
                     }
                     catch (Exception ex) {
@@ -76,14 +76,14 @@ internal class Messager(SilverDasher plugin) : Doppelganger(plugin) {
                     }
                 }
                 finally {
-                    await Task.Delay(TimeSpan.FromSeconds(6.0));
+                    await Task.Delay(TimeSpan.FromSeconds(6.0), token);
                     if (++i > 3) i = 0;
                 }
             }
-        });
+        }, token);
     }
 
-    private Task Subscribe(List<(string, string)> subscriptions) {
+    private Task Subscribe(List<(string, string)> subscriptions, CancellationToken token) {
         return Task.Run(async delegate {
             if (subscriptions.Count != 0) {
                 List<List<string>> list = [];
@@ -110,8 +110,8 @@ internal class Messager(SilverDasher plugin) : Doppelganger(plugin) {
                             text = "+";
                             break;
                     }
-                    var text3 = Keeper.GetCurrentWorld().DataCenterLabel + "/" + text + "/" + subscription.Item1 + "/" + subscription.Item2;
-                    Debug("Adding " + text3 + " to subscription.");
+                    var text3 = $"{Keeper.GetCurrentWorld().DataCenterLabel}/{text}/{subscription.Item1}/{subscription.Item2}";
+                    Debug($"Adding {text3} to subscription.");
                     SubDict[subscription] = text3;
                     list2.Add(text3);
                     num++;
@@ -122,11 +122,11 @@ internal class Messager(SilverDasher plugin) : Doppelganger(plugin) {
                                  Topic = item6
                              }))
                         mqttClientSubscribeOptions.TopicFilters.Add(item4);
-                    var mqttClientSubscribeResult = await Tomestone.SubscribeAsync(mqttClientSubscribeOptions);
+                    var mqttClientSubscribeResult = await Tomestone.SubscribeAsync(mqttClientSubscribeOptions, token);
                     Log(mqttClientSubscribeResult.ReasonString ?? "Subscription success.");
                 }
             }
-        });
+        }, token);
     }
 
     // internal Task UnsubscribeAll() {
@@ -140,7 +140,7 @@ internal class Messager(SilverDasher plugin) : Doppelganger(plugin) {
     //     });
     // }
 
-    private Task Unsubscribe(List<(string, string)> unsubscriptions) {
+    private Task Unsubscribe(List<(string, string)> unsubscriptions, CancellationToken token) {
         return Task.Run(async delegate {
             List<List<string>> list = [];
             List<string> list2 = [];
@@ -154,22 +154,22 @@ internal class Messager(SilverDasher plugin) : Doppelganger(plugin) {
                 }
                 _ = Keeper.GetCurrentWorld().Label;
                 SubDict.TryGetValue(unsubscription, out var value);
-                var text = Keeper.GetCurrentWorld().DataCenterLabel + "/+/" + unsubscription.Item1 + "/" + unsubscription.Item2;
-                value ??= Keeper.GetCurrentWorld().DataCenterLabel + "/" + Keeper.GetCurrentWorld().Label + "/" + unsubscription.Item1 + "/" + unsubscription.Item2;
+                var text = $"{Keeper.GetCurrentWorld().DataCenterLabel}/+/{unsubscription.Item1}/{unsubscription.Item2}";
+                value ??= $"{Keeper.GetCurrentWorld().DataCenterLabel}/{Keeper.GetCurrentWorld().Label}/{unsubscription.Item1}/{unsubscription.Item2}";
                 list2.Add(value);
                 list2.Add(text);
-                Debug("Unsubscripting " + value + ".");
-                Debug("Unsubscripting " + text + ".");
+                Debug($"Unsubscripting {value}.");
+                Debug($"Unsubscripting {text}.");
                 num++;
             }
             foreach (var item in list) {
                 var mqttClientUnsubscribeOptions = new MqttClientUnsubscribeOptions();
                 foreach (var item2 in item)
                     mqttClientUnsubscribeOptions.TopicFilters.Add(item2);
-                var mqttClientUnsubscribeResult = await Tomestone.UnsubscribeAsync(mqttClientUnsubscribeOptions);
+                var mqttClientUnsubscribeResult = await Tomestone.UnsubscribeAsync(mqttClientUnsubscribeOptions, token);
                 Log(mqttClientUnsubscribeResult.ReasonString ?? "Unsubscription success.");
             }
-        });
+        }, token);
     }
 
     public bool IsRunning() => Tomestone.IsConnected;
@@ -185,60 +185,56 @@ internal class Messager(SilverDasher plugin) : Doppelganger(plugin) {
         Messages.Enqueue(message);
     }
 
-    private void AddSubscription(string type, string id) {
+    private void AddSubscription(string type, string id, CancellationToken token) {
         Subscriptions.Add((type, id));
-        Subscribe([(type, id)]);
+        Subscribe([(type, id)], token);
     }
 
-    private void AddSubscriptions(string type, List<string> ids) {
+    private void AddSubscriptions(string type, List<string> ids, CancellationToken token) {
         List<(string, string)> list = [];
         foreach (var id in ids) {
             Subscriptions.Add((type, id));
             list.Add((type, id));
         }
-        Subscribe(list);
+        Subscribe(list, token);
     }
 
-    private void RemoveSubscription(string type, string id) {
+    private void RemoveSubscription(string type, string id, CancellationToken token) {
         Subscriptions.Remove((type, id));
-        Unsubscribe([(type, id)]);
+        Unsubscribe([(type, id)], token);
     }
 
-    private void RemoveSubscriptions(string type, List<string> ids) {
+    private void RemoveSubscriptions(string type, List<string> ids, CancellationToken token) {
         List<(string, string)> list = [];
         foreach (var id in ids) {
             Subscriptions.Remove((type, id));
             list.Add((type, id));
         }
-        Unsubscribe(list);
+        Unsubscribe(list, token);
     }
 
-    internal void Resubscribe(string tag = "") {
+    internal void Resubscribe(string tag, CancellationToken token) {
         if (Tomestone == null) return;
         Painter?.pluginControl?.CheckBoxCrossWorldToggle(false);
         var filteredSub = tag == "" ? Subscriptions : Subscriptions.FindAll(e => e.Item1 == tag);
         Task.Run(async delegate {
-            await Unsubscribe(filteredSub);
-            await Subscribe(filteredSub);
+            await Unsubscribe(filteredSub, token);
+            await Subscribe(filteredSub, token);
             Painter?.pluginControl?.CheckBoxCrossWorldToggle(true);
-        });
+        }, token);
     }
 
-    public void EditSubscription(bool? edit, string type, string id, List<string> ids) {
+    public void EditSubscription(bool? edit, string type, string id, List<string> ids, CancellationToken token) {
         if (edit.GetValueOrDefault()) {
-            if (ids != null) {
-                AddSubscriptions(type, ids);
-            }
-            else {
-                AddSubscription(type, id);
-            }
+            if (ids != null)
+                AddSubscriptions(type, ids, token);
+            else
+                AddSubscription(type, id, token);
         }
-        else if (ids != null) {
-            RemoveSubscriptions(type, ids);
-        }
-        else {
-            RemoveSubscription(type, id);
-        }
+        else if (ids != null)
+            RemoveSubscriptions(type, ids, token);
+        else
+            RemoveSubscription(type, id, token);
         Keeper.Config.EditSubscription(edit, type, id, ids);
     }
 
@@ -246,14 +242,14 @@ internal class Messager(SilverDasher plugin) : Doppelganger(plugin) {
         var topic = e.ApplicationMessage.Topic;
         var @string = new UTF8Encoding().GetString(e.ApplicationMessage.PayloadSegment);
         if (Keeper.Config.ExtendedReport) {
-            Log("Received " + topic);
+            Log($"Received {topic}");
             Log(@string);
         }
         try {
             Notifier.Unpack(topic, @string);
         }
         catch (Exception ex) {
-            Log("Failed to parse message " + @string + " from topic " + e.ApplicationMessage.Topic + ".");
+            Log($"Failed to parse message {@string} from topic {e.ApplicationMessage.Topic}.");
             Log($"{ex}");
             Log(ex.Message);
             Log(ex.StackTrace ?? "");

@@ -74,7 +74,7 @@ public partial class FormActMain : Form, ISynchronizeInvoke {
     [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
     public string CurrentZone { get; set; }
     [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-    public FFXIV_ACT_Plugin.FFXIV_ACT_Plugin FfxivPlugin { get; set; }
+    public FFXIV_ACT_Plugin.FFXIV_ACT_Plugin? FfxivPlugin { get; set; }
     [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
     public dynamic OverlayPluginContainer { get; set; }
 
@@ -186,8 +186,7 @@ public partial class FormActMain : Form, ISynchronizeInvoke {
     }
 
     public void ParseRawLogLine(string logLine) {
-        if (WriteLogFile && !DisableWritingPvpLogFile)
-            LogQueue.Enqueue(logLine);
+        if (WriteLogFile && !DisableWritingPvpLogFile) LogQueue.Enqueue(logLine);
         if (BeforeLogLineRead == null || GetDateTimeFromLog == null)
             return;
         var parsedLogTime = GetDateTimeFromLog(logLine);
@@ -357,7 +356,6 @@ public partial class FormActMain : Form, ISynchronizeInvoke {
                     Thread.Sleep(2000);
                     continue;
                 }
-
                 while (LogQueue.TryDequeue(out var line))
                     outputWriter.WriteLine(line);
                 while (ActLogQueue.TryDequeue(out var line))

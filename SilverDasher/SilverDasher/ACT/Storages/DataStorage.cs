@@ -13,7 +13,7 @@ public static class DataStorage {
 
     public static string Title => "银山雀儿";
 
-    public static int Version => 393220;
+    public static int Version => 0x60004;
 
     public static string BasePath => Path.Combine(ActGlobals.oFormActMain.AppDataFolder.FullName, "SilverDasher");
 
@@ -21,9 +21,9 @@ public static class DataStorage {
 
     public static string LogPath => Path.Combine(BasePath, "logs");
 
-    public static string SilverDasherNest => "https://nest." + nests[SelectedNest] + "/";
+    public static string SilverDasherNest => $"https://nest.{nests[SelectedNest]}/";
 
-    public static string SilverDasherTree => "wss://tree." + nests[SelectedNest] + "/mqtt";
+    public static string SilverDasherTree => $"wss://tree.{nests[SelectedNest]}/mqtt";
 
     // public static void SetExtraServer(string server) {
     //     nests[2] = server;

@@ -8,18 +8,20 @@ using SilverDasher.ACT.Storages;
 namespace SilverDasher.ACT.Doppelgangers;
 
 internal class Keeper : Doppelganger {
-    internal string PlayerName;
+    internal static string PlayerName => SilverDasher.ObjectTable.LocalPlayer == null ? "" : SilverDasher.ObjectTable.LocalPlayer.Name.ToString();
 
-    internal string PlayerWorld;
+    internal static string PlayerWorld => SilverDasher.ObjectTable.LocalPlayer == null ? "" : SilverDasher.ObjectTable.LocalPlayer.HomeWorld.Value.Name.ToString();
 
-    internal uint PlayerWorldID;
+    internal static uint PlayerWorldID => SilverDasher.ObjectTable.LocalPlayer == null ? 0 : SilverDasher.ObjectTable.LocalPlayer.HomeWorld.RowId;
 
     // internal string CurrentWorld;
 
-    internal uint NetworkMapID;
+    private static uint NetworkMapID => CurrentWorldID;
 
-    internal uint CurrentInstance = 255u;
+    internal static uint CurrentInstance => SilverDasher.ClientState.Instance;
+    internal static uint CurrentWorldID => SilverDasher.ObjectTable.LocalPlayer == null ? 0 : SilverDasher.ObjectTable.LocalPlayer.CurrentWorld.RowId;
 
+    internal static uint CurrentMapID => SilverDasher.ClientState.TerritoryType;
     // internal uint NetworkInstance = 255u;
 
     // internal uint ChatLogInstance = 255u;
@@ -52,26 +54,6 @@ internal class Keeper : Doppelganger {
 
     internal static Config Config;
 
-    internal uint CurrentWorldID
-    {
-        get;
-        set
-        {
-            if (Worlds.TryGet((int)value, out var item)) {
-                field = value;
-                // CurrentWorld = item.Name;
-                Opcodes.Region = item.Region;
-                return;
-            }
-            if (!Self.badWorldMessageShown) {
-                Notifier.SendToast($"银山雀儿没能找到你所在的服务区 {value}。请进群寻求帮助。");
-                Self.badWorldMessageShown = true;
-            }
-            throw new KeyNotFoundException($"Unable to find world with id {value}.");
-        }
-    }
-
-    internal uint CurrentMapID { get; set; }
 
     private Territory CurrentTerritory
     {

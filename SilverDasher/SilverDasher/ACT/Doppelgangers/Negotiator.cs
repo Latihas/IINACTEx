@@ -10,7 +10,7 @@ using SilverDasher.ACT.Models;
 namespace SilverDasher.ACT.Doppelgangers;
 
 internal class Negotiator : Doppelganger {
-    private readonly IActPluginV1 FFXIVACTPlugin;
+    private readonly dynamic FFXIVACTPlugin;
     private IDataSubscription ffevents;
 
     internal Negotiator(SilverDasher self) : base(self) {
@@ -23,39 +23,35 @@ internal class Negotiator : Doppelganger {
     }
 
     internal override void Init() {
-        dynamic fFXIVACTPlugin = FFXIVACTPlugin;
-        ffevents = fFXIVACTPlugin.DataSubscription as IDataSubscription;
-        ffevents.ZoneChanged += GetPlayerInfo;
+        ffevents = (IDataSubscription)FFXIVACTPlugin.DataSubscription;
+        // ffevents.ZoneChanged += GetPlayerInfo;
         ffevents.NetworkReceived += Overseer.OnNetworkReceive;
         // ffevents.ProcessChanged += ProcessChanged;
         ffevents.LogLine += OnInGameLoglineRead;
     }
 
     internal override void Deinit() {
-        dynamic fFXIVACTPlugin = FFXIVACTPlugin;
-        var obj = fFXIVACTPlugin.DataSubscription as IDataSubscription;
-        obj.ZoneChanged -= GetPlayerInfo;
+        var obj = (IDataSubscription)FFXIVACTPlugin.DataSubscription;
+        // obj.ZoneChanged -= GetPlayerInfo;
         obj.NetworkReceived -= Overseer.OnNetworkReceive;
         // obj.ProcessChanged -= ProcessChanged;
         obj.LogLine -= OnInGameLoglineRead; //++
     }
 
-    internal void GetPlayerInfo(uint ZoneID, string ZoneName) {
-        dynamic fFXIVACTPlugin = FFXIVACTPlugin;
-        IDataRepository dataRepository = fFXIVACTPlugin.DataRepository;
-        var currentPlayerID = dataRepository.GetCurrentPlayerID();
-        var combatantList = dataRepository.GetCombatantList();
-        var combatant = combatantList.FirstOrDefault(item => item.ID == currentPlayerID);
-        if (combatant == null || combatant.WorldID == 0) return;
-        Keeper.PlayerName = combatant.Name;
-        Keeper.PlayerWorld = combatant.WorldName;
-        Keeper.PlayerWorldID = combatant.WorldID;
-        Keeper.CurrentWorldID = combatant.CurrentWorldID;
-        Keeper.CurrentMapID = ZoneID != 0 ? ZoneID : SilverDasher.ClientState.TerritoryType;
-        if (Keeper.Worlds.TryGetByLabel(Keeper.PlayerWorld, out var w)) {
-            Keeper.PlayerWorld = w.Name;
-        }
-    }
+    // internal void GetPlayerInfo(uint ZoneID, string ZoneName) {
+    //     IDataRepository dataRepository = FFXIVACTPlugin.DataRepository;
+    //     var currentPlayerID = dataRepository.GetCurrentPlayerID();
+    //     var combatantList = dataRepository.GetCombatantList();
+    //     var combatant = combatantList.FirstOrDefault(item => item.ID == currentPlayerID);
+    //     if (combatant == null || combatant.WorldID == 0) return;
+    //     Keeper.PlayerName = combatant.Name;
+    //     Keeper.PlayerWorld = combatant.WorldName;
+    //     Keeper.PlayerWorldID = combatant.WorldID;
+    //     Keeper.CurrentWorldID = combatant.CurrentWorldID;
+    //     Keeper.CurrentMapID = ZoneID != 0 ? ZoneID : SilverDasher.ClientState.TerritoryType;
+    //     if (Keeper.Worlds.TryGetByLabel(Keeper.PlayerWorld, out var w))
+    //         Keeper.PlayerWorld = w.Name;
+    // }
 
     // internal void ProcessChanged(Process process) {
     //     Keeper.CurrentMobs.Clear();
@@ -65,16 +61,14 @@ internal class Negotiator : Doppelganger {
     // }
 
     internal void ScanMobs() {
-        dynamic fFXIVACTPlugin = FFXIVACTPlugin;
         var currentTerritoryID = SilverDasher.ClientState.TerritoryType;
         var currentInstance = Primal.GetCurrentInstance();
-        ReadOnlyCollection<Combatant> readOnlyCollection = fFXIVACTPlugin.DataRepository.GetCombatantList();
-        // List<Message> result = [];
+        ReadOnlyCollection<Combatant> readOnlyCollection = FFXIVACTPlugin.DataRepository.GetCombatantList();
         HashSet<string> hashSet = [];
         var currentTerritoryID2 = SilverDasher.ClientState.TerritoryType;
         var currentInstance2 = Primal.GetCurrentInstance();
-        Keeper.CurrentMapID = currentTerritoryID2;
-        Keeper.CurrentInstance = currentInstance2;
+        // Keeper.CurrentMapID = currentTerritoryID2;
+        // Keeper.CurrentInstance = currentInstance2;
         Logger.Debug($"Scanned Territory {currentTerritoryID2}");
         if (currentTerritoryID != currentTerritoryID2 || currentInstance != currentInstance2 || Keeper.CurrentMapID == 255 || Keeper.CurrentInstance == 255) {
             Keeper.CurrentFates.Clear();
@@ -82,9 +76,7 @@ internal class Negotiator : Doppelganger {
             Log("Map or instance changed while detecting mobs, Messages will be disposed.");
             return;
         }
-        if (readOnlyCollection.Count > 0) {
-            Keeper.CurrentWorldID = readOnlyCollection[0].CurrentWorldID;
-        }
+        // if (readOnlyCollection.Count > 0) Keeper.CurrentWorldID = readOnlyCollection[0].CurrentWorldID;
         foreach (var item2 in readOnlyCollection) {
             var item = $"{currentTerritoryID2}-{(int)item2.BNpcNameID}-{currentInstance2}";
             if (hashSet.Contains(item) || !Keeper.Mobs.Contains((int)item2.BNpcNameID)) continue;
@@ -96,9 +88,8 @@ internal class Negotiator : Doppelganger {
         }
         List<string> list = [];
         list.AddRange(Keeper.CurrentMobs.Keys.Where(key => !hashSet.Contains(key)));
-        foreach (var item3 in list) {
+        foreach (var item3 in list)
             Keeper.CurrentMobs.Remove(item3);
-        }
     }
 
     private void OnInGameLoglineRead(uint EventType, uint Seconds, string logline) {

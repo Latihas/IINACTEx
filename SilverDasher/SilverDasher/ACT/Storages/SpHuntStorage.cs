@@ -25,9 +25,9 @@ internal class SpHuntStorage(Keeper kp) : BaseStorage(kp) {
             HuntGroupsAll.UnionWith(item.TraverseSubGroups());
             SpHunts.UnionWith(item.TraverseGetItems());
         }
-        foreach (var spHunt in SpHunts) {
-            Keeper.Mobs.Get(spHunt);
-        }
+        // foreach (var spHunt in SpHunts) {
+        //     Keeper.Mobs.Get(spHunt);
+        // }
         HuntGroupById = HuntGroupsAll.ToDictionary(group => group.Group);
     }
 }

@@ -19,9 +19,9 @@ internal class Overseer(SilverDasher self) : Doppelganger(self) {
             case OpcodeType.FateInfo:
                 HandleFateInfo(message, opcode);
                 break;
-            case OpcodeType.InitZone:
-                HandleInitZone(message, opcode);
-                break;
+            // case OpcodeType.InitZone:
+            //     HandleInitZone(message, opcode);
+            //     break;
         }
     }
 
@@ -67,23 +67,21 @@ internal class Overseer(SilverDasher self) : Doppelganger(self) {
         Keeper.FateUpdate(fateId, -1, null, startTime, duration);
     }
 
-    private void HandleInitZone(byte[] message, Opcode opcode) {
-        if (message.Length != opcode.CnLength) {
-            Logger.Debug($"Packet {opcode.Name} received unpredicted length. Expected {opcode.CnLength}, Received {message.Length}.");
-            return;
-        }
-        var value = message.Skip(32).ToArray();
-        BitConverter.ToUInt16(value, 0);
-        var num = BitConverter.ToUInt16(value, 2);
-        var num2 = BitConverter.ToUInt16(value, 4);
-        if (num2 > 3) return;
-        // Keeper.NetworkInstance = num2;
-        Keeper.NetworkMapID = num;
-        Keeper.CurrentMobs.Clear();
-        Keeper.CurrentFates.Clear();
-        Log($"Network map changes to {num}");
-        Log($"Network instance changes to {num2}");
-    }
+    // private void HandleInitZone(byte[] message, Opcode opcode) {
+    //     if (message.Length != opcode.CnLength) {
+    //         Logger.Debug($"Packet {opcode.Name} received unpredicted length. Expected {opcode.CnLength}, Received {message.Length}.");
+    //         return;
+    //     }
+    //     // BitConverter.ToUInt16(value, 0);
+    //     // var num = BitConverter.ToUInt16(value, 2);
+    //     if (BitConverter.ToUInt16(message.Skip(32).ToArray(), 4) > 3) return;
+    //     // Keeper.NetworkInstance = num2;
+    //     // Keeper.NetworkMapID = num;
+    //     Keeper.CurrentMobs.Clear();
+    //     Keeper.CurrentFates.Clear();
+    //     // Log($"Network map changes to {num}");
+    //     // Log($"Network instance changes to {num2}");
+    // }
 
     // private void HandleCEDirector(byte[] message) {
     // }

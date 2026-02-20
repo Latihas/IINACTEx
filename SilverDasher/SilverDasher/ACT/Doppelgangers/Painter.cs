@@ -25,11 +25,13 @@ internal class Painter(SilverDasher silverDasher, Label pluginStatusText, TabPag
         pluginControl.SetPluginStatus(PluginStatus.INITIALIZED);
     }
 
-    internal override void Deinit() => pluginStatusText.Text = "收回了银山雀儿。(Exited)";
+    internal override void Deinit() {
+    }
+    // => pluginStatusText.Text = "收回了银山雀儿。(Exited)";
 
 
     internal void RepaintNodes() {
-        var obj = pluginControl.DataContext as PluginViewModel;
+        var obj = (PluginViewModel)pluginControl.DataContext;
         obj.ClearAllNodes();
         obj.SetPatchNames(Painter.Keeper.Patches.PatchByCode);
         obj.SetupHuntMobs(Painter.Keeper.Mobs.HuntByBnpcNameID, Painter.Keeper.SpHunts.HuntGroupsTree, Keeper.Config.HuntSubscriptions);

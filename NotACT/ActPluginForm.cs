@@ -8,7 +8,7 @@ public class ActPluginForm : Form {
     public ActPluginForm() {
         InitializeComponent();
         Text = "插件面板";
-        Size = new Size(800, 600);
+        Size = new Size(1200, 900);
         StartPosition = FormStartPosition.CenterScreen;
 
         lblPluginStatus.Dock = DockStyle.Top;
@@ -36,7 +36,7 @@ public class ActPluginForm : Form {
 
     private void InitializeComponent() {
         SuspendLayout();
-        ClientSize = new Size(800, 600);
+        ClientSize = new Size(1200, 900);
         Name = "ActPluginForm";
         ResumeLayout(false);
     }

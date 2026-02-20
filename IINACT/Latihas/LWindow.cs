@@ -77,6 +77,7 @@ public static partial class LWindow {
         DrawTriggerDebugCommonExpr();
         DrawTestIINACTSettings();
         DrawTestDrawSettings();
+        DrawTestTestSettings();
     }
 
     private static void DrawTriggerDebugLog() {
@@ -207,6 +208,11 @@ public static partial class LWindow {
         var TtsOnInit = Plugin.Configuration.TtsOnInit;
         if (ImGui.Checkbox("启动时TTS提示加载完成", ref TtsOnInit)) {
             Plugin.Configuration.TtsOnInit = TtsOnInit;
+            Plugin.Configuration.Save();
+        }
+        var AsyncOnInit = Plugin.Configuration.AsyncOnInit;
+        if (ImGui.Checkbox("启动时使用异步加载(仍在测试，开启后可能会有bug，但是能显著加快加载速度，请留意启动时相关模块有无报错)", ref AsyncOnInit)) {
+            Plugin.Configuration.AsyncOnInit = AsyncOnInit;
             Plugin.Configuration.Save();
         }
     }

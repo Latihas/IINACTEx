@@ -126,8 +126,8 @@ public partial class PluginControl {
     }
 
     private void checkAvailable_CheckedChanged(object sender, EventArgs e) {
-        var checkBox = sender as CheckBox;
-        var array = (checkBox.Tag as string).Split('-');
+        var checkBox = (CheckBox)sender;
+        var array = ((string)checkBox.Tag).Split('-');
         var text = array[0];
         var text2 = array[1];
         var text3 = array[2];
@@ -180,7 +180,7 @@ public partial class PluginControl {
                 }
                 break;
         }
-        Painter.Messager.EditSubscription(checkBox.IsChecked, text, text3, ids);
+        Painter.Messager.EditSubscription(checkBox.IsChecked, text, text3, ids, SilverDasher.Instance.tokenSource.Token);
     }
 
     // private void checkSubscripted_CheckedChanged(object sender, EventArgs e) {
@@ -193,7 +193,7 @@ public partial class PluginControl {
 
     public void SetPluginStatus(PluginStatus s) {
         // if (ActGlobals.oFormActMain.InvokeRequired) {
-        SilverDasher.FormContainer.Invoke((Action)delegate {
+        SilverDasher.FormContainer.Invoke(() => {
             lblStatus.Content = Enum.GetName(s.GetType(), s);
             lblStatusBottom.Content = ChineseStatusText[s];
         });
@@ -207,7 +207,7 @@ public partial class PluginControl {
     public void Log(string s) {
         // if (ActGlobals.oFormActMain.InvokeRequired)
         // {
-        SilverDasher.FormContainer.Invoke((Action)delegate {
+        SilverDasher.FormContainer.Invoke(() => {
             textLog.AppendText(s);
             textLog.AppendText("\n");
         });
@@ -221,7 +221,7 @@ public partial class PluginControl {
 
     private void CheckBoxTTSChecked(object sender, RoutedEventArgs e) {
         if (!IsInitialized) return;
-        var valueOrDefault = (sender as CheckBox).IsChecked.GetValueOrDefault();
+        var valueOrDefault = ((CheckBox)sender).IsChecked.GetValueOrDefault();
         TTSHealthy.IsEnabled = valueOrDefault;
         TTSTaunted.IsEnabled = valueOrDefault;
         TTSBullying.IsEnabled = valueOrDefault;
@@ -230,7 +230,7 @@ public partial class PluginControl {
 
     private void CheckBoxToastChecked(object sender, RoutedEventArgs e) {
         if (!IsInitialized) return;
-        var valueOrDefault = (sender as CheckBox).IsChecked.GetValueOrDefault();
+        var valueOrDefault = ((CheckBox)sender).IsChecked.GetValueOrDefault();
         ToastHealthy.IsEnabled = valueOrDefault;
         ToastTaunted.IsEnabled = valueOrDefault;
         ToastBullying.IsEnabled = valueOrDefault;
@@ -239,7 +239,7 @@ public partial class PluginControl {
 
     private void CheckBoxCWHChecked(object sender, RoutedEventArgs e) {
         if (!IsInitialized) return;
-        var valueOrDefault = (sender as CheckBox).IsChecked.GetValueOrDefault();
+        var valueOrDefault = ((CheckBox)sender).IsChecked.GetValueOrDefault();
         CWHuntSS.IsEnabled = valueOrDefault;
         CWHuntS.IsEnabled = valueOrDefault;
         CWHuntA.IsEnabled = valueOrDefault;
@@ -251,25 +251,19 @@ public partial class PluginControl {
 
     private void CheckBoxCWFChecked(object sender, RoutedEventArgs e) {
         if (!IsInitialized) return;
-        var valueOrDefault = (sender as CheckBox).IsChecked.GetValueOrDefault();
+        var valueOrDefault = ((CheckBox)sender).IsChecked.GetValueOrDefault();
         CWFateC.IsEnabled = valueOrDefault;
         CWFateS.IsEnabled = valueOrDefault;
     }
 
-    private void ButtonTestTTSClicked(object sender, RoutedEventArgs e) {
-        Notifier.TestTTS();
-    }
+    private void ButtonTestTTSClicked(object sender, RoutedEventArgs e) => Notifier.TestTTS();
 
-    private void ButtonTestToastClicked(object sender, RoutedEventArgs e) {
-        Painter.Notifier.TestToast();
-    }
+    private void ButtonTestToastClicked(object sender, RoutedEventArgs e) => Painter.Notifier.TestToast();
 
-    private void ButtonRestartClicked(object sender, RoutedEventArgs e) {
-        Painter.Self.RestartLoop(true);
-    }
+    private void ButtonRestartClicked(object sender, RoutedEventArgs e) => Painter.Self.RestartLoop(true);
 
     private void RadioButtonToastTypeChecked(object sender, RoutedEventArgs e) {
-        var obj = sender as RadioButton;
+        var obj = (RadioButton)sender;
         var valueOrDefault = obj.IsChecked.GetValueOrDefault();
         var text = obj.Name.Replace("ToastType", "");
         if (text != Keeper.Config.ToastType && valueOrDefault)
@@ -278,16 +272,15 @@ public partial class PluginControl {
 
     private void CheckBoxCrossWorld(object sender, RoutedEventArgs e) {
         if (!IsInitialized) return;
-        var checkBox = sender as CheckBox;
-        Painter.Messager.Resubscribe((string)checkBox.Tag);
+        Painter.Messager.Resubscribe((string)((CheckBox)sender).Tag, SilverDasher.Instance.tokenSource.Token);
     }
 
     private void CheckBoxCrossDC(object sender, RoutedEventArgs e) {
-        _ = IsInitialized;
+        // _ = IsInitialized;
     }
 
     internal void ButtonRestartToggle(string content, bool enabled) {
-        Dispatcher.Invoke(delegate {
+        Dispatcher.Invoke(() => {
             ButtonRestart.Content = content;
             ButtonRestart.IsEnabled = enabled;
         });
@@ -295,7 +288,7 @@ public partial class PluginControl {
 
     internal void CheckBoxCrossWorldToggle(bool enabled) {
         if (IsInitialized) {
-            Dispatcher.Invoke(delegate {
+            Dispatcher.Invoke(() => {
                 CrossWorldFate.IsEnabled = enabled;
                 CWFateC.IsEnabled = enabled;
                 CWFateS.IsEnabled = enabled;
@@ -308,4 +301,6 @@ public partial class PluginControl {
             });
         }
     }
+
+    private void ButtonClearLogClicked(object sender, RoutedEventArgs e) => SilverDasher.FormContainer.Invoke(textLog.Clear);
 }

@@ -68,7 +68,7 @@ public enum LogMessageType {
     InCombat
 }
 
-internal class FFXIVRepository {
+public class FFXIVRepository {
     private readonly ILogger logger;
     private IDataRepository repository;
     private IDataSubscription subscription;
@@ -308,7 +308,7 @@ internal class FFXIVRepository {
     private ILogOutput _logOutput;
 
     [MethodImpl(MethodImplOptions.NoInlining)]
-    internal bool WriteLogLineImpl(uint ID, DateTime timestamp, string line) {
+    public bool WriteLogLineImpl(uint ID, DateTime timestamp, string line) {
         if (_logOutput == null) {
             var plugin = GetPluginData();
             _logOutput = (ILogOutput)plugin._iocContainer.GetService(typeof(ILogOutput));

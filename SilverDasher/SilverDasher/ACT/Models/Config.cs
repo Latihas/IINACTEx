@@ -342,9 +342,8 @@ public class Config : UIBinded {
 
     public static void Save(Config c) {
         Directory.CreateDirectory(DataStorage.BasePath);
-        var contents = JsonConvert.SerializeObject(c);
         try {
-            File.WriteAllText(DataStorage.ConfigPath, contents);
+            File.WriteAllText(DataStorage.ConfigPath, JsonConvert.SerializeObject(c));
         }
         catch (IOException) {
             Utils.ShowMessageBox("保存配置文件时发生问题！你的设置未能保存。");

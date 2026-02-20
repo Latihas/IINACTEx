@@ -1,25 +1,5 @@
 ﻿namespace Advanced_Combat_Tracker;
 
-public class PluginForm : Form {
-    // 声明指定名称的控件（可外部访问，按需设置访问修饰符）
-    public TabPage TabPage;
-    public Label Label;
-    private TabControl pluginTabControl;
-
-    public PluginForm(string formTitle, TabPage pluginScreenSpace, Label pluginStatusText) {
-        Text = formTitle;
-        Size = new Size(800, 600);
-        StartPosition = FormStartPosition.CenterScreen;
-        pluginTabControl = new TabControl();
-        pluginTabControl.Dock = DockStyle.Fill;
-        TabPage = pluginScreenSpace;
-        Label = pluginStatusText;
-        TabPage.Controls.Add(Label);
-        pluginTabControl.TabPages.Add(TabPage);
-        Controls.Add(pluginTabControl);
-    }
-}
-
 public class ActPluginData {
     public Panel pPluginInfo = new();
     public readonly ActPluginForm? PluginForm;

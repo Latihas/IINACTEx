@@ -1,6 +1,4 @@
 using System;
-using System.IO;
-using SilverDasher.ACT.Storages;
 
 namespace SilverDasher.ACT.Doppelgangers;
 
@@ -29,14 +27,7 @@ internal abstract class Doppelganger(SilverDasher self) {
 
     internal void Debug(string s) => Logger.Debug(s);
 
-    internal void FileLog(string s) {
-        var text = DateTime.Now.ToString("[yyyy-MM-dd HH:mm:ss] ") + s;
-        lock (Self) {
-            if (!Directory.Exists(DataStorage.LogPath))
-                Directory.CreateDirectory(DataStorage.LogPath);
-            File.AppendAllText(DataStorage.LogFile, text + "\n");
-        }
-    }
+    internal static void FileLog(string s) => Logger.LogToFile(DateTime.Now.ToString("[yyyy-MM-dd HH:mm:ss] ") + s);
 
     internal abstract void Init();
 

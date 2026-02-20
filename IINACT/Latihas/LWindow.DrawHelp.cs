@@ -1,6 +1,11 @@
-﻿using Advanced_Combat_Tracker;
+﻿using System.Globalization;
+using System.Security.Cryptography;
+using System.Text;
+using Advanced_Combat_Tracker;
 using Dalamud.Bindings.ImGui;
+using Dalamud.Interface.ImGuiNotification;
 using Dalamud.Interface.Utility.Raii;
+using RainbowMage.OverlayPlugin;
 using Triggernometry;
 using Triggernometry.Core;
 using Triggernometry.Expressions.Tests;
@@ -143,5 +148,72 @@ public static partial class LWindow {
         if (ImGui.Button("以自己为中心绘制半径7.5, 90度的扇形，随面向改变")) DrawShape(new IGCone(Me_Position, 7.5, Me_Rotation, Deg2Rad(90), 5000));
         if (ImGui.Button("以自己为中心绘制半径10, 60度的三角形(不动)")) DrawShape(new IGCone(Me_Position(), 10, Me_Rotation(), Deg2Rad(60), 5000, 1));
         if (ImGui.Button("以自己为中心绘制外径20, 内径10的环形")) DrawShape(new IGRing(Me_Position, 20, 10, 5000));
+    }
+
+    private static string testLogline;
+    private static int testIndex = 1;
+
+    private static string WriteLine(LogMessageType messageType, DateTime ServerDate, string line) {
+        var array = new string[5];
+        var num = (int)messageType;
+        array[0] = num.ToString(CultureInfo.InvariantCulture).PadLeft(2, '0');
+        array[1] = "|";
+        array[2] = ServerDate.ToString("O");
+        array[3] = "|";
+        array[4] = line.Replace('\0', ' ');
+        var text = string.Concat(array);
+        return text + "|" + u_65535(text + "|" + testIndex.ToString(CultureInfo.InvariantCulture));
+    }
+
+    private static string u_65535(string text) => u_49152(SHA256.HashData(Encoding.UTF8.GetBytes(text)));
+
+    private static uint[] u_49151() {
+        var array = new uint[256];
+        for (var i = 0; i < 256; i++) {
+            var text = $"{i:x2}";
+            array[i] = text[0] + ((uint)text[1] << 16);
+        }
+        return array;
+    }
+
+    private static string u_49152(byte[] bytes) {
+        var lookup = u_49151();
+        var array = new char[16];
+        for (var i = 0; i < array.Length / 2; i++) {
+            var num = lookup[bytes[i]];
+            array[2 * i] = (char)num;
+            array[2 * i + 1] = (char)(num >> 16);
+        }
+        return new string(array);
+    }
+
+    private static void DrawTestTestSettings() {
+        using var tab = ImRaii.TabItem("开发者测试");
+        if (!tab) return;
+        ImGui.PushStyleColor(ImGuiCol.Text, Color.LRed);
+        ImGui.Text("如果你看到这里有东西，是开发者忘记删了的，非常危险不要擅动！！！");
+        ImGui.PopStyleColor(1);
+        //==============================
+        ImGui.Text("生成日志行hash");
+        ImGui.InputText("输入不带hash的日志行", ref testLogline);
+        ImGui.InputInt("输入日志行序号(253或是01需要从1开始)", ref testIndex);
+        try {
+            var spl = testLogline.Split('|');
+            var messageType = (LogMessageType)int.Parse(spl[0]);
+            var ServerDate = DateTime.Parse(spl[1]);
+            var line = testLogline[(spl[0].Length + spl[1].Length + 2)..];
+            var newLine = WriteLine(messageType, ServerDate, line);
+            ImGui.Text(newLine);
+            var hash = newLine[(newLine.LastIndexOf('|') + 1)..];
+            if(ImGui.Button(hash)) {
+                ImGui.SetClipboardText(hash);
+                Plugin.NotificationManager.AddNotification(new Notification {
+                    Content = "已复制"
+                });
+            }
+        }
+        catch {
+            //
+        }
     }
 }

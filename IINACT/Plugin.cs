@@ -93,6 +93,8 @@ public sealed class Plugin : IDalamudPlugin {
     public readonly bool opcodesjsoncReplaced;
     public bool opcodesjsoncCanReplace => File.Exists(opcodesjsoncPath);
     public string opcodesjsoncPath => Path.Combine(PluginAssemblyDirectory, "opcodes.jsonc");
+    // ReSharper disable once MemberCanBePrivate.Global
+    public readonly TinyIoCContainer Container;
 
     public static void UnzipWithoutPassword(string zipFilePath, string extractDir, bool overwrite = false) {
         try {
@@ -115,12 +117,16 @@ public sealed class Plugin : IDalamudPlugin {
     public Plugin() {
         LogTick("Start Initializing");
         Version = Assembly.GetExecutingAssembly().GetName().Version!;
+        Instance = this;
+        ActGlobals.Init();
+        ActGlobals.oFormActMain = new FormActMain(this, Log);
+        Configuration = PluginInterface.GetPluginConfig() as Configuration ?? new Configuration();
         HttpClient = new HttpClient();
         var TaskFetchDependencies = Task.Run(() => {
             new FetchDependencies.FetchDependencies(Version, PluginAssemblyDirectory,
                 DataManager.Language == ClientLanguage.ChineseSimplified, HttpClient, Log).GetFfxivPlugin();
         });
-        Instance = this;
+        if (!Configuration.AsyncOnInit) TaskFetchDependencies.Wait();
         if (!Directory.Exists(PluginActScriptDirectory)) Directory.CreateDirectory(PluginActScriptDirectory);
         var region = DataManager.Language == ClientLanguage.ChineseSimplified ? GameRegion.Chinese : GameRegion.Global;
         if (opcodestxtCanReplace) {
@@ -145,9 +151,6 @@ public sealed class Plugin : IDalamudPlugin {
         FileDialogManager = new FileDialogManager();
         // PluginLogTraceListener = new PluginLogTraceListener();
         // Trace.Listeners.Add(PluginLogTraceListener);
-        ActGlobals.Init();
-        ActGlobals.oFormActMain = new FormActMain(this, Log);
-        Configuration = PluginInterface.GetPluginConfig() as Configuration ?? new Configuration();
         ActGlobals.oFormActMain.LogFilePath = Configuration.LogFilePath;
         TextToSpeechProvider = new TextToSpeechProvider();
         var info = PluginInterface.GetType().Assembly.GetType("Dalamud.Service`1", true)!.MakeGenericType(PluginInterface.GetType().Assembly.GetType("Dalamud.Dalamud", true)!).GetMethod("Get")!
@@ -166,22 +169,22 @@ public sealed class Plugin : IDalamudPlugin {
         WindowSystem.AddWindow(TriggernometryLogView = new TriggernometryLogView());
         WindowSystem.AddWindow(ACTLogView = new ACTLogView());
         IpcProviders = new IpcProviders(PluginInterface);
-        var container = new TinyIoCContainer();
+        Container = new TinyIoCContainer();
         var logger = new Logger(Log);
-        container.Register(logger);
-        container.Register<ILogger>(logger);
-        container.Register(HttpClient);
-        container.Register(FileDialogManager);
-        container.Register(PluginInterface);
-        container.Register(OverlayPlugin = new PluginMain(PluginAssemblyDirectory, logger, container));
+        Container.Register(logger);
+        Container.Register<ILogger>(logger);
+        Container.Register(HttpClient);
+        Container.Register(FileDialogManager);
+        Container.Register(PluginInterface);
+        Container.Register(OverlayPlugin = new PluginMain(PluginAssemblyDirectory, logger, Container));
         OverlayPlugin.PreInitPlugin(PluginConfigDirectory);
-        ActGlobals.oFormActMain.OverlayPluginContainer = container;
+        ActGlobals.oFormActMain.OverlayPluginContainer = Container;
         opcodesjsoncReplaced = opcodesjsoncCanReplace;
         ActGlobals.oFormActMain.TriggernometryPlugin = TriggernometryProxyPlugin = new ProxyPlugin();
         ActGlobals.oFormActMain.PostNamazuPlugin = PostNamazuPlugin = new PostNamazu.PostNamazu();
         LogTick("Waiting Dependencies");
         var extraOpcodes = opcodesjsoncCanReplace ? File.ReadAllText(opcodesjsoncPath) : null;
-        TaskFetchDependencies.Wait();
+        if (Configuration.AsyncOnInit) TaskFetchDependencies.Wait();
         LogTick("Dependencies Fetched");
         FfxivActPluginWrapper = new FfxivActPluginWrapper();
         LogTick("FfxivActPlugin Inited");
@@ -191,13 +194,14 @@ public sealed class Plugin : IDalamudPlugin {
             LogTick("Trn Initializing");
             TriggernometryProxyPlugin.InitPlugin(this, PluginInterface, Log, ClientState, Framework, GameInteropProvider, ObjectTable, GameGui, SigScanner);
         });
+        if (!Configuration.AsyncOnInit) taskTrn.Wait();
         if (opcodesjsoncReplaced) Log.Warning("opcodesjsonc Replaced");
-        var registry = container.Resolve<Registry>();
+        var registry = Container.Resolve<Registry>();
         MainWindow.OverlayPresets = registry.OverlayPresets;
-        MainWindow.Server = WebSocketServer = container.Resolve<ServerController>();
+        MainWindow.Server = WebSocketServer = Container.Resolve<ServerController>();
         IpcProviders.Server = WebSocketServer;
-        IpcProviders.OverlayIpcHandler = container.Resolve<IpcHandlerController>();
-        MainWindow.OverlayPluginConfig = container.Resolve<IPluginConfig>();
+        IpcProviders.OverlayIpcHandler = Container.Resolve<IpcHandlerController>();
+        MainWindow.OverlayPluginConfig = Container.Resolve<IPluginConfig>();
         OverlayWindow.Init(WebSocketServer);
         CommandManager.AddHandler(MainWindowCommandName, new CommandInfo(OnCommand) {
             HelpMessage = "显示IINACT主窗口"
@@ -226,19 +230,19 @@ public sealed class Plugin : IDalamudPlugin {
         LogTick("Waiting Triggernometry");
         CancellationTokenSource postCts = new();
         var token = postCts.Token;
-        taskTrn.Wait();
+        if (Configuration.AsyncOnInit) taskTrn.Wait();
         LogTick("Triggernometry & PostNamazu & Callback Initialized");
         foreach (var rt in Directory.GetFiles(PluginActScriptDirectory, "*.cs", SearchOption.TopDirectoryOnly).Select(Path.GetFileName).Cast<string>())
             if (Configuration.ActScriptsEnabled.Contains(rt))
                 LoadPScript(rt, true);
-        Task.Run(() => {
+        var taskPP = Task.Run(() => {
             BridgeNamazu.InitializeModules();
             BridgeNamazu.RegisterAnnotatedMethods();
             LogTick("Asyc Post Process Done");
         }, token);
-        Framework.RunOnFrameworkThread(() => {
-            if (Configuration.LoadSilverDasherOnInit) MainWindow.EnableSilverDasher();
-        });
+        if (!Configuration.AsyncOnInit) taskPP.Wait();
+        if (Configuration.LoadSilverDasherOnInit)
+            Framework.RunOnFrameworkThread(MainWindow.EnableSilverDasher);
         if (Directory.Exists(Path.Combine(PluginConfigDirectory, "cactbot"))) RefreshBw();
         if (Configuration.ShowWindowOnInit) MainWindow.Toggle();
         if (Configuration.ShowOverlayOnInit) OverlayWindow.Toggle();

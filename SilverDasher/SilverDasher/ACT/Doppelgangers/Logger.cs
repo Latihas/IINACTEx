@@ -25,7 +25,7 @@ internal class Logger(SilverDasher self) : Doppelganger(self) {
 
     private void LogToView(string s) => Painter.pluginControl?.Log(s);
 
-    private static void LogToFile(string s) {
+    internal static void LogToFile(string s) {
         Trace.WriteLine(s);
         lock (SilverDasher.FileLogs) SilverDasher.FileLogs.Add(s);
     }

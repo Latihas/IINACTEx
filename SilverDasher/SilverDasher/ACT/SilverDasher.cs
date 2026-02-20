@@ -7,6 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using Advanced_Combat_Tracker;
+using Dalamud.Game.ClientState;
 using Dalamud.Plugin.Services;
 using SilverDasher.ACT.Doppelgangers;
 using SilverDasher.ACT.Storages;
@@ -36,18 +37,20 @@ public class SilverDasher : IActPluginV1 {
 
     // internal Task Feed;
 
-    private CancellationTokenSource tokenSource = new();
+    internal readonly CancellationTokenSource tokenSource = new();
 
-    internal bool badWorldMessageShown;
+    // internal bool badWorldMessageShown;
     internal static IClientState ClientState;
+    internal static IObjectTable ObjectTable;
     private static IFramework Framework;
     private readonly List<Doppelganger> Doppelgangers = [];
     internal static Form FormContainer;
     internal static string Datadir;
 
-    public SilverDasher(string datadir, IClientState clientState, IFramework framework) {
+    public SilverDasher(string datadir, IClientState clientState,IObjectTable objectTable, IFramework framework) {
         Datadir = datadir;
         ClientState = clientState;
+        ObjectTable = objectTable;
         Framework = framework;
         Instance = this;
     }
@@ -57,7 +60,7 @@ public class SilverDasher : IActPluginV1 {
     private static void WriteLog(IFramework _) {
         if (!Directory.Exists(DataStorage.LogPath)) Directory.CreateDirectory(DataStorage.LogPath);
         lock (FileLogs) {
-            File.AppendAllText(DataStorage.LogFile, string.Join("\n", FileLogs) + '\n');
+            File.AppendAllText(DataStorage.LogFile, $"{string.Join("\n", FileLogs)}\n");
             FileLogs.Clear();
         }
     }
@@ -69,14 +72,19 @@ public class SilverDasher : IActPluginV1 {
         StartLoop(tokenSource.Token);
         Painter.SetPluginStatus("召唤出了银山雀儿。(Initialized)");
         Framework.Update += WriteLog;
+        ClientState.ZoneInit += ZI;
     }
 
+    private void ZI(ZoneInitEventArgs _) {
+        Keeper.CurrentMobs.Clear();
+        Keeper.CurrentFates.Clear();
+    }
     public void DeInitPlugin() {
         DismissDoppelgangers();
         Framework.Update -= WriteLog;
+        ClientState.ZoneInit -= ZI;
     }
-
-
+    
     private void SummonDoppelgangers(TabPage pluginScreenSpace, Label pluginStatusText) {
         Doppelgangers.Add(Logger = new Logger(this));
         Doppelgangers.Add(Agent = new Agent(this));
@@ -94,7 +102,6 @@ public class SilverDasher : IActPluginV1 {
     private void DismissDoppelgangers() {
         tokenSource.Cancel();
         tokenSource.Dispose();
-        tokenSource = null;
         foreach (var doppelganger in Doppelgangers) doppelganger.Deinit();
     }
 
@@ -108,16 +115,12 @@ public class SilverDasher : IActPluginV1 {
     }
 
     private void StartLoop(CancellationToken token, bool refresh = false) {
-        badWorldMessageShown = false;
+        // badWorldMessageShown = false;
         Task.Run(async () => {
             await Agent.UpdateData(refresh, token);
             while (!token.IsCancellationRequested && Keeper.RUNNING) {
                 try {
-                    if (Keeper.PlayerWorldID == 0) Negotiator.GetPlayerInfo(0u, "");
                     if (Keeper.PlayerWorldID != 0 && Keeper.CurrentWorldID != 0 && Keeper.PlayerName != "") await Auth(token);
-                    // else {
-                    //     Logger.Log("Game isn't running. Retrying in 5 seconds.");
-                    // }
                 }
                 catch (Exception ex) {
                     Trace.WriteLine(ex.ToString());
@@ -139,10 +142,10 @@ public class SilverDasher : IActPluginV1 {
                     Painter.pluginControl.SetPluginStatus(PluginStatus.CONNECTING);
                     if (r == AuthResult.SUCCESS) {
                         Painter.pluginControl.SetPluginStatus(PluginStatus.CONNECTED);
-                        Messager.StartLoop();
+                        Messager.StartLoop(token);
                     }
                     else {
-                        Logger.Log("Authentication Failed! Status " + Enum.GetName(r.GetType(), r) + ".");
+                        Logger.Log($"Authentication Failed! Status {Enum.GetName(r.GetType(), r)}.");
                         switch (r) {
                             case AuthResult.BLOCKED:
                                 Logger.Log("你的银山雀儿似乎不是很愿意飞离你，还想在你肩上多睡一会儿。\n（您暂时无法使用银山雀儿提供的服务。Your location has been blocked temporarily.）");

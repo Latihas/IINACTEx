@@ -28,12 +28,12 @@
                         </Grid>
                         <DockPanel Dock="Top">
                             <Grid />
-                            <ComboBox HorizontalAlignment="Left" Margin="60,25,0,0" VerticalAlignment="Top" Width="200"
+                            <ComboBox HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top" 
                                       SelectedIndex="0">
                                 <ComboBoxItem>管理订阅</ComboBoxItem>
                             </ComboBox>
                         </DockPanel>
-                        <GroupBox Header="狩猎" Margin="50,10,10,30">
+                        <GroupBox Header="狩猎" Margin="10,10,10,10">
                             <TreeView Name="treeAvailable" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
                                       ItemsSource="{Binding HuntRoot}">
                                 <ItemsControl.ItemTemplate>
@@ -59,10 +59,10 @@
                             </Grid.RowDefinitions>
                         </Grid>
                         <DockPanel Dock="Top">
-                            <Label Content="状态：" HorizontalAlignment="Left" Margin="0,25,0,0" VerticalAlignment="Top"
-                                   Width="40" />
-                            <Label Name="lblStatus" Content="SLEEPING" HorizontalAlignment="Left" Margin="0,25,0,0"
-                                   VerticalAlignment="Top" Width="90" Height="25">
+                            <Label Content="状态：" HorizontalAlignment="Left" Margin="5,10,0,0" VerticalAlignment="Top"
+                                />
+                            <Label Name="lblStatus" Content="SLEEPING" HorizontalAlignment="Left" Margin="0,10,0,0"
+                                   VerticalAlignment="Top" >
                                 <FrameworkElement.Style>
                                     <Style TargetType="{x:Type Label}">
                                         <Setter Property="Foreground" Value="#FF000000" />
@@ -99,7 +99,7 @@
                                 </FrameworkElement.Style>
                             </Label>
                         </DockPanel>
-                        <GroupBox Header="Fate" Margin="10,5,50,30">
+                        <GroupBox Header="Fate" Margin="5,10,10,10">
                             <TreeView Name="treeSubscribed" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
                                       ItemsSource="{Binding FateRoot}">
                                 <ItemsControl.ItemTemplate>
@@ -121,8 +121,8 @@
             </TabItem>
             <TabItem Header="设置">
                 <Grid Background="#FFE5E5E5">
-                    <GroupBox Header="TTS" HorizontalAlignment="Left" Height="75" Margin="40,25,0,0"
-                              VerticalAlignment="Top" Width="500">
+                    <GroupBox Header="TTS" HorizontalAlignment="Stretch"  Margin="10,10,10,0"
+                              VerticalAlignment="Top">
                         <Grid>
                             <CheckBox Content="启用TTS" Margin="5,5,0,0" HorizontalAlignment="Left" Width="63"
                                       IsChecked="{Binding Config.TTS}" Checked="CheckBoxTTSChecked"
@@ -141,8 +141,8 @@
                                       IsChecked="{Binding Config.TTSExtend}" />
                         </Grid>
                     </GroupBox>
-                    <GroupBox Header="桌面通知" HorizontalAlignment="Left" Height="75" Margin="40,100,0,0"
-                              VerticalAlignment="Top" Width="500">
+                    <GroupBox Header="桌面通知" HorizontalAlignment="Stretch" Margin="10,90,10,0"
+                              VerticalAlignment="Top">
                         <Grid>
                             <CheckBox Content="启用桌面通知" HorizontalAlignment="Left" Margin="5,5,0,0"
                                       VerticalAlignment="Top" IsChecked="{Binding Config.SystemToast}"
@@ -167,8 +167,8 @@
                                          Checked="RadioButtonToastTypeChecked" />
                         </Grid>
                     </GroupBox>
-                    <GroupBox Header="大区接收" HorizontalAlignment="Left" Height="100" Margin="40,175,0,0"
-                              VerticalAlignment="Top" Width="500">
+                    <GroupBox Header="大区接收" HorizontalAlignment="Stretch" Margin="10,175,10,0"
+                              VerticalAlignment="Top" >
                         <Grid>
                             <CheckBox Name="CrossWorldHunt" Content="跨服接收狩猎" HorizontalAlignment="Left"
                                       Margin="5,5,0,0" VerticalAlignment="Top"
@@ -216,11 +216,11 @@
                                    Margin="435,0,0,0" />
                         </Grid>
                     </GroupBox>
-                    <CheckBox Content="副本任务中暂停推送" HorizontalAlignment="Left" Margin="50,285,0,0"
+                    <CheckBox Content="副本任务中暂停推送" HorizontalAlignment="Left" Margin="20,285,0,0"
                               VerticalAlignment="Top" IsChecked="{Binding Config.PauseInDuty}" />
-                    <Button Name="ButtonRestart" Content="刷新配置并重新连接" HorizontalAlignment="Left" Margin="400,283,0,0"
+                    <Button Name="ButtonRestart" Content="刷新配置并重新连接" HorizontalAlignment="Right" Margin="400,283,20,0"
                             VerticalAlignment="Top" Click="ButtonRestartClicked" />
-                    <Expander Header="高级选项" HorizontalAlignment="Left" Height="74" Margin="10,310,0,0"
+                    <Expander Header="高级选项" HorizontalAlignment="Left" Margin="10,310,0,0"
                               VerticalAlignment="Top">
                         <Grid Background="#FFE5E5E5">
                             <CheckBox Content="将消息内容写入ACT日志行（Beta）" HorizontalAlignment="Left" Margin="50,10,0,0"
@@ -241,9 +241,11 @@
             </TabItem>
             <TabItem Header="日志">
                 <Grid Background="#FFE5E5E5">
-                    <CheckBox Name="checkExtended" Content="调试模式" HorizontalAlignment="Left" Margin="75,50,0,0"
+                    <CheckBox Name="checkExtended" Content="调试模式" HorizontalAlignment="Left" Margin="10,10,0,0"
                               VerticalAlignment="Top" IsChecked="{Binding Config.ExtendedReport}" />
-                    <TextBox Name="textLog" Background="#FFFFFFFF" TextWrapping="Wrap" Text="" Margin="75,90,75,60"
+                    <Button Name="ButtonClearLog" Content="清空日志" HorizontalAlignment="Left" Margin="100,10,0,0"
+                            VerticalAlignment="Top" Click="ButtonClearLogClicked" />
+                    <TextBox Name="textLog" Background="#FFFFFFFF" TextWrapping="Wrap" Text="" Margin="10,40,10,10"
                              Padding="5" VerticalScrollBarVisibility="Auto" />
                 </Grid>
             </TabItem>

@@ -30,6 +30,7 @@ public class Configuration : IPluginConfiguration {
     public bool ShowOverlayOnInit { get; set; } = true;
     public bool TtsOnInit { get; set; } = true;
     public bool LoadSilverDasherOnInit { get; set; }
+    public bool AsyncOnInit { get; set; } = true;
     public float TtsInterval { get; set; } = 1.5f;
 
 
@@ -67,7 +68,5 @@ public class Configuration : IPluginConfiguration {
 
     public string? SelectedOverlay { get; set; }
 
-    public void Save() {
-        Plugin.PluginInterface.SavePluginConfig(this);
-    }
+    public void Save() => Plugin.PluginInterface.SavePluginConfig(this);
 }

@@ -6,7 +6,7 @@ namespace SilverDasher.ACT.Models.Messages;
 internal abstract class Message {
     [JsonProperty("t")] internal string type;
 
-    [JsonProperty("v")] internal int version;
+    [JsonProperty("v")] internal int version = DataStorage.Version;
 
     [JsonProperty("id")] internal int id;
 
@@ -14,14 +14,9 @@ internal abstract class Message {
 
     [JsonProperty("w")] internal uint world;
 
-    [JsonProperty("ts")] internal string timestamp;
+    [JsonProperty("ts")] internal string timestamp = Utils.CurrentUTCTimeStamp();
 
     [JsonProperty("m")] internal uint map;
 
     [JsonProperty("c")] internal Coordinate coordinate;
-
-    internal Message() {
-        timestamp = Utils.CurrentUTCTimeStamp();
-        version = DataStorage.Version;
-    }
 }

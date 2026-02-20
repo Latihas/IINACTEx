@@ -14,9 +14,7 @@ internal static class Utils {
     //     return location == "" ? throw new IOException("Failed to get plugin directory.") : Path.GetDirectoryName(location);
     // }
 
-    internal static void ShowMessageBox(string message) {
-        MessageBox.Show(message, DataStorage.Title, MessageBoxButton.OK, MessageBoxImage.None, MessageBoxResult.OK, MessageBoxOptions.ServiceNotification);
-    }
+    internal static void ShowMessageBox(string message) => MessageBox.Show(message, DataStorage.Title, MessageBoxButton.OK, MessageBoxImage.None, MessageBoxResult.OK, MessageBoxOptions.ServiceNotification);
 
     // public static string CurrentTimeStamp(bool isMinseconds = false) {
     //     var timeSpan = DateTime.Now - new DateTime(1970, 1, 1, 0, 0, 0, 0);

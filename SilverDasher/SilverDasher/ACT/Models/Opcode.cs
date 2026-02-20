@@ -68,7 +68,7 @@ public class Opcode {
             Region.China => Cn,
             Region.Global => Global,
             Region.Korean => Kr,
-            _ => throw new NotImplementedException("Bad region " + Enum.GetName(typeof(Region), region) + ".")
+            _ => throw new NotImplementedException($"Bad region {Enum.GetName(typeof(Region), region)}.")
         };
     }
 }
