@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using Machina.FFXIV;
+using Machina.FFXIV.Headers.Opcodes;
 using SilverDasher.ACT.Doppelgangers;
 using SilverDasher.ACT.Enums;
 using SilverDasher.ACT.Models;
@@ -23,7 +25,7 @@ internal class OpcodeStorage(Keeper kp) : BaseStorage<int, OpcodeType>(kp) {
         _ => throw new NotImplementedException()
     };
 
-    internal Region Region { get; set; } = Region.China;
+    private static Region Region => Region.China;
 
     internal override bool Contains(OpcodeType name) => OpcodeBytype.ContainsKey(name);
 
@@ -45,21 +47,20 @@ internal class OpcodeStorage(Keeper kp) : BaseStorage<int, OpcodeType>(kp) {
     }
 
     internal override void Load() {
-        try {
-            LoadData(ResourceFileName, out Opcodes);
-        }
-        catch (Exception ex) {
-            Keeper.Log("Failed to load opcodes. Corrupted json file?");
-            Keeper.Log(ex.ToString());
-        }
-        foreach (var opcode in Opcodes) {
-            OpcodeBytype[(OpcodeType)Enum.Parse(OpcodeType.InitZone.GetType(), opcode.Name)] = opcode;
-        }
+        LoadData(ResourceFileName, out Opcodes);
         TypeByOpcodeGlobal = new Dictionary<ushort, OpcodeType>();
         TypeByOpcodeCn = new Dictionary<ushort, OpcodeType>();
-        foreach (var opcode2 in Opcodes) {
-            TypeByOpcodeGlobal[opcode2.GetOpcode(Region.Global)] = (OpcodeType)Enum.Parse(typeof(OpcodeType), opcode2.Name);
-            TypeByOpcodeCn[opcode2.GetOpcode(Region.China)] = (OpcodeType)Enum.Parse(typeof(OpcodeType), opcode2.Name);
+        foreach (var opcode in Opcodes) {
+            if (!Enum.TryParse<OpcodeType>(opcode.Name, out var ot)) continue;
+            if (ot == OpcodeType.ActorControlSelf) {
+                var inst = OpcodeManager.Instance._opcodes;
+                opcode.cnRaw = $"0x{inst[GameRegion.Chinese]["ActorControlSelf"]:X4}";
+                opcode.globalRaw = $"0x{inst[GameRegion.Global]["ActorControlSelf"]:X4}";
+                opcode.krRaw = $"0x{inst[GameRegion.Korean]["ActorControlSelf"]:X4}";
+            }
+            OpcodeBytype[ot] = opcode;
+            TypeByOpcodeGlobal[opcode.GetOpcode(Region.Global)] = ot;
+            TypeByOpcodeCn[opcode.GetOpcode(Region.China)] = ot;
         }
     }
 }

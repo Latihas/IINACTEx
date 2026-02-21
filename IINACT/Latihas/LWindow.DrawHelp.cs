@@ -194,6 +194,14 @@ public static partial class LWindow {
         ImGui.Text("如果你看到这里有东西，是开发者忘记删了的，非常危险不要擅动！！！");
         ImGui.PopStyleColor(1);
         //==============================
+        ImGui.Separator();
+        var endEncounterOutOfCombatDelayMs = Plugin.Configuration.endEncounterOutOfCombatDelayMs;
+        if (ImGui.InputInt("endEncounterOutOfCombatDelayMs", ref endEncounterOutOfCombatDelayMs)) {
+            Plugin.Configuration.Save();
+            Plugin.Configuration.endEncounterOutOfCombatDelayMs = endEncounterOutOfCombatDelayMs;
+        }
+        //==============================
+        ImGui.Separator();
         ImGui.Text("生成日志行hash");
         ImGui.InputText("输入不带hash的日志行", ref testLogline);
         ImGui.InputInt("输入日志行序号(253或是01需要从1开始)", ref testIndex);
@@ -205,7 +213,7 @@ public static partial class LWindow {
             var newLine = WriteLine(messageType, ServerDate, line);
             ImGui.Text(newLine);
             var hash = newLine[(newLine.LastIndexOf('|') + 1)..];
-            if(ImGui.Button(hash)) {
+            if (ImGui.Button(hash)) {
                 ImGui.SetClipboardText(hash);
                 Plugin.NotificationManager.AddNotification(new Notification {
                     Content = "已复制"
@@ -215,5 +223,8 @@ public static partial class LWindow {
         catch {
             //
         }
+      
     }
+
+   
 }

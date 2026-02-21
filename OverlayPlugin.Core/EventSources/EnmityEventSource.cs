@@ -42,7 +42,7 @@ public class EnmityEventSource : EventSourceBase {
         public bool inGameCombat;
     }
 
-    private const int endEncounterOutOfCombatDelayMs = 5000;
+    public int endEncounterOutOfCombatDelayMs => ActGlobals.oFormActMain.DalamudPlugin.ConfigurationInstance.endEncounterOutOfCombatDelayMs;
     private CancellationTokenSource endEncounterToken;
 
     public BuiltinEventConfig Config { get; set; }

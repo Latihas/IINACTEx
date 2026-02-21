@@ -32,6 +32,7 @@ public class Configuration : IPluginConfiguration {
     public bool LoadSilverDasherOnInit { get; set; }
     public bool AsyncOnInit { get; set; } = true;
     public float TtsInterval { get; set; } = 1.5f;
+    public int endEncounterOutOfCombatDelayMs { get; set; } = 5000;
 
 
     public string LogFilePath

@@ -12,6 +12,7 @@ using Dalamud.Interface.Windowing;
 using Dalamud.IoC;
 using Dalamud.Plugin;
 using Dalamud.Plugin.Services;
+using IINACT.Latihas;
 using IINACT.Latihas.Overlay;
 using IINACT.Network;
 using IINACT.TextToSpeech;
@@ -25,6 +26,7 @@ using Triggernometry;
 using Triggernometry.PluginBridges.BridgeNamazu;
 using Triggernometry.PScript;
 using TriggernometryProxy;
+using static Advanced_Combat_Tracker.ActGlobals;
 using static IINACT.Latihas.LWindow;
 
 namespace IINACT;
@@ -54,6 +56,7 @@ public sealed class Plugin : IDalamudPlugin {
     [PluginService] public static IObjectTable ObjectTable { get; private set; }
     [PluginService] public static IGameGui GameGui { get; private set; }
     public static Configuration Configuration { get; private set; }
+    public Configuration ConfigurationInstance => Configuration;
     internal static TextToSpeechProvider TextToSpeechProvider { get; private set; }
     private static MainWindow MainWindow = null!;
     internal static FileDialogManager FileDialogManager { get; private set; }
@@ -110,7 +113,7 @@ public sealed class Plugin : IDalamudPlugin {
     }
 
     internal static void LogTick(string s) {
-        Log.Warning($"[StartTick] {s}({(DateTime.Now - lastLogTick).TotalSeconds}s)");
+        Log.Info($"[StartTick] {s}({(DateTime.Now - lastLogTick).TotalSeconds}s)");
         lastLogTick = DateTime.Now;
     }
 
@@ -118,8 +121,8 @@ public sealed class Plugin : IDalamudPlugin {
         LogTick("Start Initializing");
         Version = Assembly.GetExecutingAssembly().GetName().Version!;
         Instance = this;
-        ActGlobals.Init();
-        ActGlobals.oFormActMain = new FormActMain(this, Log);
+        Init();
+        oFormActMain = new FormActMain(this, Log);
         Configuration = PluginInterface.GetPluginConfig() as Configuration ?? new Configuration();
         HttpClient = new HttpClient();
         var TaskFetchDependencies = Task.Run(() => {
@@ -151,7 +154,9 @@ public sealed class Plugin : IDalamudPlugin {
         FileDialogManager = new FileDialogManager();
         // PluginLogTraceListener = new PluginLogTraceListener();
         // Trace.Listeners.Add(PluginLogTraceListener);
-        ActGlobals.oFormActMain.LogFilePath = Configuration.LogFilePath;
+        ActLocalization.Init();
+        ActLocalization.AddPrebuild();
+        oFormActMain.LogFilePath = Configuration.LogFilePath;
         TextToSpeechProvider = new TextToSpeechProvider();
         var info = PluginInterface.GetType().Assembly.GetType("Dalamud.Service`1", true)!.MakeGenericType(PluginInterface.GetType().Assembly.GetType("Dalamud.Dalamud", true)!).GetMethod("Get")!
             .Invoke(null, BindingFlags.Default, null, [], null);
@@ -178,10 +183,10 @@ public sealed class Plugin : IDalamudPlugin {
         Container.Register(PluginInterface);
         Container.Register(OverlayPlugin = new PluginMain(PluginAssemblyDirectory, logger, Container));
         OverlayPlugin.PreInitPlugin(PluginConfigDirectory);
-        ActGlobals.oFormActMain.OverlayPluginContainer = Container;
+        oFormActMain.OverlayPluginContainer = Container;
         opcodesjsoncReplaced = opcodesjsoncCanReplace;
-        ActGlobals.oFormActMain.TriggernometryPlugin = TriggernometryProxyPlugin = new ProxyPlugin();
-        ActGlobals.oFormActMain.PostNamazuPlugin = PostNamazuPlugin = new PostNamazu.PostNamazu();
+        oFormActMain.TriggernometryPlugin = TriggernometryProxyPlugin = new ProxyPlugin();
+        oFormActMain.PostNamazuPlugin = PostNamazuPlugin = new PostNamazu.PostNamazu();
         LogTick("Waiting Dependencies");
         var extraOpcodes = opcodesjsoncCanReplace ? File.ReadAllText(opcodesjsoncPath) : null;
         if (Configuration.AsyncOnInit) TaskFetchDependencies.Wait();
@@ -246,14 +251,14 @@ public sealed class Plugin : IDalamudPlugin {
         if (Directory.Exists(Path.Combine(PluginConfigDirectory, "cactbot"))) RefreshBw();
         if (Configuration.ShowWindowOnInit) MainWindow.Toggle();
         if (Configuration.ShowOverlayOnInit) OverlayWindow.Toggle();
-        if (Configuration.TtsOnInit) ActGlobals.oFormActMain.TTS("插件加载完成");
-        Log.Warning($"[StartTick] IINACTEx Inited. Total {(DateTime.Now - startLogTick).TotalSeconds}s");
+        if (Configuration.TtsOnInit) oFormActMain.TTS("插件加载完成");
+        Log.Info($"[StartTick] IINACTEx Inited. Total {(DateTime.Now - startLogTick).TotalSeconds}s");
     }
 
     public static void InitIActPluginV1(ActPluginData plugin, bool preserveEnableState = false) {
         try {
-            Log.Warning($"正在加载IActPluginV1 {plugin.pluginFileName}");
-            ActGlobals.oFormActMain.ActPlugins.Add(plugin);
+            Log.Info($"正在加载IActPluginV1 {plugin.pluginFileName}");
+            oFormActMain.ActPlugins.Add(plugin);
             plugin.PluginForm?.Show();
             plugin.pluginObj.InitPlugin(plugin.tpPluginSpace, plugin.lblPluginStatus);
             if (!preserveEnableState) {
@@ -268,7 +273,7 @@ public sealed class Plugin : IDalamudPlugin {
 
     public static void DeInitIActPluginV1(ActPluginData plugin, bool preserveEnableState = false) {
         try {
-            Log.Warning($"正在卸载IActPluginV1 {plugin.pluginFileName}");
+            Log.Info($"正在卸载IActPluginV1 {plugin.pluginFileName}");
             if (!preserveEnableState) {
                 Configuration.ActScriptsEnabled.Remove(plugin.pluginFileName);
                 Configuration.Save();
@@ -283,7 +288,7 @@ public sealed class Plugin : IDalamudPlugin {
         catch (Exception e) {
             Log.Error(e.ToString());
         }
-        ActGlobals.oFormActMain.ActPlugins.Remove(plugin);
+        oFormActMain.ActPlugins.Remove(plugin);
     }
 
     public static void LoadIActPluginV1(string name, string? dllPath = null, bool preserveEnableState = false) {
@@ -292,7 +297,7 @@ public sealed class Plugin : IDalamudPlugin {
             using (var memoryStream = new MemoryStream(File.ReadAllBytes(dllPath ?? Path.Combine(Instance.PluginActScriptDirectory, name)))) {
                 asm = AssemblyLoadContext.GetLoadContext(Assembly.GetExecutingAssembly())!.LoadFromStream(memoryStream);
             }
-            Log.Warning($"Loading IActPluginV1 {asm.FullName}");
+            Log.Info($"Loading IActPluginV1 {asm.FullName}");
             var scriptTypes = asm.GetTypes()
                 .Where(type => type is { IsAbstract: false, IsInterface: false }
                                && typeof(IActPluginV1).IsAssignableFrom(type))
@@ -333,10 +338,11 @@ public sealed class Plugin : IDalamudPlugin {
         CommandManager.RemoveHandler(MainWindowCommandName);
         CommandManager.RemoveHandler(EndEncCommandName);
         CommandManager.RemoveHandler(OverlayCommandName);
-        ActGlobals.oFormActMain.ActPlugins.RemoveAt(0);
-        while (ActGlobals.oFormActMain.ActPlugins.Count > 0)
-            DeInitIActPluginV1(ActGlobals.oFormActMain.ActPlugins.Last(), true);
+        oFormActMain.ActPlugins.RemoveAt(0);
+        while (oFormActMain.ActPlugins.Count > 0)
+            DeInitIActPluginV1(oFormActMain.ActPlugins.Last(), true);
         FfxivActPluginWrapper.Dispose();
+        MainWindow.tpmain?.Close();
         ActGlobals.Dispose();
     }
 
@@ -351,7 +357,7 @@ public sealed class Plugin : IDalamudPlugin {
             return;
         }
         if (command == EndEncCommandName) {
-            ActGlobals.oFormActMain.EndCombat(false);
+            oFormActMain.EndCombat(false);
             return;
         }
 

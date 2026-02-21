@@ -15,12 +15,12 @@ public class WebSocketClient : IDisposable {
     public async Task Connect(string url) {
         try {
             await _ws.ConnectAsync(new Uri(url), _cts.Token).ConfigureAwait(false);
-            Plugin.Log.Warning("WebSocket连接成功");
+            Plugin.Log.Info("WebSocket连接成功");
             _ = ReceiveLoop();
             Ready = true;
         }
         catch (Exception ex) {
-            Plugin.Log.Warning($"连接失败: {ex.Message}");
+            Plugin.Log.Warning($"WebSocket连接失败: {ex.Message}");
             Dispose();
             throw;
         }

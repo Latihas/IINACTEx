@@ -33,6 +33,7 @@
       <HintPath>$(DalamudLibPath)Dalamud.dll</HintPath>
       <Private>false</Private>
     </Reference>
+    <ProjectReference Include="..\..\machina\Machina.FFXIV\Machina.FFXIV.csproj" />
     <ProjectReference Include="..\..\NotACT\NotACT.csproj"/>
     <ProjectReference Include="..\Zodiark\Zodiark.csproj"/>
   </ItemGroup>

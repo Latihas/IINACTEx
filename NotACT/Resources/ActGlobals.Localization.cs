@@ -17,7 +17,7 @@ public static partial class ActGlobals {
             }
         }
 
-        internal static void AddPrebuild() {
+        public static void AddPrebuild() {
             Strings.Add("trayTitle-lowDotNet", new LocalizationObject("Insufficient .NET Framework", ""));
             Strings.Add("trayText-lowDotNet",
                 new LocalizationObject(
@@ -888,7 +888,7 @@ public static partial class ActGlobals {
                     ""));
         }
 
-        internal static void Init() {
+        public static void Init() {
             Strings.Clear();
             Strings.Add("helpPanel-btnResetOdbcHacks",
                 new LocalizationObject(

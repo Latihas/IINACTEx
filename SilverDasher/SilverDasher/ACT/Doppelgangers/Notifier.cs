@@ -168,7 +168,7 @@ internal class Notifier(SilverDasher self) : Doppelganger(self) {
                 Log($"Failed to push toast message {message}.");
                 if (ToastFailed && checkPermit) return;
                 ToastFailed = true;
-                Utils.ShowMessageBox("推送通知消息失败。您可尝试在设置中修改通知消息推送类型来尝试解决该问题。");
+                // Utils.ShowMessageBox("推送通知消息失败。您可尝试在设置中修改通知消息推送类型来尝试解决该问题。");
             }
         }
     }

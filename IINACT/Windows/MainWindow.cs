@@ -94,8 +94,11 @@ public class MainWindow : Window {
     }
 
     private static void DrawSilverDasher() {
-        using var tab = ImRaii.TabItem("SilverDasher");
+        using var tab = ImRaii.TabItem("怀旧组件");
         if (!tab) return;
+        ImGui.Text("本页面为WinForm外挂尿袋，在将来或许会迁移到ImGui，但现在先这么用吧");
+        ImGui.Separator();
+        ImGui.Text("银山雀儿(SilverDasher)");
         if (ActGlobals.oFormActMain.ActPlugins.All(actPlugin => actPlugin.pluginFile.Name != "SilverDasher.dll")) {
             if (ImGui.Button("启用")) EnableSilverDasher();
         }
@@ -108,8 +111,15 @@ public class MainWindow : Window {
             Plugin.Configuration.LoadSilverDasherOnInit = LoadSilverDasherOnInit;
             Plugin.Configuration.Save();
         }
+        ImGui.Separator();
+        ImGui.Text("ACT原版伤害统计");
+        if (ImGui.Button("打开TpMain") && tpmain == null) {
+            tpmain = new TpMain();
+            tpmain.FormClosing += (_, _) => tpmain = null;
+            tpmain.Show();
+        }
     }
-
+    internal static TpMain? tpmain;
     private void DrawMainWindow() {
         using var tab = ImRaii.TabItem("运行状态");
         if (!tab) return;
