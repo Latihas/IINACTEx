@@ -1,0 +1,31 @@
+{
+  "version": "20260206",
+  "data": [
+    {
+      "name": "InitZone",
+      "cn": "0x02C0",
+      "cnl": 168,
+      "global": "0x01f5",
+      "globall": 168
+    },
+    {
+      "name": "FateInfo",
+      "cn": "0x0176",
+      "cnl": 56,
+      "global": "0xf009",
+      "globall": 56
+    },
+    {
+      "name": "ActorControlSelf",
+      "cn": "0x0162",
+      "cnl": 72,
+      "global": "0x012C",
+      "globall": 72,
+      "types": {
+        "FateStart": 2370,
+        "FateEnd": 2357,
+        "FateProgress": 2364
+      }
+    }
+  ]
+}

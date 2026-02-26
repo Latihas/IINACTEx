@@ -1,0 +1,548 @@
+{
+  "version": "20250923",
+  "data": {
+    "2929": {
+      "name": {
+        "chs": "宽耳凶蝠"
+      },
+      "patch": "2",
+      "level": "50",
+      "rank": "B",
+      "territory": "135"
+    },
+    "2962": {
+      "name": {
+        "chs": "护土精灵"
+      },
+      "how": "采集3级拉诺西亚土壤",
+      "patch": "2",
+      "level": "50",
+      "rank": "S",
+      "territory": "134"
+    },
+    "2963": {
+      "name": {
+        "chs": "咕尔呱洛斯"
+      },
+      "patch": "2",
+      "level": "50",
+      "rank": "S",
+      "territory": "135"
+    },
+    "2964": {
+      "name": {
+        "chs": "伽洛克"
+      },
+      "patch": "2",
+      "level": "50",
+      "rank": "S",
+      "territory": "137"
+    },
+    "2965": {
+      "name": {
+        "chs": "火愤牛"
+      },
+      "patch": "2",
+      "level": "50",
+      "rank": "S",
+      "territory": "138"
+    },
+    "2966": {
+      "name": {
+        "chs": "南迪"
+      },
+      "patch": "2",
+      "level": "50",
+      "rank": "S",
+      "territory": "139"
+    },
+    "2967": {
+      "name": {
+        "chs": "牛头黑神"
+      },
+      "patch": "2",
+      "level": "50",
+      "rank": "S",
+      "territory": "180"
+    },
+    "2953": {
+      "name": {
+        "chs": "雷德罗巨蛇"
+      },
+      "patch": "2",
+      "level": "50",
+      "rank": "S",
+      "territory": "148"
+    },
+    "2954": {
+      "name": {
+        "chs": "乌尔伽鲁"
+      },
+      "patch": "2",
+      "level": "50",
+      "rank": "S",
+      "territory": "152"
+    },
+    "2955": {
+      "name": {
+        "chs": "夺心魔"
+      },
+      "patch": "2",
+      "level": "50",
+      "rank": "S",
+      "territory": "153"
+    },
+    "2956": {
+      "name": {
+        "chs": "千竿口花希达"
+      },
+      "patch": "2",
+      "level": "50",
+      "rank": "S",
+      "territory": "154"
+    },
+    "2957": {
+      "name": {
+        "chs": "虚无探索者"
+      },
+      "patch": "2",
+      "level": "50",
+      "rank": "S",
+      "territory": "140"
+    },
+    "2958": {
+      "name": {
+        "chs": "布隆特斯"
+      },
+      "patch": "2",
+      "level": "50",
+      "rank": "S",
+      "territory": "141"
+    },
+    "2959": {
+      "name": {
+        "chs": "巴拉乌尔"
+      },
+      "patch": "2",
+      "level": "50",
+      "rank": "S",
+      "territory": "145"
+    },
+    "2960": {
+      "name": {
+        "chs": "努纽努维"
+      },
+      "patch": "2",
+      "level": "50",
+      "rank": "S",
+      "territory": "146"
+    },
+    "2961": {
+      "name": {
+        "chs": "蚓螈巨虫"
+      },
+      "patch": "2",
+      "level": "50",
+      "rank": "S",
+      "territory": "147"
+    },
+    "2968": {
+      "name": {
+        "chs": "萨法特"
+      },
+      "patch": "2",
+      "level": "50",
+      "rank": "S",
+      "territory": "155"
+    },
+    "2969": {
+      "name": {
+        "chs": "阿格里帕"
+      },
+      "patch": "2",
+      "level": "50",
+      "rank": "S",
+      "territory": "156"
+    },
+    "4374": {
+      "name": {
+        "chs": "凯撒贝希摩斯"
+      },
+      "patch": "3",
+      "level": "60",
+      "rank": "S",
+      "territory": "397"
+    },
+    "4378": {
+      "name": {
+        "chs": "极乐鸟"
+      },
+      "patch": "3",
+      "level": "60",
+      "rank": "S",
+      "territory": "401"
+    },
+    "4375": {
+      "name": {
+        "chs": "神穆尔鸟"
+      },
+      "patch": "3",
+      "level": "60",
+      "rank": "S",
+      "territory": "398"
+    },
+    "4377": {
+      "name": {
+        "chs": "刚德瑞瓦"
+      },
+      "patch": "3",
+      "level": "60",
+      "rank": "S",
+      "territory": "400"
+    },
+    "4376": {
+      "name": {
+        "chs": "苍白骑士"
+      },
+      "patch": "3",
+      "level": "60",
+      "rank": "S",
+      "territory": "399"
+    },
+    "4380": {
+      "name": {
+        "chs": "卢克洛塔"
+      },
+      "patch": "3",
+      "level": "60",
+      "rank": "S",
+      "territory": "402"
+    },
+    "5987": {
+      "name": {
+        "chs": "优昙婆罗花"
+      },
+      "patch": "4",
+      "level": "70",
+      "rank": "S",
+      "territory": "612"
+    },
+    "5988": {
+      "name": {
+        "chs": "爬骨怪龙"
+      },
+      "patch": "4",
+      "level": "70",
+      "rank": "S",
+      "territory": "620"
+    },
+    "5989": {
+      "name": {
+        "chs": "盐和光"
+      },
+      "patch": "4",
+      "level": "70",
+      "rank": "S",
+      "territory": "621"
+    },
+    "5984": {
+      "name": {
+        "chs": "巨大鳐"
+      },
+      "patch": "4",
+      "level": "70",
+      "rank": "S",
+      "territory": "613"
+    },
+    "5985": {
+      "name": {
+        "chs": "伽马"
+      },
+      "patch": "4",
+      "level": "70",
+      "rank": "S",
+      "territory": "614"
+    },
+    "5986": {
+      "name": {
+        "chs": "兀鲁忽乃朝鲁"
+      },
+      "patch": "4",
+      "level": "70",
+      "rank": "S",
+      "territory": "622"
+    },
+    "8653": {
+      "name": {
+        "chs": "阿格拉俄珀"
+      },
+      "patch": "5",
+      "level": "80",
+      "rank": "S",
+      "territory": "816"
+    },
+    "8890": {
+      "name": {
+        "chs": "伊休妲"
+      },
+      "patch": "5",
+      "level": "80",
+      "rank": "S",
+      "territory": "817"
+    },
+    "8895": {
+      "name": {
+        "chs": "顾尼图"
+      },
+      "how": "使冰海天使捕食3只深海水蛭后获得最大化buff",
+      "patch": "5",
+      "level": "80",
+      "rank": "S",
+      "territory": "818"
+    },
+    "8900": {
+      "name": {
+        "chs": "多智兽"
+      },
+      "how": "在刷新点上自爆",
+      "patch": "5",
+      "level": "80",
+      "rank": "S",
+      "territory": "815"
+    },
+    "8910": {
+      "name": {
+        "chs": "得到宽恕的炫学"
+      },
+      "how": "采集矮人棉50次",
+      "patch": "5",
+      "level": "80",
+      "rank": "S",
+      "territory": "814"
+    },
+    "8905": {
+      "name": {
+        "chs": "戾虫"
+      },
+      "how": "丢弃秧鸡胸脯肉",
+      "tip": "●不是概率触发，一次只需要扔一个",
+      "patch": "5",
+      "level": "80",
+      "rank": "S",
+      "territory": "813"
+    },
+    "8915": {
+      "name": {
+        "chs": "得到宽恕的叛乱"
+      },
+      "patch": "5",
+      "level": "80",
+      "rank": "SS",
+      "territory": "0"
+    },
+    "8916": {
+      "name": {
+        "chs": "得到宽恕的流言"
+      },
+      "patch": "5",
+      "level": "80",
+      "rank": "SSMinion",
+      "territory": "0",
+      "multiple": true
+    },
+    "10615": {
+      "name": {
+        "chs": "克尔"
+      },
+      "patch": "6",
+      "level": "90",
+      "rank": "SS",
+      "territory": "0"
+    },
+    "10616": {
+      "name": {
+        "chs": "克尔的侍从"
+      },
+      "patch": "6",
+      "level": "90",
+      "rank": "SSMinion",
+      "territory": "0",
+      "multiple": true
+    },
+    "10617": {
+      "name": {
+        "chs": "布弗鲁"
+      },
+      "how": "ET9:00-ET17:00，天气为晴朗/碧空，带宠物小巨魔在刷新点溜达",
+      "tip": "●89本概率掉落，不可交易",
+      "patch": "6",
+      "level": "90",
+      "rank": "S",
+      "territory": "956"
+    },
+    "10618": {
+      "name": {
+        "chs": "颇胝迦"
+      },
+      "how": "金刚尾(x13,y19)，毕舍遮(x19,y22)，阿输陀花(x27,y14)；各打一百只",
+      "patch": "6",
+      "level": "90",
+      "rank": "S",
+      "territory": "957"
+    },
+    "10619": {
+      "name": {
+        "chs": "阿姆斯特朗"
+      },
+      "how": "装备“修好的帝国盔帽”、“修好的帝国短袍”，在刷新点死亡触发",
+      "tip": "●可以在三主城失物管理人处重新购买",
+      "patch": "6",
+      "level": "90",
+      "rank": "S",
+      "territory": "958"
+    },
+    "10620": {
+      "name": {
+        "chs": "沉思之物"
+      },
+      "how": "思考之物(x20,y21)，叹息之物(x31,y32)，彷徨之物(x26,y26)；各打一百只",
+      "patch": "6",
+      "level": "90",
+      "rank": "S",
+      "territory": "959"
+    },
+    "10621": {
+      "name": {
+        "chs": "俄菲翁尼厄斯"
+      },
+      "how": "丢弃5个厄尔庇斯之鸟蛋",
+      "tip": "●雇员探险/在本地图用双色宝石兑换\n●需要5个堆叠在一起丢弃，一个一个扔无效",
+      "patch": "6",
+      "level": "90",
+      "rank": "S",
+      "territory": "961"
+    },
+    "10622": {
+      "name": {
+        "chs": "狭缝"
+      },
+      "how": "10名玩家带着宠物小异亚在刷新点溜达",
+      "tip": "●天外天垓地图3级完成度后，在奥密克戎基地用500双色宝石兑换",
+      "patch": "6",
+      "level": "90",
+      "rank": "S",
+      "territory": "960"
+    },
+
+    "13150": {
+      "name": {
+        "chs": "绝妙圆扇刺"
+      },
+      "patch": "7",
+      "level": "100",
+      "rank": "B",
+      "territory": "1190"
+    },
+    "13151": {
+      "name": {
+        "chs": "乌克提纳"
+      },
+      "patch": "7",
+      "level": "100",
+      "rank": "B",
+      "territory": "1190"
+    },
+    "13400": {
+      "name": {
+        "chs": "艾海海陶瓦泡"
+      },
+      "patch": "7",
+      "level": "100",
+      "rank": "A",
+      "territory": "1190"
+    },
+    "13401": {
+      "name": {
+        "chs": "凯海尼海亚麦尤伊"
+      },
+      "patch": "7",
+      "level": "100",
+      "rank": "A",
+      "territory": "1190"
+    },
+
+    "13360": {
+      "name": {
+        "chs": "厌忌之人 奇里格"
+      },
+      "patch": "7",
+      "level": "100",
+      "rank": "S",
+      "territory": "1187"
+    },
+    "13444": {
+      "name": {
+        "chs": "伊努索奇"
+      },
+      "patch": "7",
+      "level": "100",
+      "rank": "S",
+      "territory": "1188"
+    },
+    "12754": {
+      "name": {
+        "chs": "内尤佐缇"
+      },
+      "patch": "7",
+      "level": "100",
+      "rank": "S",
+      "territory": "1189"
+    },
+    "13399": {
+      "name": {
+        "chs": "山谢亚"
+      },
+      "patch": "7",
+      "level": "100",
+      "rank": "S",
+      "territory": "1190"
+    },
+    "13156": {
+      "name": {
+        "chs": "先驱勇士 阿提卡斯"
+      },
+      "patch": "7",
+      "level": "100",
+      "rank": "S",
+      "territory": "1191"
+    },
+    "13437": {
+      "name": {
+        "chs": "天气预报机器人"
+      },
+      "patch": "7",
+      "level": "100",
+      "rank": "S",
+      "territory": "1192"
+    },
+    "13406": {
+      "name": {
+        "chs": "水晶化身之王"
+      },
+      "patch": "7",
+      "level": "100",
+      "rank": "SS",
+      "territory": "0"
+    },
+    "13407": {
+      "name": {
+        "chs": "水晶化身"
+      },
+      "patch": "7",
+      "level": "100",
+      "rank": "SSMinion",
+      "territory": "0",
+      "multiple": true
+    }
+  }
+}
