@@ -90,7 +90,26 @@ public class MainWindow : Window {
         }
     }
 
+    private static void CopyDirectoryContents(string sourceDir, string targetDir, bool overwrite) {
+        foreach (var filePath in Directory.GetFiles(sourceDir)) {
+            var fileName = Path.GetFileName(filePath);
+            var targetFilePath = Path.Combine(targetDir, fileName);
+            File.Copy(filePath, targetFilePath, overwrite);
+        }
+        foreach (var subDirPath in Directory.GetDirectories(sourceDir)) {
+            var subDirName = Path.GetFileName(subDirPath);
+            var targetSubDirPath = Path.Combine(targetDir, subDirName);
+            Directory.CreateDirectory(targetSubDirPath);
+            CopyDirectoryContents(subDirPath, targetSubDirPath, overwrite);
+        }
+    }
+
     internal static void EnableSilverDasher() {
+        var targetDir = Path.Combine(Plugin.Instance.PluginActScriptDirectory, "data");
+        if (Directory.Exists(targetDir)) return;
+        var sourceDir = Path.Combine(Plugin.Instance.PluginAssemblyDirectory, "data");
+        Directory.CreateDirectory(targetDir);
+        CopyDirectoryContents(sourceDir, targetDir, overwrite: true);
         SilverDasherPlugin = new SilverDasher.ACT.SilverDasher(Plugin.Instance.PluginActScriptDirectory,
             Plugin.ClientState, Plugin.ObjectTable, Plugin.Framework, Plugin.NotificationManager);
     }
