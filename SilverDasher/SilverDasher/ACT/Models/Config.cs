@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Newtonsoft.Json;
+using SilverDasher.ACT.Doppelgangers;
 using SilverDasher.ACT.Enums;
 using SilverDasher.ACT.Storages;
 
@@ -116,7 +117,6 @@ public class Config : UIBinded {
     [JsonIgnore] public bool IsToastTypeUWP => "UWP" == ToastType;
 
     [JsonIgnore] public bool IsToastTypeLegacy => "Legacy" == ToastType;
-
     [JsonIgnore] public bool NotifySpottedToast
     {
         get => ToastNotifications[HuntState.Healthy];
@@ -338,6 +338,10 @@ public class Config : UIBinded {
             Save(defaultConfig2);
             return defaultConfig2;
         }
+    }
+
+    public static void Save() {
+        Save(Keeper.Config);
     }
 
     public static void Save(Config c) {

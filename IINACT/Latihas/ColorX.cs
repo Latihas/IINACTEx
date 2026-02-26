@@ -2,7 +2,7 @@
 
 namespace IINACT.Latihas;
 
-public class Color {
+public class ColorX {
     public static readonly Vector4 TWhite = new(1f, 1f, 1f, .3f);
     public static readonly Vector4 TRed = new(1f, 0f, 0f, .3f);
     public static readonly Vector4 LRed = new(1f, 0f, 0f, 1);

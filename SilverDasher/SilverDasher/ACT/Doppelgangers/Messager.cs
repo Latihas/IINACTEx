@@ -7,7 +7,6 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using MQTTnet;
-using MQTTnet.Client;
 using MQTTnet.Packets;
 using Newtonsoft.Json;
 using SilverDasher.ACT.Models.Messages;
@@ -26,16 +25,16 @@ internal class Messager(SilverDasher plugin) : Doppelganger(plugin) {
     private readonly Dictionary<(string, string), string> SubDict = new();
 
     internal override void Init() {
-        Tomestone = new MqttFactory().CreateMqttClient();
+        Tomestone = new MqttClientFactory().CreateMqttClient();
         foreach (var huntSubscription in Keeper.Config.HuntSubscriptions) Subscriptions.Add(("hunt", huntSubscription.ToString()));
         foreach (var fateSubscription in Keeper.Config.FateSubscriptions) Subscriptions.Add(("fate", fateSubscription.ToString()));
     }
 
     internal override void Deinit() {
         if (Tomestone == null) return;
-        if (Tomestone.IsConnected) Tomestone.DisconnectAsync().Wait(); //++
+        if (Tomestone.IsConnected) Tomestone.DisconnectAsync(new MqttClientDisconnectOptions()).Wait(); //++
         Tomestone.Dispose();
-        Painter.pluginControl.SetPluginStatus(PluginStatus.INITIALIZED);
+        PluginControl.SetPluginStatus(PluginStatus.INITIALIZED);
     }
 
     public void StartLoop(CancellationToken token) {
@@ -54,9 +53,9 @@ internal class Messager(SilverDasher plugin) : Doppelganger(plugin) {
                     _ = 2;
                     try {
                         if (!Tomestone.IsConnected) {
-                            Painter.pluginControl.SetPluginStatus(PluginStatus.CONNECTING);
+                            PluginControl.SetPluginStatus(PluginStatus.CONNECTING);
                             await Tomestone.ConnectAsync(tomestoneConfig, token);
-                            Painter.pluginControl.SetPluginStatus(PluginStatus.CONNECTED);
+                            PluginControl.SetPluginStatus(PluginStatus.CONNECTED);
                             await Subscribe(Subscriptions, token);
                         }
                         // Negotiator.GetPlayerInfo(0u, "");
@@ -176,9 +175,9 @@ internal class Messager(SilverDasher plugin) : Doppelganger(plugin) {
 
     public void Disconnect() {
         if (Tomestone == null) return;
-        if (Tomestone.IsConnected) Tomestone.DisconnectAsync();
+        if (Tomestone.IsConnected) Tomestone.DisconnectAsync(new MqttClientDisconnectOptions()).Wait();
         Tomestone.ApplicationMessageReceivedAsync -= Unpack;
-        Painter.pluginControl.SetPluginStatus(PluginStatus.INITIALIZED);
+        PluginControl.SetPluginStatus(PluginStatus.INITIALIZED);
     }
 
     public void QueueMessage(Message message) {
@@ -215,12 +214,12 @@ internal class Messager(SilverDasher plugin) : Doppelganger(plugin) {
 
     internal void Resubscribe(string tag, CancellationToken token) {
         if (Tomestone == null) return;
-        Painter?.pluginControl?.CheckBoxCrossWorldToggle(false);
+        // Painter?.pluginControl?.CheckBoxCrossWorldToggle(false);
         var filteredSub = tag == "" ? Subscriptions : Subscriptions.FindAll(e => e.Item1 == tag);
         Task.Run(async delegate {
             await Unsubscribe(filteredSub, token);
             await Subscribe(filteredSub, token);
-            Painter?.pluginControl?.CheckBoxCrossWorldToggle(true);
+            // Painter?.pluginControl?.CheckBoxCrossWorldToggle(true);
         }, token);
     }
 
@@ -240,7 +239,7 @@ internal class Messager(SilverDasher plugin) : Doppelganger(plugin) {
 
     private async Task Unpack(MqttApplicationMessageReceivedEventArgs e) {
         var topic = e.ApplicationMessage.Topic;
-        var @string = new UTF8Encoding().GetString(e.ApplicationMessage.PayloadSegment);
+        var @string = new UTF8Encoding().GetString(e.ApplicationMessage.Payload);
         if (Keeper.Config.ExtendedReport) {
             Log($"Received {topic}");
             Log(@string);

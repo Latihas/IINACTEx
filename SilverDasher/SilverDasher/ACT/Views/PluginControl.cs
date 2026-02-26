@@ -1,21 +1,15 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Windows;
-using System.Windows.Controls;
+using Dalamud.Bindings.ImGui;
+using Dalamud.Interface.Utility.Raii;
 using SilverDasher.ACT.Doppelgangers;
-using SilverDasher.ACT.Enums;
+using SilverDasher.ACT.Models;
 using SilverDasher.ACT.ViewModels;
 
 namespace SilverDasher.ACT.Views;
 
-public partial class PluginControl {
+public class PluginControl {
     private readonly Painter Painter;
-
-    // public CheckTreeNode AvailableNodes;
-
-    // public CheckTreeNode SubscriptedNodes;
-
     private static readonly Dictionary<PluginStatus, string> ChineseStatusText = new() {
         {
             PluginStatus.SLEEPING, "睡觉中"
@@ -38,81 +32,13 @@ public partial class PluginControl {
         }
     };
 
-    // public bool Initing = true;
+    private readonly List<string> textLog = [];
 
-    // internal TreeView treeAvailable;
-    //
-    // internal Label lblStatus;
-    //
-    // internal TreeView treeSubscribed;
-    //
-    // internal Button ButtonTestTTS;
-    //
-    // internal CheckBox TTSHealthy;
-    //
-    // internal CheckBox TTSTaunted;
-    //
-    // internal CheckBox TTSBullying;
-    //
-    // internal CheckBox TTSDied;
-    //
-    // internal Button ButtonTestToast;
-    //
-    // internal CheckBox ToastHealthy;
-    //
-    // internal CheckBox ToastTaunted;
-    //
-    // internal CheckBox ToastBullying;
-    //
-    // internal CheckBox ToastDied;
-    //
-    // internal RadioButton ToastTypeUWP;
-    //
-    // internal RadioButton ToastTypeLegacy;
-    //
-    // internal CheckBox CrossWorldHunt;
-    //
-    // internal CheckBox CWHuntSS;
-    //
-    // internal CheckBox CWHuntS;
-    //
-    // internal CheckBox CWHuntA;
-    //
-    // internal CheckBox CWHuntB;
-    //
-    // internal CheckBox CrossDCHunt;
-    //
-    // internal CheckBox CDCHuntSS;
-    //
-    // internal CheckBox CDCHuntS;
-    //
-    // internal CheckBox CDCHuntA;
-    //
-    // internal CheckBox CDCHuntB;
-    //
-    // internal CheckBox CrossWorldFate;
-    //
-    // internal CheckBox CWFateC;
-    //
-    // internal CheckBox CWFateS;
-    //
-    // internal Label CWStatus;
-    //
-    // internal Button ButtonRestart;
-    //
-    // internal CheckBox checkExtended;
-    //
-    // internal TextBox textLog;
-    //
-    // internal Label lblStatusBottom;
-    //
-    // private bool _contentLoaded;
 
-    private PluginViewModel ViewModel => DataContext as PluginViewModel;
+    internal PluginViewModel ViewModel { get; } = new();
 
     internal PluginControl(Painter painter) {
         Painter = painter;
-        InitializeComponent();
         Init();
     }
 
@@ -120,187 +46,191 @@ public partial class PluginControl {
         ViewModel.SetPatchNames(Painter.Keeper.Patches.PatchByCode);
         ViewModel.SetupHuntMobs(Painter.Keeper.Mobs.HuntByBnpcNameID, Painter.Keeper.SpHunts.HuntGroupsTree, Keeper.Config.HuntSubscriptions);
         ViewModel.SetupFates(Painter.Keeper.Fates.FateByID, Painter.Keeper.SpFates.FateGroupsTree, Keeper.Config.FateSubscriptions);
-        ToastTypeLegacy.IsChecked = Keeper.Config.IsToastTypeLegacy;
-        ToastTypeUWP.IsChecked = Keeper.Config.IsToastTypeUWP;
-        // Initing = false;
     }
 
-    private void checkAvailable_CheckedChanged(object sender, EventArgs e) {
-        var checkBox = (CheckBox)sender;
-        var array = ((string)checkBox.Tag).Split('-');
-        var text = array[0];
-        var text2 = array[1];
-        var text3 = array[2];
-        List<string> ids = null;
-        switch (text) {
-            case "hunt":
-                switch (text2) {
-                    case "all":
-                        ids = Painter.Keeper.Mobs.Query();
-                        break;
-                    case "patch":
-                        ids = Painter.Keeper.Mobs.Query(int.Parse(text3));
-                        break;
-                    case "rank":
-                        ids = Painter.Keeper.Mobs.Query(0, (Rank)Enum.Parse(typeof(Rank), text3, true));
-                        break;
-                    case "map":
-                        ids = Painter.Keeper.Mobs.Query(0, Rank.Unknown, int.Parse(text3));
-                        break;
-                    case "group":
-                        ids = (from hid in Painter.Keeper.SpHunts.HuntGroupById[text3].TraverseGetItems()
-                            select hid.ToString()).ToList();
-                        break;
-                    case "gid":
-                        text3 = array[3];
-                        break;
-                }
-                break;
-            case "fate":
-                switch (text2) {
-                    case "all":
-                        ids = Painter.Keeper.Fates.Query();
-                        break;
-                    case "allsp":
-                        ids = Painter.Keeper.SpFates.Spfates.Select(fid => fid.ToString()).ToList();
-                        break;
-                    case "patch":
-                        ids = Painter.Keeper.Fates.Query(int.Parse(text3));
-                        break;
-                    case "map":
-                        ids = Painter.Keeper.Fates.Query(0, int.Parse(text3));
-                        break;
-                    case "group":
-                        ids = (from fid in Painter.Keeper.SpFates.FateGroupById[text3].TraverseGetItems()
-                            select fid.ToString()).ToList();
-                        break;
-                    case "gid":
-                        text3 = array[3];
-                        break;
-                }
-                break;
+    private void DrawEvent() {
+        using var bar = ImRaii.TabItem("订阅##SilverdasherEvent");
+        if (!bar) return;
+        ImGui.Text($"插件状态: {Enum.GetName(SilverDasher.pluginStatus)}");
+        ImGui.Text($"状态描述: {ChineseStatusText[SilverDasher.pluginStatus]}");
+        ViewModel.DrawImGui();
+    }
+
+    private void DrawSettings() {
+        using var bar = ImRaii.TabItem("设置##SilverdasherSettings");
+        if (!bar) return;
+        var PauseInDuty = Keeper.Config.PauseInDuty;
+        if (ImGui.Checkbox("副本任务中暂停推送", ref PauseInDuty)) {
+            Keeper.Config.PauseInDuty = PauseInDuty;
+            Config.Save();
         }
-        Painter.Messager.EditSubscription(checkBox.IsChecked, text, text3, ids, SilverDasher.Instance.tokenSource.Token);
+        ImGui.SameLine();
+        if (ImGui.Button("刷新配置并重新连接")) ButtonRestartClicked();
+        if (ImGui.CollapsingHeader("TTS", ImGuiTreeNodeFlags.DefaultOpen)) {
+            ImGui.Indent();
+            var TTS = Keeper.Config.TTS;
+            if (ImGui.Checkbox("启用TTS", ref TTS)) {
+                Keeper.Config.TTS = TTS;
+                Config.Save();
+            }
+            ImGui.SameLine();
+            if (ImGui.Button("测试##TTS")) ButtonTestTTSClicked();
+            if (TTS) {
+                var NotifySpottedTTS = Keeper.Config.NotifySpottedTTS;
+                if (ImGui.Checkbox("健康##NotifySpottedTTS", ref NotifySpottedTTS)) {
+                    Keeper.Config.NotifySpottedTTS = NotifySpottedTTS;
+                    Config.Save();
+                }
+                ImGui.SameLine();
+                var NotifyTauntedTTS = Keeper.Config.NotifyTauntedTTS;
+                if (ImGui.Checkbox("开怪##NotifyTauntedTTS", ref NotifyTauntedTTS)) {
+                    Keeper.Config.NotifyTauntedTTS = NotifyTauntedTTS;
+                    Config.Save();
+                }
+                ImGui.SameLine();
+                var NotifyBullyingTTS = Keeper.Config.NotifyBullyingTTS;
+                if (ImGui.Checkbox("暴打##NotifyBullyingTTS", ref NotifyBullyingTTS)) {
+                    Keeper.Config.NotifyBullyingTTS = NotifyBullyingTTS;
+                    Config.Save();
+                }
+                ImGui.SameLine();
+                var NotifyDiedTTS = Keeper.Config.NotifyDiedTTS;
+                if (ImGui.Checkbox("死亡##NotifyDiedTTS", ref NotifyDiedTTS)) {
+                    Keeper.Config.NotifyDiedTTS = NotifyDiedTTS;
+                    Config.Save();
+                }
+            }
+            ImGui.Unindent();
+        }
+        if (ImGui.CollapsingHeader("通知", ImGuiTreeNodeFlags.DefaultOpen)) {
+            ImGui.Indent();
+            var SystemToast = Keeper.Config.SystemToast;
+            if (ImGui.Checkbox("启用通知", ref SystemToast)) {
+                Keeper.Config.SystemToast = SystemToast;
+                Config.Save();
+            }
+            ImGui.SameLine();
+            if (ImGui.Button("测试##SystemToast")) ButtonTestToastClicked();
+            if (SystemToast) {
+                var NotifySpottedToast = Keeper.Config.NotifySpottedToast;
+                if (ImGui.Checkbox("健康##NotifySpottedToast", ref NotifySpottedToast)) {
+                    Keeper.Config.NotifySpottedToast = NotifySpottedToast;
+                    Config.Save();
+                }
+                ImGui.SameLine();
+                var NotifyTauntedToast = Keeper.Config.NotifyTauntedToast;
+                if (ImGui.Checkbox("开怪##NotifyTauntedToast", ref NotifyTauntedToast)) {
+                    Keeper.Config.NotifyTauntedTTS = NotifyTauntedToast;
+                    Config.Save();
+                }
+                ImGui.SameLine();
+                var NotifyBullyingToast = Keeper.Config.NotifyBullyingToast;
+                if (ImGui.Checkbox("暴打##NotifyBullyingToast", ref NotifyBullyingToast)) {
+                    Keeper.Config.NotifyBullyingTTS = NotifyBullyingToast;
+                    Config.Save();
+                }
+                ImGui.SameLine();
+                var NotifyDiedToast = Keeper.Config.NotifyDiedToast;
+                if (ImGui.Checkbox("死亡##NotifyDiedToast", ref NotifyDiedToast)) {
+                    Keeper.Config.NotifyDiedToast = NotifyDiedToast;
+                    Config.Save();
+                }
+            }
+            ImGui.Unindent();
+        }
+        if (ImGui.CollapsingHeader("大区接收", ImGuiTreeNodeFlags.DefaultOpen)) {
+            ImGui.Indent();
+            var CrossWorldHunt = Keeper.Config.CrossWorldHunt;
+            if (ImGui.Checkbox("跨服接收狩猎", ref CrossWorldHunt)) {
+                Keeper.Config.CrossWorldHunt = CrossWorldHunt;
+                Config.Save();
+            }
+            if (CrossWorldHunt) {
+                var CWHuntSS = Keeper.Config.CWHuntSS;
+                if (ImGui.Checkbox("SS##CWHuntSS", ref CWHuntSS)) {
+                    Painter.Self.Messager.Resubscribe("hunt", SilverDasher.Instance.tokenSource.Token);
+                    Keeper.Config.CWHuntSS = CWHuntSS;
+                    Config.Save();
+                }
+                ImGui.SameLine();
+                var CWHuntS = Keeper.Config.CWHuntS;
+                if (ImGui.Checkbox("S##CWHuntS", ref CWHuntS)) {
+                    Painter.Self.Messager.Resubscribe("hunt", SilverDasher.Instance.tokenSource.Token);
+                    Keeper.Config.CWHuntS = CWHuntS;
+                    Config.Save();
+                }
+                ImGui.SameLine();
+                var CWHuntA = Keeper.Config.CWHuntA;
+                if (ImGui.Checkbox("A##CWHuntA", ref CWHuntA)) {
+                    Painter.Self.Messager.Resubscribe("hunt", SilverDasher.Instance.tokenSource.Token);
+                    Keeper.Config.CWHuntA = CWHuntA;
+                    Config.Save();
+                }
+                ImGui.SameLine();
+                var CWHuntB = Keeper.Config.CWHuntB;
+                if (ImGui.Checkbox("B##CWHuntB", ref CWHuntB)) {
+                    Painter.Self.Messager.Resubscribe("hunt", SilverDasher.Instance.tokenSource.Token);
+                    Keeper.Config.CWHuntB = CWHuntB;
+                    Config.Save();
+                }
+            }
+            var CrossWorldFate = Keeper.Config.CrossWorldFate;
+            if (ImGui.Checkbox("跨服接收Fate", ref CrossWorldFate)) {
+                Keeper.Config.CrossWorldFate = CrossWorldFate;
+                Config.Save();
+            }
+            if (CrossWorldFate) {
+                var CWFateCommon = Keeper.Config.CWFateCommon;
+                if (ImGui.Checkbox("普通Fate", ref CWFateCommon)) {
+                    Painter.Self.Messager.Resubscribe("fate", SilverDasher.Instance.tokenSource.Token);
+                    Keeper.Config.CWFateCommon = CWFateCommon;
+                    Config.Save();
+                }
+                ImGui.SameLine();
+                var CWFateSpecial = Keeper.Config.CWFateSpecial;
+                if (ImGui.Checkbox("特殊Fate", ref CWFateSpecial)) {
+                    Painter.Self.Messager.Resubscribe("fate", SilverDasher.Instance.tokenSource.Token);
+                    Keeper.Config.CWFateSpecial = CWFateSpecial;
+                    Config.Save();
+                }
+            }
+            ImGui.Unindent();
+        }
     }
 
-    // private void checkSubscripted_CheckedChanged(object sender, EventArgs e) {
-    //     Painter.Log(sender.ToString());
-    // }
-    //
-    // private void checkCurrentWorldOnly_CheckedChanged(object sender, EventArgs e) {
-    //     Painter.Messager.Resubscribe();
-    // }
+    private void DrawLog() {
+        using var bar = ImRaii.TabItem("日志##SilverdasherLog");
+        if (!bar) return;
+        var ExtendedReport = Keeper.Config.ExtendedReport;
+        if (ImGui.Checkbox("调试模式", ref ExtendedReport)) {
+            Keeper.Config.ExtendedReport = ExtendedReport;
+            Config.Save();
+        }
+        ImGui.SameLine();
+        if (ImGui.Button("清空日志")) textLog.Clear();
+        foreach (var log in textLog) ImGui.Text(log);
+    }
 
-    public void SetPluginStatus(PluginStatus s) {
-        // if (ActGlobals.oFormActMain.InvokeRequired) {
-        SilverDasher.FormContainer.Invoke(() => {
-            lblStatus.Content = Enum.GetName(s.GetType(), s);
-            lblStatusBottom.Content = ChineseStatusText[s];
-        });
-        // }
-        // else {
-        //     lblStatus.Content = Enum.GetName(s.GetType(), s);
-        //     lblStatusBottom.Content = ChineseStatusText[s];
-        // }
+    public void Draw() {
+        using var bar = ImRaii.TabBar("SilverDasherSettings");
+        if (!bar) return;
+        DrawEvent();
+        DrawSettings();
+        DrawLog();
+    }
+
+    public static void SetPluginStatus(PluginStatus s) {
+        SilverDasher.pluginStatus = s;
     }
 
     public void Log(string s) {
-        // if (ActGlobals.oFormActMain.InvokeRequired)
-        // {
-        SilverDasher.FormContainer.Invoke(() => {
-            textLog.AppendText(s);
-            textLog.AppendText("\n");
-        });
-        // }
-        // else
-        // {
-        // 	textLog.AppendText(s);
-        // 	textLog.AppendText("\n");
-        // }
+        textLog.Add(s);
     }
 
-    private void CheckBoxTTSChecked(object sender, RoutedEventArgs e) {
-        if (!IsInitialized) return;
-        var valueOrDefault = ((CheckBox)sender).IsChecked.GetValueOrDefault();
-        TTSHealthy.IsEnabled = valueOrDefault;
-        TTSTaunted.IsEnabled = valueOrDefault;
-        TTSBullying.IsEnabled = valueOrDefault;
-        TTSDied.IsEnabled = valueOrDefault;
-    }
 
-    private void CheckBoxToastChecked(object sender, RoutedEventArgs e) {
-        if (!IsInitialized) return;
-        var valueOrDefault = ((CheckBox)sender).IsChecked.GetValueOrDefault();
-        ToastHealthy.IsEnabled = valueOrDefault;
-        ToastTaunted.IsEnabled = valueOrDefault;
-        ToastBullying.IsEnabled = valueOrDefault;
-        ToastDied.IsEnabled = valueOrDefault;
-    }
+    private void ButtonTestTTSClicked() => Notifier.TestTTS();
 
-    private void CheckBoxCWHChecked(object sender, RoutedEventArgs e) {
-        if (!IsInitialized) return;
-        var valueOrDefault = ((CheckBox)sender).IsChecked.GetValueOrDefault();
-        CWHuntSS.IsEnabled = valueOrDefault;
-        CWHuntS.IsEnabled = valueOrDefault;
-        CWHuntA.IsEnabled = valueOrDefault;
-        CWHuntB.IsEnabled = valueOrDefault;
-    }
+    private void ButtonTestToastClicked() => Painter.Notifier.TestToast();
 
-    private void CheckBoxCDCHChecked(object sender, RoutedEventArgs e) {
-    }
-
-    private void CheckBoxCWFChecked(object sender, RoutedEventArgs e) {
-        if (!IsInitialized) return;
-        var valueOrDefault = ((CheckBox)sender).IsChecked.GetValueOrDefault();
-        CWFateC.IsEnabled = valueOrDefault;
-        CWFateS.IsEnabled = valueOrDefault;
-    }
-
-    private void ButtonTestTTSClicked(object sender, RoutedEventArgs e) => Notifier.TestTTS();
-
-    private void ButtonTestToastClicked(object sender, RoutedEventArgs e) => Painter.Notifier.TestToast();
-
-    private void ButtonRestartClicked(object sender, RoutedEventArgs e) => Painter.Self.RestartLoop(true);
-
-    private void RadioButtonToastTypeChecked(object sender, RoutedEventArgs e) {
-        var obj = (RadioButton)sender;
-        var valueOrDefault = obj.IsChecked.GetValueOrDefault();
-        var text = obj.Name.Replace("ToastType", "");
-        if (text != Keeper.Config.ToastType && valueOrDefault)
-            Keeper.Config.ToastType = text;
-    }
-
-    private void CheckBoxCrossWorld(object sender, RoutedEventArgs e) {
-        if (!IsInitialized) return;
-        Painter.Messager.Resubscribe((string)((CheckBox)sender).Tag, SilverDasher.Instance.tokenSource.Token);
-    }
-
-    private void CheckBoxCrossDC(object sender, RoutedEventArgs e) {
-        // _ = IsInitialized;
-    }
-
-    internal void ButtonRestartToggle(string content, bool enabled) {
-        Dispatcher.Invoke(() => {
-            ButtonRestart.Content = content;
-            ButtonRestart.IsEnabled = enabled;
-        });
-    }
-
-    internal void CheckBoxCrossWorldToggle(bool enabled) {
-        if (IsInitialized) {
-            Dispatcher.Invoke(() => {
-                CrossWorldFate.IsEnabled = enabled;
-                CWFateC.IsEnabled = enabled;
-                CWFateS.IsEnabled = enabled;
-                CrossWorldHunt.IsEnabled = enabled;
-                CWHuntSS.IsEnabled = enabled;
-                CWHuntS.IsEnabled = enabled;
-                CWHuntA.IsEnabled = enabled;
-                CWHuntB.IsEnabled = enabled;
-                CWStatus.Visibility = enabled ? Visibility.Hidden : Visibility.Visible;
-            });
-        }
-    }
-
-    private void ButtonClearLogClicked(object sender, RoutedEventArgs e) => SilverDasher.FormContainer.Invoke(textLog.Clear);
+    private void ButtonRestartClicked() => Painter.Self.Painter.Self.RestartLoop(true);
 }

@@ -1,15 +1,11 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <AssemblyName>SilverDasher.Core</AssemblyName>
-    <UseWindowsForms>True</UseWindowsForms>
-    <PlatformTarget>x64</PlatformTarget>
-    <UseWpf>true</UseWpf>
     <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
     <RootNamespace>SilverDasher</RootNamespace>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Microsoft.Toolkit.Uwp.Notifications" Version="7.1.3"/>
-    <PackageReference Include="MQTTnet" Version="4.3.7.1207"/>
+    <PackageReference Include="MQTTnet" Version="5.1.0.1559"/>
     <Reference Include="FFXIV_ACT_Plugin.Common">
       <HintPath>..\..\external_dependencies\SDK\FFXIV_ACT_Plugin.Common.dll</HintPath>
       <Private>False</Private>
@@ -33,8 +29,11 @@
       <HintPath>$(DalamudLibPath)Dalamud.dll</HintPath>
       <Private>false</Private>
     </Reference>
-    <ProjectReference Include="..\..\machina\Machina.FFXIV\Machina.FFXIV.csproj" />
+    <Reference Include="Dalamud.Bindings.ImGui">
+      <HintPath>$(DalamudLibPath)Dalamud.Bindings.ImGui.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <ProjectReference Include="..\..\machina\Machina.FFXIV\Machina.FFXIV.csproj"/>
     <ProjectReference Include="..\..\NotACT\NotACT.csproj"/>
-    <ProjectReference Include="..\Zodiark\Zodiark.csproj"/>
   </ItemGroup>
 </Project>

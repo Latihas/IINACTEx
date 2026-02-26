@@ -33,7 +33,7 @@ public static partial class ActGlobals {
 
     internal static object ActionDataLock;
 
-    internal static ActLocalization.LocalizationStringsHelper Trans => _trans!;
+    public static ActLocalization.LocalizationStringsHelper Trans => _trans!;
 
     public static void Init() {
         _trans = new ActLocalization.LocalizationStringsHelper();

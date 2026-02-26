@@ -7,16 +7,20 @@ using RainbowMage.OverlayPlugin.WebSocket;
 
 namespace IINACT.Latihas.Overlay;
 
-public class OverlayWindow() : Window("IINACTEx Overlay###IINACTEx Overlay"), IDisposable {
-    private const ImGuiTableFlags ImGuiTableFlag = ImGuiTableFlags.Borders | ImGuiTableFlags.Resizable | ImGuiTableFlags.RowBg;
+public partial class OverlayWindow() : Window("IINACTEx Overlay###IINACTEx Overlay"), IDisposable {
     private WebSocketClient? webSocketClient;
     private CombatDataWrapper? currentCombatData;
     private readonly List<HistoricalCombatData> historicalRecords = [];
-    private HistoricalCombatData? selectedHistoricalRecord;
     private bool isActive;
-    public void Dispose() => webSocketClient?.Dispose();
 
-    public void Parse(string data) {
+    public void Dispose() {
+        webSocketClient?.Dispose();
+        lock (_textureLock) {
+            _currentTexture?.Dispose();
+        }
+    }
+
+    private void Parse(string data) {
         if (webSocketClient is not { Ready: true }) return;
         try {
             var x = JsonConvert.DeserializeObject<CombatDataWrapper>(data);
@@ -54,9 +58,7 @@ public class OverlayWindow() : Window("IINACTEx Overlay###IINACTEx Overlay"), ID
         var record = new HistoricalCombatData {
             RawStr = str,
             ZoneName = encounter.CurrentZoneName,
-            Duration = encounter.duration,
-            EncounterData = encounter,
-            CombatantData = new Dictionary<string, Combatant>(combatData.Msg.Combatant)
+            Duration = encounter.duration
         };
         historicalRecords.Add(record);
         Plugin.Log.Info($"记录战斗结束: {record.ZoneName}，时长: {record.Duration}");
@@ -87,88 +89,36 @@ public class OverlayWindow() : Window("IINACTEx Overlay###IINACTEx Overlay"), ID
                 if (dmg)
                     DrawCatDetails("DMG", c => new Cat(c.name, c.Job, c.damagetaken));
             }
-            using (var historyTab = ImRaii.TabItem("历史记录")) {
-                if (historyTab)
-                    DrawHistoricalRecords();
-            }
             using (var comb = ImRaii.TabItem("战斗概览")) {
                 if (comb) {
                     DrawEncounterOverview(currentCombatData);
                     DrawCombatantDetails(currentCombatData);
                 }
             }
-        }
-    }
-
-    private void DrawHistoricalRecords() {
-        using var split = ImRaii.Table("HistorySplit", 2, ImGuiTableFlag);
-        if (split) {
-            ImGui.TableSetupColumn("历史记录列表", ImGuiTableColumnFlags.WidthStretch, 0.3f);
-            ImGui.TableSetupColumn("详情", ImGuiTableColumnFlags.WidthStretch, 0.6f);
-            ImGui.TableNextRow();
-            ImGui.TableSetColumnIndex(0);
-            using (var listChild = ImRaii.Child("HistoryList", new Vector2(0, 0), true)) {
-                if (listChild) {
-                    if (ImGui.Button("清空历史记录")) {
-                        historicalRecords.Clear();
-                        selectedHistoricalRecord = null;
-                    }
-
-                    ImGui.Separator();
-                    if (historicalRecords.Count == 0) {
-                        ImGui.Text("暂无历史记录");
-                    }
-                    else {
-                        foreach (var record in historicalRecords) {
-                            var isSelected = selectedHistoricalRecord?.RawStr == record.RawStr;
-                            var displayText = $"{record.Timestamp:yyyy-MM-dd HH:mm} | {record.ZoneName} ({record.Duration})";
-                            if (ImGui.Selectable(displayText, isSelected)) {
-                                selectedHistoricalRecord = record;
-                            }
-                        }
-                    }
-                }
-            }
-
-
-            ImGui.TableSetColumnIndex(1);
-            using (var detailChild = ImRaii.Child("HistoryDetail", new Vector2(0, 0))) {
-                if (detailChild) {
-                    if (selectedHistoricalRecord == null) {
-                        ImGui.Text("请选择一条历史记录查看详情");
-                        return;
-                    }
-                    var data = new CombatDataWrapper {
-                        Msg = new CombatData {
-                            Encounter = selectedHistoricalRecord.EncounterData,
-                            Combatant = selectedHistoricalRecord.CombatantData
-                        }
-                    };
-                    DrawEncounterOverview(data);
-                    DrawCombatantDetails(data);
-                }
+            using (var hist = ImRaii.TabItem("历史记录")) {
+                if (hist)
+                    DrawACTStatics();
             }
         }
     }
 
-    private void DrawEncounterOverview(CombatDataWrapper combatData) {
+    private static void DrawEncounterOverview(CombatDataWrapper? combatData) {
         if (combatData?.Msg.Encounter == null) return;
         var encounter = combatData.Msg.Encounter;
         ImGui.Text($"区域: {encounter.CurrentZoneName}");
         ImGui.Text($"战斗时长: {encounter.duration}");
         ImGui.Separator();
         using var table = ImRaii.Table("EncounterStats", 2);
-        if (table) {
-            foreach (var data in new[] {
-                         ("总伤害", encounter.damage_star), ("DPS", encounter.ENCDPS), ("命中/失误", $"{encounter.hits}/{encounter.hitfailed}"), ("暴击次数", $"{encounter.crithits} ({encounter.crithit_percent})"),
-                         ("最大伤害", $"{encounter.maxhit_star} ({encounter.MAXHIT_star})"), ("承伤", encounter.damagetaken_star)
-                     }) {
-                ImGui.TableNextRow();
-                ImGui.TableSetColumnIndex(0);
-                ImGui.Text(data.Item1);
-                ImGui.TableSetColumnIndex(1);
-                ImGui.Text(data.Item2);
-            }
+        if (!table) return;
+        foreach (var data in new[] {
+                     ("总伤害", encounter.damage_star), ("DPS", encounter.ENCDPS), ("命中/失误", $"{encounter.hits}/{encounter.hitfailed}"), ("暴击次数", $"{encounter.crithits} ({encounter.crithit_percent})"),
+                     ("最大伤害", $"{encounter.maxhit_star} ({encounter.MAXHIT_star})"), ("承伤", encounter.damagetaken_star)
+                 }) {
+            ImGui.TableNextRow();
+            ImGui.TableSetColumnIndex(0);
+            ImGui.Text(data.Item1);
+            ImGui.TableSetColumnIndex(1);
+            ImGui.Text(data.Item2);
         }
     }
 
@@ -197,7 +147,6 @@ public class OverlayWindow() : Window("IINACTEx Overlay###IINACTEx Overlay"), ID
             ImGui.TableHeadersRow();
             var maxDps = combatantList.Max(Catval);
             var totalDps = combatantList.Sum(Catval);
-            ;
             foreach (var combatant in combatantList) {
                 ImGui.TableNextRow();
                 ImGui.TableSetColumnIndex(0);
@@ -229,98 +178,86 @@ public class OverlayWindow() : Window("IINACTEx Overlay###IINACTEx Overlay"), ID
         return ImGui.GetColorU32(new Vector4(r / 255f, g / 255f, b / 255f, .7f));
     }
 
-    private static void DrawCombatantDetails(CombatDataWrapper combatData) {
+    private static void DrawCombatantDetails(CombatDataWrapper? combatData) {
         if (combatData?.Msg.Combatant == null) return;
-        foreach (var combatant in combatData.Msg.Combatant) {
-            var combatantData = combatant.Value;
-            if (ImGui.CollapsingHeader($"{combatantData.name} ({combatantData.Job})")) {
-                ImGui.BeginTable("DamageStats", 2);
+        foreach (var combatantData in combatData.Msg.Combatant.Select(combatant => combatant.Value).Where(combatantData => ImGui.CollapsingHeader($"{combatantData.name} ({combatantData.Job})"))) {
+            ImGui.BeginTable("DamageStats", 2);
+            ImGui.TableNextRow();
+            ImGui.TableSetColumnIndex(0);
+            ImGui.Text("伤害占比:");
+            ImGui.TableSetColumnIndex(1);
+            ImGui.Text($"{combatantData.damage_percent}");
+            ImGui.TableNextRow();
+            ImGui.TableSetColumnIndex(0);
+            ImGui.Text("总伤害:");
+            ImGui.TableSetColumnIndex(1);
+            ImGui.Text($"{combatantData.damage_star}");
+            ImGui.TableNextRow();
+            ImGui.TableSetColumnIndex(0);
+            ImGui.Text("DPS:");
+            ImGui.TableSetColumnIndex(1);
+            ImGui.Text($"{combatantData.ENCDPS}");
 
-                ImGui.TableNextRow();
-                ImGui.TableSetColumnIndex(0);
-                ImGui.Text("伤害占比:");
-                ImGui.TableSetColumnIndex(1);
-                ImGui.Text($"{combatantData.damage_percent}");
+            ImGui.TableNextRow();
+            ImGui.TableSetColumnIndex(0);
+            ImGui.Text("最大伤害技能:");
+            ImGui.TableSetColumnIndex(1);
+            ImGui.Text($"{combatantData.maxhit_star}");
 
-                ImGui.TableNextRow();
-                ImGui.TableSetColumnIndex(0);
-                ImGui.Text("总伤害:");
-                ImGui.TableSetColumnIndex(1);
-                ImGui.Text($"{combatantData.damage_star}");
+            ImGui.EndTable();
 
-                ImGui.TableNextRow();
-                ImGui.TableSetColumnIndex(0);
-                ImGui.Text("DPS:");
-                ImGui.TableSetColumnIndex(1);
-                ImGui.Text($"{combatantData.ENCDPS}");
+            ImGui.BeginTable("HitStats", 2);
 
-                ImGui.TableNextRow();
-                ImGui.TableSetColumnIndex(0);
-                ImGui.Text("最大伤害技能:");
-                ImGui.TableSetColumnIndex(1);
-                ImGui.Text($"{combatantData.maxhit_star}");
+            ImGui.TableNextRow();
+            ImGui.TableSetColumnIndex(0);
+            ImGui.Text("命中次数:");
+            ImGui.TableSetColumnIndex(1);
+            ImGui.Text($"{combatantData.hits}");
 
-                ImGui.EndTable();
+            ImGui.TableNextRow();
+            ImGui.TableSetColumnIndex(0);
+            ImGui.Text("暴击次数:");
+            ImGui.TableSetColumnIndex(1);
+            ImGui.Text($"{combatantData.crithits}");
 
-                ImGui.BeginTable("HitStats", 2);
+            ImGui.TableNextRow();
+            ImGui.TableSetColumnIndex(0);
+            ImGui.Text("命中率:");
+            ImGui.TableSetColumnIndex(1);
+            ImGui.Text($"{combatantData.tohit}%");
 
-                ImGui.TableNextRow();
-                ImGui.TableSetColumnIndex(0);
-                ImGui.Text("命中次数:");
-                ImGui.TableSetColumnIndex(1);
-                ImGui.Text($"{combatantData.hits}");
+            ImGui.EndTable();
 
-                ImGui.TableNextRow();
-                ImGui.TableSetColumnIndex(0);
-                ImGui.Text("暴击次数:");
-                ImGui.TableSetColumnIndex(1);
-                ImGui.Text($"{combatantData.crithits}");
+            ImGui.BeginTable("SurvivalStats", 2);
 
-                ImGui.TableNextRow();
-                ImGui.TableSetColumnIndex(0);
-                ImGui.Text("命中率:");
-                ImGui.TableSetColumnIndex(1);
-                ImGui.Text($"{combatantData.tohit}%");
+            ImGui.TableNextRow();
+            ImGui.TableSetColumnIndex(0);
+            ImGui.Text("承受伤害:");
+            ImGui.TableSetColumnIndex(1);
+            ImGui.Text($"{combatantData.damagetaken_star}");
 
-                ImGui.EndTable();
+            ImGui.TableNextRow();
+            ImGui.TableSetColumnIndex(0);
+            ImGui.Text("格挡率:");
+            ImGui.TableSetColumnIndex(1);
+            ImGui.Text($"{combatantData.BlockPct}");
 
-                ImGui.BeginTable("SurvivalStats", 2);
+            ImGui.TableNextRow();
+            ImGui.TableSetColumnIndex(0);
+            ImGui.Text("招架率:");
+            ImGui.TableSetColumnIndex(1);
+            ImGui.Text($"{combatantData.ParryPct}");
 
-                ImGui.TableNextRow();
-                ImGui.TableSetColumnIndex(0);
-                ImGui.Text("承受伤害:");
-                ImGui.TableSetColumnIndex(1);
-                ImGui.Text($"{combatantData.damagetaken_star}");
-
-                ImGui.TableNextRow();
-                ImGui.TableSetColumnIndex(0);
-                ImGui.Text("格挡率:");
-                ImGui.TableSetColumnIndex(1);
-                ImGui.Text($"{combatantData.BlockPct}");
-
-                ImGui.TableNextRow();
-                ImGui.TableSetColumnIndex(0);
-                ImGui.Text("招架率:");
-                ImGui.TableSetColumnIndex(1);
-                ImGui.Text($"{combatantData.ParryPct}");
-
-                ImGui.EndTable();
-            }
+            ImGui.EndTable();
         }
     }
 
     public class HistoricalCombatData {
-        public string RawStr { get; set; } = null!;
+        public string RawStr { get; init; } = null!;
 
-        public DateTime Timestamp { get; set; } = DateTime.Now;
+        public string ZoneName { get; init; } = string.Empty;
 
-        public string ZoneName { get; set; } = string.Empty;
-
-        public string Duration { get; set; } = string.Empty;
-
-        public Encounter EncounterData { get; set; }
-
-        public Dictionary<string, Combatant> CombatantData { get; set; }
+        public string Duration { get; init; } = string.Empty;
     }
 
     public record Cat(

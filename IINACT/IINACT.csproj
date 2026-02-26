@@ -42,6 +42,10 @@
       <HintPath>$(DalamudLibPath)Dalamud.Bindings.ImGui.dll</HintPath>
       <Private>false</Private>
     </Reference>
+    <Reference Include="Dalamud.Bindings.ImPlot">
+      <HintPath>$(DalamudLibPath)Dalamud.Bindings.ImPlot.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
     <Reference Include="ImGuiScene">
       <HintPath>$(DalamudLibPath)ImGuiScene.dll</HintPath>
       <Private>false</Private>
@@ -65,7 +69,6 @@
     <ProjectReference Include="../Triggernometry/Source/Triggernometry/TriggernometryPlugin.csproj"/>
     <ProjectReference Include="../PostNamazu/PostNamazu/PostNamazu.csproj"/>
     <ProjectReference Include="../SilverDasher/SilverDasher/SilverDasher.csproj"/>
-    <ProjectReference Include="../SilverDasher/Zodiark/Zodiark.csproj"/>
     <ProjectReference Include="../Unscrambler/Unscrambler/Unscrambler.csproj"/>
     <!--    <PackageReference Include="Unscrambler.XIV.CN" Version="7.41.1" />-->
   </ItemGroup>

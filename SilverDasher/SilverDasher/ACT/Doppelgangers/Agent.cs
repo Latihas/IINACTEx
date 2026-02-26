@@ -56,7 +56,7 @@ internal class Agent(SilverDasher plugin) : Doppelganger(plugin) {
         }
         if (flag) {
             Log("检测到狩猎/FATE列表有更新，重绘界面树。");
-            Painter.pluginControl.Dispatcher.Invoke(Painter.RepaintNodes);
+            Painter.RepaintNodes();
         }
     }
 

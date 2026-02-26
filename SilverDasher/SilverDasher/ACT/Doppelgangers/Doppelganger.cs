@@ -2,7 +2,7 @@ using System;
 
 namespace SilverDasher.ACT.Doppelgangers;
 
-internal abstract class Doppelganger(SilverDasher self) {
+public abstract class Doppelganger(SilverDasher self) {
     internal readonly SilverDasher Self = self;
 
     internal Messager Messager => Self.Messager;

@@ -1,7 +1,7 @@
 using System;
-using Windows.UI.Notifications;
+using System.Runtime.InteropServices;
 using Advanced_Combat_Tracker;
-using Microsoft.Toolkit.Uwp.Notifications;
+using Dalamud.Interface.ImGuiNotification;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using SilverDasher.ACT.Models;
@@ -10,8 +10,6 @@ using SilverDasher.ACT.Storages;
 namespace SilverDasher.ACT.Doppelgangers;
 
 internal class Notifier(SilverDasher self) : Doppelganger(self) {
-    private bool ToastFailed;
-
     private readonly JsonSerializerSettings unpackSettings = new() {
         NullValueHandling = NullValueHandling.Ignore,
         ContractResolver = StrNullToEmptyContractResolver.DefaultInstance
@@ -146,48 +144,29 @@ internal class Notifier(SilverDasher self) : Doppelganger(self) {
         ActGlobals.oFormActMain.TTS(message + MobStorage.GetStateName(status));
     }
 
+    [DllImport("winmm.dll", SetLastError = true, CharSet = CharSet.Auto)]
+    private static extern bool PlaySound(string pszSound, IntPtr hmod, uint fdwSound);
+
+    private const uint SND_ALIAS = 0x00010000;
+    private const uint SND_ASYNC = 0x0001;
+    private const uint SND_NODEFAULT = 0x0002;
+
     private void SendToast(string message, HuntState status, string coord = "", bool checkPermit = true) {
         lock (this) {
             if (checkPermit && (!Keeper.Config.SystemToast || !Keeper.Config.StatusPushable("Toast", status))) return;
+            SilverDasher.NotificationManager.AddNotification(new Notification {
+                Content = message,
+                Title = coord + MobStorage.GetStateName(status)
+            });
             try {
-                if ("Legacy" == Keeper.Config.ToastType || ToastFailed) {
-                    if (Environment.OSVersion.Version.CompareTo(new Version("6.2")) >= 0) {
-                        var templateContent = ToastNotificationManager.GetTemplateContent(ToastTemplateType.ToastText02);
-                        var elementsByTagName = templateContent.GetElementsByTagName("text");
-                        string[] array = [message, coord + MobStorage.GetStateName(status)];
-                        for (var i = 0; i < elementsByTagName.Length; i++)
-                            if (i < array.Length)
-                                elementsByTagName[i].AppendChild(templateContent.CreateTextNode(array[i]));
-                        ToastNotificationManager.CreateToastNotifier("Advanced Combat Tracker").Show(new ToastNotification(templateContent));
-                    }
-                    else Log("您的系统不受支持。");
-                }
-                else if ("UWP" == Keeper.Config.ToastType) new ToastContentBuilder().AddText(message).AddText(coord + MobStorage.GetStateName(status)).Show();
+                PlaySound("Notification.Default", IntPtr.Zero, SND_ALIAS | SND_ASYNC | SND_NODEFAULT);
             }
-            catch (Exception ex) {
-                Log($"Failed to push toast message {message}.");
-                if (ToastFailed && checkPermit) return;
-                ToastFailed = true;
-                // Utils.ShowMessageBox("推送通知消息失败。您可尝试在设置中修改通知消息推送类型来尝试解决该问题。");
+            catch {
+                //
             }
         }
     }
-
-    // public void SendToast(string message) => SendToast(message, HuntState.Unknown);
 
     public static void TestTTS() => ActGlobals.oFormActMain.TTS("亚以太利斯 - 艾欧泽亚 - 光之战士 (1.0，1.0) 健康");
-
-
-    public void TestToast() {
-        try {
-            SendToast("亚以太利斯 - 艾欧泽亚 - 光之战士", HuntState.Healthy, "(1.0，1.0)", false);
-        }
-        catch (Exception ex) {
-            Log(ex.ToString());
-            Log(ex.Message);
-            Log("Failed to push test toast message.");
-            Log("推送测试消息失败。");
-            Utils.ShowMessageBox("推送测试消息失败。");
-        }
-    }
+    public void TestToast() => SendToast("亚以太利斯 - 艾欧泽亚 - 光之战士", HuntState.Healthy, "(1.0，1.0)", false);
 }

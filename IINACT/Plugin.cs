@@ -5,6 +5,7 @@ using System.Net.Http;
 using System.Reflection;
 using System.Runtime.Loader;
 using Advanced_Combat_Tracker;
+using Dalamud.Bindings.ImGui;
 using Dalamud.Game;
 using Dalamud.Game.Command;
 using Dalamud.Interface.ImGuiFileDialog;
@@ -55,8 +56,12 @@ public sealed class Plugin : IDalamudPlugin {
     [PluginService] public static ITargetManager TargetManager { get; private set; }
     [PluginService] public static IObjectTable ObjectTable { get; private set; }
     [PluginService] public static IGameGui GameGui { get; private set; }
+    [PluginService] public static ITextureProvider TextureProvider { get; private set; }
     public static Configuration Configuration { get; private set; }
+#pragma warning disable CA1822
+    // ReSharper disable once UnusedMember.Global
     public Configuration ConfigurationInstance => Configuration;
+#pragma warning restore CA1822
     internal static TextToSpeechProvider TextToSpeechProvider { get; private set; }
     private static MainWindow MainWindow = null!;
     internal static FileDialogManager FileDialogManager { get; private set; }
@@ -81,6 +86,7 @@ public sealed class Plugin : IDalamudPlugin {
     public readonly TriggernometryLogView TriggernometryLogView;
     public readonly ACTLogView ACTLogView;
     public readonly OverlayWindow OverlayWindow;
+    // public readonly ACTStatics ActStatics;
     private static DateTime lastLogTick = DateTime.Now;
     private readonly DateTime startLogTick = DateTime.Now;
     internal static EdgeTTSWindow EdgeTTSWindow = null!;
@@ -173,6 +179,7 @@ public sealed class Plugin : IDalamudPlugin {
         WindowSystem.AddWindow(RepoWindow = new RepoWindow());
         WindowSystem.AddWindow(TriggernometryLogView = new TriggernometryLogView());
         WindowSystem.AddWindow(ACTLogView = new ACTLogView());
+        // WindowSystem.AddWindow(ActStatics = new ACTStatics());
         IpcProviders = new IpcProviders(PluginInterface);
         Container = new TinyIoCContainer();
         var logger = new Logger(Log);
@@ -322,6 +329,7 @@ public sealed class Plugin : IDalamudPlugin {
             Log.Warning($"ActScript {name} 载入失败: {ex}");
         }
     }
+    public const ImGuiTableFlags ImGuiTableFlag = ImGuiTableFlags.Borders | ImGuiTableFlags.Resizable | ImGuiTableFlags.RowBg;
 
     public const BindingFlags AllFlags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static;
 
@@ -335,6 +343,7 @@ public sealed class Plugin : IDalamudPlugin {
         // Trace.Listeners.Remove(PluginLogTraceListener);
         WindowSystem.RemoveAllWindows();
         OverlayWindow.Dispose();
+        MainWindow. SilverDasherPlugin?.DeInitPlugin();
         CommandManager.RemoveHandler(MainWindowCommandName);
         CommandManager.RemoveHandler(EndEncCommandName);
         CommandManager.RemoveHandler(OverlayCommandName);
@@ -342,8 +351,8 @@ public sealed class Plugin : IDalamudPlugin {
         while (oFormActMain.ActPlugins.Count > 0)
             DeInitIActPluginV1(oFormActMain.ActPlugins.Last(), true);
         FfxivActPluginWrapper.Dispose();
-        MainWindow.tpmain?.Close();
         ActGlobals.Dispose();
+       // MainWindow. TpMain?.Close();
     }
 
     internal void RefreshBw() {

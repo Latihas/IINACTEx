@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using SilverDasher.ACT.Doppelgangers;
+using Dalamud.Bindings.ImGui;
 using SilverDasher.ACT.Models;
 using SilverDasher.ACT.Storages;
 using SilverDasher.ACT.Views;
@@ -22,16 +22,10 @@ public class PluginViewModel : UIBinded {
 
     private readonly Dictionary<int, List<CheckTreeNode>> FateNodesById = new();
 
-
-#pragma warning disable CA1822
-    // ReSharper disable once MemberCanBeMadeStatic.Global
-    public Config Config => Keeper.Config;
-#pragma warning restore CA1822
-
-    public ObservableCollection<CheckTreeNode> HuntRoot
+    private ObservableCollection<CheckTreeNode> HuntRoot
     {
         get => huntRoot.Nodes;
-        private init
+        init
         {
             huntRoot = new CheckTreeNode("全部狩猎", "hunt-all") {
                 Nodes = value
@@ -40,10 +34,10 @@ public class PluginViewModel : UIBinded {
         }
     }
 
-    public ObservableCollection<CheckTreeNode> FateRoot
+    private ObservableCollection<CheckTreeNode> FateRoot
     {
         get => fateRoot.Nodes;
-        private init
+        init
         {
             fateRoot = new CheckTreeNode("全部Fate", "fate-all") {
                 Nodes = value
@@ -95,8 +89,6 @@ public class PluginViewModel : UIBinded {
     public void SetupHuntMobs(Dictionary<int, HuntMob> huntEntries, List<ItemGroup> huntGroupsTree, List<int> subs) {
         CheckTreeNode.BUILDING = true;
         List<CheckTreeNode> list = [];
-        // new List<CheckTreeNode>();
-        // new List<CheckTreeNode>();
         if (!HuntNodeIndex.TryGetValue("hunt-all-0", out var value)) {
             value = new CheckTreeNode("全部狩猎", "hunt-all-0");
             HuntNodeIndex["hunt-all-0"] = value;
@@ -183,5 +175,14 @@ public class PluginViewModel : UIBinded {
         foreach (var item2 in list2) item2.ValidateStatus();
         foreach (var item3 in list) item3.ValidateStatus();
         foreach (var node in value2.Nodes) node.ValidateStatus();
+    }
+
+    public void DrawImGui() {
+        if (ImGui.CollapsingHeader("狩猎订阅"))
+            foreach (var node in HuntRoot)
+                node.DrawImGui();
+        if (ImGui.CollapsingHeader("Fate订阅"))
+            foreach (var node in FateRoot)
+                node.DrawImGui();
     }
 }

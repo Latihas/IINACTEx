@@ -215,6 +215,12 @@ public static partial class LWindow {
             Plugin.Configuration.AsyncOnInit = AsyncOnInit;
             Plugin.Configuration.Save();
         }
+        ImGui.Separator();
+        var endEncounterOutOfCombatDelayMs = Plugin.Configuration.endEncounterOutOfCombatDelayMs;
+        if (ImGui.InputInt("脱战(ms)后分割战斗", ref endEncounterOutOfCombatDelayMs)) {
+            Plugin.Configuration.Save();
+            Plugin.Configuration.endEncounterOutOfCombatDelayMs = endEncounterOutOfCombatDelayMs;
+        }
     }
 
     private static void DrawSettingsTrn() {
@@ -334,7 +340,7 @@ public static partial class LWindow {
     private static void DrawSettingsOpCodes() {
         using var tab = ImRaii.TabItem("OpCodes设置");
         if (!tab) return;
-        ImGui.PushStyleColor(ImGuiCol.Text, Color.LRed);
+        ImGui.PushStyleColor(ImGuiCol.Text, ColorX.LRed);
         ImGui.Text("警告: 该功能十分甚至九分危险，如果你不知道你在干什么请不要擅动。该功能未经充分验证。");
         ImGui.PopStyleColor(1);
         ImGui.Text("IINACTEx支持外部文件替换Opcode。");
@@ -342,11 +348,11 @@ public static partial class LWindow {
         ImGui.Text("opcodes.txt支持从Karashiiro的在线库获取扩展包，其包含未在ACT解析插件内的数值，可以作为Unscrambler解析插件在版本初期的替代。");
         ImGui.Text("在插件安装目录下如果存在opcodes.jsonc，则会在加载插件的时候替换掉Overlay插件的OpCode。");
         ImGui.Separator();
-        ImGui.PushStyleColor(ImGuiCol.Text, Color.LPurple);
+        ImGui.PushStyleColor(ImGuiCol.Text, ColorX.LPurple);
         ImGui.Text("当前状态:");
         ImGui.PopStyleColor(1);
         if (Plugin.Instance.opcodestxtReplaced) {
-            ImGui.PushStyleColor(ImGuiCol.Text, Color.LRed);
+            ImGui.PushStyleColor(ImGuiCol.Text, ColorX.LRed);
             ImGui.Text("opcodes.txt已替换");
             ImGui.PopStyleColor(1);
             ImGui.SameLine();
@@ -356,7 +362,7 @@ public static partial class LWindow {
             else ImGui.Text("(文件缺失，将在下次加载恢复内置)");
         }
         else if (Plugin.Instance.opcodestxtCanReplace) {
-            ImGui.PushStyleColor(ImGuiCol.Text, Color.LYellow);
+            ImGui.PushStyleColor(ImGuiCol.Text, ColorX.LYellow);
             ImGui.Text("opcodes.txt将在下次加载插件时替换");
             ImGui.PopStyleColor(1);
             ImGui.SameLine();
@@ -364,7 +370,7 @@ public static partial class LWindow {
         }
         else ImGui.Text("opcodes.txt为内置版本");
         if (Plugin.Instance.opcodesjsoncReplaced) {
-            ImGui.PushStyleColor(ImGuiCol.Text, Color.LRed);
+            ImGui.PushStyleColor(ImGuiCol.Text, ColorX.LRed);
             ImGui.Text("opcodes.jsonc已替换");
             ImGui.PopStyleColor(1);
             ImGui.SameLine();
@@ -374,7 +380,7 @@ public static partial class LWindow {
             else ImGui.Text("(文件缺失，将在下次加载恢复内置)");
         }
         else if (Plugin.Instance.opcodesjsoncCanReplace) {
-            ImGui.PushStyleColor(ImGuiCol.Text, Color.LYellow);
+            ImGui.PushStyleColor(ImGuiCol.Text, ColorX.LYellow);
             ImGui.Text("opcodes.jsonc将在下次加载插件时替换");
             ImGui.PopStyleColor(1);
             ImGui.SameLine();
@@ -636,7 +642,7 @@ public static partial class LWindow {
 
     private static void NewTable<T>(string[] header, T[]? data, Action<T>[] acts, Func<T, Vector4>? setColor = null) {
         if (data is null || data.Length == 0) return;
-        if (ImGui.BeginTable("Table", acts.Length, ImGuiTableFlag)) {
+        if (ImGui.BeginTable("Table", acts.Length, Plugin.ImGuiTableFlag)) {
             foreach (var item in header) ImGui.TableSetupColumn(item, ImGuiTableColumnFlags.WidthStretch);
             ImGui.TableHeadersRow();
             foreach (var res in data) {
@@ -657,5 +663,4 @@ public static partial class LWindow {
     }
 
 
-    private const ImGuiTableFlags ImGuiTableFlag = ImGuiTableFlags.Borders | ImGuiTableFlags.Resizable | ImGuiTableFlags.RowBg;
-}
+    }

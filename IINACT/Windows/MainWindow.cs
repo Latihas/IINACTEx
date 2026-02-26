@@ -41,10 +41,11 @@ public class MainWindow : Window {
         DrawParseSettings();
         LWindow.DrawTriggerSettings();
         DrawSettingsPostnamazu();
+        // DrawWinForm();
         DrawSilverDasher();
         LWindow.DrawSettingsScripts();
-        LWindow.DrawTriggerDebug();
         LWindow.DrawSettings();
+        LWindow.DrawTriggerDebug();
     }
 
     private static void DrawSettingsPostnamazu() {
@@ -60,12 +61,11 @@ public class MainWindow : Window {
         if (Plugin.Instance.PostNamazuPlugin.PluginUi.ButtonStop.Enabled)
             if (ImGui.Button("鲇鱼精停止监听"))
                 Plugin.Instance.PostNamazuPlugin.ServerStop();
-        ImGui.SameLine();
-        if (ImGui.Button("清空")) Plugin.Instance.PostNamazuPlugin.PluginUi.lstMessages.Items.Clear();
         var PostNamazuAutoStart = Plugin.Instance.PostNamazuPlugin.PluginUi.CheckAutoStart.Checked;
         if (ImGui.Checkbox("鲇鱼精监听自动启动", ref PostNamazuAutoStart))
             Plugin.Instance.PostNamazuPlugin.PluginUi.CheckAutoStart.Checked = PostNamazuAutoStart;
         ImGui.Text("启用功能");
+        ImGui.SameLine();
         var iter = 1;
         foreach (var c in Plugin.Instance.PostNamazuPlugin.PluginUi.flowLayoutActions.Controls.OfType<CheckBox>()) {
             var cChecked = c.Checked;
@@ -76,6 +76,7 @@ public class MainWindow : Window {
             if (iter++ != Plugin.Instance.PostNamazuPlugin.PluginUi.flowLayoutActions.Controls.Count) ImGui.SameLine();
         }
         ImGui.Separator();
+        if (ImGui.Button("清空日志")) Plugin.Instance.PostNamazuPlugin.PluginUi.lstMessages.Items.Clear();
         var items = Plugin.Instance.PostNamazuPlugin.PluginUi.lstMessages.Items;
         for (var i = 0; i < items.Count; i++) {
             var item = items[i];
@@ -90,36 +91,44 @@ public class MainWindow : Window {
     }
 
     internal static void EnableSilverDasher() {
-        Plugin.InitIActPluginV1(new ActPluginData("SilverDasher.dll", new SilverDasher.ACT.SilverDasher(Plugin.Instance.PluginActScriptDirectory, Plugin.ClientState,Plugin.ObjectTable, Plugin.Framework), false));
+        SilverDasherPlugin = new SilverDasher.ACT.SilverDasher(Plugin.Instance.PluginActScriptDirectory,
+            Plugin.ClientState, Plugin.ObjectTable, Plugin.Framework, Plugin.NotificationManager);
     }
 
+    // private static void DrawWinForm() {
+    //     using var tab = ImRaii.TabItem("怀旧组件");
+    //     if (!tab) return;
+    // }
+
+    internal static SilverDasher.ACT.SilverDasher? SilverDasherPlugin;
+
     private static void DrawSilverDasher() {
-        using var tab = ImRaii.TabItem("怀旧组件");
+        using var tab = ImRaii.TabItem("SilverDasher");
         if (!tab) return;
-        ImGui.Text("本页面为WinForm外挂尿袋，在将来或许会迁移到ImGui，但现在先这么用吧");
-        ImGui.Separator();
-        ImGui.Text("银山雀儿(SilverDasher)");
-        if (ActGlobals.oFormActMain.ActPlugins.All(actPlugin => actPlugin.pluginFile.Name != "SilverDasher.dll")) {
+        if (SilverDasherPlugin == null) {
             if (ImGui.Button("启用")) EnableSilverDasher();
         }
         else {
-            if (ImGui.Button("禁用"))
-                Plugin.DeInitIActPluginV1(ActGlobals.oFormActMain.ActPlugins.First(x => x.pluginFile.Name == "SilverDasher.dll"));
+            if (ImGui.Button("禁用")) {
+                SilverDasherPlugin.DeInitPlugin();
+                SilverDasherPlugin = null;
+            }
         }
+        ImGui.SameLine();
+        ImGui.Text("银山雀儿");
+        ImGui.SameLine();
         var LoadSilverDasherOnInit = Plugin.Configuration.LoadSilverDasherOnInit;
         if (ImGui.Checkbox("启动时加载", ref LoadSilverDasherOnInit)) {
             Plugin.Configuration.LoadSilverDasherOnInit = LoadSilverDasherOnInit;
             Plugin.Configuration.Save();
         }
         ImGui.Separator();
-        ImGui.Text("ACT原版伤害统计");
-        if (ImGui.Button("打开TpMain") && tpmain == null) {
-            tpmain = new TpMain();
-            tpmain.FormClosing += (_, _) => tpmain = null;
-            tpmain.Show();
+        if (SilverDasherPlugin != null) {
+            SilverDasher.ACT.SilverDasher.Instance.Painter.DrawImGui();
         }
     }
-    internal static TpMain? tpmain;
+
+
     private void DrawMainWindow() {
         using var tab = ImRaii.TabItem("运行状态");
         if (!tab) return;

@@ -6,7 +6,7 @@ using Dalamud.Interface.ImGuiNotification;
 using Dalamud.Interface.Windowing;
 using Triggernometry.Core;
 using WebSocketSharp;
-using static IINACT.Latihas.Color;
+using static IINACT.Latihas.ColorX;
 
 namespace IINACT.Latihas;
 

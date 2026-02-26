@@ -1,5 +1,8 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using Dalamud.Bindings.ImGui;
+using SilverDasher.ACT.Doppelgangers;
+using SilverDasher.ACT.Models;
 
 namespace SilverDasher.ACT.Views;
 
@@ -12,33 +15,79 @@ public class CheckTreeNode(string name, string id) : UIBinded {
 
     private bool changing;
 
-    public string Name { get; } = name;
+    private string Name { get; } = name;
 
-    public string ID { get; } = id;
+    private string ID { get; } = id;
 
-    public ObservableCollection<CheckTreeNode> Nodes { get; set; } = [];
+    public ObservableCollection<CheckTreeNode> Nodes { get; init; } = [];
 
-    public bool? ViewChecked
-    {
-        get;
-        set
-        {
-            if (field == value) return;
-            field = value;
-            foreach (var item in Related) {
-                item.ViewChecked = value;
+    public bool? ViewChecked { get; set; } = false;
+
+    public void DrawImGui() {
+        var isChecked = ViewChecked ?? false;
+        var isPartial = ViewChecked is null;
+        ImGui.PushID(ID);
+        if (Nodes.Count > 0) {
+            bool checkboxChanged;
+            if (isPartial) {
+                ImGui.PushStyleColor(ImGuiCol.CheckMark, 0xFF888888);
+                checkboxChanged = ImGui.Checkbox($"##chk_{ID}", ref isChecked);
+                ImGui.PopStyleColor();
             }
-            NotifyPropertyChanged("ViewChecked");
-            if (Nodes is { Count: > 0 } && field.HasValue) {
-                changing = true;
-                foreach (var node in Nodes) {
-                    node.ViewChecked = field;
-                }
-                changing = false;
+            else
+                checkboxChanged = ImGui.Checkbox($"##chk_{ID}", ref isChecked);
+
+            ImGui.SameLine(0, ImGui.GetStyle().ItemInnerSpacing.X);
+            var nodeOpen = ImGui.TreeNodeEx(Name);
+            if (checkboxChanged && !BUILDING) {
+                ViewChecked = isChecked;
+                OnCheckedChanged(isChecked);
             }
-            if (Parent is { changing: false }) Parent.ValidateStatus();
+
+            if (nodeOpen) {
+                foreach (var node in Nodes)
+                    node.DrawImGui();
+                ImGui.TreePop();
+            }
         }
-    } = false;
+        else {
+            if (ImGui.Checkbox(Name, ref isChecked) && !BUILDING) {
+                ViewChecked = isChecked;
+                OnCheckedChanged(isChecked);
+            }
+        }
+        ImGui.PopID();
+    }
+
+    private void OnCheckedChanged(bool isChecked) {
+        ViewChecked = isChecked;
+        foreach (var item in Related) {
+            item.ViewChecked = isChecked;
+        }
+        NotifyPropertyChanged("ViewChecked");
+        if (Nodes is { Count: > 0 }) {
+            changing = true;
+            foreach (var node in Nodes) {
+                node.ViewChecked = isChecked;
+            }
+            changing = false;
+        }
+        try {
+            var paramz = ID.Split('-');
+            var id = int.Parse(paramz[2]);
+            if (paramz[0] == "hunt")
+                if (isChecked) Keeper.Config.HuntSubscriptions.Add(id);
+                else Keeper.Config.HuntSubscriptions.RemoveAll(i => i == id);
+            if (paramz[0] == "fate")
+                if (isChecked) Keeper.Config.FateSubscriptions.Add(id);
+                else Keeper.Config.FateSubscriptions.RemoveAll(i => i == id);
+            Config.Save();
+        }
+        catch {
+            //
+        }
+        if (Parent is { changing: false }) Parent.ValidateStatus();
+    }
 
     internal void Add(CheckTreeNode node) {
         if (Nodes.Contains(node) || Parent == node) return;
@@ -47,13 +96,6 @@ public class CheckTreeNode(string name, string id) : UIBinded {
         if (!BUILDING && Parent != null) Parent.ValidateStatus();
         NotifyPropertyChanged("Nodes");
     }
-
-    // internal void Add(string name, string id, bool c) {
-    //     var node = new CheckTreeNode(name, id) {
-    //         isChecked = c
-    //     };
-    //     Add(node);
-    // }
 
     internal void ValidateStatus() {
         var num = 0;

@@ -32,6 +32,8 @@ public class Configuration : IPluginConfiguration {
     public bool LoadSilverDasherOnInit { get; set; }
     public bool AsyncOnInit { get; set; } = true;
     public float TtsInterval { get; set; } = 1.5f;
+    public float ACTPicInterval { get; set; } =0.5f;
+    public bool UseActPic { get; set; } =true;
     public int endEncounterOutOfCombatDelayMs { get; set; } = 5000;
 
 

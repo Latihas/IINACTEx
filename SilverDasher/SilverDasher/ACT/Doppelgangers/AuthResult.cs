@@ -1,6 +1,6 @@
 namespace SilverDasher.ACT.Doppelgangers;
 
-internal enum AuthResult {
+public enum AuthResult {
     SUCCESS,
     BLOCKED,
     BANNED,
