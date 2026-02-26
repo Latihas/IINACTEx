@@ -2,7 +2,7 @@
 	"Author": "Usagi, Latihas",
 	"Name": "IINACTEx",
 	"Punchline": "我用ACT，我是绿玩。(如果加载失败，再加载一次即可)",
-	"AssemblyVersion": "7.41.1.6",
+	"AssemblyVersion": "7.41.1.7",
 	"RepoUrl": "https://github.com/Latihas/IINACTEx",
 	"Description": "该插件会在一个类ACT的环境下运行FFXIV_ACT_Plugin与大量修改的Overlay Plugin以适配现代.NET。与此同时，也添加了大量修改的Triggernometry与Postnamazu。包括类ACT、Triggernometry、Postnamazu在内，这些并非完整的代码移植，并且仍在开发完善中，可能缺少部分原版的函数，开发时请注意。",
 	"InternalName": "IINACTEx",

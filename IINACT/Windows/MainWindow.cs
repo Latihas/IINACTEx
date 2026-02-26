@@ -2,7 +2,6 @@ using System.IO;
 using System.Net;
 using System.Net.Sockets;
 using System.Numerics;
-using Advanced_Combat_Tracker;
 using Dalamud.Bindings.ImGui;
 using Dalamud.Interface;
 using Dalamud.Interface.Colors;
@@ -106,10 +105,11 @@ public class MainWindow : Window {
 
     internal static void EnableSilverDasher() {
         var targetDir = Path.Combine(Plugin.Instance.PluginActScriptDirectory, "data");
-        if (Directory.Exists(targetDir)) return;
-        var sourceDir = Path.Combine(Plugin.Instance.PluginAssemblyDirectory, "data");
-        Directory.CreateDirectory(targetDir);
-        CopyDirectoryContents(sourceDir, targetDir, overwrite: true);
+        if (!Directory.Exists(targetDir)) {
+            var sourceDir = Path.Combine(Plugin.Instance.PluginAssemblyDirectory, "data");
+            Directory.CreateDirectory(targetDir);
+            CopyDirectoryContents(sourceDir, targetDir, overwrite: true);
+        }
         SilverDasherPlugin = new SilverDasher.ACT.SilverDasher(Plugin.Instance.PluginActScriptDirectory,
             Plugin.ClientState, Plugin.ObjectTable, Plugin.Framework, Plugin.NotificationManager);
     }
