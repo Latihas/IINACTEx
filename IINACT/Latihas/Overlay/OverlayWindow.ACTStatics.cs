@@ -216,7 +216,7 @@ public partial class OverlayWindow {
                 bitmap = GraphDrawMessage(Trans["graphAttackTypes-noDataError"], 12f, bitmap);
                 return bitmap;
             }
-            var num2 = 16f * DpiScale;
+            const float num2 = 16f * DpiScale;
             var rectangleF = new RectangleF(num2 / 4f, num2 / 4f, bitmap.Height - num2 / 2f, bitmap.Height - num2 / 2f);
             graphics.DrawRectangle(pen, rectangleF.X, rectangleF.Y, rectangleF.Width, rectangleF.Height);
             var num3 = -90f;
@@ -235,7 +235,7 @@ public partial class OverlayWindow {
                     graphics.DrawString(strDouble.Name, font, brush2, num4, num5);
                 }
                 try {
-                    var num7 = 26f * DpiScale;
+                    const float num7 = 26f * DpiScale;
                     var num8 = Convert.ToInt32(strDouble.Val * 100.0);
                     graphics.DrawString(num8 + "%", font, brush, num4 - num7 - 1f, num5 + 1f);
                     graphics.DrawString(num8 + "%", font, brush, num4 - num7 + 1f, num5 + 1f);
@@ -307,7 +307,7 @@ public partial class OverlayWindow {
             var graphics = Graphics.FromImage(bitmap);
             graphics.SmoothingMode = SmoothingMode.AntiAlias;
             graphics.Clear(solidBrush.Color);
-            var num = 16f * DpiScale;
+            const float num = 16f * DpiScale;
             var rectangleF = new RectangleF(num / 4f, num / 4f, bitmap.Width - 1 - num * 4f, bitmap.Height - 1 - num * 2f);
             graphics.DrawRectangle(pen, rectangleF.X, rectangleF.Y, rectangleF.Width, rectangleF.Height);
             var bottom = rectangleF.Bottom;
@@ -355,12 +355,11 @@ public partial class OverlayWindow {
                 var masterSwing = list[i];
                 var num8 = num3;
                 var num9 = bottom - (long)masterSwing.Damage * (float)num6;
-                var w = num2;
                 var num10 = (long)masterSwing.Damage * (float)num6;
                 if (i > 0 && masterSwing.Time != list[i - 1].Time)
                     graphics.DrawLine(pen2, num3, rectangleF.Top, num3, rectangleF.Bottom);
-                graphics.FillRectangle(masterSwing.Critical ? dictionary2[masterSwing.SwingType] : dictionary[masterSwing.SwingType], num8, num9, w, num10);
-                graphics.DrawRectangle(pen, num8, num9, w, num10);
+                graphics.FillRectangle(masterSwing.Critical ? dictionary2[masterSwing.SwingType] : dictionary[masterSwing.SwingType], num8, num9, num2, num10);
+                graphics.DrawRectangle(pen, num8, num9, num2, num10);
                 // ttg.Items.Add(new ToolTipRect(-1, $"{masterSwing.Time}\n{masterSwing.Attacker} -> {masterSwing.Victim}\n{masterSwing.AttackType} {(long)masterSwing.Damage:#,0}", num8, rectangleF.Y, w, rectangleF.Height));
                 if (rectangleF.Width / list.Count > 16f * DpiScale) {
                     var s = (long)masterSwing.Damage > 0
@@ -445,10 +444,7 @@ public partial class OverlayWindow {
             var bottom = rectangleF.Bottom;
             var num5 = rectangleF.Left;
             var num6 = 1.0;
-            foreach (var item2 in list3) {
-                if (item2.Val > num6)
-                    num6 = Math.Ceiling(item2.Val);
-            }
+            foreach (var item2 in list3.Where(item2 => item2.Val > num6)) num6 = Math.Ceiling(item2.Val);
             num6 *= 1.1;
             var num7 = rectangleF.Height / num6;
             _ = 1.0 / num7;
@@ -667,11 +663,7 @@ public partial class OverlayWindow {
     private void DrawTreeNodeRecursive(TreeNodeData node) {
         var flags = ImGuiTreeNodeFlags.OpenOnArrow | ImGuiTreeNodeFlags.OpenOnDoubleClick;
         if (node.Children.Count == 0) flags |= ImGuiTreeNodeFlags.Leaf;
-        var textColor = ImGui.GetColorU32(new Vector4(
-            node.ForeColor.R / 255f,
-            node.ForeColor.G / 255f,
-            node.ForeColor.B / 255f,
-            node.ForeColor.A / 255f));
+        var textColor = ColorToImGui(node.ForeColor);
         ImGui.PushStyleColor(ImGuiCol.Text, textColor);
         var expanded = ImGui.TreeNodeEx($"{node.Text}###ACT_{node.Guid}", flags);
         if (ImGui.IsItemClicked()) _currentSelectedNode = node;
@@ -965,7 +957,6 @@ public partial class OverlayWindow {
             Plugin.Log.Error($"Failed to get row data: {ex}");
             row.AddRange(columns.Select(_ => "Error"));
         }
-
         return row;
     }
 
@@ -999,8 +990,7 @@ public partial class OverlayWindow {
             ImageLockMode.ReadOnly,
             PixelFormat.Format32bppArgb);
         try {
-            var totalBytes = bitmapData.Stride * bitmapData.Height;
-            pixelSpan = new ReadOnlySpan<byte>((void*)bitmapData.Scan0, totalBytes);
+            pixelSpan = new ReadOnlySpan<byte>((void*)bitmapData.Scan0, bitmapData.Stride * bitmapData.Height);
         }
         finally {
             bitmap.UnlockBits(bitmapData);
@@ -1008,7 +998,7 @@ public partial class OverlayWindow {
         return Plugin.TextureProvider.CreateFromRaw(RawImageSpecification.Rgba32(bitmap.Width, bitmap.Height), pixelSpan);
     }
 
-    private static uint ColorToImGui(Color color) =>
+    internal static uint ColorToImGui(Color color) =>
         ImGui.GetColorU32(new Vector4(
             color.R / 255f,
             color.G / 255f,
@@ -1018,33 +1008,22 @@ public partial class OverlayWindow {
 
 
     private static Color GetEncounterColor(EncounterData encounter) {
-        return encounter.GetEncounterSuccessLevel() switch {
-            1 => Color.FromArgb(-14513374),
-            2 => Color.FromArgb(-29696),
-            3 => Color.FromArgb(-2354116),
-            _ => Color.FromArgb(-16744193)
-        };
+        try {
+            return encounter.GetEncounterSuccessLevel() switch {
+                1 => Color.FromArgb(-14513374),
+                2 => Color.FromArgb(-29696),
+                3 => Color.FromArgb(-2354116),
+                _ => Color.FromArgb(-16744193)
+            };
+        }
+        catch {
+            return Color.White;
+        }
     }
 
 
-    private Color GetCellColor(int rowIndex, int colIndex) {
-        try {
-            if (rowIndex >= _currentTable.Count)
-                return Color.Transparent;
-
-            switch (_tableType) {
-                case "EL":
-                    return GetEncounterColor((EncounterData)_currentTable[rowIndex]);
-                case "ED":
-                    var combatant = (CombatantData)_currentTable[rowIndex];
-                    return CombatantData.ColumnDefs[GetTableColumns()[colIndex]].GetCellForeColor(combatant);
-                default:
-                    return Color.Transparent;
-            }
-        }
-        catch {
-            return Color.Transparent;
-        }
+    private static Color GetCellColor(int rowIndex, int colIndex) {
+        return colIndex % 2 == 0 ? Color.Transparent : Color.Bisque;
     }
 
     private const ImPlotFlags plotFlag = ImPlotFlags.NoTitle | ImPlotFlags.NoLegend | ImPlotFlags.NoFrame | ImPlotFlags.NoBoxSelect;

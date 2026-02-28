@@ -40,8 +40,7 @@ public partial class LWindow {
             var id = Action.Id.ToString();
             if (ImGui.Button(id)) ImGui.SetClipboardText(id);
             if (ImGui.Button("删除")) DeleteAction(Trigger!, Action);
-            var currentActionTypeEnumItem = 0;
-            currentActionTypeEnumItem = (int)Action.ActionType;
+            var currentActionTypeEnumItem = (int)Action.ActionType;
             if (ImGui.Combo("动作类型", ref currentActionTypeEnumItem,
                     Enum.GetValues<ActionTypeEnum>()
                         .Select(i => i.ToString())

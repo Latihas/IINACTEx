@@ -25,8 +25,8 @@ public class FileDownloader {
                 response.EnsureSuccessStatusCode();
                 var totalBytes = response.Content.Headers.ContentLength ?? 0;
                 long downloadedBytes = 0;
-                using (var stream = await response.Content.ReadAsStreamAsync())
-                using (var fileStream = new FileStream(savePath, FileMode.Create, FileAccess.Write, FileShare.None, 81920, true)) // 异步写入
+                await using (var stream = await response.Content.ReadAsStreamAsync())
+                await using (var fileStream = new FileStream(savePath, FileMode.Create, FileAccess.Write, FileShare.None, 81920, true)) // 异步写入
                 {
                     var buffer = new byte[8192];
                     int bytesRead;

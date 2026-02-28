@@ -18,6 +18,7 @@ public partial class OverlayWindow() : Window("IINACTEx Overlay###IINACTEx Overl
         lock (_textureLock) {
             _currentTexture?.Dispose();
         }
+        GC.SuppressFinalize(this);
     }
 
     private void Parse(string data) {
@@ -25,9 +26,9 @@ public partial class OverlayWindow() : Window("IINACTEx Overlay###IINACTEx Overl
         try {
             var x = JsonConvert.DeserializeObject<CombatDataWrapper>(data);
             Plugin.Log.Info(data);
-            if (x is { Type: "broadcast", MsgType: "CombatData" } && x.Msg.Combatant.Count != 0) {
+            if (x is { type: "broadcast", msgtype: "CombatData" } && x.msg.Combatant.Count != 0) {
                 currentCombatData = x;
-                var newActive = bool.Parse(x.Msg.IsActive);
+                var newActive = bool.Parse(x.msg.isActive);
                 if (isActive && !newActive)
                     AddHistoricalRecord(currentCombatData);
                 isActive = newActive;
@@ -51,10 +52,8 @@ public partial class OverlayWindow() : Window("IINACTEx Overlay###IINACTEx Overl
 
     private void AddHistoricalRecord(CombatDataWrapper combatData) {
         var str = JsonConvert.SerializeObject(combatData);
-        foreach (var c in historicalRecords)
-            if (c.RawStr == str)
-                return;
-        var encounter = combatData.Msg.Encounter;
+        if (historicalRecords.Any(c => c.RawStr == str)) return;
+        var encounter = combatData.msg.Encounter;
         var record = new HistoricalCombatData {
             RawStr = str,
             ZoneName = encounter.CurrentZoneName,
@@ -69,42 +68,48 @@ public partial class OverlayWindow() : Window("IINACTEx Overlay###IINACTEx Overl
             ImGui.Text("等待连接...");
             return;
         }
-        if (currentCombatData == null) {
-            ImGui.Text("等待战斗数据...");
-            return;
-        }
-
-        WindowName = $"IINACTEx Overlay ({currentCombatData.Msg.Encounter.duration})###IINACTEx Overlay";
+        WindowName = $"IINACTEx Overlay ({(currentCombatData == null ? "NA" : currentCombatData.msg.Encounter.duration)})###IINACTEx Overlay";
         using var combatDataTabs = ImRaii.TabBar("CombatDataTabs");
-        if (combatDataTabs) {
-            using (var dps = ImRaii.TabItem("DPS")) {
-                if (dps)
+        if (!combatDataTabs) return;
+        using (var dps = ImRaii.TabItem("DPS")) {
+            if (dps)
+                if (currentCombatData == null)
+                    ImGui.Text("等待战斗数据...");
+                else
                     DrawCatDetails("DPS", c => new Cat(c.name, c.Job, c.ENCDPS));
-            }
-            using (var hps = ImRaii.TabItem("HPS")) {
-                if (hps)
+        }
+        using (var hps = ImRaii.TabItem("HPS")) {
+            if (hps)
+                if (currentCombatData == null)
+                    ImGui.Text("等待战斗数据...");
+                else
                     DrawCatDetails("HPS", c => new Cat(c.name, c.Job, c.ENCHPS));
-            }
-            using (var dmg = ImRaii.TabItem("DMG")) {
-                if (dmg)
+        }
+        using (var dmg = ImRaii.TabItem("DMG")) {
+            if (dmg)
+                if (currentCombatData == null)
+                    ImGui.Text("等待战斗数据...");
+                else
                     DrawCatDetails("DMG", c => new Cat(c.name, c.Job, c.damagetaken));
-            }
-            using (var comb = ImRaii.TabItem("战斗概览")) {
-                if (comb) {
+        }
+        using (var comb = ImRaii.TabItem("战斗概览")) {
+            if (comb)
+                if (currentCombatData == null)
+                    ImGui.Text("等待战斗数据...");
+                else {
                     DrawEncounterOverview(currentCombatData);
                     DrawCombatantDetails(currentCombatData);
                 }
-            }
-            using (var hist = ImRaii.TabItem("历史记录")) {
-                if (hist)
-                    DrawACTStatics();
-            }
+        }
+        using (var hist = ImRaii.TabItem("历史记录")) {
+            if (hist)
+                DrawACTStatics();
         }
     }
 
     private static void DrawEncounterOverview(CombatDataWrapper? combatData) {
-        if (combatData?.Msg.Encounter == null) return;
-        var encounter = combatData.Msg.Encounter;
+        if (combatData?.msg.Encounter == null) return;
+        var encounter = combatData.msg.Encounter;
         ImGui.Text($"区域: {encounter.CurrentZoneName}");
         ImGui.Text($"战斗时长: {encounter.duration}");
         ImGui.Separator();
@@ -129,7 +134,7 @@ public partial class OverlayWindow() : Window("IINACTEx Overlay###IINACTEx Overl
             ImGui.Text("暂无战斗数据");
             return;
         }
-        var combatantList = currentCombatData.Msg.Combatant.Values.Select(selector)
+        var combatantList = currentCombatData.msg.Combatant.Values.Select(selector)
             .Where(c => !string.IsNullOrEmpty(c.Name))
             .OrderByDescending(Catval).ToList();
 
@@ -139,35 +144,34 @@ public partial class OverlayWindow() : Window("IINACTEx Overlay###IINACTEx Overl
         }
 
         using var table = ImRaii.Table("ValueTable", 4, ImGuiTableFlags.Resizable);
-        if (table) {
-            ImGui.TableSetupColumn("玩家", ImGuiTableColumnFlags.WidthFixed, 100f);
-            ImGui.TableSetupColumn("职业", ImGuiTableColumnFlags.WidthFixed, 60f);
-            ImGui.TableSetupColumn(name, ImGuiTableColumnFlags.WidthFixed, 80f);
-            ImGui.TableSetupColumn("占比", ImGuiTableColumnFlags.WidthStretch);
-            ImGui.TableHeadersRow();
-            var maxDps = combatantList.Max(Catval);
-            var totalDps = combatantList.Sum(Catval);
-            foreach (var combatant in combatantList) {
-                ImGui.TableNextRow();
-                ImGui.TableSetColumnIndex(0);
-                ImGui.Text(combatant.Name);
-                ImGui.TableSetColumnIndex(1);
-                ImGui.Text(combatant.Job);
-                ImGui.TableSetColumnIndex(2);
-                ImGui.Text(combatant.ValueString);
-                ImGui.TableSetColumnIndex(3);
-                var barWidth = ImGui.GetContentRegionAvail().X;
-                var dpsRatio = maxDps > 0 ? 1f * Catval(combatant) / maxDps : 0f;
-                var drawList = ImGui.GetWindowDrawList();
-                var barPos = ImGui.GetCursorScreenPos();
-                var barSize = new Vector2(barWidth, ImGui.GetTextLineHeight());
-                drawList.AddRectFilled(barPos, barPos + barSize, ImGui.GetColorU32(ImGuiCol.FrameBg));
-                drawList.AddRectFilled(barPos, barPos + barSize with {
-                    X = barWidth * dpsRatio
-                }, combatant.Name == "YOU" ? ImGui.GetColorU32(new Vector4(1, 1, 1, .5f)) : GetProgressColor(dpsRatio));
-                ImGui.SetCursorScreenPos(barPos + new Vector2(5, (barSize.Y - ImGui.GetTextLineHeight()) / 2));
-                ImGui.Text($"{Math.Round(dpsRatio * 100, 1)}%({Math.Round(100f * Catval(combatant) / totalDps, 1)}%)");
-            }
+        if (!table) return;
+        ImGui.TableSetupColumn("玩家", ImGuiTableColumnFlags.WidthFixed, 100f);
+        ImGui.TableSetupColumn("职业", ImGuiTableColumnFlags.WidthFixed, 60f);
+        ImGui.TableSetupColumn(name, ImGuiTableColumnFlags.WidthFixed, 80f);
+        ImGui.TableSetupColumn("占比", ImGuiTableColumnFlags.WidthStretch);
+        ImGui.TableHeadersRow();
+        var maxDps = combatantList.Max(Catval);
+        var totalDps = combatantList.Sum(Catval);
+        foreach (var combatant in combatantList) {
+            ImGui.TableNextRow();
+            ImGui.TableSetColumnIndex(0);
+            ImGui.Text(combatant.Name);
+            ImGui.TableSetColumnIndex(1);
+            ImGui.Text(combatant.Job);
+            ImGui.TableSetColumnIndex(2);
+            ImGui.Text(combatant.ValueString);
+            ImGui.TableSetColumnIndex(3);
+            var barWidth = ImGui.GetContentRegionAvail().X;
+            var dpsRatio = maxDps > 0 ? 1f * Catval(combatant) / maxDps : 0f;
+            var drawList = ImGui.GetWindowDrawList();
+            var barPos = ImGui.GetCursorScreenPos();
+            var barSize = new Vector2(barWidth, ImGui.GetTextLineHeight());
+            drawList.AddRectFilled(barPos, barPos + barSize, ImGui.GetColorU32(ImGuiCol.FrameBg));
+            drawList.AddRectFilled(barPos, barPos + barSize with {
+                X = barWidth * dpsRatio
+            }, combatant.Name == "YOU" ? ImGui.GetColorU32(new Vector4(1, 1, 1, .5f)) : GetProgressColor(dpsRatio));
+            ImGui.SetCursorScreenPos(barPos + new Vector2(5, (barSize.Y - ImGui.GetTextLineHeight()) / 2));
+            ImGui.Text($"{Math.Round(dpsRatio * 100, 1)}%({Math.Round(100f * Catval(combatant) / totalDps, 1)}%)");
         }
     }
 
@@ -179,8 +183,8 @@ public partial class OverlayWindow() : Window("IINACTEx Overlay###IINACTEx Overl
     }
 
     private static void DrawCombatantDetails(CombatDataWrapper? combatData) {
-        if (combatData?.Msg.Combatant == null) return;
-        foreach (var combatantData in combatData.Msg.Combatant.Select(combatant => combatant.Value).Where(combatantData => ImGui.CollapsingHeader($"{combatantData.name} ({combatantData.Job})"))) {
+        if (combatData?.msg.Combatant == null) return;
+        foreach (var combatantData in combatData.msg.Combatant.Select(combatant => combatant.Value).Where(combatantData => ImGui.CollapsingHeader($"{combatantData.name} ({combatantData.Job})"))) {
             ImGui.BeginTable("DamageStats", 2);
             ImGui.TableNextRow();
             ImGui.TableSetColumnIndex(0);

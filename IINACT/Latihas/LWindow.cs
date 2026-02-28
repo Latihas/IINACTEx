@@ -19,7 +19,7 @@ using Triggernometry.UI.CustomControls;
 namespace IINACT.Latihas;
 
 public static partial class LWindow {
-    internal const string WindowPrefix = "IINACTEx ";
+    private const string WindowPrefix = "IINACTEx ";
 
     internal static void DrawTriggerSettings() {
         using var tab = ImRaii.TabItem("Triggernometry");
@@ -112,7 +112,7 @@ public static partial class LWindow {
         }
     }
 
-    private static string Sbe = "", Sb = "";
+    private static string Sbe = "";
 
     private static void DrawTriggerDebugEvalTest() {
         using var tab = ImRaii.TabItem("评估");
@@ -178,17 +178,16 @@ public static partial class LWindow {
         ImGui.InputText("触发器Id", ref TestTriggerId);
         ImGui.SameLine();
         if (ImGui.Button("验证触发器")) {
-            Sb = $"总量: {RealPlugin.Instance.Triggers.Count}";
-            foreach (var t in RealPlugin.Instance.Triggers.Where(t => t.Id.ToString() == TestTriggerId))
-                Sb += "存活于Triggers.";
-            foreach (var t in RealPlugin.Instance.ActiveTextTriggers.Where(t => t.Id.ToString() == TestTriggerId))
-                Sb += "存活于ActiveTextTriggers.";
-            foreach (var t in RealPlugin.Instance.ActiveACTTriggers.Where(t => t.Id.ToString() == TestTriggerId))
-                Sb += "存活于ActiveACTTriggers.";
-            foreach (var t in RealPlugin.Instance.ActiveEndpointTriggers.Where(t => t.Id.ToString() == TestTriggerId))
-                Sb += "存活于ActiveEndpointTriggers.";
-            foreach (var t in RealPlugin.Instance.ActiveFFXIVNetworkTriggers.Where(t => t.Id.ToString() == TestTriggerId))
-                Sb += "存活于ActiveFFXIVNetworkTriggers.";
+            if (RealPlugin.Instance.Triggers.Any(t => t.Id.ToString() == TestTriggerId)) {
+            }
+            if (RealPlugin.Instance.ActiveTextTriggers.Any(t => t.Id.ToString() == TestTriggerId)) {
+            }
+            if (RealPlugin.Instance.ActiveACTTriggers.Any(t => t.Id.ToString() == TestTriggerId)) {
+            }
+            if (RealPlugin.Instance.ActiveEndpointTriggers.Any(t => t.Id.ToString() == TestTriggerId)) {
+            }
+            if (RealPlugin.Instance.ActiveFFXIVNetworkTriggers.Any(t => t.Id.ToString() == TestTriggerId)) {
+            }
         }
     }
 
@@ -340,7 +339,7 @@ public static partial class LWindow {
     private static void DrawSettingsOpCodes() {
         using var tab = ImRaii.TabItem("OpCodes设置");
         if (!tab) return;
-        ImGui.PushStyleColor(ImGuiCol.Text, ColorX.LRed);
+        ImGui.PushStyleColor(ImGuiCol.Text, ImGuiColors.DalamudRed);
         ImGui.Text("警告: 该功能十分甚至九分危险，如果你不知道你在干什么请不要擅动。该功能未经充分验证。");
         ImGui.PopStyleColor(1);
         ImGui.Text("IINACTEx支持外部文件替换Opcode。");
@@ -348,11 +347,11 @@ public static partial class LWindow {
         ImGui.Text("opcodes.txt支持从Karashiiro的在线库获取扩展包，其包含未在ACT解析插件内的数值，可以作为Unscrambler解析插件在版本初期的替代。");
         ImGui.Text("在插件安装目录下如果存在opcodes.jsonc，则会在加载插件的时候替换掉Overlay插件的OpCode。");
         ImGui.Separator();
-        ImGui.PushStyleColor(ImGuiCol.Text, ColorX.LPurple);
+        ImGui.PushStyleColor(ImGuiCol.Text, ImGuiColors.ParsedPurple);
         ImGui.Text("当前状态:");
         ImGui.PopStyleColor(1);
         if (Plugin.Instance.opcodestxtReplaced) {
-            ImGui.PushStyleColor(ImGuiCol.Text, ColorX.LRed);
+            ImGui.PushStyleColor(ImGuiCol.Text, ImGuiColors.DalamudRed);
             ImGui.Text("opcodes.txt已替换");
             ImGui.PopStyleColor(1);
             ImGui.SameLine();
@@ -362,7 +361,7 @@ public static partial class LWindow {
             else ImGui.Text("(文件缺失，将在下次加载恢复内置)");
         }
         else if (Plugin.Instance.opcodestxtCanReplace) {
-            ImGui.PushStyleColor(ImGuiCol.Text, ColorX.LYellow);
+            ImGui.PushStyleColor(ImGuiCol.Text, ImGuiColors.DalamudYellow);
             ImGui.Text("opcodes.txt将在下次加载插件时替换");
             ImGui.PopStyleColor(1);
             ImGui.SameLine();
@@ -370,7 +369,7 @@ public static partial class LWindow {
         }
         else ImGui.Text("opcodes.txt为内置版本");
         if (Plugin.Instance.opcodesjsoncReplaced) {
-            ImGui.PushStyleColor(ImGuiCol.Text, ColorX.LRed);
+            ImGui.PushStyleColor(ImGuiCol.Text, ImGuiColors.DalamudRed);
             ImGui.Text("opcodes.jsonc已替换");
             ImGui.PopStyleColor(1);
             ImGui.SameLine();
@@ -380,7 +379,7 @@ public static partial class LWindow {
             else ImGui.Text("(文件缺失，将在下次加载恢复内置)");
         }
         else if (Plugin.Instance.opcodesjsoncCanReplace) {
-            ImGui.PushStyleColor(ImGuiCol.Text, ColorX.LYellow);
+            ImGui.PushStyleColor(ImGuiCol.Text, ImGuiColors.DalamudYellow);
             ImGui.Text("opcodes.jsonc将在下次加载插件时替换");
             ImGui.PopStyleColor(1);
             ImGui.SameLine();
@@ -489,14 +488,14 @@ public static partial class LWindow {
             i => ImGui.Text(i.Value.LastChanger)
         ]);
 
-    internal static void DrawTriggerVarScalerSettings() {
+    private static void DrawTriggerVarScalerSettings() {
         using var tab = ImRaii.TabItem("临时标量");
         if (!tab) return;
         TScaler(RealPlugin.Instance.sessionvars.Scalar);
         DrawTriggerVarESettings(false, TriggerVarType.Scalar);
     }
 
-    internal static void DrawTriggerVarPScalerSettings() {
+    private static void DrawTriggerVarPScalerSettings() {
         using var tab = ImRaii.TabItem("永久标量");
         if (!tab) return;
         TScaler(RealPlugin.Instance.cfg.PersistentVariables.Scalar);
@@ -561,8 +560,7 @@ public static partial class LWindow {
             i => ImGui.Text(i.Value.Height.ToString()),
             i => {
                 List<string> sb = [];
-                foreach (var item in i.Value.Rows)
-                    sb.Add($"({string.Join(',', item.Values)})");
+                sb.AddRange(i.Value.Rows.Select(item => $"({string.Join(',', item.Values)})"));
                 ImGui.TextWrapped(string.Join(';', sb));
             },
             i => ImGui.Text(i.Value.LastChanged.ToString()),
@@ -589,8 +587,7 @@ public static partial class LWindow {
             i => ImGui.Text(i.Value.Size.ToString()),
             i => {
                 List<string> sb = [];
-                foreach (var item in i.Value.Values)
-                    sb.Add($"({item.Key}:{item.Value})");
+                sb.AddRange(i.Value.Values.Select(item => $"({item.Key}:{item.Value})"));
                 ImGui.TextWrapped(string.Join(',', sb));
             },
             i => ImGui.Text(i.Value.LastChanged.ToString()),
@@ -615,9 +612,7 @@ public static partial class LWindow {
         using var tab = ImRaii.TabItem("具名回调");
         if (!tab) return;
         List<RealPlugin.NamedCallback> nCs = [];
-        foreach (var cs in RealPlugin.Instance.callbacksByName.Values)
-        foreach (var nc in cs)
-            nCs.Add(nc);
+        foreach (var cs in RealPlugin.Instance.callbacksByName.Values) nCs.AddRange(cs);
         NewTable(["Id", "名称", "注册者", "注册时间"], nCs.ToArray(), [
             i => ImGui.Text(i.Id.ToString()),
             i => ImGui.Text(i.Name),
@@ -661,6 +656,4 @@ public static partial class LWindow {
             ImGui.EndTable();
         }
     }
-
-
-    }
+}

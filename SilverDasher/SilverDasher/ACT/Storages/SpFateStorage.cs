@@ -6,7 +6,7 @@ using SilverDasher.ACT.Models;
 namespace SilverDasher.ACT.Storages;
 
 internal class SpFateStorage(Keeper kp) : BaseStorage(kp) {
-    internal readonly HashSet<int> Spfates = [];
+    private readonly HashSet<int> Spfates = [];
 
     internal List<ItemGroup> FateGroupsTree = [];
 

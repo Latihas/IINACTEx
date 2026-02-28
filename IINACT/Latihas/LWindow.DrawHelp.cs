@@ -3,6 +3,7 @@ using System.Security.Cryptography;
 using System.Text;
 using Advanced_Combat_Tracker;
 using Dalamud.Bindings.ImGui;
+using Dalamud.Interface.Colors;
 using Dalamud.Interface.ImGuiNotification;
 using Dalamud.Interface.Utility.Raii;
 using RainbowMage.OverlayPlugin;
@@ -20,7 +21,7 @@ public static partial class LWindow {
     internal static void DrawHelpSettings() {
         using var tab = ImRaii.TabItem("帮助");
         if (!tab) return;
-        ImGui.PushStyleColor(ImGuiCol.Text, ColorX.LRed);
+        ImGui.PushStyleColor(ImGuiCol.Text, ImGuiColors.DalamudRed);
         ImGui.Text("重要提醒！！！请一定要先看完介绍再使用，本插件仍然不是很稳定，有炸游戏风险");
         ImGui.Text("重要提醒！！！请一定要先看完介绍再使用，本插件仍然不是很稳定，有炸游戏风险");
         ImGui.Text("重要提醒！！！请一定要先看完介绍再使用，本插件仍然不是很稳定，有炸游戏风险");
@@ -190,7 +191,7 @@ public static partial class LWindow {
     private static void DrawTestTestSettings() {
         using var tab = ImRaii.TabItem("开发者测试");
         if (!tab) return;
-        ImGui.PushStyleColor(ImGuiCol.Text, ColorX.LRed);
+        ImGui.PushStyleColor(ImGuiCol.Text,ImGuiColors.DalamudRed);
         ImGui.Text("如果你看到这里有东西，是开发者忘记删了的，非常危险不要擅动！！！");
         ImGui.PopStyleColor(1);
         //==============================

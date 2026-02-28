@@ -6,7 +6,7 @@ using Dalamud.Interface.ImGuiNotification;
 using Dalamud.Interface.Windowing;
 using Triggernometry.Core;
 using WebSocketSharp;
-using static IINACT.Latihas.ColorX;
+using static IINACT.Latihas.ColorTransparent;
 
 namespace IINACT.Latihas;
 
@@ -14,7 +14,7 @@ public partial class LWindow {
     public class TriggernometryLogView() : Window($"{WindowPrefix}TriggernometryLogView") {
         private static string RegexExpr = "";
         private static Regex? Reg;
-        private Dictionary<RealPlugin.DebugLevelEnum, bool> check = Enum.GetValues<RealPlugin.DebugLevelEnum>()
+        private readonly Dictionary<RealPlugin.DebugLevelEnum, bool> check = Enum.GetValues<RealPlugin.DebugLevelEnum>()
             .ToDictionary(i => i, _ => true);
 
         public override void Draw() {
@@ -33,11 +33,11 @@ public partial class LWindow {
                 if (i++ != check.Count) ImGui.SameLine();
             }
             try {
-                NewTable(["Time", "Lvl", "Log"], RealPlugin.Instance.logFlattenTrn.Where(i => check[i.Level] && (Reg == null || Reg.IsMatch(i.Message))).ToArray(), [
-                        i => ImGui.Text(i.Timestamp.ToString()),
-                        i => ImGui.Text(i.Level.ToString()),
-                        i => ImGui.TextWrapped(i.Message)
-                    ], i => i.Level switch {
+                NewTable(["Time", "Lvl", "Log"], RealPlugin.Instance.logFlattenTrn.Where(x => check[x.Level] && (Reg == null || Reg.IsMatch(x.Message))).ToArray(), [
+                        x => ImGui.Text(x.Timestamp.ToString()),
+                        x => ImGui.Text(x.Level.ToString()),
+                        x => ImGui.TextWrapped(x.Message)
+                    ], x => x.Level switch {
                         RealPlugin.DebugLevelEnum.None => TWhite,
                         RealPlugin.DebugLevelEnum.Error => TRed,
                         RealPlugin.DebugLevelEnum.Warning => TYellow,

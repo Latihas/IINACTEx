@@ -27,7 +27,7 @@ internal class Overseer(SilverDasher self) : Doppelganger(self) {
 
     private void HandleActorControlSelf(byte[] message, Opcode opcode) {
         if (message.Length != opcode.CnLength) {
-            Logger.Debug($"Packet {opcode.Name} received unpredicted length. Expected {opcode.CnLength}, Received {message.Length}.");
+            // Logger.Debug($"Packet {opcode.Name} received unpredicted length. Expected {opcode.CnLength}, Received {message.Length}.");
             return;
         }
         var array = message.Skip(32).ToArray();
@@ -57,7 +57,7 @@ internal class Overseer(SilverDasher self) : Doppelganger(self) {
 
     private void HandleFateInfo(byte[] message, Opcode opcode) {
         if (message.Length != opcode.CnLength) {
-            Logger.Debug($"Packet {opcode.Name} received unpredicted length. Expected {opcode.CnLength}, Received {message.Length}.");
+            // Logger.Debug($"Packet {opcode.Name} received unpredicted length. Expected {opcode.CnLength}, Received {message.Length}.");
             return;
         }
         var value = message.Skip(32).ToArray();

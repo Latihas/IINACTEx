@@ -2,7 +2,7 @@
 
 ![](https://socialify.git.ci/Latihas/IINACTEx/image?description=1&forks=1&issues=1&language=1&name=1&owner=1&pattern=Transparent&pulls=1&stargazers=1&theme=Auto)
 
-## IINACT改版，整合了CN、Triggernometry、PostNamazu等
+## IINACT改版，整合了CN、Triggernometry、PostNamazu，SilverDasher等
 
 # 重要提醒！！！请一定要先看完介绍再使用，本插件仍然不是很稳定，有炸游戏风险
 
@@ -13,7 +13,7 @@
 本项目仍然处于野蛮开发期，代码管理极其混乱，暗藏神秘bug，仅作开发测试使用。
 
 该插件会在一个类ACT的环境下运行FFXIV_ACT_Plugin与大量修改的Overlay
-Plugin以适配现代.NET。与此同时，也添加了大量修改的Triggernometry与Postnamazu。包括类ACT、Triggernometry、Postnamazu在内，这些并非完整的代码移植，并且仍在开发完善中，可能缺少部分原版的函数，开发时请注意。
+Plugin以适配现代.NET。与此同时，也添加了大量修改的Triggernometry，Postnamazu，SilverDasher等插件。包括类ACT与插件在内，这些并非完整的代码移植，并且仍在开发完善中，可能缺少部分原版的函数，开发时请注意。
 
 相关参考文献如下：
 
@@ -30,6 +30,14 @@ Plugin以适配现代.NET。与此同时，也添加了大量修改的Triggernom
 > PostNamazu: https://github.com/Natsukage/PostNamazu
 
 我不想维护两遍文档，请第一次使用的时候或者遇到什么问题的时候优先查看插件的`帮助`栏目。
+
+# 相关图片
+
+![trn.png](pic/trn.png)
+![postnamazu.png](pic/postnamazu.png)
+![sd.png](pic/sd.png)
+![overlay.png](pic/overlay.png)
+![img.png](pic/act.png)
 
 # 开发相关
 
@@ -109,7 +117,7 @@ Just run
 git clone --recurse-submodules https://github.com/marzent/IINACT.git
 cd IINACT
 dotnet build
-``` 
+```
 
 on a Linux, macOS or Windows machine with the [.NET 7 SDK](https://dotnet.microsoft.com/en-us/download/dotnet/7.0).
 

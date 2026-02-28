@@ -9,7 +9,7 @@ using SilverDasher.ACT.Storages;
 
 namespace SilverDasher.ACT.Doppelgangers;
 
-internal class Notifier(SilverDasher self) : Doppelganger(self) {
+internal partial class Notifier(SilverDasher self) : Doppelganger(self) {
     private readonly JsonSerializerSettings unpackSettings = new() {
         NullValueHandling = NullValueHandling.Ignore,
         ContractResolver = StrNullToEmptyContractResolver.DefaultInstance
@@ -143,13 +143,10 @@ internal class Notifier(SilverDasher self) : Doppelganger(self) {
         if (Keeper.Config.TTSExtend) message += coord;
         ActGlobals.oFormActMain.TTS(message + MobStorage.GetStateName(status));
     }
-
-    [DllImport("winmm.dll", SetLastError = true, CharSet = CharSet.Auto)]
+#pragma warning disable SYSLIB1054,CA2101
+    [DllImport("winmm.dll")]
     private static extern bool PlaySound(string pszSound, IntPtr hmod, uint fdwSound);
-
-    private const uint SND_ALIAS = 0x00010000;
-    private const uint SND_ASYNC = 0x0001;
-    private const uint SND_NODEFAULT = 0x0002;
+#pragma warning restore SYSLIB1054,CA2101
 
     private void SendToast(string message, HuntState status, string coord = "", bool checkPermit = true) {
         lock (this) {
@@ -159,7 +156,7 @@ internal class Notifier(SilverDasher self) : Doppelganger(self) {
                 Title = coord + MobStorage.GetStateName(status)
             });
             try {
-                PlaySound("Notification.Default", IntPtr.Zero, SND_ALIAS | SND_ASYNC | SND_NODEFAULT);
+                PlaySound("Notification.Default", IntPtr.Zero, 0x10000 | 0x0001 | 0x0002);
             }
             catch {
                 //

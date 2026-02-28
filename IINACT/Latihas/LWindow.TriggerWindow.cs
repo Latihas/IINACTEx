@@ -43,7 +43,7 @@ public static partial class LWindow {
                     }
                     ImGui.SetNextItemWidth(-1);
                     if (ImGui.BeginListBox("## Actions")) {
-                        var data = Trigger.Actions!;
+                        var data = Trigger.Actions;
                         var Enabled = new bool[data.Count];
                         for (var i = 0; i < data.Count; i++) {
                             var d = data[i].GetDescription(null);

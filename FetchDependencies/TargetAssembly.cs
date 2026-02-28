@@ -111,8 +111,11 @@ public class TargetAssembly : IDisposable {
                 Assembly.MainModule.Types.First().Fields.Add(field);
         }
         var patchedPath = AssemblyPath + ".patched";
+        
         Assembly.Write(patchedPath);
         Assembly.Dispose();
+        FetchDependencies.Log.Error(patchedPath);
+        FetchDependencies.Log.Error(outp ?? AssemblyPath);
         File.Move(patchedPath, outp ?? AssemblyPath, true);
     }
 }

@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using SilverDasher.ACT.Enums;
@@ -30,7 +31,7 @@ internal class Keeper : Doppelganger {
 
     internal readonly Dictionary<int, Fate> CurrentFates = new();
 
-    internal readonly Dictionary<string, HuntMob> CurrentMobs = new();
+    internal readonly ConcurrentDictionary<string, HuntMob> CurrentMobs = new();
 
     private readonly Dictionary<(string, int, int), HuntMob> ReceivedMobs = new();
 
@@ -149,14 +150,14 @@ internal class Keeper : Doppelganger {
                 if (NetworkMapID == 0 || NetworkMapID != CurrentMapID) return;
                 value.TerritoryID = territory;
             }
-            CurrentMobs.Add(key, value);
+            CurrentMobs.TryAdd(key, value);
         }
         if (hp != 0) {
             value.Health = hp;
             return;
         }
         ReportMobDied(value);
-        CurrentMobs.Remove(key);
+        CurrentMobs.TryRemove(key, out _);
     }
 
     internal void ReceivedMobUpdate(World world, int map, int instance, int mobId, int hp, Coordinate coords) {
@@ -235,28 +236,29 @@ internal class Keeper : Doppelganger {
 
     internal void ReportFateStatus() {
         foreach (var key in CurrentFates.Keys) {
-            var fate = CurrentFates[key];
-            Messager.QueueMessage(new FateMessage {
-                id = key,
-                Progress = fate.Progress,
-                coordinate = fate.Coordinate,
-                map = fate.TerritoryID,
-                instance = CurrentInstance,
-                world = CurrentWorldID
-            });
+            if (CurrentFates.TryGetValue(key, out var fate))
+                Messager.QueueMessage(new FateMessage {
+                    id = key,
+                    Progress = fate.Progress,
+                    coordinate = fate.Coordinate,
+                    map = fate.TerritoryID,
+                    instance = CurrentInstance,
+                    world = CurrentWorldID
+                });
         }
     }
 
     internal void ReportMobStatus() {
-        foreach (var huntMob in CurrentMobs.Keys.Select(key => CurrentMobs[key])) {
-            Messager.QueueMessage(new HuntMessage {
-                id = huntMob.Id,
-                health = huntMob.Health,
-                coordinate = huntMob.Coordinate,
-                map = huntMob.TerritoryID,
-                instance = huntMob.Instance,
-                world = CurrentWorldID
-            });
+        foreach (var key in CurrentMobs.Keys) {
+            if (CurrentMobs.TryGetValue(key, out var huntMob))
+                Messager.QueueMessage(new HuntMessage {
+                    id = huntMob.Id,
+                    health = huntMob.Health,
+                    coordinate = huntMob.Coordinate,
+                    map = huntMob.TerritoryID,
+                    instance = huntMob.Instance,
+                    world = CurrentWorldID
+                });
         }
     }
 

@@ -53,6 +53,8 @@ public class PluginControl {
         if (!bar) return;
         ImGui.Text($"插件状态: {Enum.GetName(SilverDasher.pluginStatus)}");
         ImGui.Text($"状态描述: {ChineseStatusText[SilverDasher.pluginStatus]}");
+        ImGui.Text("由于需要频繁修改的场景较少，暂不支持即时更新订阅条目。");
+        ImGui.Text("修改订阅内容后需要禁用再启用银山雀儿方可实际更新订阅。");
         ViewModel.DrawImGui();
     }
 
@@ -120,13 +122,13 @@ public class PluginControl {
                 ImGui.SameLine();
                 var NotifyTauntedToast = Keeper.Config.NotifyTauntedToast;
                 if (ImGui.Checkbox("开怪##NotifyTauntedToast", ref NotifyTauntedToast)) {
-                    Keeper.Config.NotifyTauntedTTS = NotifyTauntedToast;
+                    Keeper.Config.NotifyTauntedToast = NotifyTauntedToast;
                     Config.Save();
                 }
                 ImGui.SameLine();
                 var NotifyBullyingToast = Keeper.Config.NotifyBullyingToast;
                 if (ImGui.Checkbox("暴打##NotifyBullyingToast", ref NotifyBullyingToast)) {
-                    Keeper.Config.NotifyBullyingTTS = NotifyBullyingToast;
+                    Keeper.Config.NotifyBullyingToast = NotifyBullyingToast;
                     Config.Save();
                 }
                 ImGui.SameLine();
@@ -219,16 +221,12 @@ public class PluginControl {
         DrawLog();
     }
 
-    public static void SetPluginStatus(PluginStatus s) {
-        SilverDasher.pluginStatus = s;
-    }
+    public static void SetPluginStatus(PluginStatus s) => SilverDasher.pluginStatus = s;
 
-    public void Log(string s) {
-        textLog.Add(s);
-    }
+    public void Log(string s) => textLog.Add(s);
 
 
-    private void ButtonTestTTSClicked() => Notifier.TestTTS();
+    private static void ButtonTestTTSClicked() => Notifier.TestTTS();
 
     private void ButtonTestToastClicked() => Painter.Notifier.TestToast();
 

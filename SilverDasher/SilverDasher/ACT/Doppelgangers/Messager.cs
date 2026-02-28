@@ -128,17 +128,6 @@ internal class Messager(SilverDasher plugin) : Doppelganger(plugin) {
         }, token);
     }
 
-    // internal Task UnsubscribeAll() {
-    //     return Task.Run(async delegate {
-    //         var options = new MqttClientUnsubscribeOptions {
-    //             TopicFilters = {
-    //                 "#"
-    //             }
-    //         };
-    //         Log((await Tomestone.UnsubscribeAsync(options)).ReasonString);
-    //     });
-    // }
-
     private Task Unsubscribe(List<(string, string)> unsubscriptions, CancellationToken token) {
         return Task.Run(async delegate {
             List<List<string>> list = [];
@@ -184,34 +173,6 @@ internal class Messager(SilverDasher plugin) : Doppelganger(plugin) {
         Messages.Enqueue(message);
     }
 
-    private void AddSubscription(string type, string id, CancellationToken token) {
-        Subscriptions.Add((type, id));
-        Subscribe([(type, id)], token);
-    }
-
-    private void AddSubscriptions(string type, List<string> ids, CancellationToken token) {
-        List<(string, string)> list = [];
-        foreach (var id in ids) {
-            Subscriptions.Add((type, id));
-            list.Add((type, id));
-        }
-        Subscribe(list, token);
-    }
-
-    private void RemoveSubscription(string type, string id, CancellationToken token) {
-        Subscriptions.Remove((type, id));
-        Unsubscribe([(type, id)], token);
-    }
-
-    private void RemoveSubscriptions(string type, List<string> ids, CancellationToken token) {
-        List<(string, string)> list = [];
-        foreach (var id in ids) {
-            Subscriptions.Remove((type, id));
-            list.Add((type, id));
-        }
-        Unsubscribe(list, token);
-    }
-
     internal void Resubscribe(string tag, CancellationToken token) {
         if (Tomestone == null) return;
         // Painter?.pluginControl?.CheckBoxCrossWorldToggle(false);
@@ -221,20 +182,6 @@ internal class Messager(SilverDasher plugin) : Doppelganger(plugin) {
             await Subscribe(filteredSub, token);
             // Painter?.pluginControl?.CheckBoxCrossWorldToggle(true);
         }, token);
-    }
-
-    public void EditSubscription(bool? edit, string type, string id, List<string> ids, CancellationToken token) {
-        if (edit.GetValueOrDefault()) {
-            if (ids != null)
-                AddSubscriptions(type, ids, token);
-            else
-                AddSubscription(type, id, token);
-        }
-        else if (ids != null)
-            RemoveSubscriptions(type, ids, token);
-        else
-            RemoveSubscription(type, id, token);
-        Keeper.Config.EditSubscription(edit, type, id, ids);
     }
 
     private async Task Unpack(MqttApplicationMessageReceivedEventArgs e) {

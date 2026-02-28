@@ -89,7 +89,7 @@ internal class Negotiator : Doppelganger {
         List<string> list = [];
         list.AddRange(Keeper.CurrentMobs.Keys.Where(key => !hashSet.Contains(key)));
         foreach (var item3 in list)
-            Keeper.CurrentMobs.Remove(item3);
+            Keeper.CurrentMobs.Remove(item3,out _);
     }
 
     private void OnInGameLoglineRead(uint EventType, uint Seconds, string logline) {
