@@ -121,7 +121,7 @@ internal partial class Notifier(SilverDasher self) : Doppelganger(self) {
             coord = $"({gobj.Coordinate.displayX}, {gobj.Coordinate.displayY}) ";
         SendToast(text2, status, coord);
         SendTTS(text2, status, coord);
-        Log($"已尝试推送 {text2}, {MobStorage.GetStateName(status)}");
+        Log($"已尝试推送 {text2}{coord}, {MobStorage.GetStateName(status)}");
     }
 
     public void WriteLogline(World world, int instance, GameDynamicObject gobj) {

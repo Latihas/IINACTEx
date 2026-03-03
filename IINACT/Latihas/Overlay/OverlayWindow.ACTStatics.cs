@@ -409,10 +409,8 @@ public partial class OverlayWindow {
             var brush2 = new SolidBrush(Color.FromArgb(-16777216));
             var pen = new Pen(Color.FromArgb(-16777216));
             var pen2 = new Pen(Color.FromArgb(-6250336));
-            // var solidBrush2 = new SolidBrush(System.Drawing.Color.FromArgb(-7667712));
-            // var solidBrush3 = new SolidBrush(System.Drawing.Color.FromArgb(-16777077));
-            var solidBrush2 = new SolidBrush(Color.Red);
-            var solidBrush3 = new SolidBrush(Color.DeepSkyBlue);
+            var solidBrush2 = new SolidBrush(Color.FromArgb(-7667712));
+            var solidBrush3 = new SolidBrush(Color.FromArgb(-16777077));
             var brush3 = new SolidBrush(Color.FromArgb(-7077677));
             var brush4 = new SolidBrush(Color.FromArgb(-1));
             var graphics = Graphics.FromImage(bitmap);
@@ -1022,6 +1020,7 @@ public partial class OverlayWindow {
     }
 
 
+    // ReSharper disable once UnusedParameter.Local
     private static Color GetCellColor(int rowIndex, int colIndex) {
         return colIndex % 2 == 0 ? Color.Transparent : Color.Bisque;
     }

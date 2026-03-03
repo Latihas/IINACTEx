@@ -210,7 +210,12 @@ public class PluginControl {
         }
         ImGui.SameLine();
         if (ImGui.Button("清空日志")) textLog.Clear();
-        foreach (var log in textLog) ImGui.Text(log);
+        try {
+            foreach (var log in textLog) ImGui.Text(log);
+        }
+        catch {
+            //
+        }
     }
 
     public void Draw() {
