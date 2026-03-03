@@ -1,0 +1,60 @@
+<Solution>
+  <Configurations>
+    <Platform Name="Any CPU" />
+    <Platform Name="x86" />
+  </Configurations>
+  <Project Path="ChineseConverter/ChineseConverter.csproj">
+    <Platform Solution="Release|x86" Project="x86" />
+  </Project>
+  <Project Path="EdgeTTS/EdgeTTS.csproj">
+    <Platform Solution="Release|x86" Project="x86" />
+  </Project>
+  <Project Path="FetchDependencies/FetchDependencies.csproj">
+    <Platform Solution="Release|x86" Project="x86" />
+  </Project>
+  <Project Path="IINACT/IINACT.csproj">
+    <Platform Solution="Release|x86" Project="x86" />
+  </Project>
+  <Project Path="LatihasTTS/LatihasTTS.csproj">
+    <Platform Solution="Release|x86" Project="x86" />
+  </Project>
+  <Project Path="machina/Machina.FFXIV/Machina.FFXIV.csproj">
+    <Platform Solution="Release|x86" Project="x86" />
+  </Project>
+  <Project Path="machina/Machina/Machina.csproj">
+    <Platform Solution="Release|x86" Project="x86" />
+  </Project>
+  <Project Path="NotACT/NotACT.csproj">
+    <Platform Solution="Release|x86" Project="x86" />
+  </Project>
+  <Project Path="OverlayPlugin.Common/OverlayPlugin.Common.csproj">
+    <Platform Solution="Release|x86" Project="x86" />
+  </Project>
+  <Project Path="OverlayPlugin.Core/OverlayPlugin.Core.csproj">
+    <Platform Solution="Release|x86" Project="x86" />
+  </Project>
+  <Project Path="PostNamazu/PostNamazu.OverlayHoster/PostNamazu.OverlayHoster.csproj">
+    <Platform Solution="Release|x86" Project="x86" />
+  </Project>
+  <Project Path="PostNamazu/PostNamazu.TriggerHoster/PostNamazu.TriggerHoster.csproj">
+    <Platform Solution="Release|x86" Project="x86" />
+  </Project>
+  <Project Path="PostNamazu/PostNamazu/PostNamazu.csproj">
+    <Platform Solution="Release|x86" Project="x86" />
+  </Project>
+  <Project Path="SilverDasher/SilverDasher/SilverDasher.csproj">
+    <Platform Solution="Release|x86" Project="x86" />
+  </Project>
+  <Project Path="Triggernometry/Source/Triggernometry/TriggernometryPlugin.csproj">
+    <Platform Solution="Release|x86" Project="x86" />
+  </Project>
+  <Project Path="TrnDevEnv/TrnDevEnv.csproj">
+    <Platform Solution="Release|x86" Project="x86" />
+  </Project>
+  <Project Path="Unscrambler/Unscrambler.DataGenerator/Unscrambler.DataGenerator.csproj">
+    <Platform Solution="Release|x86" Project="x86" />
+  </Project>
+  <Project Path="Unscrambler/Unscrambler/Unscrambler.csproj">
+    <Platform Solution="Release|x86" Project="x86" />
+  </Project>
+</Solution>

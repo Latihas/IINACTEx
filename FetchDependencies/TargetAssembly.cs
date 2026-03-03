@@ -114,8 +114,6 @@ public class TargetAssembly : IDisposable {
         
         Assembly.Write(patchedPath);
         Assembly.Dispose();
-        FetchDependencies.Log.Error(patchedPath);
-        FetchDependencies.Log.Error(outp ?? AssemblyPath);
         File.Move(patchedPath, outp ?? AssemblyPath, true);
     }
 }
