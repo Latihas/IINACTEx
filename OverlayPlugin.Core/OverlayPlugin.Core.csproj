@@ -8,7 +8,7 @@
     <ProduceReferenceAssembly>false</ProduceReferenceAssembly>
     <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <Version>0.19.84</Version>
+        <Version>0.19.87</Version>
   </PropertyGroup>
 
   <ItemGroup>
