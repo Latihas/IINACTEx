@@ -9,7 +9,7 @@ internal class Primal(SilverDasher self) : Doppelganger(self) {
 
     internal uint GetCurrentInstance() {
         var b = SilverDasher.ClientState.Instance;
-        Debug($"Scanned instance {b}");
+        // Debug($"Scanned instance {b}");
         return b;
     }
 }

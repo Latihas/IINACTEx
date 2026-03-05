@@ -69,7 +69,7 @@ internal class Negotiator : Doppelganger {
         var currentInstance2 = Primal.GetCurrentInstance();
         // Keeper.CurrentMapID = currentTerritoryID2;
         // Keeper.CurrentInstance = currentInstance2;
-        Logger.Debug($"Scanned Territory {currentTerritoryID2}");
+        // Logger.Debug($"Scanned Territory {currentTerritoryID2}");
         if (currentTerritoryID != currentTerritoryID2 || currentInstance != currentInstance2 || Keeper.CurrentMapID == 255 || Keeper.CurrentInstance == 255) {
             Keeper.CurrentFates.Clear();
             Keeper.CurrentMobs.Clear();

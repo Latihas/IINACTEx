@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Dalamud.Game.ClientState;
@@ -49,7 +50,8 @@ public class SilverDasher {
     private static void WriteLog(IFramework _) {
         if (!Directory.Exists(DataStorage.LogPath)) Directory.CreateDirectory(DataStorage.LogPath);
         lock (FileLogs) {
-            File.AppendAllText(DataStorage.LogFile, $"{string.Join("\n", FileLogs)}\n");
+            if (FileLogs.Count == 0) return;
+            File.AppendAllText(DataStorage.LogFile, $"{string.Join("\n", FileLogs.Where(i => !string.IsNullOrEmpty(i)))}\n");
             FileLogs.Clear();
         }
     }
