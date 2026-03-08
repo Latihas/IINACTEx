@@ -48,7 +48,7 @@ public class LatihasTts : IDisposable {
             Path.Combine(Assetsdir, "System.Numerics.Tensors.dll")
         ];
         onnxruntimedll.Add(LoadLibrary(Path.Combine(Assetsdir, "onnxruntime.dll")));
-        onnxruntimedll.Add(LoadLibrary(Path.Combine(Assetsdir, "onnxruntime_providers_shared.dll.dll")));
+        // onnxruntimedll.Add(LoadLibrary(Path.Combine(Assetsdir, "onnxruntime_providers_shared.dll")));
     }
 
     private static void _Speak(object message) {

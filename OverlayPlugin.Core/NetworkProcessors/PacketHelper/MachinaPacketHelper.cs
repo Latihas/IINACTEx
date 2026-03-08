@@ -96,7 +96,7 @@ internal static class MachinaMap {
     }
 }
 
-internal class MachinaRegionalizedPacketHelper<PacketType>
+public class MachinaRegionalizedPacketHelper<PacketType>
     where PacketType : MachinaPacketWrapper, new() {
     public readonly MachinaPacketHelper<PacketType> global;
     public readonly MachinaPacketHelper<PacketType> cn;
@@ -187,7 +187,7 @@ internal class MachinaRegionalizedPacketHelper<PacketType>
     }
 }
 
-internal class MachinaPacketHelper<PacketType> : IPacketHelper
+public class MachinaPacketHelper<PacketType> : IPacketHelper
     where PacketType : MachinaPacketWrapper, new() {
     public readonly ushort Opcode;
     public readonly int headerSize;
@@ -269,7 +269,7 @@ internal class MachinaPacketHelper<PacketType> : IPacketHelper
     }
 }
 
-internal class MachinaHeaderWrapper : IHeaderStruct {
+public class MachinaHeaderWrapper : IHeaderStruct {
     public object header;
 
     private static Dictionary<Type, Dictionary<string, FieldInfo>> typePropertyMap = new();
@@ -303,7 +303,7 @@ internal class MachinaHeaderWrapper : IHeaderStruct {
     public uint Opcode => Get<ushort>("MessageType");
 }
 
-internal abstract class MachinaPacketWrapper : IPacketStruct {
+public abstract class MachinaPacketWrapper : IPacketStruct {
     public Type packetType;
     public object packetValue;
 

@@ -194,11 +194,12 @@ public sealed class Plugin : IDalamudPlugin {
         opcodesjsoncReplaced = opcodesjsoncCanReplace;
         oFormActMain.TriggernometryPlugin = TriggernometryProxyPlugin = new ProxyPlugin();
         oFormActMain.PostNamazuPlugin = PostNamazuPlugin = new PostNamazu.PostNamazu();
+
         LogTick("Waiting Dependencies");
         var extraOpcodes = opcodesjsoncCanReplace ? File.ReadAllText(opcodesjsoncPath) : null;
         if (Configuration.AsyncOnInit) TaskFetchDependencies.Wait();
         LogTick("Dependencies Fetched");
-        FfxivActPluginWrapper = new FfxivActPluginWrapper();
+        FormActMain.AddDefaultPlugins(FfxivActPluginWrapper = new FfxivActPluginWrapper(), new PluginLoader(OverlayPlugin), TriggernometryProxyPlugin, PostNamazuPlugin);
         LogTick("FfxivActPlugin Inited");
         OverlayPlugin.InitPlugin(extraOpcodes);
         LogTick("OverlayPlugin Initialized");
@@ -207,6 +208,7 @@ public sealed class Plugin : IDalamudPlugin {
             TriggernometryProxyPlugin.InitPlugin(this, PluginInterface, Log, ClientState, Framework, GameInteropProvider, ObjectTable, GameGui, SigScanner);
         });
         if (!Configuration.AsyncOnInit) taskTrn.Wait();
+
         if (opcodesjsoncReplaced) Log.Warning("opcodesjsonc Replaced");
         var registry = Container.Resolve<Registry>();
         MainWindow.OverlayPresets = registry.OverlayPresets;
@@ -234,7 +236,6 @@ public sealed class Plugin : IDalamudPlugin {
         ClientState.EnterPvP += EnterPvP;
         ClientState.LeavePvP += LeavePvP;
         ZoneDownHookManager = new ZoneDownHookManager();
-        FormActMain.AddDefaultPlugins(FfxivActPluginWrapper, new PluginLoader(OverlayPlugin), TriggernometryProxyPlugin, PostNamazuPlugin);
         foreach (var rt in Directory.GetFiles(PluginActScriptDirectory, "*.dll", SearchOption.TopDirectoryOnly).Select(Path.GetFileName).Cast<string>())
             if (Configuration.ActScriptsEnabled.Contains(rt))
                 LoadIActPluginV1(rt, preserveEnableState: true);
@@ -329,6 +330,7 @@ public sealed class Plugin : IDalamudPlugin {
             Log.Warning($"ActScript {name} 载入失败: {ex}");
         }
     }
+
     public const ImGuiTableFlags ImGuiTableFlag = ImGuiTableFlags.Borders | ImGuiTableFlags.Resizable | ImGuiTableFlags.RowBg;
 
     public const BindingFlags AllFlags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static;
@@ -343,7 +345,7 @@ public sealed class Plugin : IDalamudPlugin {
         // Trace.Listeners.Remove(PluginLogTraceListener);
         WindowSystem.RemoveAllWindows();
         OverlayWindow.Dispose();
-        MainWindow. SilverDasherPlugin?.DeInitPlugin();
+        MainWindow.SilverDasherPlugin?.DeInitPlugin();
         CommandManager.RemoveHandler(MainWindowCommandName);
         CommandManager.RemoveHandler(EndEncCommandName);
         CommandManager.RemoveHandler(OverlayCommandName);
@@ -352,7 +354,7 @@ public sealed class Plugin : IDalamudPlugin {
             DeInitIActPluginV1(oFormActMain.ActPlugins.Last(), true);
         FfxivActPluginWrapper.Dispose();
         ActGlobals.Dispose();
-       // MainWindow. TpMain?.Close();
+        // MainWindow. TpMain?.Close();
     }
 
     internal void RefreshBw() {

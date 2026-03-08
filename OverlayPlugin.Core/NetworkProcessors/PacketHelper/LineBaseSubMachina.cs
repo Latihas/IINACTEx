@@ -4,7 +4,7 @@ using Machina.FFXIV;
 
 namespace RainbowMage.OverlayPlugin.NetworkProcessors.PacketHelper;
 
-internal abstract class LineBaseSubMachina<PacketType>
+public abstract class LineBaseSubMachina<PacketType>
     where PacketType : MachinaPacketWrapper, new() {
     protected static FFXIVRepository ffxiv;
 

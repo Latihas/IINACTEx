@@ -9,18 +9,18 @@ using RainbowMage.OverlayPlugin.NetworkProcessors.PacketHelper;
 
 namespace RainbowMage.OverlayPlugin.NetworkProcessors;
 
-internal class LineActorControlExtra : LineBaseSubMachina<LineActorControlExtra.ActorControlExtraPacket> {
+public class LineActorControlExtra : LineBaseSubMachina<LineActorControlExtra.ActorControlExtraPacket> {
     public const uint LogFileLineID = 273;
     public const string LogLineName = "ActorControlExtra";
     public const string MachinaPacketName = "ActorControl";
 
     // Any category defined in this array will be allowed as an emitted line
-    public static readonly Server_ActorControlCategory[] AllowedActorControlCategories = {
+    public static Server_ActorControlCategory[] AllowedActorControlCategories = {
         Server_ActorControlCategory.SetAnimationState, Server_ActorControlCategory.DisplayPublicContentTextMessage, Server_ActorControlCategory.VfxUnknown49, Server_ActorControlCategory.SetModelState, Server_ActorControlCategory.PlayActionTimeline,
         Server_ActorControlCategory.EObjAnimation
     };
 
-    internal class ActorControlExtraPacket : MachinaPacketWrapper {
+    public class ActorControlExtraPacket : MachinaPacketWrapper {
         public override string ToString(long epoch, uint ActorID) {
             var category = Get<Server_ActorControlCategory>("category");
 

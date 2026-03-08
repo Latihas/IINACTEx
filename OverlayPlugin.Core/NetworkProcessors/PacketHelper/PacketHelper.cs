@@ -101,7 +101,7 @@ internal class RegionalizedPacketHelper<
     }
 }
 
-internal interface IPacketHelper {
+public interface IPacketHelper {
     string ToString(long epoch, byte[] message);
 }
 
