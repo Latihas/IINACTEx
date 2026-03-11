@@ -25,7 +25,7 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageReference Include="NAudio" Version="2.2.1"/>
-    <PackageReference Include="System.Speech" Version="10.0.3"/>
+    <PackageReference Include="System.Speech" Version="10.0.4" />
     <Reference Include="FFXIVClientStructs">
       <HintPath>$(DalamudLibPath)FFXIVClientStructs.dll</HintPath>
       <Private>false</Private>

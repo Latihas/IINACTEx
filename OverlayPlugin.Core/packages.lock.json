@@ -4,9 +4,9 @@
     "net10.0-windows8.0": {
       "Microsoft.Extensions.ObjectPool": {
         "type": "Direct",
-        "requested": "[10.0.3, )",
-        "resolved": "10.0.3",
-        "contentHash": "dQKlVXzqflsv5X8iDlAN5YmTL1GcLCrOLKo1s9PNdfjqxeu0S/jmWTfiLGno+8+o1qFL3+VFAH5/ftmypN+sPw=="
+        "requested": "[10.0.4, )",
+        "resolved": "10.0.4",
+        "contentHash": "2pufIFOgNl/yWTOoIC9XgBnO9VxgfAjdRCnVwpE2+ICfcroGnjuEAGzJ5lTdZeAe0HvA31vMBWXtcmGB7TOq3g=="
       },
       "Microsoft.NET.ILLink.Tasks": {
         "type": "Direct",

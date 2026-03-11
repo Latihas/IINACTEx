@@ -48,7 +48,7 @@
     <ProjectReference Include="..\OverlayPlugin.Common\OverlayPlugin.Common.csproj"/>
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Microsoft.Extensions.ObjectPool" Version="10.0.3"/>
+    <PackageReference Include="Microsoft.Extensions.ObjectPool" Version="10.0.4" />
     <PackageReference Include="NetCoreServer" Version="8.0.7"/>
     <PackageReference Include="System.Data.DataSetExtensions" Version="4.5.0"/>
   </ItemGroup>

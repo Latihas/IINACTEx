@@ -88,9 +88,7 @@ internal class OverlayPluginLogLineConfig {
     }
 
     private IOpcodeConfigEntry GetOpcode(string name, Opcodes opcodes, string version, string opcodeType, MachinaRegion machinaRegion) {
-        if (opcodes == null)
-            return null;
-        // if (machinaRegion == "TraditionalChinese") machinaRegion = "Tc"; //暂时解决一下
+        if (opcodes == null) return null;
         if (opcodes.TryGetValue(machinaRegion, out var regionOpcodes)) {
             if (regionOpcodes.TryGetValue(version, out var versionOpcodes)) {
                 if (versionOpcodes.TryGetValue(name, out var opcode)) {
