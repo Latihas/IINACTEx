@@ -61,15 +61,11 @@ public class CheckTreeNode(string name, string id) : UIBinded {
 
     private void OnCheckedChanged(bool isChecked) {
         ViewChecked = isChecked;
-        foreach (var item in Related) {
-            item.ViewChecked = isChecked;
-        }
+        foreach (var item in Related) item.ViewChecked = isChecked;
         NotifyPropertyChanged("ViewChecked");
         if (Nodes is { Count: > 0 }) {
             changing = true;
-            foreach (var node in Nodes) {
-                node.ViewChecked = isChecked;
-            }
+            foreach (var node in Nodes) node.OnCheckedChanged(isChecked);
             changing = false;
         }
         try {
