@@ -63,7 +63,7 @@ public sealed class Plugin : IDalamudPlugin {
     public Configuration ConfigurationInstance => Configuration;
 #pragma warning restore CA1822
     internal static TextToSpeechProvider TextToSpeechProvider { get; private set; }
-    private static MainWindow MainWindow = null!;
+    internal static MainWindow MainWindow = null!;
     internal static FileDialogManager FileDialogManager { get; private set; }
     private ZoneDownHookManager ZoneDownHookManager { get; set; }
     private IpcProviders IpcProviders { get; }
@@ -86,7 +86,6 @@ public sealed class Plugin : IDalamudPlugin {
     public readonly TriggernometryLogView TriggernometryLogView;
     public readonly ACTLogView ACTLogView;
     public readonly OverlayWindow OverlayWindow;
-    // public readonly ACTStatics ActStatics;
     private static DateTime lastLogTick = DateTime.Now;
     private readonly DateTime startLogTick = DateTime.Now;
     internal static EdgeTTSWindow EdgeTTSWindow = null!;
@@ -102,6 +101,7 @@ public sealed class Plugin : IDalamudPlugin {
     public readonly bool opcodesjsoncReplaced;
     public bool opcodesjsoncCanReplace => File.Exists(opcodesjsoncPath);
     public string opcodesjsoncPath => Path.Combine(PluginAssemblyDirectory, "opcodes.jsonc");
+    public string cactbotDir => Path.Combine(Plugin.Instance.PluginConfigDirectory, "cactbot");
     // ReSharper disable once MemberCanBePrivate.Global
     public readonly TinyIoCContainer Container;
 
@@ -338,6 +338,9 @@ public sealed class Plugin : IDalamudPlugin {
     public void Dispose() {
         Configuration.Save();
         TextToSpeechProvider.Dispose();
+        PluginInterface.UiBuilder.Draw -= DrawUI;
+        PluginInterface.UiBuilder.OpenConfigUi -= DrawConfigUI;
+        PluginInterface.UiBuilder.OpenMainUi -= DrawConfigUI;
         ClientState.EnterPvP -= EnterPvP;
         ClientState.LeavePvP -= LeavePvP;
         IpcProviders.Dispose();

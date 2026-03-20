@@ -123,5 +123,6 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <TargetPath>$([System.String]::Copy('%(RecursiveDir)').Replace('Res\', ''))%(Filename)%(Extension)</TargetPath>
     </Content>
+    <EmbeddedResource Include="logo.png"/>
   </ItemGroup>
 </Project>

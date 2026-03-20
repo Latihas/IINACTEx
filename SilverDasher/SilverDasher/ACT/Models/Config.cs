@@ -9,7 +9,7 @@ using SilverDasher.ACT.Storages;
 
 namespace SilverDasher.ACT.Models;
 
-public class Config : UIBinded {
+public class Config {
     [JsonIgnore] public string VersionString { get; } = string.Join(".", BitConverter.GetBytes(DataStorage.Version));
 
     [JsonProperty("TTSNotifications")] public Dictionary<HuntState, bool> TTSNotifications = new() {

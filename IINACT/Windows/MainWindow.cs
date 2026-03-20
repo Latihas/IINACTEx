@@ -2,25 +2,30 @@ using System.IO;
 using System.Net;
 using System.Net.Sockets;
 using System.Numerics;
+using System.Reflection;
 using Dalamud.Bindings.ImGui;
 using Dalamud.Interface;
 using Dalamud.Interface.Colors;
 using Dalamud.Interface.Components;
 using Dalamud.Interface.ImGuiNotification;
+using Dalamud.Interface.Textures.TextureWraps;
 using Dalamud.Interface.Utility;
 using Dalamud.Interface.Utility.Raii;
 using Dalamud.Interface.Windowing;
 using FFXIV_ACT_Plugin.Config;
 using IINACT.Latihas;
+using IINACT.Latihas.Overlay;
 using RainbowMage.OverlayPlugin;
 using RainbowMage.OverlayPlugin.WebSocket;
+using static IINACT.Latihas.LWindow;
+using static IINACT.Plugin;
 
 namespace IINACT.Windows;
 
 public class MainWindow : Window {
 	private int selectedOverlayIndex;
 
-	public MainWindow() : base(Plugin.WindowPrefix) {
+	public MainWindow() : base(WindowPrefix) {
 		SizeConstraints = new WindowSizeConstraints {
 			MinimumSize = new Vector2(307, 207),
 			MaximumSize = new Vector2(float.MaxValue, float.MaxValue)
@@ -31,26 +36,157 @@ public class MainWindow : Window {
 	public IReadOnlyList<IOverlayPreset>? OverlayPresets { get; set; }
 	private string[]? OverlayNames => OverlayPresets?.Select(x => x.Name).ToArray();
 	public ServerController? Server { get; set; }
+	private static string currentPage = "帮助";
+	private static readonly string[] PagesPlugin = ["解析", "悬浮窗", "触发器", "鲇鱼精", "银山雀儿"];
+	private static readonly string[] PagesIINACTEx = ["脚本", "调试"];
+	private static readonly string[] PagesOther = ["初始化", "帮助", "设置"];
+	private IDalamudTextureWrap? logoTexture;
+
+	private static Bitmap GetEmbeddedPngAsBitmap(string resourceFullName) {
+		using var resourceStream = Assembly.GetExecutingAssembly().GetManifestResourceStream(resourceFullName);
+		return new Bitmap(resourceStream);
+	}
+
 
 	public override void Draw() {
-		using var bar = ImRaii.TabBar("settingsTabs");
-		if (!bar) return;
-		LWindow.DrawHelpSettings();
-		DrawMainWindow();
-		DrawParseSettings();
-		LWindow.DrawTriggerSettings();
-		DrawSettingsPostnamazu();
-		// DrawWinForm();
-		DrawSilverDasher();
-		LWindow.DrawSettingsScripts();
-		LWindow.DrawSettings();
-		LWindow.DrawTriggerDebug();
+		ImGui.PushStyleColor(ImGuiCol.Border, new Vector4(1, 1, 1, .5f));
+		ImGui.PushStyleColor(ImGuiCol.Separator, new Vector4(1, 1, 1, .5f));
+		ImGui.PushStyleVar(ImGuiStyleVar.ChildBorderSize, 1);
+		ImGui.PushStyleVar(ImGuiStyleVar.FrameBorderSize, 1);
+		ImGui.PushStyleVar(ImGuiStyleVar.TabRounding, 8);
+		if (ImGui.BeginChild("##IINACTEx_LeftTabPanel", new Vector2(200, -1), true)) {
+			if (logoTexture == null) {
+				try {
+					using var pngBitmap = GetEmbeddedPngAsBitmap("IINACT.logo.png");
+					logoTexture = OverlayWindow.Bitmap2Texture(pngBitmap);
+				}
+				catch (Exception ex) {
+					Log.Error(ex.ToString());
+				}
+			}
+			else {
+				// ImGui.Spacing();
+				// ImGui.SetCursorPosX(50);
+				// var pos = ImGui.GetCursorScreenPos();
+				// var iconSize = new Vector2(100, 100);
+				// ImGui.Image(logoTexture.Handle, iconSize);
+				// ImGui.GetWindowDrawList().AddRectFilledMultiColor(
+				// 	pos, // 矩形左上角
+				// 	pos + iconSize, // 矩形右下角
+				// 	0x7F92FE9D, // 左上角颜色（高光起点）
+				// 	0x7FFF006E, // 右上角颜色
+				// 	0x7F92FE9D, // 右下角颜色（高光终点）
+				// 	0x7FFF006E // 左下角颜色
+				// );
+				// ImGui.Spacing();
+
+
+				var time = (float)ImGui.GetTime();
+
+				ImGui.Spacing();
+				ImGui.SetCursorPosX(50);
+				var pos = ImGui.GetCursorScreenPos();
+				var iconSize = new Vector2(100, 100);
+				ImGui.Image(logoTexture.Handle, iconSize);
+				var hueOffset = MathF.Sin(time * 2) * 0.5f + 0.5f;
+				var alphaBreath = MathF.Cos(time * 1.5f) * 0.2f + 0.8f;
+				var colorTL = (uint)(alphaBreath * 0x7F) << 24 |
+				              (uint)(0x92 + hueOffset * 0x30) << 16 |
+				              (uint)(0xFE) << 8 |
+				              (uint)(0x9D - hueOffset * 0x20);
+				var colorTR = (uint)(alphaBreath * 0x7F) << 24 |
+				              (uint)(0xFF - hueOffset * 0x30) << 16 |
+				              (uint)(0x00) << 8 |
+				              (uint)(0x6E + hueOffset * 0x20);
+				ImGui.GetWindowDrawList().AddRectFilledMultiColor(
+					pos, pos + iconSize,
+					colorTL,
+					colorTR,
+					colorTL,
+					colorTR
+				);
+				ImGui.Spacing();
+			}
+			foreach (var p in PagesPlugin) {
+				ImGui.SetCursorPosX(20);
+				var ncp = currentPage != p;
+				if (ncp) ImGui.PushStyleColor(ImGuiCol.Button, new Vector4(0, 0, 0, 0));
+				if (ImGui.Button(p, new Vector2(160, 0)))
+					currentPage = p;
+				if (ncp) ImGui.PopStyleColor();
+			}
+			ImGui.Spacing();
+			ImGui.Separator();
+			ImGui.Spacing();
+			foreach (var p in PagesIINACTEx) {
+				ImGui.SetCursorPosX(20);
+				var ncp = currentPage != p;
+				if (ncp) ImGui.PushStyleColor(ImGuiCol.Button, new Vector4(0, 0, 0, 0));
+				if (ImGui.Button(p, new Vector2(160, 0)))
+					currentPage = p;
+				if (ncp) ImGui.PopStyleColor();
+			}
+			ImGui.Spacing();
+			ImGui.Separator();
+			ImGui.Spacing();
+			foreach (var p in PagesOther) {
+				ImGui.SetCursorPosX(20);
+				var ncp = currentPage != p;
+				if (ncp) ImGui.PushStyleColor(ImGuiCol.Button, new Vector4(0, 0, 0, 0));
+				if (ImGui.Button(p, new Vector2(160, 0)))
+					currentPage = p;
+				if (ncp) ImGui.PopStyleColor();
+			}
+			ImGui.EndChild();
+		}
+		ImGui.SameLine();
+		if (ImGui.BeginChild("##IINACTEx_RightTabPanel", new Vector2(-1, 0), true)) {
+			// using var bar = ImRaii.TabBar("settingsTabs");
+			// if (!bar) return;
+			switch (currentPage) {
+				case "解析":
+					DrawParseSettings();
+					break;
+				case "悬浮窗":
+					DrawMainWindow();
+					break;
+				case "触发器":
+					DrawTriggerSettings();
+					break;
+				case "鲇鱼精":
+					DrawSettingsPostnamazu();
+					break;
+				case "银山雀儿":
+					DrawSilverDasher();
+					break;
+
+				case "脚本":
+					DrawSettingsScripts();
+					break;
+				case "调试":
+					DrawTriggerDebug();
+					break;
+
+				case "初始化":
+					DrawInitSettings();
+					break;
+				case "帮助":
+					DrawHelpSettings();
+					break;
+				case "设置":
+					DrawSettings();
+					break;
+			}
+			ImGui.EndChild();
+		}
+		ImGui.PopStyleColor(2);
+		ImGui.PopStyleVar(3);
 	}
 
 	private static void DrawSettingsPostnamazu() {
-		using var tab = ImRaii.TabItem("Postnamazu");
-		if (!tab) return;
-		var PluginUi = Plugin.Instance.PostNamazuPlugin.PluginUi;
+		// using var tab = ImRaii.TabItem("Postnamazu");
+		// if (!tab) return;
+		var PluginUi = Instance.PostNamazuPlugin.PluginUi;
 		var TextPort = PluginUi.TextPort.Text;
 		if (ImGui.InputText("鲇鱼精端口", ref TextPort)) {
 			PluginUi.TextPort.Text = TextPort;
@@ -59,10 +195,10 @@ public class MainWindow : Window {
 		ImGui.SameLine();
 		if (PluginUi.ButtonStart.Enabled)
 			if (ImGui.Button("鲇鱼精启动监听"))
-				Plugin.Instance.PostNamazuPlugin.ServerStart();
+				Instance.PostNamazuPlugin.ServerStart();
 		if (PluginUi.ButtonStop.Enabled)
 			if (ImGui.Button("鲇鱼精停止监听"))
-				Plugin.Instance.PostNamazuPlugin.ServerStop();
+				Instance.PostNamazuPlugin.ServerStop();
 		var PostNamazuAutoStart = PluginUi.CheckAutoStart.Checked;
 		if (ImGui.Checkbox("鲇鱼精监听自动启动", ref PostNamazuAutoStart)) {
 			PluginUi.CheckAutoStart.Checked = PostNamazuAutoStart;
@@ -86,7 +222,7 @@ public class MainWindow : Window {
 			var item = items[i];
 			if (ImGui.Selectable($"{item}## copyItem_{i}")) {
 				ImGui.SetClipboardText(item.ToString());
-				Plugin.NotificationManager.AddNotification(new Notification {
+				NotificationManager.AddNotification(new Notification {
 					Content = "已复制"
 				});
 			}
@@ -108,14 +244,14 @@ public class MainWindow : Window {
 	}
 
 	internal static void EnableSilverDasher() {
-		var targetDir = Path.Combine(Plugin.Instance.PluginActScriptDirectory, "data");
+		var targetDir = Path.Combine(Instance.PluginActScriptDirectory, "data");
 		if (!Directory.Exists(targetDir)) {
-			var sourceDir = Path.Combine(Plugin.Instance.PluginAssemblyDirectory, "data");
+			var sourceDir = Path.Combine(Instance.PluginAssemblyDirectory, "data");
 			Directory.CreateDirectory(targetDir);
 			CopyDirectoryContents(sourceDir, targetDir, overwrite: true);
 		}
-		SilverDasherPlugin = new SilverDasher.ACT.SilverDasher(Plugin.Instance.PluginActScriptDirectory,
-			Plugin.ClientState, Plugin.ObjectTable, Plugin.Framework, Plugin.NotificationManager);
+		SilverDasherPlugin = new SilverDasher.ACT.SilverDasher(Instance.PluginActScriptDirectory,
+			ClientState, ObjectTable, Framework, NotificationManager);
 	}
 
 	// private static void DrawWinForm() {
@@ -126,8 +262,8 @@ public class MainWindow : Window {
 	internal static SilverDasher.ACT.SilverDasher? SilverDasherPlugin;
 
 	private static void DrawSilverDasher() {
-		using var tab = ImRaii.TabItem("SilverDasher");
-		if (!tab) return;
+		// using var tab = ImRaii.TabItem("SilverDasher");
+		// if (!tab) return;
 		if (SilverDasherPlugin == null) {
 			if (ImGui.Button("启用")) EnableSilverDasher();
 		}
@@ -151,19 +287,22 @@ public class MainWindow : Window {
 		}
 	}
 
+	internal void DrawOverlayLink() {
+		ImGui.Text("以下是开发者喜欢用的网址，点击复制，贴进bw即可:");
+		foreach (var url in new[] {
+			         ("伤害统计", $"http://overlay.diemoe.net/kagerou/overlay/?HOST_PORT=ws://{Server?.Address}:{Server?.Port}"),
+			         ("时间轴", $"file:///{Instance.cactbotDir}/ui/raidboss/raidboss.html?timeline=1&alerts=1&OVERLAY_WS=ws://{Server?.Address}:{Server?.Port}/ws".Replace('\\', '/')),
+			         ("设置", $"http://cactbot.diemoe.net/ui/config/config.html?OVERLAY_WS=ws://{Server?.Address}:{Server?.Port}/ws")
+		         }) {
+			if (ImGui.Button(url.Item1)) ImGui.SetClipboardText(url.Item1);
+			ImGui.SameLine();
+			ImGui.Text(":");
+			ImGui.SameLine();
+			if (ImGui.Button(url.Item2)) ImGui.SetClipboardText(url.Item2);
+		}
+	}
 
-	private void DrawMainWindow() {
-		using var tab = ImRaii.TabItem("运行状态");
-		if (!tab) return;
-
-		ImGui.Spacing();
-		ImGui.TextColored(ImGuiColors.DalamudGrey, "OverlayPlugin 状态:");
-		ImGuiHelpers.ScaledRelativeSameLine(155);
-		ImGui.Text(Plugin.Instance.OverlayPluginStatus);
-		ImGui.Spacing();
-		ImGui.Separator();
-		ImGui.Spacing();
-
+	internal void DrawOverlayGen() {
 		ImGui.TextColored(ImGuiColors.DalamudGrey, "Overlay URI 生成器:");
 
 		var comboWidth = ImGui.GetWindowWidth() * 0.8f;
@@ -202,66 +341,22 @@ public class MainWindow : Window {
 				UriKind.Absolute,
 				out webSocketServer);
 		}
-
 		var overlayUri = selectedOverlay?.ToOverlayUri(webSocketServer);
 		var overlayUriString = overlayUri?.ToString() ?? "<生成URI失败>";
-
 		ImGui.SetNextItemWidth(comboWidth);
 		ImGui.InputText("URI", ref overlayUriString, 1000, ImGuiInputTextFlags.ReadOnly);
-
 		ImGui.Spacing();
+	}
 
-		ImGui.Text("在线的部分网页(如Timeline)不一定是最新的，IINACTEx尽量提供最新版Diemoe ACT内置的资源");
-		ImGui.Text("cactbot.zip可在");
+	private void DrawMainWindow() {
+		ImGui.TextColored(ImGuiColors.DalamudGrey, "OverlayPlugin 状态:");
+		ImGuiHelpers.ScaledRelativeSameLine(155);
+		ImGui.Text(Instance.OverlayPluginStatus);
+		ImGui.Separator();
+		ImGui.Text("cactbot在线资源与悬浮窗链接可在初始化栏配置");
+		ImGui.Text("IINACTEx也有内置一个原生的伤害统计悬浮窗，" + OverlayCommandName);
 		ImGui.SameLine();
-		const string cactboturl = "https://raw.githubusercontent.com/Latihas/dalamud-plugins/main/cactbot.zip";
-		var cactbotDir = Path.Combine(Plugin.Instance.PluginConfigDirectory, "cactbot");
-		// if (ImGui.Button(cactboturl)) LWindow.Start(cactboturl);
-		ImGui.SameLine();
-		ImGui.Text("下载");
-		ImGui.Text("也可以尝试");
-		ImGui.SameLine();
-		if (ImGui.Button("一键下载解压")) {
-			if (FileDownloaderCactbot != null) {
-				Plugin.NotificationManager.AddNotification(new Notification {
-					Type = NotificationType.Warning,
-					Content = "有未完成的下载任务"
-				});
-			}
-			else {
-				var zipPath = Path.Combine(Plugin.Instance.PluginConfigDirectory, "cactbot.zip");
-				FileDownloaderCactbot = new FileDownloader(cactboturl, zipPath, () => {
-					FileDownloaderCactbot = null;
-					Plugin.UnzipWithoutPassword(zipPath, cactbotDir);
-				});
-				_ = FileDownloaderCactbot.DownloadFileAsync();
-			}
-		}
-		if (FileDownloaderCactbot != null) {
-			ImGui.SameLine();
-			ImGui.ProgressBar(FileDownloaderCactbot.Progress, new Vector2(300, 24), "下载中");
-		}
-		ImGui.SameLine();
-		ImGui.Text("会强制覆盖旧版，但是受网络影响较大，实在不行只能手动下载。");
-		ImGui.Text("手动下载完成后放在IINACTEx插件的安装目录下，可以选择手动解压，也可以在插件下次加载时自动解压。解压后，即可打开资源文件夹。");
-
-		// if (ImGui.Button("打开资源文件夹")) LWindow.Start(Plugin.Instance.PluginConfigDirectory);
-		ImGui.Text("更多网页可见cactbot文件夹。以下是开发者喜欢用的网址，点击复制，贴进bw即可:");
-		foreach (var url in new[] {
-			         ("伤害统计", $"http://overlay.diemoe.net/kagerou/overlay/?HOST_PORT=ws://{Server?.Address}:{Server?.Port}"),
-			         ("时间轴", $"file:///{cactbotDir}/ui/raidboss/raidboss.html?timeline=1&alerts=1&OVERLAY_WS=ws://{Server?.Address}:{Server?.Port}/ws".Replace('\\', '/')),
-			         ("设置", $"http://cactbot.diemoe.net/ui/config/config.html?OVERLAY_WS=ws://{Server?.Address}:{Server?.Port}/ws")
-		         }) {
-			if (ImGui.Button(url.Item1)) ImGui.SetClipboardText(url.Item1);
-			ImGui.SameLine();
-			ImGui.Text(":");
-			ImGui.SameLine();
-			if (ImGui.Button(url.Item2)) ImGui.SetClipboardText(url.Item2);
-		}
-		ImGui.Text("每次插件加载会自动刷新bw的上述名称(时间轴,设置)的悬浮窗。");
-		ImGui.Text("IINACTEx也有内置一个原生的伤害统计悬浮窗，" + Plugin.OverlayCommandName);
-		ImGui.SameLine();
-		if (ImGui.Button("点击打开")) Plugin.Instance.OverlayWindow.IsOpen = true;
+		if (ImGui.Button("点击打开")) Instance.OverlayWindow.IsOpen = true;
 		ImGui.Separator();
 		ImGui.Spacing();
 		var serverStatus = Server is null ? "初始化中..." : "已停止";
@@ -293,7 +388,7 @@ public class MainWindow : Window {
 
 			if (ImGui.Button("重启")) {
 				Server.Restart();
-				Plugin.Instance.OverlayWindow.Init(Server);
+				Instance.OverlayWindow.Init(Server);
 				if (OverlayPluginConfig is not null) {
 					OverlayPluginConfig.WSServerRunning = true;
 					OverlayPluginConfig.Save();
@@ -312,11 +407,10 @@ public class MainWindow : Window {
 		DrawWebSocketSettings();
 	}
 
-	private static FileDownloader? FileDownloaderCactbot;
 
 	private void DrawParseSettings() {
-		using var tab = ImRaii.TabItem("解析设置");
-		if (!tab) return;
+		// using var tab = ImRaii.TabItem("解析设置");
+		// if (!tab) return;
 
 		ImGui.Spacing();
 		var elementWidth = ImGui.GetWindowWidth() - 150 * ImGuiHelpers.GlobalScale;
@@ -325,7 +419,7 @@ public class MainWindow : Window {
 		ImGui.InputText("日志文件路径", ref logFilePath, 200, ImGuiInputTextFlags.ReadOnly);
 		ImGui.SameLine();
 		if (ImGuiComponents.DisabledButton(FontAwesomeIcon.Folder)) {
-			Plugin.FileDialogManager.OpenFolderDialog("选择保存日志的文件夹", (success, path) => {
+			FileDialogManager.OpenFolderDialog("选择保存日志的文件夹", (success, path) => {
 				if (!success) return;
 				Plugin.Configuration.LogFilePath = path;
 				Plugin.Configuration.Save();
@@ -363,7 +457,7 @@ public class MainWindow : Window {
 		}
 		var disablePvp = Plugin.Configuration.DisablePvp;
 		if (ImGui.Checkbox("在PvP中禁用写入网络日志文件", ref disablePvp)) {
-			if (Plugin.ClientState.IsPvP && disablePvp) Plugin.Configuration.DisableWritingPvpLogFile = true;
+			if (ClientState.IsPvP && disablePvp) Plugin.Configuration.DisableWritingPvpLogFile = true;
 
 			Plugin.Configuration.DisablePvp = disablePvp;
 			Plugin.Configuration.Save();

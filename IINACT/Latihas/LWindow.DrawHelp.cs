@@ -1,4 +1,6 @@
 ﻿using System.Globalization;
+using System.IO;
+using System.Numerics;
 using System.Security.Cryptography;
 using System.Text;
 using Advanced_Combat_Tracker;
@@ -17,27 +19,46 @@ namespace IINACT.Latihas;
 public static partial class LWindow {
 	private static string TestTriggerId = "", TestCode = "", TestExpression = "", TestTts = "";
 	private static readonly Context TestContext = new(null);
+	private static FileDownloader? FileDownloaderCactbot;
+
+	internal static void DrawInitSettings() {
+		if (ImGui.CollapsingHeader("悬浮窗", ImGuiTreeNodeFlags.DefaultOpen)) {
+			ImGui.Text("cactbot: ");
+			ImGui.SameLine();
+			const string cactboturl = "https://raw.githubusercontent.com/Latihas/dalamud-plugins/main/cactbot.zip";
+			if (ImGui.Button("一键下载解压")) {
+				if (FileDownloaderCactbot != null) {
+					Plugin.NotificationManager.AddNotification(new Notification {
+						Type = NotificationType.Warning,
+						Content = "有未完成的下载任务"
+					});
+				}
+				else {
+					var zipPath = Path.Combine(Plugin.Instance.PluginConfigDirectory, "cactbot.zip");
+					FileDownloaderCactbot = new FileDownloader(cactboturl, zipPath, () => {
+						FileDownloaderCactbot = null;
+						Plugin.UnzipWithoutPassword(zipPath, Plugin.Instance.cactbotDir);
+					});
+					_ = FileDownloaderCactbot.DownloadFileAsync();
+				}
+			}
+			if (FileDownloaderCactbot != null) {
+				ImGui.SameLine();
+				ImGui.ProgressBar(FileDownloaderCactbot.Progress, new Vector2(300, 0), "下载中");
+			}
+			Plugin.MainWindow.DrawOverlayGen();
+			ImGui.Text("在线的部分网页(如Timeline)不一定是最新的，IINACTEx尽量提供最新版Diemoe ACT内置的资源");
+			Plugin.MainWindow.DrawOverlayLink();
+		}
+	}
 
 	internal static void DrawHelpSettings() {
-		using var tab = ImRaii.TabItem("帮助");
-		if (!tab) return;
 		ImGui.PushStyleColor(ImGuiCol.Text, ImGuiColors.DalamudRed);
-		ImGui.Text("重要提醒！！！请一定要先看完介绍再使用，本插件仍然不是很稳定，有炸游戏风险");
-		ImGui.Text("重要提醒！！！请一定要先看完介绍再使用，本插件仍然不是很稳定，有炸游戏风险");
-		ImGui.Text("重要提醒！！！请一定要先看完介绍再使用，本插件仍然不是很稳定，有炸游戏风险");
-		ImGui.Text("其实最会炸游戏的是VfxModule，Trigernometry-ModuleBase设置-启用ModuleBase-取消VfxModule勾选即可禁用");
-		// ImGui.Text("或者启用ImGui替代绘制模式，但是该模式适配可能并不完全，仍然有炸游戏的可能。");
+		ImGui.Text("如果频繁炸游戏，可能是VfxModule的问题，在触发器-ModuleBase-启用ModuleBase-取消VfxModule勾选即可禁用");
 		ImGui.PopStyleColor(1);
-		if (ImGui.CollapsingHeader("更新日志", ImGuiTreeNodeFlags.DefaultOpen)) {
+		if (ImGui.CollapsingHeader("更新日志")) {
 			ImGui.Text("原版ACT统计和银山雀儿已迁移至卫月API。如果有任何bug或是修改建议请提Issue。");
 		}
-		// var s = ImGui.CollapsingHeader("已知问题(没定位到问题所在，可以提Pr之类的协助我修复。)", ImGuiTreeNodeFlags.DefaultOpen);
-		// if (s) {
-		//     ImGui.Text("待测试");
-		// }
-		// if (ImGui.CollapsingHeader("TODO", ImGuiTreeNodeFlags.DefaultOpen)) {
-		//     ImGui.Text("(不一定会完成)ImGui替代Vfx绘制");
-		// }
 		if (ImGui.CollapsingHeader("项目介绍")) {
 			ImGui.Text("修改IINACT的初衷旨在尽可能满足日常对ACT的基本需求，替代ACT，假装自己是西瓜玩。");
 			ImGui.Text("本项目仍然处于野蛮开发期，代码管理极其混乱，暗藏神秘bug，仅作开发测试使用。");
@@ -103,10 +124,11 @@ public static partial class LWindow {
 			ImGui.Text("    //DalamudDirReferenes");
 			foreach (var asm in CSharpScriptCompiler.DalamudDirReferenes) ImGui.Text("    " + asm);
 		}
-		if (ImGui.CollapsingHeader("常见问题")) {
+		if (ImGui.CollapsingHeader("常见问题", ImGuiTreeNodeFlags.DefaultOpen)) {
 			ImGui.Text("问题太多了。如果出现bug，试着关开一下插件，说不定就自己会好了。");
 			ImGui.Text("当然也可能是我懒得写了，你也可以帮助我完善这一部分。");
 			ImGui.Text("其他问题可在Github仓库提issue解决。");
+			ImGui.Text("如果是第一次使用，可以在左侧的\"初始化\"栏下载与配置资源(如悬浮窗，cactbot)");
 		}
 	}
 
