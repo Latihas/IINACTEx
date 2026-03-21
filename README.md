@@ -38,7 +38,7 @@ Plugin以适配现代.NET。与此同时，也添加了大量修改的Triggernom
 ![sd.png](pic/sd.png)
 ![overlay.png](pic/overlay.png)
 ![img.png](pic/act.png)
-
+![glance.gif](pic/glance.gif)
 # 开发相关
 
 本分支基于国服IINACT开发，如需移植到国际服理论上仅需修改IINACT官库与CN库的区别即可(

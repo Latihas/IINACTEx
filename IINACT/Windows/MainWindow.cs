@@ -10,10 +10,8 @@ using Dalamud.Interface.Components;
 using Dalamud.Interface.ImGuiNotification;
 using Dalamud.Interface.Textures.TextureWraps;
 using Dalamud.Interface.Utility;
-using Dalamud.Interface.Utility.Raii;
 using Dalamud.Interface.Windowing;
 using FFXIV_ACT_Plugin.Config;
-using IINACT.Latihas;
 using IINACT.Latihas.Overlay;
 using RainbowMage.OverlayPlugin;
 using RainbowMage.OverlayPlugin.WebSocket;
@@ -43,67 +41,142 @@ public class MainWindow : Window {
 	private IDalamudTextureWrap? logoTexture;
 
 	private static Bitmap GetEmbeddedPngAsBitmap(string resourceFullName) {
-		using var resourceStream = Assembly.GetExecutingAssembly().GetManifestResourceStream(resourceFullName);
+		using var resourceStream = Assembly.GetExecutingAssembly().GetManifestResourceStream(resourceFullName)!;
 		return new Bitmap(resourceStream);
 	}
 
+	private readonly Dictionary<ImGuiCol, Vector4> ImGuiColor = new() {
+		{ ImGuiCol.Border, new Vector4(1, 1, 1, .5f) },
+		{ ImGuiCol.Separator, new Vector4(1, 1, 1, .5f) },
+		{ ImGuiCol.ChildBg, new Vector4(36 / 255f, 40 / 255f, 47 / 255f, 1) },
+		{ ImGuiCol.FrameBg, new Vector4(37 / 255f, 39 / 255f, 44 / 255f, 1) },
+		{ ImGuiCol.Button, new Vector4(62 / 255f, 78 / 255f, 105 / 255f, 1) },
+		{ ImGuiCol.ButtonHovered, new Vector4(50 / 255f, 58 / 255f, 75 / 255f, 1) },
+		{ ImGuiCol.ButtonActive, new Vector4(88 / 255f, 111 / 255f, 150 / 255f, 1) },
+		{ ImGuiCol.CheckMark, new Vector4(26 / 255f, 159 / 255f, 1, 1) },
+		{ ImGuiCol.ScrollbarBg, new Vector4(0, 0, 0, 0) },
+		{ ImGuiCol.ScrollbarGrab, new Vector4(96 / 255f, 103 / 255f, 116 / 255f, 1) },
+		{ ImGuiCol.ScrollbarGrabHovered, new Vector4(123 / 255f, 131 / 255f, 146 / 255f, 1) },
+		{ ImGuiCol.ScrollbarGrabActive, new Vector4(123 / 255f, 131 / 255f, 146 / 255f, 1) },
+		{ ImGuiCol.Header, new Vector4(62 / 255f, 78 / 255f, 105 / 255f, 1) },
+		{ ImGuiCol.HeaderHovered, new Vector4(50 / 255f, 58 / 255f, 75 / 255f, 1) },
+		{ ImGuiCol.HeaderActive, new Vector4(88 / 255f, 111 / 255f, 150 / 255f, 1) },
+		{ ImGuiCol.PlotHistogram, new Vector4(20 / 255f, 90 / 255f, 141 / 255f, 1) },
+	};
+	private readonly Dictionary<ImGuiStyleVar, int> ImGuiVar = new() {
+		{ ImGuiStyleVar.ChildBorderSize, 4 },
+		{ ImGuiStyleVar.FrameBorderSize, 2 },
+	};
+
+	private static (float r, float g, float b) HsvToRgb(float hue, float saturation, float value) {
+		var h = hue / 60f;
+		var i = (int)Math.Floor(h);
+		var f = h - i;
+		var p = value * (1 - saturation);
+		var q = value * (1 - saturation * f);
+		var t = value * (1 - saturation * (1 - f));
+
+		float r, g, b;
+		switch (i) {
+			case 0:
+				r = value;
+				g = t;
+				b = p;
+				break;
+			case 1:
+				r = q;
+				g = value;
+				b = p;
+				break; 
+			case 2:
+				r = p;
+				g = value;
+				b = t;
+				break; 
+			case 3:
+				r = p;
+				g = q;
+				b = value;
+				break; 
+			case 4:
+				r = t;
+				g = p;
+				b = value;
+				break; 
+			case 5:
+				r = value;
+				g = p;
+				b = q;
+				break;
+			default:
+				r = value;
+				g = value;
+				b = value;
+				break; 
+		}
+		return (r, g, b);
+	}
 
 	public override void Draw() {
-		ImGui.PushStyleColor(ImGuiCol.Border, new Vector4(1, 1, 1, .5f));
-		ImGui.PushStyleColor(ImGuiCol.Separator, new Vector4(1, 1, 1, .5f));
-		ImGui.PushStyleVar(ImGuiStyleVar.ChildBorderSize, 1);
-		ImGui.PushStyleVar(ImGuiStyleVar.FrameBorderSize, 1);
-		ImGui.PushStyleVar(ImGuiStyleVar.TabRounding, 8);
+		foreach (var p in ImGuiColor) ImGui.PushStyleColor(p.Key, p.Value);
+		foreach (var p in ImGuiVar) ImGui.PushStyleVar(p.Key, p.Value);
+		var time = (float)ImGui.GetTime();
+		var hsv = HsvToRgb(time * 90 % 360, .1f, .9f);
+		ImGui.PushStyleColor(ImGuiCol.Border, new Vector4(hsv.r, hsv.g, hsv.b, 0.9f));
 		if (ImGui.BeginChild("##IINACTEx_LeftTabPanel", new Vector2(200, -1), true)) {
 			if (logoTexture == null) {
 				try {
 					using var pngBitmap = GetEmbeddedPngAsBitmap("IINACT.logo.png");
 					logoTexture = OverlayWindow.Bitmap2Texture(pngBitmap);
-				}
-				catch (Exception ex) {
+				} catch (Exception ex) {
 					Log.Error(ex.ToString());
 				}
-			}
-			else {
-				// ImGui.Spacing();
-				// ImGui.SetCursorPosX(50);
-				// var pos = ImGui.GetCursorScreenPos();
-				// var iconSize = new Vector2(100, 100);
-				// ImGui.Image(logoTexture.Handle, iconSize);
-				// ImGui.GetWindowDrawList().AddRectFilledMultiColor(
-				// 	pos, // 矩形左上角
-				// 	pos + iconSize, // 矩形右下角
-				// 	0x7F92FE9D, // 左上角颜色（高光起点）
-				// 	0x7FFF006E, // 右上角颜色
-				// 	0x7F92FE9D, // 右下角颜色（高光终点）
-				// 	0x7FFF006E // 左下角颜色
-				// );
-				// ImGui.Spacing();
-
-
-				var time = (float)ImGui.GetTime();
-
+			} else {
 				ImGui.Spacing();
 				ImGui.SetCursorPosX(50);
 				var pos = ImGui.GetCursorScreenPos();
 				var iconSize = new Vector2(100, 100);
 				ImGui.Image(logoTexture.Handle, iconSize);
-				var hueOffset = MathF.Sin(time * 2) * 0.5f + 0.5f;
-				var alphaBreath = MathF.Cos(time * 1.5f) * 0.2f + 0.8f;
-				var colorTL = (uint)(alphaBreath * 0x7F) << 24 |
-				              (uint)(0x92 + hueOffset * 0x30) << 16 |
-				              (uint)(0xFE) << 8 |
-				              (uint)(0x9D - hueOffset * 0x20);
-				var colorTR = (uint)(alphaBreath * 0x7F) << 24 |
-				              (uint)(0xFF - hueOffset * 0x30) << 16 |
-				              (uint)(0x00) << 8 |
-				              (uint)(0x6E + hueOffset * 0x20);
+				var hueOffset = MathF.Sin(time * 3.1f) * 0.5f + 0.5f;
+				var alphaBreath = MathF.Cos(time * 1.7f) * 0.4f + 0.6f;
+				var tlA = (byte)(alphaBreath * 0x6F);
+				var tlR = (byte)(0x92 + hueOffset * 0x30);
+				byte tlG = 0xFE;
+				var tlB = (byte)(0x9D - hueOffset * 0x20);
+				var trA = (byte)(alphaBreath * 0x6F);
+				var trR = (byte)(0xFF - hueOffset * 0x30);
+				byte trG = 0x00;
+				var trB = (byte)(0x6E + hueOffset * 0x20);
+				var rotationSpeed = 2f;
+				var rotationPhase = time * rotationSpeed;
+				var phaseTL = rotationPhase;
+				var phaseTR = rotationPhase + MathF.PI / 2; // 右上：相位+90度
+				var phaseBR = rotationPhase + MathF.PI; // 右下：相位+180度
+				var phaseBL = rotationPhase + MathF.PI * 3 / 2; // 左下：相位+270度
+
+// 4. 计算每个角的颜色混合因子（0~1 平滑过渡，Sin函数保证循环）
+				var mixTL = (MathF.Sin(phaseTL) + 1f) / 2f; // 0→1→0 循环
+				var mixTR = (MathF.Sin(phaseTR) + 1f) / 2f;
+				var mixBR = (MathF.Sin(phaseBR) + 1f) / 2f;
+				var mixBL = (MathF.Sin(phaseBL) + 1f) / 2f;
+
+// 5. 混合每个角的颜色（mix=0 取TL色，mix=1 取TR色，过渡平缓）
+				var colorTL_Final = (uint)(tlA) << 24 | (uint)(tlR * (1 - mixTL) + trR * mixTL) << 16 |
+				                    (uint)(tlG * (1 - mixTL) + trG * mixTL) << 8 | (uint)(tlB * (1 - mixTL) + trB * mixTL);
+				var colorTR_Final = (uint)(trA) << 24 | (uint)(tlR * (1 - mixTR) + trR * mixTR) << 16 |
+				                    (uint)(tlG * (1 - mixTR) + trG * mixTR) << 8 | (uint)(tlB * (1 - mixTR) + trB * mixTR);
+				var colorBR_Final = (uint)(tlA) << 24 | (uint)(tlR * (1 - mixBR) + trR * mixBR) << 16 |
+				                    (uint)(tlG * (1 - mixBR) + trG * mixBR) << 8 | (uint)(tlB * (1 - mixBR) + trB * mixBR);
+				var colorBL_Final = (uint)(trA) << 24 | (uint)(tlR * (1 - mixBL) + trR * mixBL) << 16 |
+				                    (uint)(tlG * (1 - mixBL) + trG * mixBL) << 8 | (uint)(tlB * (1 - mixBL) + trB * mixBL);
+
+// 6. 绘制四色渐变矩形（四个角颜色循环）
 				ImGui.GetWindowDrawList().AddRectFilledMultiColor(
 					pos, pos + iconSize,
-					colorTL,
-					colorTR,
-					colorTL,
-					colorTR
+					colorTL_Final, // 左上
+					colorTR_Final, // 右上
+					colorBR_Final, // 右下
+					colorBL_Final // 左下
 				);
 				ImGui.Spacing();
 			}
@@ -179,8 +252,8 @@ public class MainWindow : Window {
 			}
 			ImGui.EndChild();
 		}
-		ImGui.PopStyleColor(2);
-		ImGui.PopStyleVar(3);
+		ImGui.PopStyleColor(ImGuiColor.Count + 1);
+		ImGui.PopStyleVar(ImGuiVar.Count);
 	}
 
 	private static void DrawSettingsPostnamazu() {
@@ -248,7 +321,7 @@ public class MainWindow : Window {
 		if (!Directory.Exists(targetDir)) {
 			var sourceDir = Path.Combine(Instance.PluginAssemblyDirectory, "data");
 			Directory.CreateDirectory(targetDir);
-			CopyDirectoryContents(sourceDir, targetDir, overwrite: true);
+			CopyDirectoryContents(sourceDir, targetDir, true);
 		}
 		SilverDasherPlugin = new SilverDasher.ACT.SilverDasher(Instance.PluginActScriptDirectory,
 			ClientState, ObjectTable, Framework, NotificationManager);
@@ -266,8 +339,7 @@ public class MainWindow : Window {
 		// if (!tab) return;
 		if (SilverDasherPlugin == null) {
 			if (ImGui.Button("启用")) EnableSilverDasher();
-		}
-		else {
+		} else {
 			if (ImGui.Button("禁用")) {
 				SilverDasherPlugin.DeInitPlugin();
 				SilverDasherPlugin = null;
@@ -333,10 +405,9 @@ public class MainWindow : Window {
 		Uri? webSocketServer = null;
 		if (Server?.Address is not null && Server.Port is not null) {
 			Uri.TryCreate($"ws://{Server.Address}:{Server.Port}/ws", UriKind.Absolute, out webSocketServer);
-		}
-		else if (OverlayPluginConfig is not null &&
-		         !string.IsNullOrEmpty(OverlayPluginConfig.WSServerIP) &&
-		         OverlayPluginConfig.WSServerPort > 0) {
+		} else if (OverlayPluginConfig is not null &&
+		           !string.IsNullOrEmpty(OverlayPluginConfig.WSServerIP) &&
+		           OverlayPluginConfig.WSServerPort > 0) {
 			Uri.TryCreate($"ws://{OverlayPluginConfig.WSServerIP}:{OverlayPluginConfig.WSServerPort}/ws",
 				UriKind.Absolute,
 				out webSocketServer);
@@ -394,8 +465,7 @@ public class MainWindow : Window {
 					OverlayPluginConfig.Save();
 				}
 			}
-		}
-		else if (Server is not null) {
+		} else if (Server is not null) {
 			if (ImGui.Button("启动")) {
 				Server.Start();
 				if (OverlayPluginConfig is not null) {
@@ -511,8 +581,7 @@ public class MainWindow : Window {
 		if (IPAddress.TryParse(wsServerIp, out var address)) {
 			if (OverlayPluginConfig is not null)
 				OverlayPluginConfig.WSServerIP = address.ToString();
-		}
-		else if (wsServerIp == "*") {
+		} else if (wsServerIp == "*") {
 			if (OverlayPluginConfig is not null)
 				OverlayPluginConfig.WSServerIP = "*";
 		}
