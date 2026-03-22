@@ -102,8 +102,7 @@ public partial class OverlayWindow {
 			try {
 				list.Sort(AttackType.ColumnDefs[Sorting].SortComparer);
 				list.Reverse();
-			}
-			catch (Exception ex) {
+			} catch (Exception ex) {
 				WriteExceptionLog(ex, "Sorting Failed " + Sorting);
 				bitmap = GraphDrawMessage(ex.ToString(), 12f, bitmap);
 			}
@@ -129,15 +128,13 @@ public partial class OverlayWindow {
 						dictionary2[key] += masterSwing.Damage;
 					}
 				list2.AddRange(from item2 in dictionary where item2.Key != Trans["attackTypeTerm-all"] select new StrDouble(item2.Key, item2.Value / (double)dictionary[Trans["attackTypeTerm-all"]]));
-			}
-			else {
+			} else {
 				foreach (var item3 in list.Where(item3 => item3.Type != Trans["attackTypeTerm-all"])) {
 					try {
 						var num = double.Parse(AttackType.ColumnDefs[Sorting].GetSqlData(item3), usCulture);
 						if (num > 0.0 && attackType != null)
 							list2.Add(new StrDouble(item3.Type, num / double.Parse(AttackType.ColumnDefs[Sorting].GetSqlData(attackType), usCulture)));
-					}
-					catch {
+					} catch {
 						//
 					}
 				}
@@ -229,8 +226,7 @@ public partial class OverlayWindow {
 					graphics.FillPie(array[j], rectangleF.X + num2 / 4f, rectangleF.Y + num2 / 4f, rectangleF.Width - num2 / 2f, rectangleF.Height - num2 / 2f, num3, num6);
 					graphics.FillRectangle(array[j], num4 - 28f * DpiScale, num5, 192f * DpiScale, 14f * DpiScale);
 					graphics.DrawRectangle(pen, num4 - 28f * DpiScale, num5, 192f * DpiScale, 14f * DpiScale);
-				}
-				else {
+				} else {
 					graphics.FillPie(brush3, rectangleF.X + num2 / 4f, rectangleF.Y + num2 / 4f, rectangleF.Width - num2 / 2f, rectangleF.Height - num2 / 2f, num3, num6);
 					graphics.DrawString(strDouble.Name, font, brush2, num4, num5);
 				}
@@ -242,8 +238,7 @@ public partial class OverlayWindow {
 					graphics.DrawString(num8 + "%", font, brush, num4 - num7, num5 - 1f + 1f);
 					graphics.DrawString(num8 + "%", font, brush, num4 - num7, num5 + 1f + 1f);
 					graphics.DrawString(num8 + "%", font, solidBrush, num4 - num7, num5 + 1f);
-				}
-				catch {
+				} catch {
 					//
 				}
 				graphics.DrawString(strDouble.Name, font, brush, num4 + 1f, num5 + 1f);
@@ -260,11 +255,9 @@ public partial class OverlayWindow {
 			}
 			graphics.DrawEllipse(pen, rectangleF.X + num2 / 4f, rectangleF.Y + num2 / 4f, rectangleF.Width - num2 / 2f, rectangleF.Height - num2 / 2f);
 			graphics.DrawString(Sorting, font, brush2, rectangleF.Left + num2 / 8f, rectangleF.Top + num2 / 8f);
-		}
-		catch (ThreadAbortException) {
+		} catch (ThreadAbortException) {
 			// WriteInfoLog("GenDamageTypeGraph -> ThreadAbortException");
-		}
-		catch (Exception ex3) {
+		} catch (Exception ex3) {
 			WriteExceptionLog(ex3, string.Empty);
 			bitmap = GraphDrawMessage(ex3.ToString(), 12f, bitmap);
 		}
@@ -281,8 +274,7 @@ public partial class OverlayWindow {
 			var list = new List<MasterSwing>(AttackTypeSource.Items);
 			try {
 				list.Sort(new MasterSwing.DualComparison(Sorting, Sorting));
-			}
-			catch (Exception ex) {
+			} catch (Exception ex) {
 				WriteExceptionLog(ex, string.Empty);
 				bitmap = GraphDrawMessage(ex.ToString(), 12f, bitmap);
 			}
@@ -314,8 +306,7 @@ public partial class OverlayWindow {
 			float num2;
 			try {
 				num2 = rectangleF.Width / list.Count;
-			}
-			catch (Exception ex2) {
+			} catch (Exception ex2) {
 				bitmap = GraphDrawMessage(ex2.ToString(), 12f, bitmap);
 				return bitmap;
 			}
@@ -346,8 +337,7 @@ public partial class OverlayWindow {
 				num7 = Convert.ToInt64(bottom - Convert.ToInt64(num5 / 4 * 3 * num6));
 				graphics.DrawLine(pen2, rectangleF.Left, num7, rectangleF.Right, num7);
 				graphics.DrawString(oFormActMain.CreateDamageString(num5 / 4 * 3, true, true), font, brush, rectangleF.Right + num / 4f, num7);
-			}
-			catch {
+			} catch {
 				//
 			}
 			// ttg.Items.Clear();
@@ -369,16 +359,14 @@ public partial class OverlayWindow {
 						graphics.DrawString(s, font, brush, num3, bottom + num / 8f);
 					else if (i % 2 == 0) {
 						graphics.DrawString(s, font, brush, num3, bottom + num * 0.75f);
-					}
-					else {
+					} else {
 						graphics.DrawString(s, font, brush, num3, bottom + num / 8f);
 					}
 				}
 				num3 += num2;
 			}
 			graphics.DrawLine(pen2, num3, rectangleF.Top, num3, rectangleF.Bottom);
-		}
-		catch (Exception ex4) {
+		} catch (Exception ex4) {
 			WriteExceptionLog(ex4, string.Empty);
 			bitmap = GraphDrawMessage(ex4.ToString(), 12f, bitmap);
 		}
@@ -396,8 +384,7 @@ public partial class OverlayWindow {
 		try {
 			try {
 				list.Sort(CombatantData.ColumnDefs[Sorting].SortComparer);
-			}
-			catch (Exception ex) {
+			} catch (Exception ex) {
 				WriteExceptionLog(ex, "Failed Sorting");
 				bitmap = GraphDrawMessage(ex.ToString(), 12f, bitmap);
 				return bitmap;
@@ -425,8 +412,7 @@ public partial class OverlayWindow {
 						list3.Add(new StrDouble(item.Name, num2));
 						num += num2;
 					}
-				}
-				catch {
+				} catch {
 					//
 				}
 			}
@@ -463,8 +449,7 @@ public partial class OverlayWindow {
 				graphics.DrawLine(pen2, rectangleF.Left, num8, rectangleF.Right, num8);
 				graphics.DrawString(oFormActMain.CreateDamageString((long)(num6 / 4.0 * 3.0), true, true), font, brush2,
 					rectangleF.Right + num3 / 3f, num8);
-			}
-			catch {
+			} catch {
 				//
 			}
 			for (var i = 0; i < list3.Count; i++) {
@@ -479,8 +464,7 @@ public partial class OverlayWindow {
 					if (num4 > num3)
 						graphics.DrawString(s, font, solidBrush2, num9, bottom - (float)(strDouble.Val * num7) - num3 * 0.75f - 3f);
 					brush5 = solidBrush2;
-				}
-				else {
+				} else {
 					graphics.FillRectangle(strDouble.Name == charName ? brush3 : solidBrush3, rect);
 					if (num4 > num3)
 						graphics.DrawString(oFormActMain.CreateDamageString((long)strDouble.Val, true, true), font, solidBrush3, num9, bottom - 1f);
@@ -489,8 +473,7 @@ public partial class OverlayWindow {
 				}
 				try {
 					graphics.DrawRectangle(pen, rect.X, rect.Y, rect.Width, rect.Height);
-				}
-				catch {
+				} catch {
 					//
 				}
 				var stringFormat = new StringFormat();
@@ -508,11 +491,9 @@ public partial class OverlayWindow {
 				var sizeF = graphics.MeasureString(s2, font3);
 				graphics.DrawString(s2, font3, brush, new PointF(rectangleF.Right - sizeF.Width - 1f, rectangleF.Y + rectangleF.Height / 2f - sizeF.Height / 2f + 1f));
 			}
-		}
-		catch (ThreadAbortException) {
+		} catch (ThreadAbortException) {
 			// WriteInfoLog("GenEncounterGraph -> ThreadAbortException");
-		}
-		catch (Exception ex3) {
+		} catch (Exception ex3) {
 			WriteExceptionLog(ex3, string.Empty);
 			bitmap = GraphDrawMessage(ex3.ToString(), 12f, bitmap);
 		}
@@ -562,9 +543,9 @@ public partial class OverlayWindow {
 				Plugin.Configuration.Save();
 			}
 			ImGui.SetNextItemWidth(_splitterWidth * 0.3f);
-			var ACTStaticsInterval = Plugin.Configuration.ACTPicInterval;
+			var ACTStaticsInterval = Plugin.Configuration.ACTUpdateInterval;
 			if (ImGui.InputFloat("刷新频率(s)", ref ACTStaticsInterval)) {
-				Plugin.Configuration.ACTPicInterval = ACTStaticsInterval;
+				Plugin.Configuration.ACTUpdateInterval = ACTStaticsInterval;
 				Plugin.Configuration.Save();
 			}
 			ImGui.Separator();
@@ -713,8 +694,7 @@ public partial class OverlayWindow {
 				// var pos = ImGui.GetCursorPos();
 				// ImGui.SetCursorPos(pos);
 				ImGui.Image(_currentTexture.Handle, graphSize);
-			}
-			else {
+			} else {
 				ImGui.Text("No graph data");
 			}
 		}
@@ -752,8 +732,7 @@ public partial class OverlayWindow {
 							node.Text = encounter.ToString();
 							node.Data = encounter;
 							node.ForeColor = GetEncounterColor(encounter);
-						}
-						else {
+						} else {
 							node = new TreeNodeData {
 								Text = encounter.ToString(),
 								Tag = "EncounterData",
@@ -778,8 +757,7 @@ public partial class OverlayWindow {
 							node = parentNode.Children[idx];
 							node.Text = combatant.ToString();
 							node.Data = combatant;
-						}
-						else {
+						} else {
 							node = new TreeNodeData {
 								Text = combatant.ToString(),
 								Tag = "CombatantData",
@@ -803,8 +781,7 @@ public partial class OverlayWindow {
 							node = parentNode.Children[idx];
 							node.Text = damageType.ToString();
 							node.Data = damageType;
-						}
-						else {
+						} else {
 							node = new TreeNodeData {
 								Text = damageType.ToString(),
 								Tag = "DamageTypeData",
@@ -828,8 +805,7 @@ public partial class OverlayWindow {
 							node = parentNode.Children[idx];
 							node.Text = attackType.ToString();
 							node.Data = attackType;
-						}
-						else {
+						} else {
 							node = new TreeNodeData {
 								Text = attackType.ToString(),
 								Tag = "AttackType",
@@ -843,15 +819,14 @@ public partial class OverlayWindow {
 					break;
 				}
 			}
-		}
-		catch (Exception ex) {
+		} catch (Exception ex) {
 			Plugin.Log.Error($"Failed to populate tree view: {ex}");
 		}
 	}
 
 	private void LoadNodeData() {
-		var canUpdateImage = Plugin.Configuration.UseActPic && (DateTime.Now - lastUpdate).TotalSeconds > Plugin.Configuration.ACTPicInterval;
-		if (canUpdateImage) {
+		if ((DateTime.Now - lastUpdate).TotalSeconds < Plugin.Configuration.ACTUpdateInterval) return;
+		if (Plugin.Configuration.UseActPic) {
 			lock (_textureLock) {
 				_currentTexture?.Dispose();
 				_currentTexture = null;
@@ -871,7 +846,7 @@ public partial class OverlayWindow {
 					var combatantList = new List<object>(encounter.Items.Values);
 					combatantList.Sort();
 					_currentTable = combatantList;
-					if (canUpdateImage)
+					if (Plugin.Configuration.UseActPic)
 						UpdateGraphTexture(GenEncounterGraph(encounter, (int)GraphViewSize.X, (int)GraphViewSize.Y, _eDSort));
 					break;
 				case "CombatantData":
@@ -885,7 +860,7 @@ public partial class OverlayWindow {
 					var attackTypeList = new List<object>(damageType.Items.Values);
 					attackTypeList.Sort();
 					_currentTable = attackTypeList;
-					if (canUpdateImage)
+					if (Plugin.Configuration.UseActPic)
 						UpdateGraphTexture(GenDamageTypeGraph(damageType, (int)GraphViewSize.X, (int)GraphViewSize.Y, _mDSort));
 					break;
 				case "AttackType":
@@ -894,12 +869,11 @@ public partial class OverlayWindow {
 					var swingList = new List<object>(attackType.Items);
 					swingList.Sort();
 					_currentTable = swingList;
-					if (canUpdateImage)
+					if (Plugin.Configuration.UseActPic)
 						UpdateGraphTexture(GenAttackTypeGraph(attackType, (int)GraphViewSize.X, (int)GraphViewSize.Y, _aTSort));
 					break;
 			}
-		}
-		catch (Exception ex) {
+		} catch (Exception ex) {
 			Plugin.Log.Error($"Failed to load node data: {ex}");
 		}
 	}
@@ -950,8 +924,7 @@ public partial class OverlayWindow {
 					row.AddRange(columns.Select(col => MasterSwing.ColumnDefs[col].GetCellData(swing) ?? "N/A"));
 					break;
 			}
-		}
-		catch (Exception ex) {
+		} catch (Exception ex) {
 			Plugin.Log.Error($"Failed to get row data: {ex}");
 			row.AddRange(columns.Select(_ => "Error"));
 		}
@@ -966,8 +939,7 @@ public partial class OverlayWindow {
 				.FirstOrDefault(n => n.Data == rowDataObj);
 			if (childNode == null) return;
 			_currentSelectedNode = childNode;
-		}
-		catch (Exception ex) {
+		} catch (Exception ex) {
 			Plugin.Log.Error($"Failed to activate item: {ex}");
 		}
 	}
@@ -989,8 +961,7 @@ public partial class OverlayWindow {
 			PixelFormat.Format32bppArgb);
 		try {
 			pixelSpan = new ReadOnlySpan<byte>((void*)bitmapData.Scan0, bitmapData.Stride * bitmapData.Height);
-		}
-		finally {
+		} finally {
 			bitmap.UnlockBits(bitmapData);
 		}
 		return Plugin.TextureProvider.CreateFromRaw(RawImageSpecification.Rgba32(bitmap.Width, bitmap.Height), pixelSpan);
@@ -1013,8 +984,7 @@ public partial class OverlayWindow {
 				3 => Color.FromArgb(-2354116),
 				_ => Color.FromArgb(-16744193)
 			};
-		}
-		catch {
+		} catch {
 			return Color.White;
 		}
 	}
@@ -1033,8 +1003,7 @@ public partial class OverlayWindow {
 		try {
 			list.Sort(AttackType.ColumnDefs[sorting].SortComparer);
 			list.Reverse();
-		}
-		catch (Exception ex) {
+		} catch (Exception ex) {
 			ImGui.Text($"排序失败: {ex.Message}");
 			return;
 		}
@@ -1058,15 +1027,13 @@ public partial class OverlayWindow {
 			}
 			dataList.AddRange(dict.Where(kv => kv.Key != Trans["attackTypeTerm-all"])
 				.Select(kv => new StrDouble(kv.Key, kv.Value / (double)dict[Trans["attackTypeTerm-all"]])));
-		}
-		else {
+		} else {
 			foreach (var item in list.Where(item => item.Type != Trans["attackTypeTerm-all"])) {
 				try {
 					var val = double.Parse(AttackType.ColumnDefs[sorting].GetSqlData(item), usCulture);
 					if (val > 0.0 && attackTypeAll != null)
 						dataList.Add(new StrDouble(item.Type, val / double.Parse(AttackType.ColumnDefs[sorting].GetSqlData(attackTypeAll), usCulture)));
-				}
-				catch {
+				} catch {
 					//
 				}
 			}
@@ -1102,8 +1069,7 @@ public partial class OverlayWindow {
 		var list = new List<MasterSwing>(attackTypeSource.Items);
 		try {
 			list.Sort(new MasterSwing.DualComparison(sorting, sorting));
-		}
-		catch (Exception ex) {
+		} catch (Exception ex) {
 			ImGui.Text($"排序失败: {ex.Message}");
 			return;
 		}
@@ -1138,8 +1104,7 @@ public partial class OverlayWindow {
 			try {
 				list.Sort(CombatantData.ColumnDefs[sorting].SortComparer);
 				list.Reverse();
-			}
-			catch (Exception ex) {
+			} catch (Exception ex) {
 				ImGui.Text($"排序失败: {ex.Message}");
 				return;
 			}
@@ -1153,8 +1118,7 @@ public partial class OverlayWindow {
 					if (!(val > 0)) continue;
 					dataList.Add(new StrDouble(item.Name, val));
 					total += val;
-				}
-				catch {
+				} catch {
 					//
 				}
 			}
@@ -1172,8 +1136,7 @@ public partial class OverlayWindow {
 					ImPlot.PlotText(labels[i], i, yVals[i] / 2, ImPlotTextFlags.Vertical);
 				ImPlot.EndPlot();
 			}
-		}
-		catch (Exception ex) {
+		} catch (Exception ex) {
 			ImGui.Text($"绘制遭遇战图表失败: {ex.Message}");
 		}
 	}

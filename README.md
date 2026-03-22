@@ -4,7 +4,9 @@
 
 ## IINACT改版，整合了CN、Triggernometry、PostNamazu，SilverDasher等
 
-# 重要提醒！！！请一定要先看完介绍再使用，本插件仍然不是很稳定，有炸游戏风险
+![glance.gif](pic/glance.gif)
+
+# 重要提醒！！！请一定要先看完介绍再使用，使用不当有炸游戏风险
 
 # 项目介绍
 
@@ -14,6 +16,8 @@
 
 该插件会在一个类ACT的环境下运行FFXIV_ACT_Plugin与大量修改的Overlay
 Plugin以适配现代.NET。与此同时，也添加了大量修改的Triggernometry，Postnamazu，SilverDasher等插件。包括类ACT与插件在内，这些并非完整的代码移植，并且仍在开发完善中，可能缺少部分原版的函数，开发时请注意。
+
+炸游戏多半是ModuleBase的Vfx出现了问题。请酌情关闭。
 
 相关参考文献如下：
 
@@ -38,7 +42,7 @@ Plugin以适配现代.NET。与此同时，也添加了大量修改的Triggernom
 ![sd.png](pic/sd.png)
 ![overlay.png](pic/overlay.png)
 ![img.png](pic/act.png)
-![glance.gif](pic/glance.gif)
+
 # 开发相关
 
 本分支基于国服IINACT开发，如需移植到国际服理论上仅需修改IINACT官库与CN库的区别即可(
