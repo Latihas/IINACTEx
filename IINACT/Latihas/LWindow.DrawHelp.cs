@@ -124,11 +124,19 @@ public static partial class LWindow {
 			ImGui.Text("    //DalamudDirReferenes");
 			foreach (var asm in CSharpScriptCompiler.DalamudDirReferenes) ImGui.Text("    " + asm);
 		}
-		if (ImGui.CollapsingHeader("常见问题", ImGuiTreeNodeFlags.DefaultOpen)) {
+		if (ImGui.CollapsingHeader("常见问题")) {
 			ImGui.Text("问题太多了。如果出现bug，试着关开一下插件，说不定就自己会好了。");
 			ImGui.Text("当然也可能是我懒得写了，你也可以帮助我完善这一部分。");
 			ImGui.Text("其他问题可在Github仓库提issue解决。");
 			ImGui.Text("如果是第一次使用，可以在左侧的\"初始化\"栏下载与配置资源(如悬浮窗，cactbot)");
+		}
+		if (ImGui.CollapsingHeader("首次安装配置", ImGuiTreeNodeFlags.DefaultOpen)) {
+			ImGui.Text("IINACTEx下载下来不动也可以正常使用。以下的配置为增加使用体验的配置。");
+			ImGui.Text("1. 去左侧`初始化`栏，一键下载解压cactbot。");
+			ImGui.Text("2. 安装插件Browsingway(卫月主库就有)，并打开Browsingway的设置界面");
+			ImGui.Text("3. 点击左下角的加号，根据`初始化`中开发者喜欢使用的网址填写相关数据。");
+			ImGui.Text("4. 在发者喜欢使用的网址中有一个设置页面，在里面可以设置cactbot的表现方式。(默认不开启TTS只会有蜂鸣器音)");
+			ImGui.Text("5. 如果你看了教程还是不明白，或者觉得教程有值得改进的地方，请提issue。");
 		}
 	}
 
