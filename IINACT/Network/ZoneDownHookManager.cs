@@ -48,8 +48,10 @@ public unsafe class ZoneDownHookManager : IDisposable {
 			var searchRange = 0x1000;
 			var memory = new byte[searchRange];
 			Marshal.Copy(opcodeKeyTableAddress, memory, 0, searchRange);
+            var moduleSize = multiScanner.Module.ModuleMemorySize;
 			var opcodeKeyTableSize = 0;
-			while (!IsVtablePattern(memory, opcodeKeyTableSize)) {
+            while (!IsModulePointer(memory, opcodeKeyTableSize, moduleBase, moduleSize))
+            {
 				opcodeKeyTableSize += 4;
 				if (opcodeKeyTableSize > searchRange)
 					throw new Exception("Opcode key table size is too large");
@@ -78,22 +80,11 @@ public unsafe class ZoneDownHookManager : IDisposable {
 		Enable();
 	}
 
-	private bool IsVtablePattern(ReadOnlySpan<byte> memory, int offset) {
-		for (var i = 1; i < 5; i++)
-			if (memory[offset + i] == 0)
-				return false;
-
-		if (memory[offset + 6] != 0 || memory[offset + 7] != 0)
-			return false;
-
-		for (var i = 9; i < 13; i++)
-			if (memory[offset + i] == 0)
-				return false;
-
-		if (memory[offset + 14] != 0 || memory[offset + 15] != 0)
-			return false;
-
-		return true;
+    private static bool IsModulePointer(ReadOnlySpan<byte> memory, int offset, nint moduleBase, long moduleSize)
+    {
+        if (offset + 8 > memory.Length) return false;
+        var ptr = BitConverter.ToUInt64(memory.Slice(offset));
+        return ptr >= (ulong)moduleBase && ptr < (ulong)(moduleBase + moduleSize);
 	}
 
 	public void Enable() {
