@@ -136,7 +136,12 @@ public static partial class LWindow {
 			ImGui.Text("2. 安装插件Browsingway(卫月主库就有)，并打开Browsingway的设置界面");
 			ImGui.Text("3. 点击左下角的加号，根据`初始化`中开发者喜欢使用的网址填写相关数据。");
 			ImGui.Text("4. 在发者喜欢使用的网址中有一个设置页面，在里面可以设置cactbot的表现方式。(默认不开启TTS只会有蜂鸣器音)");
-			ImGui.Text("5. 如果你看了教程还是不明白，或者觉得教程有值得改进的地方，请提issue。");
+			ImGui.Text("5. 点击调试-IINACT-打开配置目录");
+			ImGui.Text("6. 禁用IINACTEx");
+			ImGui.Text("6. 打开原版ACT的配置目录，如: D:\\Program\\ACT.DieMoe\\Config，找到Triggernometry.config.xml文件");
+			ImGui.Text("7. 将原版ACT配置目录下的Triggernometry.config.xml复制到IINACTEx的配置目录下");
+			ImGui.Text("8. 启用IINACTEx");
+			ImGui.Text("9. 如果你看了教程还是不明白，或者觉得教程有值得改进的地方，请提issue。");
 		}
 	}
 
