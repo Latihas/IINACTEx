@@ -1,6 +1,6 @@
 <Project Sdk="Dalamud.NET.Sdk/14.0.2">
   <PropertyGroup>
-    <Authors>Usagi, Latihas</Authors>
+    <Author>Usagi, Latihas</Author>
     <Company>Dezent</Company>
     <Version>2.10.1.0</Version>
     <Description>A parsing plugin.</Description>
@@ -11,6 +11,10 @@
     <PunchLine>我用ACT，我是绿玩。(如果加载失败，再加载一次即可。如果你是从上古版本更新而来，有文件占用bug，请先禁用旧版插件，然后!!!重启游戏!!!，然后删除旧版插件，再安装新版插件)</PunchLine>
     <PackageProjectUrl>https://github.com/Latihas/IINACTEx</PackageProjectUrl>
     <AssemblyVersion>7.45.2.5</AssemblyVersion>
+    <Name>IINACTEx</Name>
+    <IconUrl>https://raw.githubusercontent.com/marzent/IINACT/master/images/icon.png</IconUrl>
+    <RepoUrl>https://github.com/Latihas/IINACTEx</RepoUrl>
+    <Tags>parsing;plugin;ACT</Tags>
   </PropertyGroup>
   <PropertyGroup>
     <Nullable>enable</Nullable>
@@ -85,9 +89,6 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="../external_dependencies/SafeMemoryReader.dll">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="IINACTEx.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="Res/**/*">
