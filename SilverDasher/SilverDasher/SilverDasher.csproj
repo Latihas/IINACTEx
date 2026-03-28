@@ -8,10 +8,10 @@
   <ItemGroup>
     <PackageReference Include="MQTTnet" Version="*"/>
     <Reference Include="FFXIV_ACT_Plugin.Common">
-      <HintPath>../../external_dependencies/SDK\FFXIV_ACT_Plugin.Common.dll</HintPath>
+      <HintPath>../../external_dependencies/SDK/FFXIV_ACT_Plugin.Common.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <ProjectReference Include="../..\machina\Machina.FFXIV\Machina.FFXIV.csproj"/>
+    <ProjectReference Include="../../machina/Machina.FFXIV/Machina.FFXIV.csproj"/>
     <ProjectReference Include="../../NotACT/NotACT.csproj"/>
   </ItemGroup>
   <PropertyGroup Condition="'$(GITHUB_ACTIONS)' == ''">

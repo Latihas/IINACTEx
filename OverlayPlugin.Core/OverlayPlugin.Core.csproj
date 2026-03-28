@@ -21,13 +21,13 @@
     <EmbeddedResource Include="resources/act-overlays/overlays.json"/>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="resources\opcodes.jsonc"/>
-    <EmbeddedResource Include="resources\reserved_log_lines.json"/>
+    <EmbeddedResource Include="resources/opcodes.jsonc"/>
+    <EmbeddedResource Include="resources/reserved_log_lines.json"/>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\machina\Machina.FFXIV\Machina.FFXIV.csproj"/>
-    <ProjectReference Include="..\machina\Machina\Machina.csproj"/>
-    <ProjectReference Include="..\OverlayPlugin.Common\OverlayPlugin.Common.csproj"/>
+    <ProjectReference Include="../machina/Machina.FFXIV/Machina.FFXIV.csproj"/>
+    <ProjectReference Include="../machina/Machina/Machina.csproj"/>
+    <ProjectReference Include="../OverlayPlugin.Common/OverlayPlugin.Common.csproj"/>
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.ObjectPool" Version="*" />
@@ -35,16 +35,16 @@
   </ItemGroup>
   <ItemGroup>
     <Reference Include="FFXIV_ACT_Plugin">
-      <HintPath>..\external_dependencies\FFXIV_ACT_Plugin.dll</HintPath>
+      <HintPath>../external_dependencies/FFXIV_ACT_Plugin.dll</HintPath>
     </Reference>
     <Reference Include="FFXIV_ACT_Plugin.Common">
-      <HintPath>..\external_dependencies\SDK\FFXIV_ACT_Plugin.Common.dll</HintPath>
+      <HintPath>../external_dependencies/SDK/FFXIV_ACT_Plugin.Common.dll</HintPath>
     </Reference>
     <Reference Include="FFXIV_ACT_Plugin.Logfile">
-      <HintPath>..\external_dependencies\SDK\FFXIV_ACT_Plugin.Logfile.dll</HintPath>
+      <HintPath>../external_dependencies/SDK/FFXIV_ACT_Plugin.Logfile.dll</HintPath>
     </Reference>
     <Reference Include="FFXIV_ACT_Plugin.Memory">
-      <HintPath>..\external_dependencies\SDK\FFXIV_ACT_Plugin.Memory.dll</HintPath>
+      <HintPath>../external_dependencies/SDK/FFXIV_ACT_Plugin.Memory.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>

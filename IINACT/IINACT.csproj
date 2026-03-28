@@ -45,46 +45,46 @@
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="../EdgeTTS/voices.json">
-      <Link>Resources\voices.json</Link>
+      <Link>Resources/voices.json</Link>
       <LogicalName>IINACT.Resources.voices.json</LogicalName>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
     <Reference Include="FFXIV_ACT_Plugin">
-      <HintPath>..\external_dependencies\FFXIV_ACT_Plugin.dll</HintPath>
+      <HintPath>../external_dependencies/FFXIV_ACT_Plugin.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="FFXIV_ACT_Plugin.Common">
-      <HintPath>..\external_dependencies\SDK\FFXIV_ACT_Plugin.Common.dll</HintPath>
+      <HintPath>../external_dependencies/SDK/FFXIV_ACT_Plugin.Common.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="FFXIV_ACT_Plugin.Config">
-      <HintPath>..\external_dependencies\SDK\FFXIV_ACT_Plugin.Config.dll</HintPath>
+      <HintPath>../external_dependencies/SDK/FFXIV_ACT_Plugin.Config.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="FFXIV_ACT_Plugin.Logfile">
-      <HintPath>..\external_dependencies\SDK\FFXIV_ACT_Plugin.Logfile.dll</HintPath>
+      <HintPath>../external_dependencies/SDK/FFXIV_ACT_Plugin.Logfile.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="FFXIV_ACT_Plugin.Memory">
-      <HintPath>..\external_dependencies\SDK\FFXIV_ACT_Plugin.Memory.dll</HintPath>
+      <HintPath>../external_dependencies/SDK/FFXIV_ACT_Plugin.Memory.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="FFXIV_ACT_Plugin.Network">
-      <HintPath>..\external_dependencies\SDK\FFXIV_ACT_Plugin.Network.dll</HintPath>
+      <HintPath>../external_dependencies/SDK/FFXIV_ACT_Plugin.Network.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="FFXIV_ACT_Plugin.Parse">
-      <HintPath>..\external_dependencies\SDK\FFXIV_ACT_Plugin.Parse.dll</HintPath>
+      <HintPath>../external_dependencies/SDK/FFXIV_ACT_Plugin.Parse.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="FFXIV_ACT_Plugin.Resource">
-      <HintPath>..\external_dependencies\SDK\FFXIV_ACT_Plugin.Resource.dll</HintPath>
+      <HintPath>../external_dependencies/SDK/FFXIV_ACT_Plugin.Resource.dll</HintPath>
       <Private>False</Private>
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="..\external_dependencies\SafeMemoryReader.dll">
+    <Content Include="../external_dependencies/SafeMemoryReader.dll">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="IINACTEx.json">
@@ -92,7 +92,7 @@
     </Content>
     <Content Include="Res/**/*">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      <TargetPath>$([System.String]::Copy('%(RecursiveDir)').Replace('Res\', ''))%(Filename)%(Extension)</TargetPath>
+      <TargetPath>$([System.String]::Copy('%(RecursiveDir)').Replace('Res/', ''))%(Filename)%(Extension)</TargetPath>
     </Content>
     <EmbeddedResource Include="logo.png"/>
   </ItemGroup>
