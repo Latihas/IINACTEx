@@ -34,5 +34,7 @@ jobs:
         with:
           tag_name: ${{ steps.generate_version.outputs.VERSION }}
           name: Release ${{ steps.generate_version.outputs.VERSION }}
-          files: ./IINACT/bin/IINACTEx/latest.zip ./IINACT/bin/IINACTEx/latest.zip
+          files: |
+            ./IINACT/bin/IINACTEx/latest.zip 
+            ./IINACT/bin/IINACTEx/IINACTEx.json
           generate_release_notes: true
