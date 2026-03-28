@@ -46,6 +46,6 @@ jobs:
             await github.rest.repos.createDispatchEvent({
               owner: "Latihas",
               repo: "dalamud-plugins",
-              event_type: ""
+              event_type: "u"
             });
             console.log("✅ Triggered Updating repo.json");
