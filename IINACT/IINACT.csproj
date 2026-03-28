@@ -44,7 +44,7 @@
     <!--    <PackageReference Include="Unscrambler.XIV.CN" Version="*" />-->
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="../EdgeTTS\voices.json">
+    <EmbeddedResource Include="../EdgeTTS/voices.json">
       <Link>Resources\voices.json</Link>
       <LogicalName>IINACT.Resources.voices.json</LogicalName>
     </EmbeddedResource>
