@@ -42,7 +42,7 @@ public static partial class LWindow {
 		if (ImGui.Button("清空编译错误历史")) RealPlugin.Instance.cfg.CompileFailedScripts.Clear();
 		ImGui.Text("由于现版本不稳定，不会自动保存配置文件。请导入或修改过任何触发器/配置/...后手动保存。");
 		ImGui.Text("在IINACTEx的更新过程中，会不定期修复兼容性问题。由于对于同一版代码编译使用了缓存，可以点击清空编译错误历史来强制重新编译以尝试兼容。");
-		ImGui.ProgressBar(RealPlugin.UProgress / 100f, new Vector2(300, 24), RealPlugin.UState);
+		ImGui.ProgressBar(RealPlugin.UProgress / 100f, new Vector2(0, 0), RealPlugin.UState);
 		UserInterface.BuildRenderTreeFromConfiguration(null, null, false);
 	}
 
