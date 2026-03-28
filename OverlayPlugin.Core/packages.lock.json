@@ -1,10 +1,16 @@
 {
   "version": 1,
   "dependencies": {
-    "net10.0-windows8.0": {
+    "net10.0-windows7.0": {
+      "DotNet.ReproducibleBuilds": {
+        "type": "Direct",
+        "requested": "[1.2.39, )",
+        "resolved": "1.2.39",
+        "contentHash": "fcFN01tDTIQqDuTwr1jUQK/geofiwjG5DycJQOnC72i1SsLAk1ELe+apBOuZ11UMQG8YKFZG1FgvjZPbqHyatg=="
+      },
       "Microsoft.Extensions.ObjectPool": {
         "type": "Direct",
-        "requested": "[10.0.5, )",
+        "requested": "[*, )",
         "resolved": "10.0.5",
         "contentHash": "91t1kPt6F+1cTJ4dZFY89BopLr1JyGlZ2pROIkIuyE28jUXhdelOzn22UwvNk8EwW/9x8D7GXyLqiMJShgIGhQ=="
       },
@@ -16,15 +22,9 @@
       },
       "NetCoreServer": {
         "type": "Direct",
-        "requested": "[8.0.7, )",
+        "requested": "[*, )",
         "resolved": "8.0.7",
         "contentHash": "BhNiJ6EVxKS1eKqlHINy7BruLDc+xCH59oZxu7d2Hve8CzFki69PumVlf6vyAQvIVfxbZiHw/FI3UHNnMajuVg=="
-      },
-      "System.Data.DataSetExtensions": {
-        "type": "Direct",
-        "requested": "[4.5.0, )",
-        "resolved": "4.5.0",
-        "contentHash": "221clPs1445HkTBZPL+K9sDBdJRB8UN8rgjO3ztB0CQ26z//fmJXtlsr6whGatscsKGBrhJl5bwJuKSA8mwFOw=="
       },
       "Advanced Combat Tracker": {
         "type": "Project"
@@ -41,11 +41,10 @@
       "overlayplugin.common": {
         "type": "Project",
         "dependencies": {
-          "Advanced Combat Tracker": "[6.9.0, )",
-          "System.Data.DataSetExtensions": "[4.5.0, )"
+          "Advanced Combat Tracker": "[6.9.0, )"
         }
       }
     },
-    "net10.0-windows8.0/win-x64": {}
+    "net10.0-windows7.0/win-x64": {}
   }
 }

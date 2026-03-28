@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Dalamud.NET.Sdk/14.0.2">
   <PropertyGroup>
     <EnableWindowsTargeting>true</EnableWindowsTargeting>
     <OutputType>Library</OutputType>
@@ -9,34 +9,16 @@
     <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <Version>0.19.92</Version>
+    <Use_DalamudPackager>false</Use_DalamudPackager>
   </PropertyGroup>
 
   <ItemGroup>
-    <Reference Include="Dalamud">
-      <HintPath>$(DalamudLibPath)Dalamud.dll</HintPath>
-      <Private>false</Private>
-    </Reference>
-    <Reference Include="FFXIVClientStructs">
-      <HintPath>$(DalamudLibPath)FFXIVClientStructs.dll</HintPath>
-      <Private>false</Private>
-    </Reference>
-    <Reference Include="InteropGenerator.Runtime">
-      <HintPath>$(DalamudLibPath)InteropGenerator.Runtime.dll</HintPath>
-      <Private>false</Private>
-    </Reference>
-    <Reference Include="Newtonsoft.Json">
-      <HintPath>$(DalamudLibPath)Newtonsoft.Json.dll</HintPath>
-      <Private>false</Private>
-    </Reference>
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Remove="resources\act-overlays\overlays.json"/>
-    <None Remove="resources\opcodes.jsonc"/>
-    <None Remove="resources\reserved_log_lines.json"/>
+    <None Remove="resources/act-overlays/overlays.json"/>
+    <None Remove="resources/opcodes.jsonc"/>
+    <None Remove="resources/reserved_log_lines.json"/>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="resources\act-overlays\overlays.json"/>
+    <EmbeddedResource Include="resources/act-overlays/overlays.json"/>
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="resources\opcodes.jsonc"/>
@@ -48,9 +30,8 @@
     <ProjectReference Include="..\OverlayPlugin.Common\OverlayPlugin.Common.csproj"/>
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Microsoft.Extensions.ObjectPool" Version="10.0.5" />
-    <PackageReference Include="NetCoreServer" Version="8.0.7"/>
-    <PackageReference Include="System.Data.DataSetExtensions" Version="4.5.0"/>
+    <PackageReference Include="Microsoft.Extensions.ObjectPool" Version="*" />
+    <PackageReference Include="NetCoreServer" Version="*"/>
   </ItemGroup>
   <ItemGroup>
     <Reference Include="FFXIV_ACT_Plugin">
@@ -79,4 +60,8 @@
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
   </ItemGroup>
+  <PropertyGroup Condition="'$(GITHUB_ACTIONS)' == ''">
+    <DalamudLibPath>$(appdata)/XIVLauncherCN/addon/Hooks/dev</DalamudLibPath>
+    <AssemblySearchPaths>$(AssemblySearchPaths);$(DalamudLibPath)</AssemblySearchPaths>
+  </PropertyGroup>
 </Project>

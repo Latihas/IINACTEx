@@ -181,7 +181,7 @@ public class PluginMain {
     ///     プラグインが有効化されたときに呼び出されます。
     /// </summary>
     /// <param name="extraOpcodes"></param>
-    public void InitPlugin(string extraOpcodes = null) {
+    public void InitPlugin(string? extraOpcodes = null) {
         var watch = new Stopwatch();
         watch.Start();
         try {

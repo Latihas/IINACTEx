@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Dalamud.NET.Sdk/14.0.2">
 
   <PropertyGroup>
     <EnableWindowsTargeting>true</EnableWindowsTargeting>
@@ -10,19 +10,12 @@
     <Version>6.9</Version>
     <ProduceReferenceAssembly>false</ProduceReferenceAssembly>
     <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
+    <Use_DalamudPackager>false</Use_DalamudPackager>
   </PropertyGroup>
 
   <ItemGroup>
-    <Folder Include="Datatypes\"/>
+    <Folder Include="Datatypes/"/>
   </ItemGroup>
-
-  <ItemGroup>
-    <Reference Include="Dalamud">
-      <HintPath>$(DalamudLibPath)Dalamud.dll</HintPath>
-      <Private>false</Private>
-    </Reference>
-  </ItemGroup>
-
   <ItemGroup>
     <Reference Include="FFXIV_ACT_Plugin">
       <HintPath>..\external_dependencies\FFXIV_ACT_Plugin.dll</HintPath>
@@ -31,5 +24,8 @@
       <HintPath>..\external_dependencies\SDK\FFXIV_ACT_Plugin.Logfile.dll</HintPath>
     </Reference>
   </ItemGroup>
-
+  <PropertyGroup Condition="'$(GITHUB_ACTIONS)' == ''">
+    <DalamudLibPath>$(appdata)/XIVLauncherCN/addon/Hooks/dev</DalamudLibPath>
+    <AssemblySearchPaths>$(AssemblySearchPaths);$(DalamudLibPath)</AssemblySearchPaths>
+  </PropertyGroup>
 </Project>

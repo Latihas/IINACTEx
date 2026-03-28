@@ -1,13 +1,16 @@
-<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Dalamud.NET.Sdk/14.0.2">
   <PropertyGroup>
     <Authors>Usagi, Latihas</Authors>
     <Company>Dezent</Company>
-        <Version>2.10.1.0</Version>
+    <Version>2.10.1.0</Version>
     <Description>A parsing plugin.</Description>
     <AssemblyName>IINACTEx</AssemblyName>
     <OutputPath>bin/</OutputPath>
     <Copyright></Copyright>
+    <Description>该插件会在一个类ACT的环境下运行FFXIV_ACT_Plugin与大量修改的Overlay Plugin以适配现代.NET。与此同时，也添加了大量修改的Triggernometry与Postnamazu。包括类ACT、Triggernometry、Postnamazu在内，这些并非完整的代码移植，并且仍在开发完善中，可能缺少部分原版的函数，开发时请注意。</Description>
+    <PunchLine>我用ACT，我是绿玩。(如果加载失败，再加载一次即可。如果你是从上古版本更新而来，有文件占用bug，请先禁用旧版插件，然后!!!重启游戏!!!，然后删除旧版插件，再安装新版插件)</PunchLine>
     <PackageProjectUrl>https://github.com/Latihas/IINACTEx</PackageProjectUrl>
+    <AssemblyVersion>7.45.2.5</AssemblyVersion>
   </PropertyGroup>
   <PropertyGroup>
     <Nullable>enable</Nullable>
@@ -20,44 +23,12 @@
     <UseWpf>true</UseWpf>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Microsoft.Windows.CsWin32" Version="0.3.269">
+    <PackageReference Include="Microsoft.Windows.CsWin32" Version="*">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="NAudio" Version="2.3.0" />
-    <PackageReference Include="System.Speech" Version="10.0.5" />
-    <Reference Include="FFXIVClientStructs">
-      <HintPath>$(DalamudLibPath)FFXIVClientStructs.dll</HintPath>
-      <Private>false</Private>
-    </Reference>
-    <Reference Include="Newtonsoft.Json">
-      <HintPath>$(DalamudLibPath)Newtonsoft.Json.dll</HintPath>
-      <Private>false</Private>
-    </Reference>
-    <Reference Include="Dalamud">
-      <HintPath>$(DalamudLibPath)Dalamud.dll</HintPath>
-      <Private>false</Private>
-    </Reference>
-    <Reference Include="Dalamud.Bindings.ImGui">
-      <HintPath>$(DalamudLibPath)Dalamud.Bindings.ImGui.dll</HintPath>
-      <Private>false</Private>
-    </Reference>
-    <Reference Include="Dalamud.Bindings.ImPlot">
-      <HintPath>$(DalamudLibPath)Dalamud.Bindings.ImPlot.dll</HintPath>
-      <Private>false</Private>
-    </Reference>
-    <Reference Include="ImGuiScene">
-      <HintPath>$(DalamudLibPath)ImGuiScene.dll</HintPath>
-      <Private>false</Private>
-    </Reference>
-    <Reference Include="Lumina">
-      <HintPath>$(DalamudLibPath)Lumina.dll</HintPath>
-      <Private>false</Private>
-    </Reference>
-    <Reference Include="Lumina.Excel">
-      <HintPath>$(DalamudLibPath)Lumina.Excel.dll</HintPath>
-      <Private>false</Private>
-    </Reference>
+    <PackageReference Include="NAudio" Version="*"/>
+    <PackageReference Include="System.Speech" Version="*"/>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="../EdgeTTS/EdgeTTS.csproj"/>
@@ -70,10 +41,10 @@
     <ProjectReference Include="../PostNamazu/PostNamazu/PostNamazu.csproj"/>
     <ProjectReference Include="../SilverDasher/SilverDasher/SilverDasher.csproj"/>
     <ProjectReference Include="../Unscrambler/Unscrambler/Unscrambler.csproj"/>
-    <!--    <PackageReference Include="Unscrambler.XIV.CN" Version="7.41.1" />-->
+    <!--    <PackageReference Include="Unscrambler.XIV.CN" Version="*" />-->
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="..\EdgeTTS\voices.json">
+    <EmbeddedResource Include="../EdgeTTS\voices.json">
       <Link>Resources\voices.json</Link>
       <LogicalName>IINACT.Resources.voices.json</LogicalName>
     </EmbeddedResource>
@@ -125,4 +96,8 @@
     </Content>
     <EmbeddedResource Include="logo.png"/>
   </ItemGroup>
+  <PropertyGroup Condition="'$(GITHUB_ACTIONS)' == ''">
+    <DalamudLibPath>$(appdata)/XIVLauncherCN/addon/Hooks/dev</DalamudLibPath>
+    <AssemblySearchPaths>$(AssemblySearchPaths);$(DalamudLibPath)</AssemblySearchPaths>
+  </PropertyGroup>
 </Project>
