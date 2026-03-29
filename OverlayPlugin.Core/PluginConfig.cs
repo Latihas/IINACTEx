@@ -8,361 +8,325 @@ namespace RainbowMage.OverlayPlugin;
 
 [Serializable]
 public class PluginConfig : IPluginConfig {
-    private const string BACKUP_SUFFIX = ".backup";
-    private TinyIoCContainer _container;
+	private const string BACKUP_SUFFIX = ".backup";
+	private TinyIoCContainer _container;
 
-    [JsonIgnore] private bool isDirty;
+	[JsonIgnore] private bool isDirty;
 
-    [JsonIgnore] private string filePath;
+	[JsonIgnore] private string filePath;
 
-    private bool _followLatestLog;
+	private bool _followLatestLog;
 
-    public bool FollowLatestLog
-    {
-        get => _followLatestLog;
-        set
-        {
-            _followLatestLog = value;
-            isDirty = true;
-        }
-    }
+	public bool FollowLatestLog {
+		get => _followLatestLog;
+		set {
+			_followLatestLog = value;
+			isDirty = true;
+		}
+	}
 
-    private bool _hideOverlaysWhenNotActive;
+	private bool _hideOverlaysWhenNotActive;
 
-    public bool HideOverlaysWhenNotActive
-    {
-        get => _hideOverlaysWhenNotActive;
-        set
-        {
-            _hideOverlaysWhenNotActive = value;
-            isDirty = true;
-        }
-    }
+	public bool HideOverlaysWhenNotActive {
+		get => _hideOverlaysWhenNotActive;
+		set {
+			_hideOverlaysWhenNotActive = value;
+			isDirty = true;
+		}
+	}
 
-    private bool _hideOverlayDuringCutscene;
+	private bool _hideOverlayDuringCutscene;
 
-    public bool HideOverlayDuringCutscene
-    {
-        get => _hideOverlayDuringCutscene;
-        set
-        {
-            _hideOverlayDuringCutscene = value;
-            isDirty = true;
-        }
-    }
+	public bool HideOverlayDuringCutscene {
+		get => _hideOverlayDuringCutscene;
+		set {
+			_hideOverlayDuringCutscene = value;
+			isDirty = true;
+		}
+	}
 
-    private bool _errorReports;
+	private bool _errorReports;
 
-    public bool ErrorReports
-    {
-        get => _errorReports;
-        set
-        {
-            _errorReports = value;
-            isDirty = true;
-        }
-    }
+	public bool ErrorReports {
+		get => _errorReports;
+		set {
+			_errorReports = value;
+			isDirty = true;
+		}
+	}
 
-    private bool _updateCheck;
+	private bool _updateCheck;
 
-    public bool UpdateCheck
-    {
-        get => _updateCheck;
-        set
-        {
-            _updateCheck = value;
-            isDirty = true;
-        }
-    }
+	public bool UpdateCheck {
+		get => _updateCheck;
+		set {
+			_updateCheck = value;
+			isDirty = true;
+		}
+	}
 
-    private string _WSServerIP;
+	private string _WSServerIP;
 
-    public string WSServerIP
-    {
-        get => _WSServerIP;
-        set
-        {
-            _WSServerIP = value;
-            isDirty = true;
-        }
-    }
+	public string WSServerIP {
+		get => _WSServerIP;
+		set {
+			_WSServerIP = value;
+			isDirty = true;
+		}
+	}
 
-    private int _WSServerPort;
+	private int _WSServerPort;
 
-    public int WSServerPort
-    {
-        get => _WSServerPort;
-        set
-        {
-            _WSServerPort = value;
-            isDirty = true;
-        }
-    }
+	public int WSServerPort {
+		get => _WSServerPort;
+		set {
+			_WSServerPort = value;
+			isDirty = true;
+		}
+	}
 
-    private bool _WSServerSSL;
+	private bool _WSServerSSL;
 
-    public bool WSServerSSL
-    {
-        get => _WSServerSSL;
-        set
-        {
-            _WSServerSSL = value;
-            isDirty = true;
-        }
-    }
+	public bool WSServerSSL {
+		get => _WSServerSSL;
+		set {
+			_WSServerSSL = value;
+			isDirty = true;
+		}
+	}
 
-    private bool _WSServerRunning;
+	private bool _WSServerRunning;
 
-    public bool WSServerRunning
-    {
-        get => _WSServerRunning;
-        set
-        {
-            _WSServerRunning = value;
-            isDirty = true;
-        }
-    }
+	public bool WSServerRunning {
+		get => _WSServerRunning;
+		set {
+			_WSServerRunning = value;
+			isDirty = true;
+		}
+	}
 
-    private string _tunnelRegion;
+	private string _tunnelRegion;
 
-    public string TunnelRegion
-    {
-        get => _tunnelRegion;
-        set
-        {
-            _tunnelRegion = value;
-            isDirty = true;
-        }
-    }
+	public string TunnelRegion {
+		get => _tunnelRegion;
+		set {
+			_tunnelRegion = value;
+			isDirty = true;
+		}
+	}
 
-    [JsonIgnore] public Version Version
-    {
-        get
-        {
-            if (string.IsNullOrEmpty(VersionString)) {
-                return null;
-            }
-            return new Version(VersionString);
-        }
-        set
-        {
-            if (value != null) {
-                VersionString = value.ToString();
-            }
-            else {
-                VersionString = null;
-            }
-        }
-    }
+	[JsonIgnore] public Version Version {
+		get {
+			if (string.IsNullOrEmpty(VersionString)) {
+				return null;
+			}
+			return new Version(VersionString);
+		}
+		set {
+			if (value != null) {
+				VersionString = value.ToString();
+			} else {
+				VersionString = null;
+			}
+		}
+	}
 
-    private string _versionString;
+	private string _versionString;
 
-    [JsonProperty("Version")] public string VersionString
-    {
-        get => _versionString;
-        set
-        {
-            _versionString = value;
-            isDirty = true;
-        }
-    }
+	[JsonProperty("Version")] public string VersionString {
+		get => _versionString;
+		set {
+			_versionString = value;
+			isDirty = true;
+		}
+	}
 
-    private DateTime _lastUpdateCheck;
+	private DateTime _lastUpdateCheck;
 
-    public DateTime LastUpdateCheck
-    {
-        get => _lastUpdateCheck;
-        set
-        {
-            _lastUpdateCheck = value;
-            isDirty = true;
-        }
-    }
+	public DateTime LastUpdateCheck {
+		get => _lastUpdateCheck;
+		set {
+			_lastUpdateCheck = value;
+			isDirty = true;
+		}
+	}
 
-    private bool _isFirstLaunch;
+	private bool _isFirstLaunch;
 
-    [JsonIgnore] public bool IsFirstLaunch
-    {
-        get => _isFirstLaunch;
-        set
-        {
-            _isFirstLaunch = value;
-            isDirty = true;
-        }
-    }
+	[JsonIgnore] public bool IsFirstLaunch {
+		get => _isFirstLaunch;
+		set {
+			_isFirstLaunch = value;
+			isDirty = true;
+		}
+	}
 
-    [JsonIgnore] public OverlayConfigList<IOverlayConfig> Overlays { get; set; }
+	[JsonIgnore] public OverlayConfigList<IOverlayConfig> Overlays { get; set; }
 
-    [JsonProperty("Overlays")] public List<JObject> OverlayObjects;
+	[JsonProperty("Overlays")] public List<JObject> OverlayObjects;
 
-    public Dictionary<string, JObject> EventSourceConfigs { get; set; }
+	public Dictionary<string, JObject> EventSourceConfigs { get; set; }
 
-    [JsonIgnore] private ILogger logger;
+	[JsonIgnore] private ILogger logger;
 
-    public PluginConfig(string configPath, TinyIoCContainer container) {
-        if (configPath == null) throw new Exception("Invalid config path passed to PluginConfig!");
+	public PluginConfig(string configPath, TinyIoCContainer container) {
+		if (configPath == null) throw new Exception("Invalid config path passed to PluginConfig!");
 
-        _container = container;
-        filePath = configPath;
-        logger = container.Resolve<ILogger>();
-        Overlays = new OverlayConfigList<IOverlayConfig>(logger);
-        EventSourceConfigs = new Dictionary<string, JObject>();
+		_container = container;
+		filePath = configPath;
+		logger = container.Resolve<ILogger>();
+		Overlays = new OverlayConfigList<IOverlayConfig>(logger);
+		EventSourceConfigs = new Dictionary<string, JObject>();
 
-        FollowLatestLog = false;
-        HideOverlaysWhenNotActive = true;
-        HideOverlayDuringCutscene = false;
-        ErrorReports = false;
-        UpdateCheck = true;
-        IsFirstLaunch = true;
+		FollowLatestLog = false;
+		HideOverlaysWhenNotActive = true;
+		HideOverlayDuringCutscene = false;
+		ErrorReports = false;
+		UpdateCheck = true;
+		IsFirstLaunch = true;
 
-        var useBackup = true;
-        var initEmpty = false;
+		var useBackup = true;
+		var initEmpty = false;
 
-        if (File.Exists(configPath)) {
-            try {
-                LoadJson(configPath);
-                useBackup = false;
-            }
-            catch (Exception ex) {
-                logger.Log(LogLevel.Error, "LoadConfig: Failed to load configuration: {0}", ex);
-            }
-        }
-        else {
-            useBackup = true;
-        }
+		if (File.Exists(configPath)) {
+			try {
+				LoadJson(configPath);
+				useBackup = false;
+			} catch (Exception ex) {
+				logger.Log(LogLevel.Error, "LoadConfig: Failed to load configuration: {0}", ex);
+			}
+		} else {
+			useBackup = true;
+		}
 
-        if (useBackup) {
-            if (File.Exists(configPath + BACKUP_SUFFIX)) {
-                logger.Log(LogLevel.Info, "LoadConfig: Loading backup config...");
+		if (useBackup) {
+			if (File.Exists(configPath + BACKUP_SUFFIX)) {
+				logger.Log(LogLevel.Info, "LoadConfig: Loading backup config...");
 
-                try {
-                    LoadJson(configPath + BACKUP_SUFFIX);
-                }
-                catch (Exception ex) {
-                    logger.Log(LogLevel.Error, "LoadConfig: Failed to load backup: {0}", ex);
-                }
-            }
-            else {
-                initEmpty = true;
-            }
-        }
+				try {
+					LoadJson(configPath + BACKUP_SUFFIX);
+				} catch (Exception ex) {
+					logger.Log(LogLevel.Error, "LoadConfig: Failed to load backup: {0}", ex);
+				}
+			} else {
+				initEmpty = true;
+			}
+		}
 
-        if (initEmpty) {
-            Overlays = new OverlayConfigList<IOverlayConfig>(logger);
+		if (initEmpty) {
+			Overlays = new OverlayConfigList<IOverlayConfig>(logger);
 
-            WSServerIP = "127.0.0.1";
-            WSServerPort = 10501;
-            WSServerRunning = true;
-            WSServerSSL = false;
-        }
+			WSServerIP = "127.0.0.1";
+			WSServerPort = 10501;
+			WSServerRunning = true;
+			WSServerSSL = false;
+		}
 
-        isDirty = false;
-    }
+		isDirty = false;
+	}
 
-    public void MarkDirty() {
-        isDirty = true;
-    }
+	public void MarkDirty() {
+		isDirty = true;
+	}
 
-    public void Save() {
-        SaveJson(true);
-    }
+	public void Save() {
+		SaveJson(true);
+	}
 
-    public void SaveJson(bool force = false) {
-        if (!force && !isDirty) return;
+	public void SaveJson(bool force = false) {
+		if (!force && !isDirty) return;
 
-        // Create a backup of the old config
-        if (File.Exists(filePath)) {
-            // First, make sure it's actually valid.
-            var oldConfigValid = false;
-            try {
-                using (var stream = new StreamReader(filePath)) {
-                    var reader = new JsonTextReader(stream);
-                    JToken.ReadFrom(reader);
-                }
+		// Create a backup of the old config
+		if (File.Exists(filePath)) {
+			// First, make sure it's actually valid.
+			var oldConfigValid = false;
+			try {
+				using (var stream = new StreamReader(filePath)) {
+					var reader = new JsonTextReader(stream);
+					JToken.ReadFrom(reader);
+				}
 
-                oldConfigValid = true;
-            }
-            catch (Exception ex) {
-                logger.Log(LogLevel.Error, "Failed to read old config. Skipping backup... {0}", ex);
-            }
+				oldConfigValid = true;
+			} catch (Exception ex) {
+				logger.Log(LogLevel.Error, "Failed to read old config. Skipping backup... {0}", ex);
+			}
 
-            if (oldConfigValid) {
-                File.Copy(filePath, filePath + BACKUP_SUFFIX, true);
-            }
-        }
+			if (oldConfigValid) {
+				File.Copy(filePath, filePath + BACKUP_SUFFIX, true);
+			}
+		}
 
-        // Convert Overlays
-        OverlayObjects = [];
+		// Convert Overlays
+		OverlayObjects = [];
 
-        foreach (var item in Overlays) {
-            var obj = JObject.FromObject(item);
-            obj["$type"] = item.GetType().FullName + ", " + item.GetType().Assembly.GetName();
-            OverlayObjects.Add(obj);
-        }
+		foreach (var item in Overlays) {
+			var obj = JObject.FromObject(item);
+			obj["$type"] = item.GetType().FullName + ", " + item.GetType().Assembly.GetName();
+			OverlayObjects.Add(obj);
+		}
 
-        using (var stream = new StreamWriter(filePath)) {
-            var serializer = new JsonSerializer();
-            serializer.Formatting = Formatting.Indented;
-            serializer.TypeNameHandling = TypeNameHandling.Auto;
-            serializer.Serialize(stream, this);
-        }
+		using (var stream = new StreamWriter(filePath)) {
+			var serializer = new JsonSerializer();
+			serializer.Formatting = Formatting.Indented;
+			serializer.TypeNameHandling = TypeNameHandling.Auto;
+			serializer.Serialize(stream, this);
+		}
 
-        isDirty = false;
-    }
+		isDirty = false;
+	}
 
-    private void LoadJson(string configPath) {
-        using (var stream = new StreamReader(configPath)) {
-            var reader = new JsonTextReader(stream);
-            var serializer = new JsonSerializer();
-            serializer.TypeNameHandling = TypeNameHandling.Auto;
-            serializer.Populate(reader, this);
-        }
+	private void LoadJson(string configPath) {
+		using (var stream = new StreamReader(configPath)) {
+			var reader = new JsonTextReader(stream);
+			var serializer = new JsonSerializer();
+			serializer.TypeNameHandling = TypeNameHandling.Auto;
+			serializer.Populate(reader, this);
+		}
 
-        IsFirstLaunch = false;
+		IsFirstLaunch = false;
 
-        // Convert Overlays
-        var overlayLeftOvers = new List<JObject>();
-        Overlays = new OverlayConfigList<IOverlayConfig>(logger);
+		// Convert Overlays
+		var overlayLeftOvers = new List<JObject>();
+		Overlays = new OverlayConfigList<IOverlayConfig>(logger);
 
-        foreach (var item in OverlayObjects) {
-            try {
-                var typeName = item["$type"].ToString();
-                var type = GetType(typeName.Split(',')[0]);
-                if (type == null) {
-                    throw new Exception($"Type {typeName} not found!");
-                }
+		foreach (var item in OverlayObjects) {
+			try {
+				var typeName = item["$type"].ToString();
+				var type = GetType(typeName.Split(',')[0]);
+				if (type == null) {
+					throw new Exception($"Type {typeName} not found!");
+				}
 
-                Overlays.Add((IOverlayConfig)JsonConvert.DeserializeObject(
-                    item.ToString(),
-                    type,
-                    new ConfigCreationConverter(_container)
-                ));
-            }
-            catch (Exception e) {
-                logger.Log(LogLevel.Error, $"Failed to load an overlay config: ${e}");
-                overlayLeftOvers.Add(item);
-            }
-        }
+				Overlays.Add((IOverlayConfig)JsonConvert.DeserializeObject(
+					item.ToString(),
+					type,
+					new ConfigCreationConverter(_container)
+				));
+			} catch (Exception e) {
+				logger.Log(LogLevel.Error, $"Failed to load an overlay config: ${e}");
+				overlayLeftOvers.Add(item);
+			}
+		}
 
-        OverlayObjects = overlayLeftOvers;
-    }
+		OverlayObjects = overlayLeftOvers;
+	}
 
-    public static PluginConfig LoadJson(string path, TinyIoCContainer container) {
-        if (!File.Exists(path)) {
-            return null;
-        }
+	public static PluginConfig LoadJson(string path, TinyIoCContainer container) {
+		if (!File.Exists(path)) {
+			return null;
+		}
 
-        return new PluginConfig(path, container);
-    }
+		return new PluginConfig(path, container);
+	}
 
-    private static Type GetType(string fullName) {
-        foreach (var asm in AppDomain.CurrentDomain.GetAssemblies()) {
-            var type = asm.GetType(fullName, false);
-            if (type != null) {
-                return type;
-            }
-        }
+	private static Type GetType(string fullName) {
+		foreach (var asm in AppDomain.CurrentDomain.GetAssemblies()) {
+			var type = asm.GetType(fullName, false);
+			if (type != null) {
+				return type;
+			}
+		}
 
-        return null;
-    }
+		return null;
+	}
 }

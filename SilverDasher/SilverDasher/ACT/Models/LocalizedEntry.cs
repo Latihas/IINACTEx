@@ -3,15 +3,15 @@ using Newtonsoft.Json;
 namespace SilverDasher.ACT.Models;
 
 public class LocalizedEntry {
-    [JsonProperty("chs")] public string Chinese;
+	[JsonProperty("chs")] public string Chinese;
 
-    [JsonProperty("en")] public string English;
+	[JsonProperty("en")] public string English;
 
-    [JsonProperty("ja")] public string Japanese;
+	[JsonProperty("ja")] public string Japanese;
 
-    [JsonProperty("de")] public string German;
+	[JsonProperty("de")] public string German;
 
-    [JsonProperty("fr")] public string French;
+	[JsonProperty("fr")] public string French;
 
-    public override string ToString() => Chinese;
+	public override string ToString() => Chinese;
 }

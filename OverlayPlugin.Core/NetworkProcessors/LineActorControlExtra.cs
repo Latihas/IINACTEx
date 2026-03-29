@@ -10,37 +10,37 @@ using RainbowMage.OverlayPlugin.NetworkProcessors.PacketHelper;
 namespace RainbowMage.OverlayPlugin.NetworkProcessors;
 
 public class LineActorControlExtra : LineBaseSubMachina<LineActorControlExtra.ActorControlExtraPacket> {
-    public const uint LogFileLineID = 273;
-    public const string LogLineName = "ActorControlExtra";
-    public const string MachinaPacketName = "ActorControl";
+	public const uint LogFileLineID = 273;
+	public const string LogLineName = "ActorControlExtra";
+	public const string MachinaPacketName = "ActorControl";
 
-    // Any category defined in this array will be allowed as an emitted line
-        public static Server_ActorControlCategory[] AllowedActorControlCategories = {
-            Server_ActorControlCategory.SetAnimationState,
-            Server_ActorControlCategory.DisplayPublicContentTextMessage,
-            Server_ActorControlCategory.VfxUnknown49,
-            Server_ActorControlCategory.SetModelState,
-            Server_ActorControlCategory.VfxUnknown184,
-            Server_ActorControlCategory.PlayActionTimeline,
-            Server_ActorControlCategory.EObjAnimation,
-    };
+	// Any category defined in this array will be allowed as an emitted line
+	public static Server_ActorControlCategory[] AllowedActorControlCategories = {
+		Server_ActorControlCategory.SetAnimationState,
+		Server_ActorControlCategory.DisplayPublicContentTextMessage,
+		Server_ActorControlCategory.VfxUnknown49,
+		Server_ActorControlCategory.SetModelState,
+		Server_ActorControlCategory.VfxUnknown184,
+		Server_ActorControlCategory.PlayActionTimeline,
+		Server_ActorControlCategory.EObjAnimation
+	};
 
-    public class ActorControlExtraPacket : MachinaPacketWrapper {
-        public override string ToString(long epoch, uint ActorID) {
-            var category = Get<Server_ActorControlCategory>("category");
+	public class ActorControlExtraPacket : MachinaPacketWrapper {
+		public override string ToString(long epoch, uint ActorID) {
+			var category = Get<Server_ActorControlCategory>("category");
 
-            if (!AllowedActorControlCategories.Contains(category)) return null;
+			if (!AllowedActorControlCategories.Contains(category)) return null;
 
-            var param1 = Get<uint>("param1");
-            var param2 = Get<uint>("param2");
-            var param3 = Get<uint>("param3");
-            var param4 = Get<uint>("param4");
+			var param1 = Get<uint>("param1");
+			var param2 = Get<uint>("param2");
+			var param3 = Get<uint>("param3");
+			var param4 = Get<uint>("param4");
 
-            return $"{ActorID:X8}|{(ushort)category:X4}|{param1:X}|{param2:X}|{param3:X}|{param4:X}";
-        }
-    }
+			return $"{ActorID:X8}|{(ushort)category:X4}|{param1:X}|{param2:X}|{param3:X}|{param4:X}";
+		}
+	}
 
-    public LineActorControlExtra(TinyIoCContainer container)
-        : base(container, LogFileLineID, LogLineName, MachinaPacketName) {
-    }
+	public LineActorControlExtra(TinyIoCContainer container)
+		: base(container, LogFileLineID, LogLineName, MachinaPacketName) {
+	}
 }

@@ -5,78 +5,78 @@ using Machina.FFXIV;
 namespace RainbowMage.OverlayPlugin.NetworkProcessors.PacketHelper;
 
 internal abstract class LineBaseCustom<
-    HeaderStruct_Global, PacketStruct_Global,
-    HeaderStruct_CN, PacketStruct_CN,
-    HeaderStruct_KR, PacketStruct_KR,
-    HeaderStruct_TC, PacketStruct_TC>
-    where HeaderStruct_Global : struct, IHeaderStruct
-    where PacketStruct_Global : struct, IPacketStruct
-    where HeaderStruct_CN : struct, IHeaderStruct
-    where PacketStruct_CN : struct, IPacketStruct
-    where HeaderStruct_KR : struct, IHeaderStruct
-    where PacketStruct_KR : struct, IPacketStruct
-    where HeaderStruct_TC : struct, IHeaderStruct
-    where PacketStruct_TC : struct, IPacketStruct {
-    protected static FFXIVRepository ffxiv;
+	HeaderStruct_Global, PacketStruct_Global,
+	HeaderStruct_CN, PacketStruct_CN,
+	HeaderStruct_KR, PacketStruct_KR,
+	HeaderStruct_TC, PacketStruct_TC>
+	where HeaderStruct_Global : struct, IHeaderStruct
+	where PacketStruct_Global : struct, IPacketStruct
+	where HeaderStruct_CN : struct, IHeaderStruct
+	where PacketStruct_CN : struct, IPacketStruct
+	where HeaderStruct_KR : struct, IHeaderStruct
+	where PacketStruct_KR : struct, IPacketStruct
+	where HeaderStruct_TC : struct, IHeaderStruct
+	where PacketStruct_TC : struct, IPacketStruct {
+	protected static FFXIVRepository ffxiv;
 
-    protected readonly Func<string, DateTime, bool> logWriter;
-    protected readonly RegionalizedPacketHelper<
-        HeaderStruct_Global, PacketStruct_Global,
-        HeaderStruct_CN, PacketStruct_CN,
-        HeaderStruct_KR, PacketStruct_KR,
-        HeaderStruct_TC, PacketStruct_TC> packetHelper;
-    protected GameRegion? currentRegion;
+	protected readonly Func<string, DateTime, bool> logWriter;
+	protected readonly RegionalizedPacketHelper<
+		HeaderStruct_Global, PacketStruct_Global,
+		HeaderStruct_CN, PacketStruct_CN,
+		HeaderStruct_KR, PacketStruct_KR,
+		HeaderStruct_TC, PacketStruct_TC> packetHelper;
+	protected GameRegion? currentRegion;
 
-    protected LineBaseCustom(TinyIoCContainer container, uint logFileLineID, string logLineName, string opcodeName) {
-        ffxiv = ffxiv ?? container.Resolve<FFXIVRepository>();
-        ffxiv.RegisterNetworkParser(MessageReceived);
-        ffxiv.RegisterProcessChangedHandler(ProcessChanged);
+	protected LineBaseCustom(TinyIoCContainer container, uint logFileLineID, string logLineName, string opcodeName) {
+		ffxiv = ffxiv ?? container.Resolve<FFXIVRepository>();
+		ffxiv.RegisterNetworkParser(MessageReceived);
+		ffxiv.RegisterProcessChangedHandler(ProcessChanged);
 
-        var opcodeConfig = container.Resolve<OverlayPluginLogLineConfig>();
+		var opcodeConfig = container.Resolve<OverlayPluginLogLineConfig>();
 
-        packetHelper = RegionalizedPacketHelper<
-            HeaderStruct_Global, PacketStruct_Global,
-            HeaderStruct_CN, PacketStruct_CN,
-            HeaderStruct_KR, PacketStruct_KR,
-            HeaderStruct_TC, PacketStruct_TC>.CreateFromOpcodeConfig(opcodeConfig, opcodeName);
+		packetHelper = RegionalizedPacketHelper<
+			HeaderStruct_Global, PacketStruct_Global,
+			HeaderStruct_CN, PacketStruct_CN,
+			HeaderStruct_KR, PacketStruct_KR,
+			HeaderStruct_TC, PacketStruct_TC>.CreateFromOpcodeConfig(opcodeConfig, opcodeName);
 
-        if (packetHelper == null) {
-            var logger = container.Resolve<ILogger>();
-            logger.Log(LogLevel.Error, $"Failed to initialize {logLineName}: Failed to create {opcodeName} packet helper from opcode configs and native structs");
-            return;
-        }
+		if (packetHelper == null) {
+			var logger = container.Resolve<ILogger>();
+			logger.Log(LogLevel.Error, $"Failed to initialize {logLineName}: Failed to create {opcodeName} packet helper from opcode configs and native structs");
+			return;
+		}
 
-        var customLogLines = container.Resolve<FFXIVCustomLogLines>();
-        logWriter = customLogLines.RegisterCustomLogLine(new LogLineRegistryEntry {
-            Name = logLineName,
-            Source = "OverlayPlugin",
-            ID = logFileLineID,
-            Version = 1
-        });
-    }
+		var customLogLines = container.Resolve<FFXIVCustomLogLines>();
+		logWriter = customLogLines.RegisterCustomLogLine(new LogLineRegistryEntry {
+			Name = logLineName,
+			Source = "OverlayPlugin",
+			ID = logFileLineID,
+			Version = 1
+		});
+	}
 
-    protected virtual void ProcessChanged(Process process) {
-        if (!ffxiv.IsFFXIVPluginPresent())
-            return;
+	protected virtual void ProcessChanged(Process process) {
+		if (!ffxiv.IsFFXIVPluginPresent())
+			return;
 
-        currentRegion = null;
-    }
+		currentRegion = null;
+	}
 
-    protected virtual void MessageReceived(string id, long epoch, byte[] message) {
-        if (packetHelper == null)
-            return;
+	protected virtual void MessageReceived(string id, long epoch, byte[] message) {
+		if (packetHelper == null)
+			return;
 
-        if (currentRegion == null)
-            currentRegion = ffxiv.GetMachinaRegion();
+		if (currentRegion == null)
+			currentRegion = ffxiv.GetMachinaRegion();
 
-        if (currentRegion == null)
-            return;
+		if (currentRegion == null)
+			return;
 
-        var line = packetHelper[currentRegion.Value].ToString(epoch, message);
+		var line = packetHelper[currentRegion.Value].ToString(epoch, message);
 
-        if (line != null) {
-            var serverTime = ffxiv.EpochToDateTime(epoch);
-            logWriter(line, serverTime);
-        }
-    }
+		if (line != null) {
+			var serverTime = ffxiv.EpochToDateTime(epoch);
+			logWriter(line, serverTime);
+		}
+	}
 }

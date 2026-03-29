@@ -1,9 +1,9 @@
 namespace SilverDasher.ACT.Models;
 
 public enum HuntState {
-    Healthy,
-    Taunted,
-    Dying,
-    Died,
-    Unknown
+	Healthy,
+	Taunted,
+	Dying,
+	Died,
+	Unknown
 }

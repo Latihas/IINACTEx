@@ -1,11 +1,11 @@
 namespace SilverDasher.ACT.Doppelgangers;
 
 public enum AuthResult {
-    SUCCESS,
-    BLOCKED,
-    BANNED,
-    LEFT,
-    FAIL,
-    ERROR,
-    EXPIRED
+	SUCCESS,
+	BLOCKED,
+	BANNED,
+	LEFT,
+	FAIL,
+	ERROR,
+	EXPIRED
 }

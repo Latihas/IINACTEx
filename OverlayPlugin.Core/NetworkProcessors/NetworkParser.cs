@@ -6,68 +6,68 @@ using RainbowMage.OverlayPlugin.NetworkProcessors.PacketHelper;
 namespace RainbowMage.OverlayPlugin.NetworkProcessors;
 
 internal class NetworkParser {
-    public event EventHandler<OnlineStatusChangedArgs> OnOnlineStatusChanged;
+	public event EventHandler<OnlineStatusChangedArgs> OnOnlineStatusChanged;
 
-    public class ActorControlPacket : MachinaPacketWrapper {
-        public override string ToString(long epoch, uint ActorID) => "";
-    }
+	public class ActorControlPacket : MachinaPacketWrapper {
+		public override string ToString(long epoch, uint ActorID) => "";
+	}
 
-    private MachinaRegionalizedPacketHelper<ActorControlPacket> actorControlPacketHelper;
+	private MachinaRegionalizedPacketHelper<ActorControlPacket> actorControlPacketHelper;
 
-    private static FFXIVRepository ffxiv;
-    private GameRegion? currentRegion;
+	private static FFXIVRepository ffxiv;
+	private GameRegion? currentRegion;
 
-    private const string machinaPacketName = "ActorControl";
+	private const string machinaPacketName = "ActorControl";
 
-    public NetworkParser(TinyIoCContainer container) {
-        var logger = container.Resolve<ILogger>();
+	public NetworkParser(TinyIoCContainer container) {
+		var logger = container.Resolve<ILogger>();
 
-        ffxiv = ffxiv ?? container.Resolve<FFXIVRepository>();
-        ffxiv.RegisterNetworkParser(Parse);
-        ffxiv.RegisterProcessChangedHandler(ProcessChanged);
+		ffxiv = ffxiv ?? container.Resolve<FFXIVRepository>();
+		ffxiv.RegisterNetworkParser(Parse);
+		ffxiv.RegisterProcessChangedHandler(ProcessChanged);
 
-        if (!MachinaRegionalizedPacketHelper<ActorControlPacket>.Create(machinaPacketName, out actorControlPacketHelper)) {
-            logger.Log(LogLevel.Error, $"Failed to initialize NetworkParser: Failed to create {machinaPacketName} packet helper from Machina structs");
-        }
-    }
+		if (!MachinaRegionalizedPacketHelper<ActorControlPacket>.Create(machinaPacketName, out actorControlPacketHelper)) {
+			logger.Log(LogLevel.Error, $"Failed to initialize NetworkParser: Failed to create {machinaPacketName} packet helper from Machina structs");
+		}
+	}
 
-    private void ProcessChanged(Process process) {
-        if (!ffxiv.IsFFXIVPluginPresent())
-            return;
+	private void ProcessChanged(Process process) {
+		if (!ffxiv.IsFFXIVPluginPresent())
+			return;
 
-        currentRegion = null;
-    }
+		currentRegion = null;
+	}
 
-    private void Parse(string id, long epoch, byte[] message) {
-        if (actorControlPacketHelper == null)
-            return;
+	private void Parse(string id, long epoch, byte[] message) {
+		if (actorControlPacketHelper == null)
+			return;
 
-        if (currentRegion == null)
-            currentRegion = ffxiv.GetMachinaRegion();
+		if (currentRegion == null)
+			currentRegion = ffxiv.GetMachinaRegion();
 
-        if (currentRegion == null)
-            return;
+		if (currentRegion == null)
+			return;
 
-        var helper = (MachinaPacketHelper<ActorControlPacket>)actorControlPacketHelper[currentRegion.Value];
+		var helper = (MachinaPacketHelper<ActorControlPacket>)actorControlPacketHelper[currentRegion.Value];
 
-        if (helper.ToStructs(message, out var header, out var packet)) {
-            var category = packet.Get<Server_ActorControlCategory>("category");
-            if (category != Server_ActorControlCategory.StatusUpdate) return;
+		if (helper.ToStructs(message, out var header, out var packet)) {
+			var category = packet.Get<Server_ActorControlCategory>("category");
+			if (category != Server_ActorControlCategory.StatusUpdate) return;
 
-            var actorID = header.ActorID;
-            var param1 = packet.Get<uint>("param1");
+			var actorID = header.ActorID;
+			var param1 = packet.Get<uint>("param1");
 
-            OnOnlineStatusChanged?.Invoke(null, new OnlineStatusChangedArgs(actorID, param1));
-        }
-    }
+			OnOnlineStatusChanged?.Invoke(null, new OnlineStatusChangedArgs(actorID, param1));
+		}
+	}
 }
 
 public class OnlineStatusChangedArgs : EventArgs {
-    public uint Target { get; private set; }
-    public uint Status { get; private set; }
+	public uint Target { get; private set; }
+	public uint Status { get; private set; }
 
-    public OnlineStatusChangedArgs(uint target, uint status) {
-        Target = target;
-        Status = status;
-    }
+	public OnlineStatusChangedArgs(uint target, uint status) {
+		Target = target;
+		Status = status;
+	}
 }

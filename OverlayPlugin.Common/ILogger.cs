@@ -3,38 +3,38 @@
 namespace RainbowMage.OverlayPlugin;
 
 public interface ILogger {
-    void Log(LogLevel level, string message);
-    void Log(LogLevel level, string format, params object[] args);
-    void RegisterListener(Action<LogEntry> listener);
-    void ClearListener();
+	void Log(LogLevel level, string message);
+	void Log(LogLevel level, string format, params object[] args);
+	void RegisterListener(Action<LogEntry> listener);
+	void ClearListener();
 }
 
 public class LogEntry {
-    public string Message { get; set; }
-    public LogLevel Level { get; set; }
-    public DateTime Time { get; set; }
+	public string Message { get; set; }
+	public LogLevel Level { get; set; }
+	public DateTime Time { get; set; }
 
-    public LogEntry(LogLevel level, DateTime time, string message) {
-        Message = message;
-        Level = level;
-        Time = time;
-    }
+	public LogEntry(LogLevel level, DateTime time, string message) {
+		Message = message;
+		Level = level;
+		Time = time;
+	}
 }
 
 public class LogEventArgs : EventArgs {
-    public string Message { get; private set; }
-    public LogLevel Level { get; private set; }
+	public string Message { get; private set; }
+	public LogLevel Level { get; private set; }
 
-    public LogEventArgs(LogLevel level, string message) {
-        Message = message;
-        Level = level;
-    }
+	public LogEventArgs(LogLevel level, string message) {
+		Message = message;
+		Level = level;
+	}
 }
 
 public enum LogLevel {
-    Trace,
-    Debug,
-    Info,
-    Warning,
-    Error
+	Trace,
+	Debug,
+	Info,
+	Warning,
+	Error
 }

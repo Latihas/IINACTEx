@@ -5,8 +5,7 @@ using System.ComponentModel;
 namespace Advanced_Combat_Tracker;
 
 [ToolboxBitmap(typeof(ListView))]
-public class ListViewNoFlicker : ListView
-{
+public class ListViewNoFlicker : ListView {
 	private bool updating;
 
 	private bool antiFlicker;
@@ -19,33 +18,25 @@ public class ListViewNoFlicker : ListView
 	public bool CustomGridLines { get; set; } = true;
 
 
-	public ListViewNoFlicker()
-	{
+	public ListViewNoFlicker() {
 		DrawColumnHeader += ListViewNoFlicker_DrawColumnHeader;
 		DrawSubItem += ListViewNoFlicker_DrawSubItem;
 		DrawItem += ListViewNoFlicker_DrawItem;
 		OwnerDraw = true;
 	}
 
-	private void ListViewNoFlicker_DrawItem(object? _, DrawListViewItemEventArgs e)
-	{
+	private void ListViewNoFlicker_DrawItem(object? _, DrawListViewItemEventArgs e) {
 		e.DrawDefault = true;
 	}
 
-	private void ListViewNoFlicker_DrawSubItem(object? _, DrawListViewSubItemEventArgs e)
-	{
-		try
-		{
-			if (e.Bounds.Width > 0)
-			{
+	private void ListViewNoFlicker_DrawSubItem(object? _, DrawListViewSubItemEventArgs e) {
+		try {
+			if (e.Bounds.Width > 0) {
 				Color color;
-				if (e.Item.Selected)
-				{
+				if (e.Item.Selected) {
 					e.Graphics.FillRectangle(new SolidBrush(SystemColors.Highlight), e.Bounds);
 					color = SystemColors.HighlightText;
-				}
-				else
-				{
+				} else {
 					e.Graphics.FillRectangle(new SolidBrush(e.SubItem.BackColor), e.Bounds);
 					color = e.SubItem.ForeColor;
 				}
@@ -57,11 +48,10 @@ public class ListViewNoFlicker : ListView
 				// 	else
 				// 		e.Graphics.DrawRectangle(new Pen(new SolidBrush(Color.LightGray)), rect);
 				// }
-				var stringAlignment = e.Header.TextAlign switch
-				{
-					HorizontalAlignment.Left => StringAlignment.Near, 
-					HorizontalAlignment.Right => StringAlignment.Far, 
-					_ => StringAlignment.Center, 
+				var stringAlignment = e.Header.TextAlign switch {
+					HorizontalAlignment.Left => StringAlignment.Near,
+					HorizontalAlignment.Right => StringAlignment.Far,
+					_ => StringAlignment.Center
 				};
 				var stringFormat = new StringFormat();
 				stringFormat.Alignment = stringAlignment;
@@ -72,20 +62,15 @@ public class ListViewNoFlicker : ListView
 				e.Graphics.DrawString(e.SubItem.Text, e.SubItem.Font, new SolidBrush(color), rectangle, stringFormat);
 			}
 			e.DrawDefault = false;
-		}
-		catch (Exception ex)
-		{
+		} catch (Exception ex) {
 			e.DrawDefault = true;
 			// ActGlobals.oFormActMain.WriteExceptionLog(ex, "ListViewNoFlicker_DrawSubItem");
 		}
 	}
 
-	private void ListViewNoFlicker_DrawColumnHeader(object? _, DrawListViewColumnHeaderEventArgs e)
-	{
-		try
-		{
-			if (e.Bounds.Width > 0)
-			{
+	private void ListViewNoFlicker_DrawColumnHeader(object? _, DrawListViewColumnHeaderEventArgs e) {
+		try {
+			if (e.Bounds.Width > 0) {
 				var rect = e.Bounds with {
 					X = e.Bounds.Left,
 					Y = e.Bounds.Top
@@ -104,11 +89,10 @@ public class ListViewNoFlicker : ListView
 					e.Graphics.FillRectangle(flag ? new SolidBrush(Color.FromArgb(238, 243, 255)) : new SolidBrush(Color.FromArgb(248, 250, 255)), rect);
 					e.Graphics.DrawRectangle(new Pen(new SolidBrush(Color.LightGray)), rect);
 				}
-				var stringAlignment = e.Header.TextAlign switch
-				{
-					HorizontalAlignment.Left => StringAlignment.Near, 
-					HorizontalAlignment.Right => StringAlignment.Far, 
-					_ => StringAlignment.Center, 
+				var stringAlignment = e.Header.TextAlign switch {
+					HorizontalAlignment.Left => StringAlignment.Near,
+					HorizontalAlignment.Right => StringAlignment.Far,
+					_ => StringAlignment.Center
 				};
 				var stringFormat = new StringFormat();
 				stringFormat.Alignment = stringAlignment;
@@ -122,52 +106,41 @@ public class ListViewNoFlicker : ListView
 				e.Graphics.DrawString(e.Header.Text, e.Font, new SolidBrush(e.ForeColor), rectangle, stringFormat);
 			}
 			e.DrawDefault = false;
-		}
-		catch (Exception ex)
-		{
+		} catch (Exception ex) {
 			e.DrawDefault = true;
 			// ActGlobals.oFormActMain.WriteExceptionLog(ex, "ListViewNoFlicker_DrawColumnHeader");
 		}
 	}
 
-	public new void BeginUpdate()
-	{
+	public new void BeginUpdate() {
 		base.BeginUpdate();
 		updating = true;
 		updateCount++;
 	}
 
-	public new void EndUpdate()
-	{
+	public new void EndUpdate() {
 		updating = false;
 		base.EndUpdate();
 		updateCount--;
 	}
 
-	public void FlushUpdate()
-	{
-		while (updateCount > 0)
-		{
+	public void FlushUpdate() {
+		while (updateCount > 0) {
 			EndUpdate();
 		}
 	}
 
-	protected override void WndProc(ref Message messg)
-	{
-		try
-		{
+	protected override void WndProc(ref Message messg) {
+		try {
 			if (updating && antiFlicker && (messg.Msg == 20 || messg.Msg == 15))
 				messg.Msg = 0;
 			base.WndProc(ref messg);
-		}
-		catch (Exception ex)
-		{
+		} catch (Exception ex) {
 			// ActGlobals.oFormActMain.WriteExceptionLog(ex, messg.ToString());
 		}
 	}
 
-	public void SetExStyles()
-	{
+	public void SetExStyles() {
 		CustomGridLines = GridLines;
 		GridLines = false;
 		antiFlicker = true;

@@ -9,355 +9,349 @@ using RainbowMage.OverlayPlugin.WebSocket;
 namespace RainbowMage.OverlayPlugin.EventSources;
 
 internal partial class MiniParseEventSource : EventSourceBase {
-    private List<string> importedLogs = [];
+	private List<string> importedLogs = [];
 
-    private const string CombatDataEvent = "CombatData";
-    private const string ImportedLogLinesEvent = "ImportedLogLines";
-    private const string BroadcastMessageEvent = "BroadcastMessage";
+	private const string CombatDataEvent = "CombatData";
+	private const string ImportedLogLinesEvent = "ImportedLogLines";
+	private const string BroadcastMessageEvent = "BroadcastMessage";
 
-    // Event Source
+	// Event Source
 
-    public BuiltinEventConfig Config { get; set; }
+	public BuiltinEventConfig Config { get; set; }
 
-    public MiniParseEventSource(TinyIoCContainer container) : base(container) {
-        Name = "MiniParse";
+	public MiniParseEventSource(TinyIoCContainer container) : base(container) {
+		Name = "MiniParse";
 
-        RegisterEventTypes([
-            CombatDataEvent,
-            ImportedLogLinesEvent,
-            BroadcastMessageEvent
-        ]);
+		RegisterEventTypes([
+			CombatDataEvent,
+			ImportedLogLinesEvent,
+			BroadcastMessageEvent
+		]);
 
-        RegisterEventHandler("saveData", msg => {
-            var key = msg["key"]?.ToString();
-            if (key == null)
-                return null;
+		RegisterEventHandler("saveData", msg => {
+			var key = msg["key"]?.ToString();
+			if (key == null)
+				return null;
 
-            Config.OverlayData[key] = msg["data"];
-            return null;
-        });
+			Config.OverlayData[key] = msg["data"];
+			return null;
+		});
 
-        RegisterEventHandler("loadData", msg => {
-            var key = msg["key"]?.ToString();
-            if (key == null)
-                return null;
+		RegisterEventHandler("loadData", msg => {
+			var key = msg["key"]?.ToString();
+			if (key == null)
+				return null;
 
-            if (!Config.OverlayData.ContainsKey(key))
-                return null;
+			if (!Config.OverlayData.ContainsKey(key))
+				return null;
 
-            var ret = new JObject();
-            ret["key"] = key;
-            ret["data"] = Config.OverlayData[key];
-            return ret;
-        });
+			var ret = new JObject();
+			ret["key"] = key;
+			ret["data"] = Config.OverlayData[key];
+			return ret;
+		});
 
-        RegisterEventHandler("say", msg => {
-            var text = msg["text"]?.ToString();
-            if (text == null)
-                return null;
+		RegisterEventHandler("say", msg => {
+			var text = msg["text"]?.ToString();
+			if (text == null)
+				return null;
 
-            ActGlobals.oFormActMain.TTS(text);
-            return null;
-        });
+			ActGlobals.oFormActMain.TTS(text);
+			return null;
+		});
 
-        RegisterEventHandler("playSound", msg => {
-            var file = msg["file"]?.ToString();
-            if (file == null)
-                return null;
+		RegisterEventHandler("playSound", msg => {
+			var file = msg["file"]?.ToString();
+			if (file == null)
+				return null;
 
-            ActGlobals.oFormActMain.PlaySound(file);
-            return null;
-        });
+			ActGlobals.oFormActMain.PlaySound(file);
+			return null;
+		});
 
-        RegisterEventHandler("broadcast", msg => {
-            if (!msg.ContainsKey("msg") || !msg.TryGetValue("source", out var value)) {
-                Log(LogLevel.Error,
-                    "Called broadcast handler without specifying a source or message (\"source\" or \"msg\" property are missing).");
-                return null;
-            }
+		RegisterEventHandler("broadcast", msg => {
+			if (!msg.ContainsKey("msg") || !msg.TryGetValue("source", out var value)) {
+				Log(LogLevel.Error,
+					"Called broadcast handler without specifying a source or message (\"source\" or \"msg\" property are missing).");
+				return null;
+			}
 
-            if (value.Type != JTokenType.String) {
-                Log(LogLevel.Error, "The source passed to the broadcast handler must be a string!");
-                return null;
-            }
+			if (value.Type != JTokenType.String) {
+				Log(LogLevel.Error, "The source passed to the broadcast handler must be a string!");
+				return null;
+			}
 
-            DispatchEvent(JObject.FromObject(new {
-                type = BroadcastMessageEvent,
-                source = msg["source"],
-                msg = msg["msg"]
-            }));
+			DispatchEvent(JObject.FromObject(new {
+				type = BroadcastMessageEvent,
+				source = msg["source"],
+				msg = msg["msg"]
+			}));
 
-            return null;
-        });
+			return null;
+		});
 
-        RegisterEventHandler("openWebsiteWithWS", msg => {
-            var result = new JObject();
+		RegisterEventHandler("openWebsiteWithWS", msg => {
+			var result = new JObject();
 
-            if (!msg.ContainsKey("url")) {
-                Log(LogLevel.Error,
-                    "Called openWebsiteWithWS handler without specifying a URL (\"url\" property is missing).");
-                result["$error"] =
-                    "Called openWebsiteWithWS handler without specifying a URL (\"url\" property is missing).";
-                return result;
-            }
+			if (!msg.ContainsKey("url")) {
+				Log(LogLevel.Error,
+					"Called openWebsiteWithWS handler without specifying a URL (\"url\" property is missing).");
+				result["$error"] =
+					"Called openWebsiteWithWS handler without specifying a URL (\"url\" property is missing).";
+				return result;
+			}
 
-            var wsServer = container.Resolve<ServerController>();
+			var wsServer = container.Resolve<ServerController>();
 
-            if (!wsServer.Running) {
-                result["$error"] = "WSServer is not running";
-                return result;
-            }
+			if (!wsServer.Running) {
+				result["$error"] = "WSServer is not running";
+				return result;
+			}
 
-            try {
-                var url = wsServer.GetModernUrl(msg["url"].ToString());
-                var proc = new Process();
-                proc.StartInfo.Verb = "open";
-                proc.StartInfo.FileName = url;
-                proc.Start();
-            }
-            catch (Exception ex) {
-                Log(LogLevel.Error, $"Failed to to open website: {ex}");
-                result["$error"] = $"Failed to to open website: {ex}";
-                return result;
-            }
+			try {
+				var url = wsServer.GetModernUrl(msg["url"].ToString());
+				var proc = new Process();
+				proc.StartInfo.Verb = "open";
+				proc.StartInfo.FileName = url;
+				proc.Start();
+			} catch (Exception ex) {
+				Log(LogLevel.Error, $"Failed to to open website: {ex}");
+				result["$error"] = $"Failed to to open website: {ex}";
+				return result;
+			}
 
-            result["success"] = true;
-            return result;
-        });
+			result["success"] = true;
+			return result;
+		});
 
-        ActGlobals.oFormActMain.BeforeLogLineRead +=
-            (isImport, logInfo) => {
-                if (isImport) {
-                    lock (importedLogs) {
-                        importedLogs.Add(logInfo.originalLogLine);
-                    }
-                }
-            };
-    }
+		ActGlobals.oFormActMain.BeforeLogLineRead +=
+			(isImport, logInfo) => {
+				if (isImport) {
+					lock (importedLogs) {
+						importedLogs.Add(logInfo.originalLogLine);
+					}
+				}
+			};
+	}
 
-    private void StopACTCombat() {
-        ActGlobals.oFormActMain.Invoke((Action)(() => { ActGlobals.oFormActMain.EndCombat(true); }));
-    }
+	private void StopACTCombat() {
+		ActGlobals.oFormActMain.Invoke((Action)(() => { ActGlobals.oFormActMain.EndCombat(true); }));
+	}
 
-    public override void LoadConfig(IPluginConfig config) {
-        Config = container.Resolve<BuiltinEventConfig>();
+	public override void LoadConfig(IPluginConfig config) {
+		Config = container.Resolve<BuiltinEventConfig>();
 
-        Config.UpdateIntervalChanged += (_, _) => { Start(); };
-    }
+		Config.UpdateIntervalChanged += (_, _) => { Start(); };
+	}
 
-    public override void SaveConfig(IPluginConfig config) {
-    }
+	public override void SaveConfig(IPluginConfig config) {
+	}
 
-    public override void Start() {
-        timer.Change(0, Config.UpdateInterval * 1000);
-    }
+	public override void Start() {
+		timer.Change(0, Config.UpdateInterval * 1000);
+	}
 
-    protected override void Update() {
-        var importing = false;
+	protected override void Update() {
+		var importing = false;
 
-        if (CheckIsActReady() && (!importing || Config.UpdateDpsDuringImport)) {
-            if (!HasSubscriber(CombatDataEvent)) {
-                return;
-            }
+		if (CheckIsActReady() && (!importing || Config.UpdateDpsDuringImport)) {
+			if (!HasSubscriber(CombatDataEvent)) {
+				return;
+			}
 
-            // There used to be logic here to skip updating if the encounter info hasn't changed, but that's been commented
-            // out since https://github.com/ngld/OverlayPlugin/commit/a56c44e85f0a5608d4185d67e13690dbad461523
-            // Probably an unintentional change but it didn't break anything :shrug:
+			// There used to be logic here to skip updating if the encounter info hasn't changed, but that's been commented
+			// out since https://github.com/ngld/OverlayPlugin/commit/a56c44e85f0a5608d4185d67e13690dbad461523
+			// Probably an unintentional change but it didn't break anything :shrug:
 
-            DispatchEvent(CreateCombatData());
-        }
+			DispatchEvent(CreateCombatData());
+		}
 
-        if (importing && HasSubscriber(ImportedLogLinesEvent)) {
-            List<string> logs = null;
+		if (importing && HasSubscriber(ImportedLogLinesEvent)) {
+			List<string> logs = null;
 
-            lock (importedLogs) {
-                if (importedLogs.Count > 0) {
-                    logs = importedLogs;
-                    importedLogs = [];
-                }
-            }
+			lock (importedLogs) {
+				if (importedLogs.Count > 0) {
+					logs = importedLogs;
+					importedLogs = [];
+				}
+			}
 
-            if (logs != null) {
-                DispatchEvent(JObject.FromObject(new {
-                    type = ImportedLogLinesEvent,
-                    logLines = logs
-                }));
-            }
-        }
-    }
+			if (logs != null) {
+				DispatchEvent(JObject.FromObject(new {
+					type = ImportedLogLinesEvent,
+					logLines = logs
+				}));
+			}
+		}
+	}
 
-    internal JObject CreateCombatData() {
-        if (!CheckIsActReady()) {
-            return new JObject();
-        }
+	internal JObject CreateCombatData() {
+		if (!CheckIsActReady()) {
+			return new JObject();
+		}
 
 #if DEBUG
             var stopwatch = new Stopwatch();
             stopwatch.Start();
 #endif
 
-        var allies = ActGlobals.oFormActMain.ActiveZone.ActiveEncounter.GetAllies();
-        Dictionary<string, string> encounter = null;
-        List<KeyValuePair<CombatantData, Dictionary<string, string>>> combatant = null;
+		var allies = ActGlobals.oFormActMain.ActiveZone.ActiveEncounter.GetAllies();
+		Dictionary<string, string> encounter = null;
+		List<KeyValuePair<CombatantData, Dictionary<string, string>>> combatant = null;
 
 
-        encounter = GetEncounterDictionary(allies);
-        combatant = GetCombatantList(allies);
+		encounter = GetEncounterDictionary(allies);
+		combatant = GetCombatantList(allies);
 
-        if (encounter == null || combatant == null) return new JObject();
+		if (encounter == null || combatant == null) return new JObject();
 
-        var obj = new JObject();
+		var obj = new JObject();
 
-        obj["type"] = "CombatData";
-        obj["Encounter"] = JObject.FromObject(encounter);
-        obj["Combatant"] = new JObject();
+		obj["type"] = "CombatData";
+		obj["Encounter"] = JObject.FromObject(encounter);
+		obj["Combatant"] = new JObject();
 
-        if (Config.SortKey != null && Config.SortKey != "") {
-            var factor = Config.SortDesc ? -1 : 1;
-            var key = Config.SortKey;
+		if (Config.SortKey != null && Config.SortKey != "") {
+			var factor = Config.SortDesc ? -1 : 1;
+			var key = Config.SortKey;
 
-            try {
-                combatant.Sort((a, b) => {
-                    try {
-                        var aValue = float.Parse(a.Value[key]);
-                        var bValue = float.Parse(b.Value[key]);
+			try {
+				combatant.Sort((a, b) => {
+					try {
+						var aValue = float.Parse(a.Value[key]);
+						var bValue = float.Parse(b.Value[key]);
 
-                        return factor * aValue.CompareTo(bValue);
-                    }
-                    catch (FormatException) {
-                        return 0;
-                    }
-                    catch (KeyNotFoundException) {
-                        return 0;
-                    }
-                });
-            }
-            catch (Exception e) {
-                Log(LogLevel.Error, Resources.ListSortFailed, key, e);
-            }
-        }
+						return factor * aValue.CompareTo(bValue);
+					} catch (FormatException) {
+						return 0;
+					} catch (KeyNotFoundException) {
+						return 0;
+					}
+				});
+			} catch (Exception e) {
+				Log(LogLevel.Error, Resources.ListSortFailed, key, e);
+			}
+		}
 
-        foreach (var pair in combatant) {
-            var value = new JObject();
-            foreach (var pair2 in pair.Value) {
-                value.Add(pair2.Key, Util.ReplaceNaNString(pair2.Value, "---"));
-            }
+		foreach (var pair in combatant) {
+			var value = new JObject();
+			foreach (var pair2 in pair.Value) {
+				value.Add(pair2.Key, Util.ReplaceNaNString(pair2.Value, "---"));
+			}
 
-            obj["Combatant"][pair.Key.Name] = value;
-        }
+			obj["Combatant"][pair.Key.Name] = value;
+		}
 
-        obj["isActive"] = ActGlobals.oFormActMain.ActiveZone.ActiveEncounter?.Active == true ? "true" : "false";
+		obj["isActive"] = ActGlobals.oFormActMain.ActiveZone.ActiveEncounter?.Active == true ? "true" : "false";
 
 #if DEBUG
             stopwatch.Stop();
             Log(LogLevel.Trace, "CreateUpdateScript: {0} msec", stopwatch.Elapsed.TotalMilliseconds);
 #endif
-        return obj;
-    }
+		return obj;
+	}
 
-    private List<KeyValuePair<CombatantData, Dictionary<string, string>>> GetCombatantList(
-        IEnumerable<CombatantData> allies) {
+	private List<KeyValuePair<CombatantData, Dictionary<string, string>>> GetCombatantList(
+		IEnumerable<CombatantData> allies) {
 #if TRACE
-        var stopwatch = new Stopwatch();
-        stopwatch.Start();
+		var stopwatch = new Stopwatch();
+		stopwatch.Start();
 #endif
 
-        Dictionary<string, string> BuildCombatantDict(CombatantData ally) {
-            var valueDict = new Dictionary<string, string>();
-            foreach (var exportValuePair in CombatantData.ExportVariables) {
-                try {
-                    // NAME タグには {NAME:8} のようにコロンで区切られたエクストラ情報が必要で、
-                    // プラグインの仕組み的に対応することができないので除外する
-                    if (exportValuePair.Key.StartsWith("NAME")) {
-                        continue;
-                    }
+		Dictionary<string, string> BuildCombatantDict(CombatantData ally) {
+			var valueDict = new Dictionary<string, string>();
+			foreach (var exportValuePair in CombatantData.ExportVariables) {
+				try {
+					// NAME タグには {NAME:8} のようにコロンで区切られたエクストラ情報が必要で、
+					// プラグインの仕組み的に対応することができないので除外する
+					if (exportValuePair.Key.StartsWith("NAME")) {
+						continue;
+					}
 
-                    // ACT_FFXIV_Plugin が提供する LastXXDPS は、
-                    // ally.Items[CombatantData.DamageTypeDataOutgoingDamage].Items に All キーが存在しない場合に、
-                    // プラグイン内で例外が発生してしまい、パフォーマンスが悪化するので代わりに空の文字列を挿入する
-                    if (exportValuePair.Key == "Last10DPS" || exportValuePair.Key == "Last30DPS" || exportValuePair.Key == "Last60DPS" || exportValuePair.Key == "Last180DPS") {
-                        if (!ally.Items[CombatantData.DamageTypeDataOutgoingDamage].Items.ContainsKey("All")) {
-                            valueDict.Add(exportValuePair.Key, "");
-                            continue;
-                        }
-                    }
+					// ACT_FFXIV_Plugin が提供する LastXXDPS は、
+					// ally.Items[CombatantData.DamageTypeDataOutgoingDamage].Items に All キーが存在しない場合に、
+					// プラグイン内で例外が発生してしまい、パフォーマンスが悪化するので代わりに空の文字列を挿入する
+					if (exportValuePair.Key == "Last10DPS" || exportValuePair.Key == "Last30DPS" || exportValuePair.Key == "Last60DPS" || exportValuePair.Key == "Last180DPS") {
+						if (!ally.Items[CombatantData.DamageTypeDataOutgoingDamage].Items.ContainsKey("All")) {
+							valueDict.Add(exportValuePair.Key, "");
+							continue;
+						}
+					}
 
-                    var value = exportValuePair.Value.GetExportString(ally, "");
-                    valueDict.Add(exportValuePair.Key, value);
-                }
-                catch (Exception e) {
-                    Log(LogLevel.Debug, "GetCombatantList: {0}: {1}: {2}", ally.Name, exportValuePair.Key, e);
-                }
-            }
-            return valueDict;
-        }
+					var value = exportValuePair.Value.GetExportString(ally, "");
+					valueDict.Add(exportValuePair.Key, value);
+				} catch (Exception e) {
+					Log(LogLevel.Debug, "GetCombatantList: {0}: {1}: {2}", ally.Name, exportValuePair.Key, e);
+				}
+			}
+			return valueDict;
+		}
 
-        var combatantList = allies.AsParallel()
-            .Select(combatantData => new KeyValuePair<CombatantData, Dictionary<string, string>>(
-                combatantData, BuildCombatantDict(combatantData)))
-            .ToList();
-
-#if TRACE
-        stopwatch.Stop();
-        Log(LogLevel.Trace, "GetCombatantList: {0} msec", stopwatch.Elapsed.TotalMilliseconds);
-#endif
-
-        return combatantList;
-    }
-
-    private Dictionary<string, string> GetEncounterDictionary(List<CombatantData> allies) {
-#if TRACE
-        var stopwatch = new Stopwatch();
-        stopwatch.Start();
-#endif
-
-        var encounterDict = new Dictionary<string, string>();
-        foreach (var exportValuePair in EncounterData.ExportVariables) {
-            try {
-#if TRACE
-                stopwatch.Reset();
-                stopwatch.Start();
-#endif
-
-                // ACT_FFXIV_Plugin が提供する LastXXDPS は、
-                // ally.Items[CombatantData.DamageTypeDataOutgoingDamage].Items に All キーが存在しない場合に、
-                // プラグイン内で例外が発生してしまい、パフォーマンスが悪化するので代わりに空の文字列を挿入する
-                if (exportValuePair.Key == "Last10DPS" ||
-                    exportValuePair.Key == "Last30DPS" ||
-                    exportValuePair.Key == "Last60DPS" ||
-                    exportValuePair.Key == "Last180DPS") {
-                    if (!allies.All(ally => ally.Items[CombatantData.DamageTypeDataOutgoingDamage].Items
-                            .ContainsKey("All"))) {
-                        encounterDict.Add(exportValuePair.Key, "");
-                        continue;
-                    }
-                }
-
-                var value = exportValuePair.Value.GetExportString(
-                    ActGlobals.oFormActMain.ActiveZone.ActiveEncounter,
-                    allies,
-                    "");
-                encounterDict.Add(exportValuePair.Key, value);
-            }
-            catch (Exception e) {
-                Log(LogLevel.Debug, "GetEncounterDictionary: {0}: {1}", exportValuePair.Key, e);
-            }
-        }
+		var combatantList = allies.AsParallel()
+			.Select(combatantData => new KeyValuePair<CombatantData, Dictionary<string, string>>(
+				combatantData, BuildCombatantDict(combatantData)))
+			.ToList();
 
 #if TRACE
-        stopwatch.Stop();
-        Log(LogLevel.Trace, "GetEncounterDictionary: {0} msec", stopwatch.Elapsed.TotalMilliseconds);
+		stopwatch.Stop();
+		Log(LogLevel.Trace, "GetCombatantList: {0} msec", stopwatch.Elapsed.TotalMilliseconds);
 #endif
 
-        return encounterDict;
-    }
+		return combatantList;
+	}
 
-    private static bool CheckIsActReady() {
-        if (ActGlobals.oFormActMain?.ActiveZone?.ActiveEncounter != null &&
-            EncounterData.ExportVariables != null &&
-            CombatantData.ExportVariables != null) {
-            return true;
-        }
-        return false;
-    }
+	private Dictionary<string, string> GetEncounterDictionary(List<CombatantData> allies) {
+#if TRACE
+		var stopwatch = new Stopwatch();
+		stopwatch.Start();
+#endif
+
+		var encounterDict = new Dictionary<string, string>();
+		foreach (var exportValuePair in EncounterData.ExportVariables) {
+			try {
+#if TRACE
+				stopwatch.Reset();
+				stopwatch.Start();
+#endif
+
+				// ACT_FFXIV_Plugin が提供する LastXXDPS は、
+				// ally.Items[CombatantData.DamageTypeDataOutgoingDamage].Items に All キーが存在しない場合に、
+				// プラグイン内で例外が発生してしまい、パフォーマンスが悪化するので代わりに空の文字列を挿入する
+				if (exportValuePair.Key == "Last10DPS" ||
+				    exportValuePair.Key == "Last30DPS" ||
+				    exportValuePair.Key == "Last60DPS" ||
+				    exportValuePair.Key == "Last180DPS") {
+					if (!allies.All(ally => ally.Items[CombatantData.DamageTypeDataOutgoingDamage].Items
+						    .ContainsKey("All"))) {
+						encounterDict.Add(exportValuePair.Key, "");
+						continue;
+					}
+				}
+
+				var value = exportValuePair.Value.GetExportString(
+					ActGlobals.oFormActMain.ActiveZone.ActiveEncounter,
+					allies,
+					"");
+				encounterDict.Add(exportValuePair.Key, value);
+			} catch (Exception e) {
+				Log(LogLevel.Debug, "GetEncounterDictionary: {0}: {1}", exportValuePair.Key, e);
+			}
+		}
+
+#if TRACE
+		stopwatch.Stop();
+		Log(LogLevel.Trace, "GetEncounterDictionary: {0} msec", stopwatch.Elapsed.TotalMilliseconds);
+#endif
+
+		return encounterDict;
+	}
+
+	private static bool CheckIsActReady() {
+		if (ActGlobals.oFormActMain?.ActiveZone?.ActiveEncounter != null &&
+		    EncounterData.ExportVariables != null &&
+		    CombatantData.ExportVariables != null) {
+			return true;
+		}
+		return false;
+	}
 }

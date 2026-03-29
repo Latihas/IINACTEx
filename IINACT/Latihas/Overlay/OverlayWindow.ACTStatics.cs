@@ -991,9 +991,7 @@ public partial class OverlayWindow {
 
 
 	// ReSharper disable once UnusedParameter.Local
-	private static Color GetCellColor(int rowIndex, int colIndex) {
-		return colIndex % 2 == 0 ? Color.Transparent : Color.Bisque;
-	}
+	private static Color GetCellColor(int rowIndex, int colIndex) => colIndex % 2 == 0 ? Color.Transparent : Color.Bisque;
 
 	private const ImPlotFlags plotFlag = ImPlotFlags.NoTitle | ImPlotFlags.NoLegend | ImPlotFlags.NoFrame | ImPlotFlags.NoBoxSelect;
 

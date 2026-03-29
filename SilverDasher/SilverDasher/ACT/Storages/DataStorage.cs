@@ -5,27 +5,27 @@ using Advanced_Combat_Tracker;
 namespace SilverDasher.ACT.Storages;
 
 public static class DataStorage {
-    private const int SelectedNest = 0;
+	private const int SelectedNest = 0;
 
-    private static readonly string[] nests = ["garlandtools.cn", "silverdasher.com", ""];
+	private static readonly string[] nests = ["garlandtools.cn", "silverdasher.com", ""];
 
-    public static readonly string LogFile = Path.Combine(LogPath, $"{DateTime.Now.ToFileTime()}.log");
+	public static readonly string LogFile = Path.Combine(LogPath, $"{DateTime.Now.ToFileTime()}.log");
 
-    public static string Title => "银山雀儿";
+	public static string Title => "银山雀儿";
 
-    public static int Version => 0x60004;
+	public static int Version => 0x60004;
 
-    public static string BasePath => Path.Combine(ActGlobals.oFormActMain.AppDataFolder.FullName, "SilverDasher");
+	public static string BasePath => Path.Combine(ActGlobals.oFormActMain.AppDataFolder.FullName, "SilverDasher");
 
-    public static string ConfigPath => Path.Combine(BasePath, "config.json");
+	public static string ConfigPath => Path.Combine(BasePath, "config.json");
 
-    public static string LogPath => Path.Combine(BasePath, "logs");
+	public static string LogPath => Path.Combine(BasePath, "logs");
 
-    public static string SilverDasherNest => $"https://nest.{nests[SelectedNest]}/";
+	public static string SilverDasherNest => $"https://nest.{nests[SelectedNest]}/";
 
-    public static string SilverDasherTree => $"wss://tree.{nests[SelectedNest]}/mqtt";
+	public static string SilverDasherTree => $"wss://tree.{nests[SelectedNest]}/mqtt";
 
-    // public static void SetExtraServer(string server) {
-    //     nests[2] = server;
-    // }
+	// public static void SetExtraServer(string server) {
+	//     nests[2] = server;
+	// }
 }

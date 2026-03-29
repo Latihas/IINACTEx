@@ -26,8 +26,7 @@ public partial class LWindow {
 						AT.Condition = new ConditionGroup {
 							Grouping = ConditionGroup.CndGroupingEnum.Or
 						};
-				}
-				else BuildConditionTree(null, AT.Condition);
+				} else BuildConditionTree(null, AT.Condition);
 				ImGui.EndChild();
 			}
 			ImGui.SameLine();

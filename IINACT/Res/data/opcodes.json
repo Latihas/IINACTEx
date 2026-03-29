@@ -1,31 +1,31 @@
 {
-	"version": "20260303",
-	"data": [
-		{
-			"name": "InitZone",
-			"cn": "0x02F2",
-			"cnl": 754,
-			"global": "0x02F2",
-			"globall": 754
-		},
-		{
-			"name": "FateInfo",
-			"cn": "0x01B0",
-			"cnl": 432,
-			"global": "0x01B0",
-			"globall": 432
-		},
-		{
-			"name": "ActorControlSelf",
-			"cn": "0x03C9",
-			"cnl": 969,
-			"global": "0x03C9",
-			"globall": 969,
-			"types": {
-				"FateStart": 2370,
-				"FateEnd": 2357,
-				"FateProgress": 2364
-			}
-		}
-	]
+  "version": "20260324",
+  "data": [
+    {
+      "name": "InitZone",
+      "cn": "0x02F2",
+      "cnl": 168,
+      "global": "0x01f5",
+      "globall": 168
+    },
+    {
+      "name": "FateInfo",
+      "cn": "0x01B0",
+      "cnl": 56,
+      "global": "0xf009",
+      "globall": 56
+    },
+    {
+      "name": "ActorControlSelf",
+      "cn": "0x03C9",
+      "cnl": 72,
+      "global": "0x012C",
+      "globall": 72,
+      "types": {
+        "FateStart": 2370,
+        "FateEnd": 2357,
+        "FateProgress": 2364
+      }
+    }
+  ]
 }

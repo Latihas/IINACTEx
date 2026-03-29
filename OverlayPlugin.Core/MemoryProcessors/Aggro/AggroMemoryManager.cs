@@ -5,57 +5,57 @@ using System.Diagnostics;
 namespace RainbowMage.OverlayPlugin.MemoryProcessors.Aggro;
 
 public interface IAggroMemory : IVersionedMemory {
-    List<AggroEntry> GetAggroList(List<Combatant.Combatant> combatantList);
+	List<AggroEntry> GetAggroList(List<Combatant.Combatant> combatantList);
 }
 
 public class AggroMemoryManager : IAggroMemory {
-    private readonly TinyIoCContainer container;
-    private readonly FFXIVRepository repository;
-    private IAggroMemory memory;
+	private readonly TinyIoCContainer container;
+	private readonly FFXIVRepository repository;
+	private IAggroMemory memory;
 
-    public AggroMemoryManager(TinyIoCContainer container) {
-        this.container = container;
-        container.Register<IAggroMemory60, AggroMemory60>();
-        repository = container.Resolve<FFXIVRepository>();
+	public AggroMemoryManager(TinyIoCContainer container) {
+		this.container = container;
+		container.Register<IAggroMemory60, AggroMemory60>();
+		repository = container.Resolve<FFXIVRepository>();
 
-        var memory = container.Resolve<FFXIVMemory>();
-        memory.RegisterOnProcessChangeHandler(FindMemory);
-    }
+		var memory = container.Resolve<FFXIVMemory>();
+		memory.RegisterOnProcessChangeHandler(FindMemory);
+	}
 
-    private void FindMemory(object sender, Process p) {
-        memory = null;
-        if (p == null) {
-            return;
-        }
+	private void FindMemory(object sender, Process p) {
+		memory = null;
+		if (p == null) {
+			return;
+		}
 
-        ScanPointers();
-    }
+		ScanPointers();
+	}
 
-    public void ScanPointers() {
-        var candidates = new List<IAggroMemory>();
-        candidates.Add(container.Resolve<IAggroMemory60>());
-        memory = FFXIVMemory.FindCandidate(candidates, repository.GetMachinaRegion());
-    }
+	public void ScanPointers() {
+		var candidates = new List<IAggroMemory>();
+		candidates.Add(container.Resolve<IAggroMemory60>());
+		memory = FFXIVMemory.FindCandidate(candidates, repository.GetMachinaRegion());
+	}
 
-    public bool IsValid() {
-        if (memory == null || !memory.IsValid()) {
-            return false;
-        }
+	public bool IsValid() {
+		if (memory == null || !memory.IsValid()) {
+			return false;
+		}
 
-        return true;
-    }
+		return true;
+	}
 
-    public Version GetVersion() {
-        if (!IsValid())
-            return null;
-        return memory.GetVersion();
-    }
+	public Version GetVersion() {
+		if (!IsValid())
+			return null;
+		return memory.GetVersion();
+	}
 
-    public List<AggroEntry> GetAggroList(List<Combatant.Combatant> combatantList) {
-        if (!IsValid()) {
-            return null;
-        }
+	public List<AggroEntry> GetAggroList(List<Combatant.Combatant> combatantList) {
+		if (!IsValid()) {
+			return null;
+		}
 
-        return memory.GetAggroList(combatantList);
-    }
+		return memory.GetAggroList(combatantList);
+	}
 }

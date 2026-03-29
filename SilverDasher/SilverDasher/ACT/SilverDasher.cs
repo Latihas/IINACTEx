@@ -102,12 +102,10 @@ public class SilverDasher {
 			while (!token.IsCancellationRequested && Keeper.RUNNING) {
 				try {
 					if (Keeper.PlayerWorldID != 0 && Keeper.CurrentWorldID != 0 && Keeper.PlayerName != "") await Auth(token);
-				}
-				catch (Exception ex) {
+				} catch (Exception ex) {
 					Trace.WriteLine(ex.ToString());
 					Logger.Log(ex.StackTrace);
-				}
-				finally {
+				} finally {
 					await Task.Delay(TimeSpan.FromSeconds(5.0), token);
 				}
 			}
@@ -124,8 +122,7 @@ public class SilverDasher {
 					if (r == AuthResult.SUCCESS) {
 						PluginControl.SetPluginStatus(PluginStatus.CONNECTED);
 						Messager.StartLoop(token);
-					}
-					else {
+					} else {
 						Logger.Log($"Authentication Failed! Status {Enum.GetName(r.GetType(), r)}.");
 						switch (r) {
 							case AuthResult.BLOCKED:
@@ -158,12 +155,10 @@ public class SilverDasher {
 								break;
 						}
 					}
-				}
-				catch (Exception ex) {
+				} catch (Exception ex) {
 					Trace.WriteLine(ex.ToString());
 					Logger.Log(ex.StackTrace);
-				}
-				finally {
+				} finally {
 					await Task.Delay(TimeSpan.FromSeconds(15.0), token);
 				}
 			}

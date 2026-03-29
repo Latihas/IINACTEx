@@ -1,6 +1,6 @@
 namespace SilverDasher.ACT.Enums;
 
 public enum OpcodeType {
-    ActorControlSelf,
-    FateInfo
+	ActorControlSelf,
+	FateInfo
 }

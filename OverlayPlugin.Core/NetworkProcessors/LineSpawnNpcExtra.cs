@@ -49,28 +49,28 @@ After the first Superchain cast in P12N, 3 orbs and 1 donut are spawned with tet
 namespace RainbowMage.OverlayPlugin.NetworkProcessors;
 
 internal class LineSpawnNpcExtra : LineBaseCustomMachina<Server_MessageHeader_Global, LineSpawnNpcExtra.Server_NpcSpawn_Global_6_51,
-    Server_MessageHeader_CN, LineSpawnNpcExtra.Server_NpcSpawn_Global_6_51,
-    Server_MessageHeader_KR, LineSpawnNpcExtra.Server_NpcSpawn_Global_6_51,
-    Server_MessageHeader_TC, LineSpawnNpcExtra.Server_NpcSpawn_Global_6_51> {
-    public const uint LogFileLineID = 272;
-    public const string LogLineName = "NpcSpawnExtra";
-    public const string MachinaPacketName = "NpcSpawn";
+	Server_MessageHeader_CN, LineSpawnNpcExtra.Server_NpcSpawn_Global_6_51,
+	Server_MessageHeader_KR, LineSpawnNpcExtra.Server_NpcSpawn_Global_6_51,
+	Server_MessageHeader_TC, LineSpawnNpcExtra.Server_NpcSpawn_Global_6_51> {
+	public const uint LogFileLineID = 272;
+	public const string LogLineName = "NpcSpawnExtra";
+	public const string MachinaPacketName = "NpcSpawn";
 
-    [StructLayout(LayoutKind.Explicit)]
-    public struct Server_NpcSpawn_Global_6_51 : IPacketStruct {
-        [FieldOffset(0x58)] public uint parentActorId;
+	[StructLayout(LayoutKind.Explicit)]
+	public struct Server_NpcSpawn_Global_6_51 : IPacketStruct {
+		[FieldOffset(0x58)] public uint parentActorId;
 
-        [FieldOffset(0x7C)] public ushort tetherId;
+		[FieldOffset(0x7C)] public ushort tetherId;
 
-        [FieldOffset(0x95)] public byte animationState;
+		[FieldOffset(0x95)] public byte animationState;
 
-        public string ToString(long epoch, uint ActorID) =>
-            string.Format(CultureInfo.InvariantCulture,
-                "{0:X8}|{1:X8}|{2:X4}|{3:X2}",
-                ActorID, parentActorId, tetherId, animationState);
-    }
+		public string ToString(long epoch, uint ActorID) =>
+			string.Format(CultureInfo.InvariantCulture,
+				"{0:X8}|{1:X8}|{2:X4}|{3:X2}",
+				ActorID, parentActorId, tetherId, animationState);
+	}
 
-    public LineSpawnNpcExtra(TinyIoCContainer container)
-        : base(container, LogFileLineID, LogLineName, MachinaPacketName) {
-    }
+	public LineSpawnNpcExtra(TinyIoCContainer container)
+		: base(container, LogFileLineID, LogLineName, MachinaPacketName) {
+	}
 }

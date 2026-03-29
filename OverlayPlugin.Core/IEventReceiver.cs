@@ -3,7 +3,7 @@
 namespace RainbowMage.OverlayPlugin;
 
 public interface IEventReceiver {
-    string Name { get; }
+	string Name { get; }
 
-    void HandleEvent(JObject e);
+	void HandleEvent(JObject e);
 }

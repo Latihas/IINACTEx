@@ -103,8 +103,7 @@ public static partial class LWindow {
 			if (t.IsCorrect is null or false) {
 				if (ImGui.Button(ts))
 					ImGui.SetClipboardText(ts);
-			}
-			else ImGui.Text($"{t}");
+			} else ImGui.Text($"{t}");
 		}
 	}
 
@@ -332,8 +331,7 @@ public static partial class LWindow {
 							Plugin.LoadPScript(i);
 						else
 							Plugin.LoadIActPluginV1(i);
-				}
-				else {
+				} else {
 					var plugin = ActGlobals.oFormActMain.ActPlugins.First(x => x.pluginFileName == i);
 					if (ImGui.Button($"禁用##{i}")) Plugin.DeInitIActPluginV1(plugin);
 					ImGui.SameLine();
@@ -363,17 +361,14 @@ public static partial class LWindow {
 			ImGui.SameLine();
 			if (Plugin.Instance.opcodestxtCanReplace) {
 				if (ImGui.Button("删除opcodes.txt")) File.Delete(Plugin.Instance.opcodestxtPath);
-			}
-			else ImGui.Text("(文件缺失，将在下次加载恢复内置)");
-		}
-		else if (Plugin.Instance.opcodestxtCanReplace) {
+			} else ImGui.Text("(文件缺失，将在下次加载恢复内置)");
+		} else if (Plugin.Instance.opcodestxtCanReplace) {
 			ImGui.PushStyleColor(ImGuiCol.Text, ImGuiColors.DalamudYellow);
 			ImGui.Text("opcodes.txt将在下次加载插件时替换");
 			ImGui.PopStyleColor(1);
 			ImGui.SameLine();
 			if (ImGui.Button("删除opcodes.txt")) File.Delete(Plugin.Instance.opcodestxtPath);
-		}
-		else ImGui.Text("opcodes.txt为内置版本");
+		} else ImGui.Text("opcodes.txt为内置版本");
 		if (Plugin.Instance.opcodesjsoncReplaced) {
 			ImGui.PushStyleColor(ImGuiCol.Text, ImGuiColors.DalamudRed);
 			ImGui.Text("opcodes.jsonc已替换");
@@ -381,17 +376,14 @@ public static partial class LWindow {
 			ImGui.SameLine();
 			if (Plugin.Instance.opcodesjsoncCanReplace) {
 				if (ImGui.Button("删除opcodes.jsonc")) File.Delete(Plugin.Instance.opcodesjsoncPath);
-			}
-			else ImGui.Text("(文件缺失，将在下次加载恢复内置)");
-		}
-		else if (Plugin.Instance.opcodesjsoncCanReplace) {
+			} else ImGui.Text("(文件缺失，将在下次加载恢复内置)");
+		} else if (Plugin.Instance.opcodesjsoncCanReplace) {
 			ImGui.PushStyleColor(ImGuiCol.Text, ImGuiColors.DalamudYellow);
 			ImGui.Text("opcodes.jsonc将在下次加载插件时替换");
 			ImGui.PopStyleColor(1);
 			ImGui.SameLine();
 			if (ImGui.Button("删除opcodes.jsonc")) File.Delete(Plugin.Instance.opcodesjsoncPath);
-		}
-		else ImGui.Text("opcodes.jsonc为内置版本");
+		} else ImGui.Text("opcodes.jsonc为内置版本");
 		if (Plugin.Instance.opcodestxtDiff.Length == 0) ImGui.Text("opcodes.txt无差异");
 		else {
 			ImGui.Text($"opcodes.txt有差异({Plugin.Instance.opcodestxtDiff.Length}个)");
@@ -425,15 +417,13 @@ public static partial class LWindow {
 						using (var fileStream2 = new FileStream(outputPath, FileMode.Create, FileAccess.Write)) {
 							resourceStream2.CopyTo(fileStream2);
 						}
-					}
-					catch (Exception e) {
+					} catch (Exception e) {
 						Plugin.Log.Error(e.ToString());
 					}
 				});
 				_ = FileDownloaderOpcodes["[CN][Diemoe]opcodes.txt"].DownloadFileAsync();
 			}
-		}
-		else ImGui.Text("处理中");
+		} else ImGui.Text("处理中");
 		ImGui.SameLine();
 		if (!FileDownloaderOpcodes.ContainsKey("[CN][Karashiiro]扩展的opcodes.txt")) {
 			if (ImGui.Button("[CN][Karashiiro]扩展的opcodes.txt")) {
@@ -454,23 +444,20 @@ public static partial class LWindow {
 							}
 						}
 						File.WriteAllText(Path.Combine(Plugin.Instance.PluginAssemblyDirectory, "opcodes.txt"), sb.ToString());
-					}
-					catch (Exception e) {
+					} catch (Exception e) {
 						Plugin.Log.Error(e.ToString());
 					}
 				});
 				_ = FileDownloaderOpcodes["[CN][Karashiiro]扩展的opcodes.txt"].DownloadFileAsync();
 			}
-		}
-		else ImGui.Text("处理中");
+		} else ImGui.Text("处理中");
 		if (!FileDownloaderOpcodes.ContainsKey("[Diemoe]opcodes.jsonc")) {
 			if (ImGui.Button("[Diemoe]opcodes.jsonc")) {
 				FileDownloaderOpcodes["[Diemoe]opcodes.jsonc"] = new FileDownloader("https://assets.diemoe.net/OverlayPlugin/OverlayPlugin.Core/resources/opcodes.jsonc", Path.Combine(Plugin.Instance.PluginAssemblyDirectory, "opcodes.jsonc"),
 					() => FileDownloaderOpcodes.Remove("[Diemoe]opcodes.jsonc"));
 				_ = FileDownloaderOpcodes["[Diemoe]opcodes.jsonc"].DownloadFileAsync();
 			}
-		}
-		else ImGui.Text("处理中");
+		} else ImGui.Text("处理中");
 		ImGui.SameLine();
 		if (!FileDownloaderOpcodes.ContainsKey("[OverlayPlugin]opcodes.jsonc")) {
 			if (ImGui.Button("[OverlayPlugin]opcodes.jsonc")) {
@@ -479,8 +466,7 @@ public static partial class LWindow {
 					() => FileDownloaderOpcodes.Remove("[OverlayPlugin]opcodes.jsonc"));
 				_ = FileDownloaderOpcodes["[OverlayPlugin]opcodes.jsonc"].DownloadFileAsync();
 			}
-		}
-		else ImGui.Text("处理中");
+		} else ImGui.Text("处理中");
 	}
 
 	private static readonly Dictionary<string, FileDownloader> FileDownloaderOpcodes = new();

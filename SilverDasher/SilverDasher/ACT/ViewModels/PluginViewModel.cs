@@ -23,28 +23,20 @@ public class PluginViewModel {
 
 	private readonly Dictionary<int, List<CheckTreeNode>> FateNodesById = new();
 
-	private ObservableCollection<CheckTreeNode> HuntRoot
-	{
+	private ObservableCollection<CheckTreeNode> HuntRoot {
 		get => huntRoot.Nodes;
-		init
-		{
-			huntRoot = new CheckTreeNode("全部狩猎", "hunt-all") {
-				Nodes = value
-			};
-			// NotifyPropertyChanged("HuntRoot");
-		}
+		init => huntRoot = new CheckTreeNode("全部狩猎", "hunt-all") {
+			Nodes = value
+		};
+		// NotifyPropertyChanged("HuntRoot");
 	}
 
-	private ObservableCollection<CheckTreeNode> FateRoot
-	{
+	private ObservableCollection<CheckTreeNode> FateRoot {
 		get => fateRoot.Nodes;
-		init
-		{
-			fateRoot = new CheckTreeNode("全部Fate", "fate-all") {
-				Nodes = value
-			};
-			// NotifyPropertyChanged("FateRoot");
-		}
+		init => fateRoot = new CheckTreeNode("全部Fate", "fate-all") {
+			Nodes = value
+		};
+		// NotifyPropertyChanged("FateRoot");
 	}
 
 	public void SetPatchNames(Dictionary<int, Patch> pin) {

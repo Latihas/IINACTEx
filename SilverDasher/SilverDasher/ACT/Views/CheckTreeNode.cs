@@ -32,8 +32,7 @@ public class CheckTreeNode(string name, string id) {
 				ImGui.PushStyleColor(ImGuiCol.CheckMark, 0xFF888888);
 				checkboxChanged = ImGui.Checkbox($"##chk_{ID}", ref isChecked);
 				ImGui.PopStyleColor();
-			}
-			else
+			} else
 				checkboxChanged = ImGui.Checkbox($"##chk_{ID}", ref isChecked);
 
 			ImGui.SameLine(0, ImGui.GetStyle().ItemInnerSpacing.X);
@@ -44,8 +43,7 @@ public class CheckTreeNode(string name, string id) {
 					node.DrawImGui();
 				ImGui.TreePop();
 			}
-		}
-		else if (ImGui.Checkbox(Name, ref isChecked) && !BUILDING) OnCheckedChanged(isChecked);
+		} else if (ImGui.Checkbox(Name, ref isChecked) && !BUILDING) OnCheckedChanged(isChecked);
 		ImGui.PopID();
 	}
 
@@ -53,7 +51,9 @@ public class CheckTreeNode(string name, string id) {
 		SilverDasher.Instance.Logger.Log(ID);
 		ViewChecked = isChecked;
 		foreach (var item in Related) item.ViewChecked = isChecked;
-		if (Nodes is { Count: > 0 }) foreach (var node in Nodes) node.OnCheckedChanged(isChecked);
+		if (Nodes is { Count: > 0 })
+			foreach (var node in Nodes)
+				node.OnCheckedChanged(isChecked);
 		try {
 			var paramz = ID.Split('-');
 			var id = int.Parse(paramz[^1]);
@@ -64,8 +64,7 @@ public class CheckTreeNode(string name, string id) {
 				if (isChecked) Keeper.Config.FateSubscriptions.Add(id);
 				else Keeper.Config.FateSubscriptions.RemoveAll(i => i == id);
 			Config.Save();
-		}
-		catch (Exception ex) {
+		} catch (Exception ex) {
 			SilverDasher.Instance.Logger.Log(ex.ToString());
 		}
 		Parent?.ValidateStatus();

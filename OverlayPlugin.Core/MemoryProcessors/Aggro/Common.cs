@@ -7,19 +7,19 @@ namespace RainbowMage.OverlayPlugin.MemoryProcessors.Aggro;
 
 [Serializable]
 public class AggroEntry {
-    public uint ID;
-    public string Name;
-    public int HateRate;
-    public int Order;
-    public bool isCurrentTarget;
-    public bool IsTargetable;
+	public uint ID;
+	public string Name;
+	public int HateRate;
+	public int Order;
+	public bool isCurrentTarget;
+	public bool IsTargetable;
 
-    public int CurrentHP;
-    public int MaxHP;
+	public int CurrentHP;
+	public int MaxHP;
 
-    // Target of Enemy
-    public EnmityEntry Target;
+	// Target of Enemy
+	public EnmityEntry Target;
 
-    // Effects
-    public List<EffectEntry> Effects;
+	// Effects
+	public List<EffectEntry> Effects;
 }

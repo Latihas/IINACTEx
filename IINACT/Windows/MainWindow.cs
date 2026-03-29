@@ -61,11 +61,11 @@ public class MainWindow : Window {
 		{ ImGuiCol.Header, new Vector4(62 / 255f, 78 / 255f, 105 / 255f, 1) },
 		{ ImGuiCol.HeaderHovered, new Vector4(50 / 255f, 58 / 255f, 75 / 255f, 1) },
 		{ ImGuiCol.HeaderActive, new Vector4(88 / 255f, 111 / 255f, 150 / 255f, 1) },
-		{ ImGuiCol.PlotHistogram, new Vector4(20 / 255f, 90 / 255f, 141 / 255f, 1) },
+		{ ImGuiCol.PlotHistogram, new Vector4(20 / 255f, 90 / 255f, 141 / 255f, 1) }
 	};
 	private readonly Dictionary<ImGuiStyleVar, int> ImGuiVar = new() {
 		{ ImGuiStyleVar.ChildBorderSize, 4 },
-		{ ImGuiStyleVar.FrameBorderSize, 2 },
+		{ ImGuiStyleVar.FrameBorderSize, 2 }
 	};
 
 	private static (float r, float g, float b) HsvToRgb(float hue, float saturation, float value) {
@@ -87,22 +87,22 @@ public class MainWindow : Window {
 				r = q;
 				g = value;
 				b = p;
-				break; 
+				break;
 			case 2:
 				r = p;
 				g = value;
 				b = t;
-				break; 
+				break;
 			case 3:
 				r = p;
 				g = q;
 				b = value;
-				break; 
+				break;
 			case 4:
 				r = t;
 				g = p;
 				b = value;
-				break; 
+				break;
 			case 5:
 				r = value;
 				g = p;
@@ -112,7 +112,7 @@ public class MainWindow : Window {
 				r = value;
 				g = value;
 				b = value;
-				break; 
+				break;
 		}
 		return (r, g, b);
 	}
@@ -161,13 +161,13 @@ public class MainWindow : Window {
 				var mixBL = (MathF.Sin(phaseBL) + 1f) / 2f;
 
 // 5. 混合每个角的颜色（mix=0 取TL色，mix=1 取TR色，过渡平缓）
-				var colorTL_Final = (uint)(tlA) << 24 | (uint)(tlR * (1 - mixTL) + trR * mixTL) << 16 |
+				var colorTL_Final = (uint)tlA << 24 | (uint)(tlR * (1 - mixTL) + trR * mixTL) << 16 |
 				                    (uint)(tlG * (1 - mixTL) + trG * mixTL) << 8 | (uint)(tlB * (1 - mixTL) + trB * mixTL);
-				var colorTR_Final = (uint)(trA) << 24 | (uint)(tlR * (1 - mixTR) + trR * mixTR) << 16 |
+				var colorTR_Final = (uint)trA << 24 | (uint)(tlR * (1 - mixTR) + trR * mixTR) << 16 |
 				                    (uint)(tlG * (1 - mixTR) + trG * mixTR) << 8 | (uint)(tlB * (1 - mixTR) + trB * mixTR);
-				var colorBR_Final = (uint)(tlA) << 24 | (uint)(tlR * (1 - mixBR) + trR * mixBR) << 16 |
+				var colorBR_Final = (uint)tlA << 24 | (uint)(tlR * (1 - mixBR) + trR * mixBR) << 16 |
 				                    (uint)(tlG * (1 - mixBR) + trG * mixBR) << 8 | (uint)(tlB * (1 - mixBR) + trB * mixBR);
-				var colorBL_Final = (uint)(trA) << 24 | (uint)(tlR * (1 - mixBL) + trR * mixBL) << 16 |
+				var colorBL_Final = (uint)trA << 24 | (uint)(tlR * (1 - mixBL) + trR * mixBL) << 16 |
 				                    (uint)(tlG * (1 - mixBL) + trG * mixBL) << 8 | (uint)(tlB * (1 - mixBL) + trB * mixBL);
 
 // 6. 绘制四色渐变矩形（四个角颜色循环）

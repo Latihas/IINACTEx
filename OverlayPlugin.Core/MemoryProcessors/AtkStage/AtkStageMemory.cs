@@ -3,23 +3,23 @@ using System;
 namespace RainbowMage.OverlayPlugin.MemoryProcessors.AtkStage;
 
 public abstract class AtkStageMemory {
-    protected FFXIVMemory memory;
-    protected ILogger logger;
+	protected FFXIVMemory memory;
+	protected ILogger logger;
 
-    public AtkStageMemory(TinyIoCContainer container) {
-        logger = container.Resolve<ILogger>();
-        memory = container.Resolve<FFXIVMemory>();
-    }
+	public AtkStageMemory(TinyIoCContainer container) {
+		logger = container.Resolve<ILogger>();
+		memory = container.Resolve<FFXIVMemory>();
+	}
 
-    public bool IsValid() {
-        if (!memory.IsValid())
-            return false;
+	public bool IsValid() {
+		if (!memory.IsValid())
+			return false;
 
-        return true;
-    }
+		return true;
+	}
 
-    public void ScanPointers() {
-    }
+	public void ScanPointers() {
+	}
 
-    public abstract Version GetVersion();
+	public abstract Version GetVersion();
 }

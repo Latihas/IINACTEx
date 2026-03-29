@@ -9,191 +9,189 @@ using Newtonsoft.Json.Serialization;
 namespace RainbowMage.OverlayPlugin;
 
 public class FFXIVCustomLogLines {
-    private ILogger logger;
-    private FFXIVRepository repository;
-    private Dictionary<uint, ILogLineRegistryEntry> registry = new();
+	private ILogger logger;
+	private FFXIVRepository repository;
+	private Dictionary<uint, ILogLineRegistryEntry> registry = new();
 
-    private const uint registeredCustomLogLineID = 256;
+	private const uint registeredCustomLogLineID = 256;
 
-    public FFXIVCustomLogLines(TinyIoCContainer container) {
-        logger = container.Resolve<ILogger>();
-        repository = container.Resolve<FFXIVRepository>();
+	public FFXIVCustomLogLines(TinyIoCContainer container) {
+		logger = container.Resolve<ILogger>();
+		repository = container.Resolve<FFXIVRepository>();
 
-        try {
-            var assembly = Assembly.GetExecutingAssembly();
-            var resourceName = assembly.GetManifestResourceNames()
-                .Single(str => str.EndsWith("reserved_log_lines.json"));
-            string reservedLogLinesJson;
-            using (var stream = assembly.GetManifestResourceStream(resourceName))
-            using (var reader = new StreamReader(stream)) {
-                reservedLogLinesJson = reader.ReadToEnd();
-            }
+		try {
+			var assembly = Assembly.GetExecutingAssembly();
+			var resourceName = assembly.GetManifestResourceNames()
+				.Single(str => str.EndsWith("reserved_log_lines.json"));
+			string reservedLogLinesJson;
+			using (var stream = assembly.GetManifestResourceStream(resourceName))
+			using (var reader = new StreamReader(stream)) {
+				reservedLogLinesJson = reader.ReadToEnd();
+			}
 
-            var reservedData = JsonConvert.DeserializeObject<List<ConfigReservedLogLine>>(reservedLogLinesJson);
-            logger.Log(LogLevel.Debug, $"Parsing {reservedData.Count} reserved log line entries.");
-            foreach (var reservedDataEntry in reservedData) {
-                if (reservedDataEntry.Source == null || reservedDataEntry.Version == null) {
-                    logger.Log(LogLevel.Warning, "Reserved log line entry missing Source or Version.");
-                    continue;
-                }
+			var reservedData = JsonConvert.DeserializeObject<List<ConfigReservedLogLine>>(reservedLogLinesJson);
+			logger.Log(LogLevel.Debug, $"Parsing {reservedData.Count} reserved log line entries.");
+			foreach (var reservedDataEntry in reservedData) {
+				if (reservedDataEntry.Source == null || reservedDataEntry.Version == null) {
+					logger.Log(LogLevel.Warning, "Reserved log line entry missing Source or Version.");
+					continue;
+				}
 
-                if (reservedDataEntry.ID == null) {
-                    if (reservedDataEntry.StartID == null || reservedDataEntry.EndID == null) {
-                        logger.Log(LogLevel.Warning,
-                            $"Reserved log line entry missing StartID ({reservedDataEntry.StartID}) or EndID ({reservedDataEntry.EndID}).");
-                        continue;
-                    }
+				if (reservedDataEntry.ID == null) {
+					if (reservedDataEntry.StartID == null || reservedDataEntry.EndID == null) {
+						logger.Log(LogLevel.Warning,
+							$"Reserved log line entry missing StartID ({reservedDataEntry.StartID}) or EndID ({reservedDataEntry.EndID}).");
+						continue;
+					}
 
-                    var Name = reservedDataEntry.Name ?? "Unknown";
-                    var Source = reservedDataEntry.Source;
-                    var Version = reservedDataEntry.Version.Value;
-                    var StartID = reservedDataEntry.StartID.Value;
-                    var EndID = reservedDataEntry.EndID.Value;
-                    logger.Log(LogLevel.Debug,
-                        $"Reserving log line entries {StartID}-{EndID} for Source {Source}, Version {Version}.");
-                    for (var ID = StartID; ID < EndID; ++ID) {
-                        if (registry.TryGetValue(ID, out var entry)) {
-                            if (entry.Source != Source) {
-                                logger.Log(LogLevel.Error, $"Reserved log line entry already registered ({ID}).");
-                            }
-                            continue;
-                        }
+					var Name = reservedDataEntry.Name ?? "Unknown";
+					var Source = reservedDataEntry.Source;
+					var Version = reservedDataEntry.Version.Value;
+					var StartID = reservedDataEntry.StartID.Value;
+					var EndID = reservedDataEntry.EndID.Value;
+					logger.Log(LogLevel.Debug,
+						$"Reserving log line entries {StartID}-{EndID} for Source {Source}, Version {Version}.");
+					for (var ID = StartID; ID < EndID; ++ID) {
+						if (registry.TryGetValue(ID, out var entry)) {
+							if (entry.Source != Source) {
+								logger.Log(LogLevel.Error, $"Reserved log line entry already registered ({ID}).");
+							}
+							continue;
+						}
 
-                        registry[ID] = new LogLineRegistryEntry {
-                            ID = ID,
-                            Name = Name,
-                            Source = Source,
-                            Version = Version,
-                            Range = true
-                        };
-                    }
-                }
-                else {
-                    var ID = reservedDataEntry.ID.Value;
-                    var Name = reservedDataEntry.Name;
-                    if (registry.TryGetValue(ID, out var entry)) {
-                        if (entry.Source != reservedDataEntry.Source || !entry.Range) {
-                            logger.Log(LogLevel.Error, $"Reserved log line entry already registered ({ID}).");
-                            continue;
-                        }
-                    }
+						registry[ID] = new LogLineRegistryEntry {
+							ID = ID,
+							Name = Name,
+							Source = Source,
+							Version = Version,
+							Range = true
+						};
+					}
+				} else {
+					var ID = reservedDataEntry.ID.Value;
+					var Name = reservedDataEntry.Name;
+					if (registry.TryGetValue(ID, out var entry)) {
+						if (entry.Source != reservedDataEntry.Source || !entry.Range) {
+							logger.Log(LogLevel.Error, $"Reserved log line entry already registered ({ID}).");
+							continue;
+						}
+					}
 
-                    if (Name == null) {
-                        logger.Log(LogLevel.Error, "Reserved log line entry missing Name property");
-                        continue;
-                    }
+					if (Name == null) {
+						logger.Log(LogLevel.Error, "Reserved log line entry missing Name property");
+						continue;
+					}
 
-                    var Source = reservedDataEntry.Source;
-                    var Version = reservedDataEntry.Version.Value;
-                    logger.Log(LogLevel.Debug, $"Reserving log line entry for ID {ID}, Source {Source}, Name {Name}, Version {Version}.");
-                    registry[ID] = new LogLineRegistryEntry {
-                        ID = ID,
-                        Name = Name,
-                        Source = Source,
-                        Version = Version,
-                        Range = false
-                    };
-                }
-            }
+					var Source = reservedDataEntry.Source;
+					var Version = reservedDataEntry.Version.Value;
+					logger.Log(LogLevel.Debug, $"Reserving log line entry for ID {ID}, Source {Source}, Name {Name}, Version {Version}.");
+					registry[ID] = new LogLineRegistryEntry {
+						ID = ID,
+						Name = Name,
+						Source = Source,
+						Version = Version,
+						Range = false
+					};
+				}
+			}
 
-            if (registry.TryGetValue(registeredCustomLogLineID, out var entry1)) {
-                var Source = entry1.Source.Replace("\r", "\\r").Replace("\n", "\\n");
-                var Name = entry1.Name.Replace("\r", "\\r").Replace("\n", "\\n");
-                repository.WriteLogLineImpl(registeredCustomLogLineID, DateTime.Now,
-                    $"{registeredCustomLogLineID}|{Source}|{Name}|{entry1.Version}");
-            }
-        }
-        catch (Exception ex) {
-            logger.Log(LogLevel.Error, $"FFXIVCustomLogLines: Failed to load reserved log line: {ex}");
-        }
-    }
+			if (registry.TryGetValue(registeredCustomLogLineID, out var entry1)) {
+				var Source = entry1.Source.Replace("\r", "\\r").Replace("\n", "\\n");
+				var Name = entry1.Name.Replace("\r", "\\r").Replace("\n", "\\n");
+				repository.WriteLogLineImpl(registeredCustomLogLineID, DateTime.Now,
+					$"{registeredCustomLogLineID}|{Source}|{Name}|{entry1.Version}");
+			}
+		} catch (Exception ex) {
+			logger.Log(LogLevel.Error, $"FFXIVCustomLogLines: Failed to load reserved log line: {ex}");
+		}
+	}
 
-    public Func<string, DateTime, bool> RegisterCustomLogLine(ILogLineRegistryEntry entry) {
-        // Don't allow any attempt to write a custom log line with FFXIV_ACT_Plugin as the source.
-        // This prevents a downstream plugin from attempting to register e.g. `00` lines by just pretending to be FFXIV_ACT_Plugin.
-        if (entry.Source == "FFXIV_ACT_Plugin") {
-            logger.Log(LogLevel.Warning, "Attempted to register custom log line with reserved source.");
-            return null;
-        }
+	public Func<string, DateTime, bool> RegisterCustomLogLine(ILogLineRegistryEntry entry) {
+		// Don't allow any attempt to write a custom log line with FFXIV_ACT_Plugin as the source.
+		// This prevents a downstream plugin from attempting to register e.g. `00` lines by just pretending to be FFXIV_ACT_Plugin.
+		if (entry.Source == "FFXIV_ACT_Plugin") {
+			logger.Log(LogLevel.Warning, "Attempted to register custom log line with reserved source.");
+			return null;
+		}
 
-        var ID = entry.ID;
-        if (registry.TryGetValue(ID, out var value)) {
-            // Allow re-registering the handler if the ID and Source match.
-            // Implicitly don't allow re-registering the same handler if the Version changes to prevent log file confusion.
-            if (!value.Equals(entry)) {
-                logger.Log(LogLevel.Warning, $"Reserved log line entry already registered ({ID}).");
-                return null;
-            }
-        }
+		var ID = entry.ID;
+		if (registry.TryGetValue(ID, out var value)) {
+			// Allow re-registering the handler if the ID and Source match.
+			// Implicitly don't allow re-registering the same handler if the Version changes to prevent log file confusion.
+			if (!value.Equals(entry)) {
+				logger.Log(LogLevel.Warning, $"Reserved log line entry already registered ({ID}).");
+				return null;
+			}
+		}
 
-        // Write out that a new log line has been registered. Prevent newlines in the string input for sanity.
-        var Source = entry.Source.Replace("\r", "\\r").Replace("\n", "\\n");
-        var Name = entry.Name.Replace("\r", "\\r").Replace("\n", "\\n");
-        repository.WriteLogLineImpl(registeredCustomLogLineID, DateTime.Now,
-            $"{ID}|{Source}|{Name}|{entry.Version}");
-        registry[ID] = entry;
-        return (line, timestamp) => {
-            if (line.Contains("\r") || line.Contains("\n")) {
-                logger.Log(LogLevel.Warning, $"Attempted to write custom log line with CR or LF with ID of {ID}");
-                return false;
-            }
+		// Write out that a new log line has been registered. Prevent newlines in the string input for sanity.
+		var Source = entry.Source.Replace("\r", "\\r").Replace("\n", "\\n");
+		var Name = entry.Name.Replace("\r", "\\r").Replace("\n", "\\n");
+		repository.WriteLogLineImpl(registeredCustomLogLineID, DateTime.Now,
+			$"{ID}|{Source}|{Name}|{entry.Version}");
+		registry[ID] = entry;
+		return (line, timestamp) => {
+			if (line.Contains("\r") || line.Contains("\n")) {
+				logger.Log(LogLevel.Warning, $"Attempted to write custom log line with CR or LF with ID of {ID}");
+				return false;
+			}
 
-            repository.WriteLogLineImpl(ID, timestamp, line);
-            return true;
-        };
-    }
+			repository.WriteLogLineImpl(ID, timestamp, line);
+			return true;
+		};
+	}
 }
 
 public interface ILogLineRegistryEntry {
-    uint ID { get; }
-    string Name { get; }
-    string Source { get; }
-    uint Version { get; }
-    bool Range { get; }
+	uint ID { get; }
+	string Name { get; }
+	string Source { get; }
+	uint Version { get; }
+	bool Range { get; }
 }
 
 public class LogLineRegistryEntry : ILogLineRegistryEntry {
-    public uint ID { get; set; }
-    public string Name { get; set; }
-    public string Source { get; set; }
-    public uint Version { get; set; }
-    public bool Range { get; set; }
+	public uint ID { get; set; }
+	public string Name { get; set; }
+	public string Source { get; set; }
+	public uint Version { get; set; }
+	public bool Range { get; set; }
 
-    public override string ToString() => Source + "|" + ID + "|" + Version;
+	public override string ToString() => Source + "|" + ID + "|" + Version;
 
-    public override bool Equals(object obj) {
-        if (obj == null || GetType() != obj.GetType()) {
-            return false;
-        }
+	public override bool Equals(object obj) {
+		if (obj == null || GetType() != obj.GetType()) {
+			return false;
+		}
 
-        var otherEntry = (ILogLineRegistryEntry)obj;
+		var otherEntry = (ILogLineRegistryEntry)obj;
 
-        return ID == otherEntry.ID && Source == otherEntry.Source && Range == otherEntry.Range;
-    }
+		return ID == otherEntry.ID && Source == otherEntry.Source && Range == otherEntry.Range;
+	}
 
-    public override int GetHashCode() {
-        var hash = 17;
-        hash = hash * 31 + ID.GetHashCode();
-        hash = hash * 31 + Source.GetHashCode();
-        return hash;
-    }
+	public override int GetHashCode() {
+		var hash = 17;
+		hash = hash * 31 + ID.GetHashCode();
+		hash = hash * 31 + Source.GetHashCode();
+		return hash;
+	}
 }
 
 internal interface IConfigReservedLogLine {
-    uint? ID { get; }
-    uint? StartID { get; }
-    uint? EndID { get; }
-    string Name { get; }
-    string Source { get; }
-    uint? Version { get; }
+	uint? ID { get; }
+	uint? StartID { get; }
+	uint? EndID { get; }
+	string Name { get; }
+	string Source { get; }
+	uint? Version { get; }
 }
 
 [JsonObject(NamingStrategyType = typeof(DefaultNamingStrategy))]
 internal class ConfigReservedLogLine : IConfigReservedLogLine {
-    public uint? ID { get; set; }
-    public uint? StartID { get; set; }
-    public uint? EndID { get; set; }
-    public string Name { get; set; }
-    public string Source { get; set; }
-    public uint? Version { get; set; }
+	public uint? ID { get; set; }
+	public uint? StartID { get; set; }
+	public uint? EndID { get; set; }
+	public string Name { get; set; }
+	public string Source { get; set; }
+	public uint? Version { get; set; }
 }

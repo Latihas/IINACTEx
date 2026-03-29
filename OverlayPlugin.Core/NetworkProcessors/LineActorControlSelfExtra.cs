@@ -21,36 +21,36 @@ using RainbowMage.OverlayPlugin.NetworkProcessors.PacketHelper;
 namespace RainbowMage.OverlayPlugin.NetworkProcessors;
 
 internal class LineActorControlSelfExtra : LineBaseSubMachina<LineActorControlSelfExtra.ActorControlSelfExtraPacket> {
-    public const uint LogFileLineID = 274;
-    public const string LogLineName = "ActorControlSelfExtra";
-    public const string MachinaPacketName = "ActorControlSelf";
+	public const uint LogFileLineID = 274;
+	public const string LogLineName = "ActorControlSelfExtra";
+	public const string MachinaPacketName = "ActorControlSelf";
 
-    // Any category defined in this array will be allowed as an emitted line
-    public static readonly Server_ActorControlCategory[] AllowedActorControlCategories = [
-        // Some `LogMessage` messages can be triggered by both 0x020F and 0x0210 categories, not sure what the difference is
-        // except that 0x0210 messages usually have another actor ID in the parameters
-        Server_ActorControlCategory.DisplayLogMessage,
-        Server_ActorControlCategory.DisplayLogMessageParams
-    ];
+	// Any category defined in this array will be allowed as an emitted line
+	public static readonly Server_ActorControlCategory[] AllowedActorControlCategories = [
+		// Some `LogMessage` messages can be triggered by both 0x020F and 0x0210 categories, not sure what the difference is
+		// except that 0x0210 messages usually have another actor ID in the parameters
+		Server_ActorControlCategory.DisplayLogMessage,
+		Server_ActorControlCategory.DisplayLogMessageParams
+	];
 
-    internal class ActorControlSelfExtraPacket : MachinaPacketWrapper {
-        public override string ToString(long epoch, uint ActorID) {
-            var category = Get<Server_ActorControlCategory>("category");
+	internal class ActorControlSelfExtraPacket : MachinaPacketWrapper {
+		public override string ToString(long epoch, uint ActorID) {
+			var category = Get<Server_ActorControlCategory>("category");
 
-            if (!AllowedActorControlCategories.Contains(category)) return null;
+			if (!AllowedActorControlCategories.Contains(category)) return null;
 
-            var param1 = Get<uint>("param1");
-            var param2 = Get<uint>("param2");
-            var param3 = Get<uint>("param3");
-            var param4 = Get<uint>("param4");
-            var param5 = Get<uint>("param5");
-            var param6 = Get<uint>("param6");
+			var param1 = Get<uint>("param1");
+			var param2 = Get<uint>("param2");
+			var param3 = Get<uint>("param3");
+			var param4 = Get<uint>("param4");
+			var param5 = Get<uint>("param5");
+			var param6 = Get<uint>("param6");
 
-            return $"{ActorID:X8}|{(ushort)category:X4}|{param1:X}|{param2:X}|{param3:X}|{param4:X}|{param5:X}|{param6:X}";
-        }
-    }
+			return $"{ActorID:X8}|{(ushort)category:X4}|{param1:X}|{param2:X}|{param3:X}|{param4:X}|{param5:X}|{param6:X}";
+		}
+	}
 
-    public LineActorControlSelfExtra(TinyIoCContainer container)
-        : base(container, LogFileLineID, LogLineName, MachinaPacketName) {
-    }
+	public LineActorControlSelfExtra(TinyIoCContainer container)
+		: base(container, LogFileLineID, LogLineName, MachinaPacketName) {
+	}
 }

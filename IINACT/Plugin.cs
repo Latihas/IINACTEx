@@ -1,4 +1,3 @@
-using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.IO.Compression;
@@ -7,14 +6,12 @@ using System.Reflection;
 using System.Runtime.Loader;
 using Advanced_Combat_Tracker;
 using Dalamud.Bindings.ImGui;
-using Dalamud.Game;
 using Dalamud.Game.Command;
 using Dalamud.Interface.ImGuiFileDialog;
 using Dalamud.Interface.Windowing;
 using Dalamud.IoC;
 using Dalamud.Plugin;
 using Dalamud.Plugin.Services;
-using IINACT.Latihas;
 using IINACT.Latihas.Overlay;
 using IINACT.Network;
 using IINACT.TextToSpeech;
@@ -102,7 +99,7 @@ public sealed class Plugin : IDalamudPlugin {
 	public readonly bool opcodesjsoncReplaced;
 	public bool opcodesjsoncCanReplace => File.Exists(opcodesjsoncPath);
 	public string opcodesjsoncPath => Path.Combine(PluginAssemblyDirectory, "opcodes.jsonc");
-	public string cactbotDir => Path.Combine(Plugin.Instance.PluginConfigDirectory, "cactbot");
+	public string cactbotDir => Path.Combine(Instance.PluginConfigDirectory, "cactbot");
 	// ReSharper disable once MemberCanBePrivate.Global
 	public readonly TinyIoCContainer Container;
 

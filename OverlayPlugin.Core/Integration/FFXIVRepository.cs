@@ -18,351 +18,342 @@ namespace RainbowMage.OverlayPlugin;
 
 /* Taken from FFIXV_ACT_Plugin.Logfile. Copy&pasted to avoid issues if the FFXIV plugin ever changes this enum. */
 public enum LogMessageType {
-    LogLine,
-    ChangeZone,
-    ChangePrimaryPlayer,
-    AddCombatant,
-    RemoveCombatant,
-    AddBuff,
-    RemoveBuff,
-    FlyingText,
-    OutgoingAbility,
-    IncomingAbility = 10,
-    PartyList,
-    PlayerStats,
-    CombatantHP,
-    ParsedPartyMember,
-    NetworkStartsCasting = 20,
-    NetworkAbility,
-    NetworkAOEAbility,
-    NetworkCancelAbility,
-    NetworkDoT,
-    NetworkDeath,
-    NetworkBuff,
-    NetworkTargetIcon,
-    NetworkTargetMarker = 29,
-    NetworkBuffRemove,
-    NetworkGauge,
-    NetworkWorld,
-    Network6D,
-    NetworkNameToggle,
-    NetworkTether,
-    NetworkLimitBreak,
-    NetworkEffectResult,
-    NetworkStatusList,
-    NetworkUpdateHp,
-    ChangeMap,
-    Settings = 249,
-    Process,
-    Debug,
-    PacketDump,
-    Version,
-    Error,
-    Timer,
+	LogLine,
+	ChangeZone,
+	ChangePrimaryPlayer,
+	AddCombatant,
+	RemoveCombatant,
+	AddBuff,
+	RemoveBuff,
+	FlyingText,
+	OutgoingAbility,
+	IncomingAbility = 10,
+	PartyList,
+	PlayerStats,
+	CombatantHP,
+	ParsedPartyMember,
+	NetworkStartsCasting = 20,
+	NetworkAbility,
+	NetworkAOEAbility,
+	NetworkCancelAbility,
+	NetworkDoT,
+	NetworkDeath,
+	NetworkBuff,
+	NetworkTargetIcon,
+	NetworkTargetMarker = 29,
+	NetworkBuffRemove,
+	NetworkGauge,
+	NetworkWorld,
+	Network6D,
+	NetworkNameToggle,
+	NetworkTether,
+	NetworkLimitBreak,
+	NetworkEffectResult,
+	NetworkStatusList,
+	NetworkUpdateHp,
+	ChangeMap,
+	Settings = 249,
+	Process,
+	Debug,
+	PacketDump,
+	Version,
+	Error,
+	Timer,
 
-    // OverlayPlugin lines
-    RegisterLogLine = 256,
-    MapEffect,
-    FateDirector,
-    CEDirector,
-    InCombat
+	// OverlayPlugin lines
+	RegisterLogLine = 256,
+	MapEffect,
+	FateDirector,
+	CEDirector,
+	InCombat
 }
 
 public class FFXIVRepository {
-    private readonly ILogger logger;
-    private IDataRepository repository;
-    private IDataSubscription subscription;
+	private readonly ILogger logger;
+	private IDataRepository repository;
+	private IDataSubscription subscription;
 
-    public FFXIVRepository(TinyIoCContainer container) {
-        logger = container.Resolve<ILogger>();
-    }
+	public FFXIVRepository(TinyIoCContainer container) {
+		logger = container.Resolve<ILogger>();
+	}
 
-    internal static FFXIV_ACT_Plugin.FFXIV_ACT_Plugin GetPluginData() => ActGlobals.oFormActMain.FfxivPlugin;
+	internal static FFXIV_ACT_Plugin.FFXIV_ACT_Plugin GetPluginData() => ActGlobals.oFormActMain.FfxivPlugin;
 
-    private IDataRepository GetRepository() {
-        if (repository != null)
-            return repository;
+	private IDataRepository GetRepository() {
+		if (repository != null)
+			return repository;
 
-        var FFXIV = GetPluginData();
-        if (FFXIV != null) {
-            try {
-                repository = FFXIV.DataRepository;
-            }
-            catch (Exception ex) {
-                logger.Log(LogLevel.Error, Resources.FFXIVDataRepositoryException, ex);
-            }
-        }
+		var FFXIV = GetPluginData();
+		if (FFXIV != null) {
+			try {
+				repository = FFXIV.DataRepository;
+			} catch (Exception ex) {
+				logger.Log(LogLevel.Error, Resources.FFXIVDataRepositoryException, ex);
+			}
+		}
 
-        return repository;
-    }
+		return repository;
+	}
 
-    private IDataSubscription GetSubscription() {
-        if (subscription != null)
-            return subscription;
+	private IDataSubscription GetSubscription() {
+		if (subscription != null)
+			return subscription;
 
-        var FFXIV = GetPluginData();
-        if (FFXIV != null) {
-            try {
-                subscription = FFXIV.DataSubscription;
-            }
-            catch (Exception ex) {
-                logger.Log(LogLevel.Error, Resources.FFXIVDataSubscriptionException, ex);
-            }
-        }
+		var FFXIV = GetPluginData();
+		if (FFXIV != null) {
+			try {
+				subscription = FFXIV.DataSubscription;
+			} catch (Exception ex) {
+				logger.Log(LogLevel.Error, Resources.FFXIVDataSubscriptionException, ex);
+			}
+		}
 
-        return subscription;
-    }
+		return subscription;
+	}
 
-    [MethodImpl(MethodImplOptions.NoInlining)]
-    private Process GetCurrentFFXIVProcessImpl() {
-        var repo = GetRepository();
-        if (repo == null) return null;
+	[MethodImpl(MethodImplOptions.NoInlining)]
+	private Process GetCurrentFFXIVProcessImpl() {
+		var repo = GetRepository();
+		if (repo == null) return null;
 
-        return repo.GetCurrentFFXIVProcess();
-    }
+		return repo.GetCurrentFFXIVProcess();
+	}
 
-    [Obsolete("Subscribe to the ProcessChanged event instead (See RegisterProcessChangedHandler())")]
-    [MethodImpl(MethodImplOptions.NoInlining)]
-    public Process GetCurrentFFXIVProcess() {
-        try {
-            return GetCurrentFFXIVProcessImpl();
-        }
-        catch (FileNotFoundException) {
-            // The FFXIV plugin isn't loaded
-            return null;
-        }
-    }
+	[Obsolete("Subscribe to the ProcessChanged event instead (See RegisterProcessChangedHandler())")]
+	[MethodImpl(MethodImplOptions.NoInlining)]
+	public Process GetCurrentFFXIVProcess() {
+		try {
+			return GetCurrentFFXIVProcessImpl();
+		} catch (FileNotFoundException) {
+			// The FFXIV plugin isn't loaded
+			return null;
+		}
+	}
 
-    private bool IsFFXIVPluginPresentImpl() => GetRepository() != null;
+	private bool IsFFXIVPluginPresentImpl() => GetRepository() != null;
 
-    [MethodImpl(MethodImplOptions.NoInlining)]
-    private uint? GetCurrentTerritoryIDImpl() => GetRepository()?.GetCurrentTerritoryID();
+	[MethodImpl(MethodImplOptions.NoInlining)]
+	private uint? GetCurrentTerritoryIDImpl() => GetRepository()?.GetCurrentTerritoryID();
 
-    [MethodImpl(MethodImplOptions.NoInlining)]
-    public uint? GetCurrentTerritoryID() {
-        try {
-            return GetCurrentTerritoryIDImpl();
-        }
-        catch (FileNotFoundException) {
-            // The FFXIV plugin isn't loaded
-            return null;
-        }
-    }
+	[MethodImpl(MethodImplOptions.NoInlining)]
+	public uint? GetCurrentTerritoryID() {
+		try {
+			return GetCurrentTerritoryIDImpl();
+		} catch (FileNotFoundException) {
+			// The FFXIV plugin isn't loaded
+			return null;
+		}
+	}
 
-    [MethodImpl(MethodImplOptions.NoInlining)]
-    public bool IsFFXIVPluginPresent() {
-        try {
-            return IsFFXIVPluginPresentImpl();
-        }
-        catch (FileNotFoundException) {
-            return false;
-        }
-    }
+	[MethodImpl(MethodImplOptions.NoInlining)]
+	public bool IsFFXIVPluginPresent() {
+		try {
+			return IsFFXIVPluginPresentImpl();
+		} catch (FileNotFoundException) {
+			return false;
+		}
+	}
 
 
-    public Version GetOverlayPluginVersion() => Assembly.GetExecutingAssembly().GetName().Version;
+	public Version GetOverlayPluginVersion() => Assembly.GetExecutingAssembly().GetName().Version;
 
-    public Version GetPluginVersion() => typeof(FFXIV_ACT_Plugin.FFXIV_ACT_Plugin).Assembly.GetName().Version;
+	public Version GetPluginVersion() => typeof(FFXIV_ACT_Plugin.FFXIV_ACT_Plugin).Assembly.GetName().Version;
 
-    public string GetPluginPath() => typeof(IDataRepository).Assembly.Location;
+	public string GetPluginPath() => typeof(IDataRepository).Assembly.Location;
 
-    [MethodImpl(MethodImplOptions.NoInlining)]
-    private string GetGameVersionImpl() => GetRepository()?.GetGameVersion();
+	[MethodImpl(MethodImplOptions.NoInlining)]
+	private string GetGameVersionImpl() => GetRepository()?.GetGameVersion();
 
-    [MethodImpl(MethodImplOptions.NoInlining)]
-    public string GetGameVersion() {
-        try {
-            return GetGameVersionImpl();
-        }
-        catch (FileNotFoundException) {
-            // The FFXIV plugin isn't loaded
-            return null;
-        }
-    }
+	[MethodImpl(MethodImplOptions.NoInlining)]
+	public string GetGameVersion() {
+		try {
+			return GetGameVersionImpl();
+		} catch (FileNotFoundException) {
+			// The FFXIV plugin isn't loaded
+			return null;
+		}
+	}
 
-    [MethodImpl(MethodImplOptions.NoInlining)]
-    public uint GetPlayerIDImpl() {
-        var repo = GetRepository();
-        if (repo == null) return 0;
+	[MethodImpl(MethodImplOptions.NoInlining)]
+	public uint GetPlayerIDImpl() {
+		var repo = GetRepository();
+		if (repo == null) return 0;
 
-        return repo.GetCurrentPlayerID();
-    }
+		return repo.GetCurrentPlayerID();
+	}
 
-    [MethodImpl(MethodImplOptions.NoInlining)]
-    public uint GetPlayerID() {
-        try {
-            return GetPlayerIDImpl();
-        }
-        catch (FileNotFoundException) {
-            // The FFXIV plugin isn't loaded
-            return 0;
-        }
-    }
+	[MethodImpl(MethodImplOptions.NoInlining)]
+	public uint GetPlayerID() {
+		try {
+			return GetPlayerIDImpl();
+		} catch (FileNotFoundException) {
+			// The FFXIV plugin isn't loaded
+			return 0;
+		}
+	}
 
-    public string GetPlayerNameImpl() {
-        var repo = GetRepository();
-        if (repo == null) return null;
+	public string GetPlayerNameImpl() {
+		var repo = GetRepository();
+		if (repo == null) return null;
 
-        var playerId = repo.GetCurrentPlayerID();
+		var playerId = repo.GetCurrentPlayerID();
 
-        var playerInfo = repo.GetCombatantList().FirstOrDefault(x => x.ID == playerId);
-        if (playerInfo == null) return null;
+		var playerInfo = repo.GetCombatantList().FirstOrDefault(x => x.ID == playerId);
+		if (playerInfo == null) return null;
 
-        return playerInfo.Name;
-    }
+		return playerInfo.Name;
+	}
 
-    [MethodImpl(MethodImplOptions.NoInlining)]
-    public IDictionary<uint, string> GetResourceDictionary(ResourceType resourceType) {
-        try {
-            return GetResourceDictionaryImpl(resourceType);
-        }
-        catch (FileNotFoundException) {
-            // The FFXIV plugin isn't loaded
-            return null;
-        }
-    }
+	[MethodImpl(MethodImplOptions.NoInlining)]
+	public IDictionary<uint, string> GetResourceDictionary(ResourceType resourceType) {
+		try {
+			return GetResourceDictionaryImpl(resourceType);
+		} catch (FileNotFoundException) {
+			// The FFXIV plugin isn't loaded
+			return null;
+		}
+	}
 
-    public IDictionary<uint, string> GetResourceDictionaryImpl(ResourceType resourceType) {
-        var repo = GetRepository();
-        if (repo == null) return null;
+	public IDictionary<uint, string> GetResourceDictionaryImpl(ResourceType resourceType) {
+		var repo = GetRepository();
+		if (repo == null) return null;
 
-        return repo.GetResourceDictionary(resourceType);
-    }
+		return repo.GetResourceDictionary(resourceType);
+	}
 
-    [MethodImpl(MethodImplOptions.NoInlining)]
-    public string GetPlayerName() {
-        try {
-            return GetPlayerNameImpl();
-        }
-        catch (FileNotFoundException) {
-            // The FFXIV plugin isn't loaded
-            return null;
-        }
-    }
+	[MethodImpl(MethodImplOptions.NoInlining)]
+	public string GetPlayerName() {
+		try {
+			return GetPlayerNameImpl();
+		} catch (FileNotFoundException) {
+			// The FFXIV plugin isn't loaded
+			return null;
+		}
+	}
 
-    public ReadOnlyCollection<Combatant> GetCombatants() {
-        var repo = GetRepository();
-        if (repo == null) return null;
+	public ReadOnlyCollection<Combatant> GetCombatants() {
+		var repo = GetRepository();
+		if (repo == null) return null;
 
-        return repo.GetCombatantList();
-    }
+		return repo.GetCombatantList();
+	}
 
-    [MethodImpl(MethodImplOptions.NoInlining)]
-    public Language GetLanguage() {
-        var repo = GetRepository();
-        if (repo == null)
-            return Language.English;
-        return repo.GetSelectedLanguageID();
-    }
+	[MethodImpl(MethodImplOptions.NoInlining)]
+	public Language GetLanguage() {
+		var repo = GetRepository();
+		if (repo == null)
+			return Language.English;
+		return repo.GetSelectedLanguageID();
+	}
 
-    public string GetLocaleString() {
-        switch (GetLanguage()) {
-            case Language.English:
-                return "en";
-            case Language.French:
-                return "fr";
-            case Language.German:
-                return "de";
-            case Language.Japanese:
-                return "ja";
-            case Language.Chinese:
-                return "cn";
-            case Language.Korean:
-                return "ko";
-            default:
-                return null;
-        }
-    }
+	public string GetLocaleString() {
+		switch (GetLanguage()) {
+			case Language.English:
+				return "en";
+			case Language.French:
+				return "fr";
+			case Language.German:
+				return "de";
+			case Language.Japanese:
+				return "ja";
+			case Language.Chinese:
+				return "cn";
+			case Language.Korean:
+				return "ko";
+			default:
+				return null;
+		}
+	}
 
-    public static Dictionary<GameRegion, Dictionary<string, ushort>> GetMachinaOpcodes() => OpcodeManager.Instance._opcodes;
+	public static Dictionary<GameRegion, Dictionary<string, ushort>> GetMachinaOpcodes() => OpcodeManager.Instance._opcodes;
 
-    public GameRegion GetMachinaRegion() =>
-        OpcodeManager.Instance.GameRegion;
+	public GameRegion GetMachinaRegion() =>
+		OpcodeManager.Instance.GameRegion;
 
-    public DateTime EpochToDateTime(long epoch) =>
-        ConversionUtility.EpochToDateTime(epoch).ToLocalTime();
+	public DateTime EpochToDateTime(long epoch) =>
+		ConversionUtility.EpochToDateTime(epoch).ToLocalTime();
 
-    /**
-     * * Convert a coordinate expressed as a uint16 to a float.
-     * *
-     * * See https://github.com/ravahn/FFXIV_ACT_Plugin/issues/298, though this has been
-     * * updated to be more accurate.
-     */
-    public static float ConvertUInt16Coordinate(ushort value) =>
-        // This is the exact same formula the game client uses
-        (float)(value * 3.0518043 * 0.0099999998 - 1000.0);
+	/**
+	 * * Convert a coordinate expressed as a uint16 to a float.
+	 * *
+	 * * See https://github.com/ravahn/FFXIV_ACT_Plugin/issues/298, though this has been
+	 * * updated to be more accurate.
+	 */
+	public static float ConvertUInt16Coordinate(ushort value) =>
+		// This is the exact same formula the game client uses
+		(float)(value * 3.0518043 * 0.0099999998 - 1000.0);
 
-    /**
-     * * Convert a packet heading to an in-game headiung.
-     * *
-     * * When a heading is sent in certain packets, the heading is expressed as a uint16, where
-     * * 0=north and each increment is 1/65536 of a turn in the CCW direction.
-     * *
-     * * See https://github.com/ravahn/FFXIV_ACT_Plugin/issues/298, though this has been
-     * * updated to be more accurate.
-     */
-    public static double ConvertHeading(ushort heading) =>
-        // This is the exact same formula the game client uses
-        heading * 0.009587526 * 0.0099999998 - Math.PI;
+	/**
+	 * * Convert a packet heading to an in-game headiung.
+	 * *
+	 * * When a heading is sent in certain packets, the heading is expressed as a uint16, where
+	 * * 0=north and each increment is 1/65536 of a turn in the CCW direction.
+	 * *
+	 * * See https://github.com/ravahn/FFXIV_ACT_Plugin/issues/298, though this has been
+	 * * updated to be more accurate.
+	 */
+	public static double ConvertHeading(ushort heading) =>
+		// This is the exact same formula the game client uses
+		heading * 0.009587526 * 0.0099999998 - Math.PI;
 
-    private ILogOutput _logOutput;
+	private ILogOutput _logOutput;
 
-    [MethodImpl(MethodImplOptions.NoInlining)]
-    public bool WriteLogLineImpl(uint ID, DateTime timestamp, string line) {
-        if (_logOutput == null) {
-            var plugin = GetPluginData();
-            _logOutput = (ILogOutput)plugin._iocContainer.GetService(typeof(ILogOutput));
-        }
+	[MethodImpl(MethodImplOptions.NoInlining)]
+	public bool WriteLogLineImpl(uint ID, DateTime timestamp, string line) {
+		if (_logOutput == null) {
+			var plugin = GetPluginData();
+			_logOutput = (ILogOutput)plugin._iocContainer.GetService(typeof(ILogOutput));
+		}
 
-        _logOutput?.WriteLine((FFXIV_ACT_Plugin.Logfile.LogMessageType)(int)ID, timestamp, line);
-        return true;
-    }
+		_logOutput?.WriteLine((FFXIV_ACT_Plugin.Logfile.LogMessageType)(int)ID, timestamp, line);
+		return true;
+	}
 
-    // LogLineDelegate(uint EventType, uint Seconds, string logline);
-    public void RegisterLogLineHandler(Action<uint, uint, string> handler) {
-        var sub = GetSubscription();
-        if (sub != null)
-            sub.LogLine += new LogLineDelegate(handler);
-    }
+	// LogLineDelegate(uint EventType, uint Seconds, string logline);
+	public void RegisterLogLineHandler(Action<uint, uint, string> handler) {
+		var sub = GetSubscription();
+		if (sub != null)
+			sub.LogLine += new LogLineDelegate(handler);
+	}
 
-    // NetworkReceivedDelegate(string connection, long epoch, byte[] message)
-    public void RegisterNetworkParser(Action<string, long, byte[]> handler) {
-        var sub = GetSubscription();
-        if (sub != null)
-            sub.NetworkReceived += new NetworkReceivedDelegate(handler);
-    }
+	// NetworkReceivedDelegate(string connection, long epoch, byte[] message)
+	public void RegisterNetworkParser(Action<string, long, byte[]> handler) {
+		var sub = GetSubscription();
+		if (sub != null)
+			sub.NetworkReceived += new NetworkReceivedDelegate(handler);
+	}
 
-    // PartyListChangedDelegate(ReadOnlyCollection<uint> partyList, int partySize)
-    //
-    // Details: partySize may differ from partyList.Count.
-    // In non-cross world parties, players who are not in the same
-    // zone count in the partySize but do not appear in the partyList.
-    // In cross world parties, nobody will appear in the partyList.
-    // Alliance data members show up in partyList but not in partySize.
-    public void RegisterPartyChangeDelegate(Action<ReadOnlyCollection<uint>, int> handler) {
-        var sub = GetSubscription();
-        if (sub != null)
-            sub.PartyListChanged += new PartyListChangedDelegate(handler);
-    }
+	// PartyListChangedDelegate(ReadOnlyCollection<uint> partyList, int partySize)
+	//
+	// Details: partySize may differ from partyList.Count.
+	// In non-cross world parties, players who are not in the same
+	// zone count in the partySize but do not appear in the partyList.
+	// In cross world parties, nobody will appear in the partyList.
+	// Alliance data members show up in partyList but not in partySize.
+	public void RegisterPartyChangeDelegate(Action<ReadOnlyCollection<uint>, int> handler) {
+		var sub = GetSubscription();
+		if (sub != null)
+			sub.PartyListChanged += new PartyListChangedDelegate(handler);
+	}
 
-    // ProcessChangedDelegate(Process process)
-    public void RegisterProcessChangedHandler(Action<Process> handler) {
-        var sub = GetSubscription();
-        if (sub != null) {
-            sub.ProcessChanged += new ProcessChangedDelegate(handler);
-            var repo = GetRepository();
-            if (repo != null) {
-                var process = Process.GetCurrentProcess();
-                if (process != null) handler(process);
-            }
-        }
-    }
+	// ProcessChangedDelegate(Process process)
+	public void RegisterProcessChangedHandler(Action<Process> handler) {
+		var sub = GetSubscription();
+		if (sub != null) {
+			sub.ProcessChanged += new ProcessChangedDelegate(handler);
+			var repo = GetRepository();
+			if (repo != null) {
+				var process = Process.GetCurrentProcess();
+				if (process != null) handler(process);
+			}
+		}
+	}
 
-    public void RegisterZoneChangeDelegate(Action<uint, string> handler) {
-        var sub = GetSubscription();
-        if (sub != null)
-            sub.ZoneChanged += new ZoneChangedDelegate(handler);
-    }
+	public void RegisterZoneChangeDelegate(Action<uint, string> handler) {
+		var sub = GetSubscription();
+		if (sub != null)
+			sub.ZoneChanged += new ZoneChangedDelegate(handler);
+	}
 
-    public DateTime GetServerTimestamp() => GetRepository()?.GetServerTimestamp() ?? DateTime.Now;
+	public DateTime GetServerTimestamp() => GetRepository()?.GetServerTimestamp() ?? DateTime.Now;
 }

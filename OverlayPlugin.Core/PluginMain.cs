@@ -27,49 +27,49 @@ using RainbowMage.OverlayPlugin.WebSocket;
 namespace RainbowMage.OverlayPlugin;
 
 public class PluginLoader : IActPluginV1 {
-    public readonly PluginMain pluginMain;
+	public readonly PluginMain pluginMain;
 
-    public PluginLoader(PluginMain pluginMain) {
-        this.pluginMain = pluginMain;
-    }
+	public PluginLoader(PluginMain pluginMain) {
+		this.pluginMain = pluginMain;
+	}
 
-    public void InitPlugin(TabPage pluginScreenSpace, Label pluginStatusText) {
-    }
+	public void InitPlugin(TabPage pluginScreenSpace, Label pluginStatusText) {
+	}
 
-    public void DeInitPlugin() => pluginMain.DeInitPlugin();
+	public void DeInitPlugin() => pluginMain.DeInitPlugin();
 }
 
 public class PluginMain {
-    public readonly TinyIoCContainer _container;
-    private ILogger _logger;
-    public string Status { get; private set; }
+	public readonly TinyIoCContainer _container;
+	private ILogger _logger;
+	public string Status { get; private set; }
 
-    internal string ConfigPath { get; private set; }
-    private Timer configSaveTimer;
+	internal string ConfigPath { get; private set; }
+	private Timer configSaveTimer;
 
-    internal PluginConfig Config { get; private set; }
-    internal List<IOverlay> Overlays { get; private set; }
-    internal event EventHandler OverlaysChanged;
+	internal PluginConfig Config { get; private set; }
+	internal List<IOverlay> Overlays { get; private set; }
+	internal event EventHandler OverlaysChanged;
 
-    internal string PluginDirectory { get; }
+	internal string PluginDirectory { get; }
 
-    public PluginMain(string pluginDirectory, ILogger logger, TinyIoCContainer container) {
-        _container = container;
-        PluginDirectory = pluginDirectory;
-        _logger = logger;
+	public PluginMain(string pluginDirectory, ILogger logger, TinyIoCContainer container) {
+		_container = container;
+		PluginDirectory = pluginDirectory;
+		_logger = logger;
 
-        configSaveTimer = new Timer();
-        configSaveTimer.Interval = 300000; // 5 minutes
-        configSaveTimer.Tick += (_, _) => SaveConfig();
+		configSaveTimer = new Timer();
+		configSaveTimer.Interval = 300000; // 5 minutes
+		configSaveTimer.Tick += (_, _) => SaveConfig();
 
-        _container.Register(this);
-    }
+		_container.Register(this);
+	}
 
-    public void PreInitPlugin(string configPath) {
-        try {
-            Status = @"初始化阶段1：基础设施";
+	public void PreInitPlugin(string configPath) {
+		try {
+			Status = @"初始化阶段1：基础设施";
 
-            ConfigPath = configPath;
+			ConfigPath = configPath;
 
 // #if DEBUG
 //                 _logger.Log(LogLevel.Warning, "##################################");
@@ -77,344 +77,334 @@ public class PluginMain {
 //                 _logger.Log(LogLevel.Warning, "##################################");
 // #endif
 
-            _logger.Log(LogLevel.Info, "InitPlugin: PluginDirectory = {0}", PluginDirectory);
+			_logger.Log(LogLevel.Info, "InitPlugin: PluginDirectory = {0}", PluginDirectory);
 
 // #if DEBUG
 //                 var watch = new Stopwatch();
 //                 watch.Start();
 // #endif
 
-            // ** Init phase 1
-            // Only init stuff here that works without the FFXIV plugin or addons (event sources, overlays).
-            // Everything else should be initialized in the second phase.
-            // 1.a Stuff without state
-            FFXIVExportVariables.Init();
+			// ** Init phase 1
+			// Only init stuff here that works without the FFXIV plugin or addons (event sources, overlays).
+			// Everything else should be initialized in the second phase.
+			// 1.a Stuff without state
+			FFXIVExportVariables.Init();
 
-            // 1.b Stuff with state
-            _container.Register(new NativeMethods(_container));
-            _container.Register(new EventDispatcher(_container));
-            _container.Register(new Registry(_container));
-            _container.Register(new KeyboardHook(_container));
+			// 1.b Stuff with state
+			_container.Register(new NativeMethods(_container));
+			_container.Register(new EventDispatcher(_container));
+			_container.Register(new Registry(_container));
+			_container.Register(new KeyboardHook(_container));
 
-            Status = @"初始化阶段1：配置";
-            if (!LoadConfig()) {
-                _logger.Log(LogLevel.Error,
-                    "Failed to load the plugin config. Please report this error on the GitHub repo or on the ACT Discord.");
-                _logger.Log(LogLevel.Error, "");
-                _logger.Log(LogLevel.Error, "  ACT Discord: https://discord.gg/ahFKcmx");
-                _logger.Log(LogLevel.Error, "  GitHub repo: https://github.com/ngld/OverlayPlugin");
+			Status = @"初始化阶段1：配置";
+			if (!LoadConfig()) {
+				_logger.Log(LogLevel.Error,
+					"Failed to load the plugin config. Please report this error on the GitHub repo or on the ACT Discord.");
+				_logger.Log(LogLevel.Error, "");
+				_logger.Log(LogLevel.Error, "  ACT Discord: https://discord.gg/ahFKcmx");
+				_logger.Log(LogLevel.Error, "  GitHub repo: https://github.com/ngld/OverlayPlugin");
 
-                FailWithLog();
-                return;
-            }
+				FailWithLog();
+				return;
+			}
 
-            SaveConfig();
+			SaveConfig();
 
-            Status = @"初始化阶段1：WebSocket服务";
-            _container.Register(new ServerController(_container));
+			Status = @"初始化阶段1：WebSocket服务";
+			_container.Register(new ServerController(_container));
 
 // #if DEBUG
 //                 _logger.Log(LogLevel.Debug, "Component init and config load took {0}s.", watch.Elapsed.TotalSeconds);
 //                 watch.Reset();
 // #endif
 
-            Status = @"初始化阶段1：消息总线";
-            // プラグイン間のメッセージ関連
-            OverlayApi.BroadcastMessage += (_, e) => {
-                Task.Run(() => {
-                    foreach (var overlay in Overlays) {
-                        overlay.SendMessage(e.Message);
-                    }
-                });
-            };
-            OverlayApi.SendMessage += (_, e) => {
-                Task.Run(() => {
-                    var targetOverlay = Overlays.FirstOrDefault(x => x.Name == e.Target);
-                    if (targetOverlay != null) {
-                        targetOverlay.SendMessage(e.Message);
-                    }
-                });
-            };
-            OverlayApi.OverlayMessage += (_, e) => {
-                Task.Run(() => {
-                    var targetOverlay = Overlays.FirstOrDefault(x => x.Name == e.Target);
-                    if (targetOverlay != null) {
-                        targetOverlay.OverlayMessage(e.Message);
-                    }
-                });
-            };
+			Status = @"初始化阶段1：消息总线";
+			// プラグイン間のメッセージ関連
+			OverlayApi.BroadcastMessage += (_, e) => {
+				Task.Run(() => {
+					foreach (var overlay in Overlays) {
+						overlay.SendMessage(e.Message);
+					}
+				});
+			};
+			OverlayApi.SendMessage += (_, e) => {
+				Task.Run(() => {
+					var targetOverlay = Overlays.FirstOrDefault(x => x.Name == e.Target);
+					if (targetOverlay != null) {
+						targetOverlay.SendMessage(e.Message);
+					}
+				});
+			};
+			OverlayApi.OverlayMessage += (_, e) => {
+				Task.Run(() => {
+					var targetOverlay = Overlays.FirstOrDefault(x => x.Name == e.Target);
+					if (targetOverlay != null) {
+						targetOverlay.OverlayMessage(e.Message);
+					}
+				});
+			};
 
 // #if DEBUG
 //                 watch.Reset();
 // #endif
 
 
-            Status = @"初始化阶段1：预设";
-            // Load our presets
+			Status = @"初始化阶段1：预设";
+			// Load our presets
 
-            var overlayTemplateData = "{}";
+			var overlayTemplateData = "{}";
 
-            try {
-                var assembly = Assembly.GetExecutingAssembly();
-                var resourceName = assembly.GetManifestResourceNames()
-                    .Single(str => str.EndsWith("overlays.json"));
-                using var stream = assembly.GetManifestResourceStream(resourceName);
-                using var reader = new StreamReader(stream);
-                overlayTemplateData = reader.ReadToEnd();
-            }
-            catch (Exception ex) {
-                _logger.Log(LogLevel.Error, string.Format(Resources.ErrorCouldNotLoadPresets, ex));
-            }
+			try {
+				var assembly = Assembly.GetExecutingAssembly();
+				var resourceName = assembly.GetManifestResourceNames()
+					.Single(str => str.EndsWith("overlays.json"));
+				using var stream = assembly.GetManifestResourceStream(resourceName);
+				using var reader = new StreamReader(stream);
+				overlayTemplateData = reader.ReadToEnd();
+			} catch (Exception ex) {
+				_logger.Log(LogLevel.Error, string.Format(Resources.ErrorCouldNotLoadPresets, ex));
+			}
 
-            var overlayTemplates = JsonConvert.DeserializeObject<OverlayTemplateConfig>(overlayTemplateData);
-            var registry = _container.Resolve<Registry>();
-            foreach (var pair in overlayTemplates.Overlays) {
-                registry.RegisterOverlayPreset2(pair);
-            }
-        }
-        catch (Exception ex) {
-            _logger.Log(LogLevel.Error, $"Failed to load presets: {ex}");
-        }
-    }
+			var overlayTemplates = JsonConvert.DeserializeObject<OverlayTemplateConfig>(overlayTemplateData);
+			var registry = _container.Resolve<Registry>();
+			foreach (var pair in overlayTemplates.Overlays) {
+				registry.RegisterOverlayPreset2(pair);
+			}
+		} catch (Exception ex) {
+			_logger.Log(LogLevel.Error, $"Failed to load presets: {ex}");
+		}
+	}
 
-    /// <summary>
-    ///     プラグインが有効化されたときに呼び出されます。
-    /// </summary>
-    /// <param name="extraOpcodes"></param>
-    public void InitPlugin(string? extraOpcodes = null) {
-        var watch = new Stopwatch();
-        watch.Start();
-        try {
-            // ** Init phase 2
-            Status = @"初始化阶段2：集成";
+	/// <summary>
+	///     プラグインが有効化されたときに呼び出されます。
+	/// </summary>
+	/// <param name="extraOpcodes"></param>
+	public void InitPlugin(string? extraOpcodes = null) {
+		var watch = new Stopwatch();
+		watch.Start();
+		try {
+			// ** Init phase 2
+			Status = @"初始化阶段2：集成";
 
-            // Initialize the parser in the second phase since it needs the FFXIV plugin.
-            // If OverlayPlugin is placed above the FFXIV plugin, it won't be available in the first
-            // phase but it'll be loaded by the time we enter the second phase.
-            _container.Register(new FFXIVRepository(_container));
-            _container.Register(new NetworkParser(_container));
-            _container.Register(new TriggIntegration(_container));
-            _container.Register(new FFXIVCustomLogLines(_container));
+			// Initialize the parser in the second phase since it needs the FFXIV plugin.
+			// If OverlayPlugin is placed above the FFXIV plugin, it won't be available in the first
+			// phase but it'll be loaded by the time we enter the second phase.
+			_container.Register(new FFXIVRepository(_container));
+			_container.Register(new NetworkParser(_container));
+			_container.Register(new TriggIntegration(_container));
+			_container.Register(new FFXIVCustomLogLines(_container));
 
-            // Register FFXIV memory reading subcomponents.
-            // Must be done before loading addons.
-            _container.Register(new FFXIVMemory(_container));
+			// Register FFXIV memory reading subcomponents.
+			// Must be done before loading addons.
+			_container.Register(new FFXIVMemory(_container));
 
-            // These are registered to be lazy-loaded. Use interface to force TinyIoC to use singleton pattern.
-            _container.Register<ICombatantMemory, CombatantMemoryManager>();
-            _container.Register<ITargetMemory, TargetMemoryManager>();
-            _container.Register<IContentFinderSettingsMemory, ContentFinderSettingsMemoryManager>();
-            _container.Register<IAggroMemory, AggroMemoryManager>();
-            _container.Register<IEnmityMemory, EnmityMemoryManager>();
-            _container.Register<IEnmityHudMemory, EnmityHudMemoryManager>();
-            _container.Register<IInCombatMemory, InCombatMemoryManager>();
-            _container.Register<IAtkStageMemory, AtkStageMemoryManager>();
-            _container.Register<IPartyMemory, PartyMemoryManager>();
-            _container.Register<IJobGaugeMemory, JobGaugeMemoryManager>();
+			// These are registered to be lazy-loaded. Use interface to force TinyIoC to use singleton pattern.
+			_container.Register<ICombatantMemory, CombatantMemoryManager>();
+			_container.Register<ITargetMemory, TargetMemoryManager>();
+			_container.Register<IContentFinderSettingsMemory, ContentFinderSettingsMemoryManager>();
+			_container.Register<IAggroMemory, AggroMemoryManager>();
+			_container.Register<IEnmityMemory, EnmityMemoryManager>();
+			_container.Register<IEnmityHudMemory, EnmityHudMemoryManager>();
+			_container.Register<IInCombatMemory, InCombatMemoryManager>();
+			_container.Register<IAtkStageMemory, AtkStageMemoryManager>();
+			_container.Register<IPartyMemory, PartyMemoryManager>();
+			_container.Register<IJobGaugeMemory, JobGaugeMemoryManager>();
 
-            _container.Register(new OverlayPluginLogLines(_container, extraOpcodes));
+			_container.Register(new OverlayPluginLogLines(_container, extraOpcodes));
 
-            Status = @"初始化阶段2：附加组件";
-            LoadAddons();
+			Status = @"初始化阶段2：附加组件";
+			LoadAddons();
 
-            Status = @"初始化阶段2：UI";
+			Status = @"初始化阶段2：UI";
 
-            // Now that addons have been loaded, we can finish the overlay setup.
-            Status = @"初始化阶段2：悬浮窗";
+			// Now that addons have been loaded, we can finish the overlay setup.
+			Status = @"初始化阶段2：悬浮窗";
 
-            InitializeOverlays();
+			InitializeOverlays();
 
-            Status = @"初始化阶段2：Dalamud IPC";
+			Status = @"初始化阶段2：Dalamud IPC";
 
-            _container.Register(new IpcHandlerController(_container));
+			_container.Register(new IpcHandlerController(_container));
 
-            // WSServer has to start after the LoadAddons() call because clients can connect immediately
-            // after it's initialized and that requires the event sources to be initialized.
-            if (Config.WSServerRunning) {
-                Status = @"初始化阶段2：WebSocket 服务";
-                _container.Resolve<ServerController>().Start();
-            }
+			// WSServer has to start after the LoadAddons() call because clients can connect immediately
+			// after it's initialized and that requires the event sources to be initialized.
+			if (Config.WSServerRunning) {
+				Status = @"初始化阶段2：WebSocket 服务";
+				_container.Resolve<ServerController>().Start();
+			}
 
-            Status = @"初始化阶段2：保存计时器";
-            configSaveTimer.Start();
+			Status = @"初始化阶段2：保存计时器";
+			configSaveTimer.Start();
 
-            Status = @"就绪";
-            // Make the log small; startup was successful and there shouldn't be any error message to show.
-        }
-        catch (Exception e) {
-            _logger.Log(LogLevel.Error, "InitPlugin: {0}", e.ToString());
-            MessageBox.Show(e.ToString());
-            FailWithLog();
-            throw;
-        }
-    }
+			Status = @"就绪";
+			// Make the log small; startup was successful and there shouldn't be any error message to show.
+		} catch (Exception e) {
+			_logger.Log(LogLevel.Error, "InitPlugin: {0}", e.ToString());
+			MessageBox.Show(e.ToString());
+			FailWithLog();
+			throw;
+		}
+	}
 
-    private void FailWithLog() {
-        // If the tab hasn't been initialized, yet, make sure we show at least the log.
-    }
+	private void FailWithLog() {
+		// If the tab hasn't been initialized, yet, make sure we show at least the log.
+	}
 
-    /// <summary>
-    ///     コンフィグのオーバーレイ設定を基に、オーバーレイを初期化・登録します。
-    /// </summary>
-    private void InitializeOverlays() {
-        // オーバーレイ初期化
-        Overlays = [];
-        foreach (var overlayConfig in Config.Overlays) {
-            var parameters = new NamedParameterOverloads();
-            parameters["config"] = overlayConfig;
-            parameters["name"] = overlayConfig.Name;
+	/// <summary>
+	///     コンフィグのオーバーレイ設定を基に、オーバーレイを初期化・登録します。
+	/// </summary>
+	private void InitializeOverlays() {
+		// オーバーレイ初期化
+		Overlays = [];
+		foreach (var overlayConfig in Config.Overlays) {
+			var parameters = new NamedParameterOverloads();
+			parameters["config"] = overlayConfig;
+			parameters["name"] = overlayConfig.Name;
 
-            var overlay = (IOverlay)_container.Resolve(overlayConfig.OverlayType, parameters);
-            if (overlay != null) {
-                RegisterOverlay(overlay);
-            }
-            else {
-                _logger.Log(LogLevel.Error, "InitPlugin: Could not find addon for {0}.", overlayConfig.Name);
-            }
-        }
-    }
+			var overlay = (IOverlay)_container.Resolve(overlayConfig.OverlayType, parameters);
+			if (overlay != null) {
+				RegisterOverlay(overlay);
+			} else {
+				_logger.Log(LogLevel.Error, "InitPlugin: Could not find addon for {0}.", overlayConfig.Name);
+			}
+		}
+	}
 
-    /// <summary>
-    ///     オーバーレイを登録します。
-    /// </summary>
-    /// <param name="overlay"></param>
-    internal void RegisterOverlay(IOverlay overlay) {
-        overlay.Start();
-        Overlays.Add(overlay);
+	/// <summary>
+	///     オーバーレイを登録します。
+	/// </summary>
+	/// <param name="overlay"></param>
+	internal void RegisterOverlay(IOverlay overlay) {
+		overlay.Start();
+		Overlays.Add(overlay);
 
-        OverlaysChanged?.Invoke(this, null);
-    }
+		OverlaysChanged?.Invoke(this, null);
+	}
 
-    /// <summary>
-    ///     登録されているオーバーレイを削除します。
-    /// </summary>
-    /// <param name="overlay">削除するオーバーレイ。</param>
-    internal void RemoveOverlay(IOverlay overlay) {
-        Overlays.Remove(overlay);
-        overlay.Dispose();
+	/// <summary>
+	///     登録されているオーバーレイを削除します。
+	/// </summary>
+	/// <param name="overlay">削除するオーバーレイ。</param>
+	internal void RemoveOverlay(IOverlay overlay) {
+		Overlays.Remove(overlay);
+		overlay.Dispose();
 
-        OverlaysChanged?.Invoke(this, null);
-    }
+		OverlaysChanged?.Invoke(this, null);
+	}
 
-    /// <summary>
-    ///     プラグインが無効化されたときに呼び出されます。
-    /// </summary>
-    public void DeInitPlugin() {
-        SaveConfig(true);
+	/// <summary>
+	///     プラグインが無効化されたときに呼び出されます。
+	/// </summary>
+	public void DeInitPlugin() {
+		SaveConfig(true);
 
-        if (Overlays != null) {
-            foreach (var overlay in Overlays) {
-                overlay.Dispose();
-            }
+		if (Overlays != null) {
+			foreach (var overlay in Overlays) {
+				overlay.Dispose();
+			}
 
-            Overlays.Clear();
-        }
+			Overlays.Clear();
+		}
 
-        try {
-            _container.Resolve<LineCombatant>().Dispose();
-        }
-        catch (Exception ex) {
-            _logger.Log(LogLevel.Error, $"DeInitPlugin: Failed to dispose LineCombatant {ex.Message}");
-        }
+		try {
+			_container.Resolve<LineCombatant>().Dispose();
+		} catch (Exception ex) {
+			_logger.Log(LogLevel.Error, $"DeInitPlugin: Failed to dispose LineCombatant {ex.Message}");
+		}
 
-        try {
-            var registry = _container.Resolve<Registry>();
-            foreach (var source in registry.EventSources) {
-                source.Stop();
-                source.Dispose();
-            }
-        }
-        catch (Exception ex) {
-            _logger.Log(LogLevel.Error, $"DeInitPlugin: Failed to stop event sources {ex.Message}");
-        }
+		try {
+			var registry = _container.Resolve<Registry>();
+			foreach (var source in registry.EventSources) {
+				source.Stop();
+				source.Dispose();
+			}
+		} catch (Exception ex) {
+			_logger.Log(LogLevel.Error, $"DeInitPlugin: Failed to stop event sources {ex.Message}");
+		}
 
-        try {
-            _container.Resolve<ServerController>().Stop();
-        }
-        catch (Exception ex) {
-            _logger.Log(LogLevel.Error, $"DeInitPlugin: Failed to stop WebSocket server {ex.Message}");
-        }
+		try {
+			_container.Resolve<ServerController>().Stop();
+		} catch (Exception ex) {
+			_logger.Log(LogLevel.Error, $"DeInitPlugin: Failed to stop WebSocket server {ex.Message}");
+		}
 
-        try {
-            _container.Resolve<IpcHandlerController>().Dispose();
-        }
-        catch (Exception ex) {
-            _logger.Log(LogLevel.Error, $"DeInitPlugin: Failed to dispose IPC handlers {ex.Message}");
-        }
+		try {
+			_container.Resolve<IpcHandlerController>().Dispose();
+		} catch (Exception ex) {
+			_logger.Log(LogLevel.Error, $"DeInitPlugin: Failed to dispose IPC handlers {ex.Message}");
+		}
 
-        _logger.Log(LogLevel.Info, "DeInitPlugin: Finalized.");
-        Status = "Finalized.";
-    }
+		_logger.Log(LogLevel.Info, "DeInitPlugin: Finalized.");
+		Status = "Finalized.";
+	}
 
-    private void LoadAddons() {
-        var registry = _container.Resolve<Registry>();
-        _container.Register(BuiltinEventConfig.LoadConfig(Config));
+	private void LoadAddons() {
+		var registry = _container.Resolve<Registry>();
+		_container.Register(BuiltinEventConfig.LoadConfig(Config));
 
-        // Make sure the event sources are ready before we load any overlays.
-        registry.StartEventSource(new MiniParseEventSource(_container));
-        registry.StartEventSource(new FFXIVOptionalEventSource(_container));
-        registry.StartEventSource(new FFXIVRequiredEventSource(_container));
-        registry.StartEventSource(new EnmityEventSource(_container));
-        registry.StartEventSource(new FFXIVClientStructsEventSource(_container));
+		// Make sure the event sources are ready before we load any overlays.
+		registry.StartEventSource(new MiniParseEventSource(_container));
+		registry.StartEventSource(new FFXIVOptionalEventSource(_container));
+		registry.StartEventSource(new FFXIVRequiredEventSource(_container));
+		registry.StartEventSource(new EnmityEventSource(_container));
+		registry.StartEventSource(new FFXIVClientStructsEventSource(_container));
 
-        _logger.Log(LogLevel.Info, "LoadAddons: Enabling builtin Cactbot event source.");
-        registry.StartEventSource(new CactbotEventSource(_container));
+		_logger.Log(LogLevel.Info, "LoadAddons: Enabling builtin Cactbot event source.");
+		registry.StartEventSource(new CactbotEventSource(_container));
 
-        registry.StartEventSources();
-    }
+		registry.StartEventSources();
+	}
 
-    private bool LoadConfig() {
-        if (Config != null)
-            return true;
+	private bool LoadConfig() {
+		if (Config != null)
+			return true;
 
-        try {
-            Config = new PluginConfig(GetConfigPath(), _container);
-        }
-        catch (Exception e) {
-            Config = null;
-            _logger.Log(LogLevel.Error, "LoadConfig: {0}", e);
-            return false;
-        }
+		try {
+			Config = new PluginConfig(GetConfigPath(), _container);
+		} catch (Exception e) {
+			Config = null;
+			_logger.Log(LogLevel.Error, "LoadConfig: {0}", e);
+			return false;
+		}
 
-        _container.Register(Config);
-        _container.Register<IPluginConfig>(Config);
-        return true;
-    }
+		_container.Register(Config);
+		_container.Register<IPluginConfig>(Config);
+		return true;
+	}
 
-    /// <summary>
-    ///     設定を保存します。
-    /// </summary>
-    private void SaveConfig(bool force = false) {
-        if (!_container.TryResolve(out Registry registry)) return;
-        if (Config == null || Overlays == null || registry.EventSources == null) return;
+	/// <summary>
+	///     設定を保存します。
+	/// </summary>
+	private void SaveConfig(bool force = false) {
+		if (!_container.TryResolve(out Registry registry)) return;
+		if (Config == null || Overlays == null || registry.EventSources == null) return;
 
-        try {
-            foreach (var overlay in Overlays) {
-                overlay.SavePositionAndSize();
-            }
+		try {
+			foreach (var overlay in Overlays) {
+				overlay.SavePositionAndSize();
+			}
 
-            foreach (var es in registry.EventSources) {
-                if (es != null)
-                    es.SaveConfig(Config);
-            }
+			foreach (var es in registry.EventSources) {
+				if (es != null)
+					es.SaveConfig(Config);
+			}
 
-            _container.Resolve<BuiltinEventConfig>().SaveConfig(Config);
-            Config.SaveJson(force);
-        }
-        catch (Exception e) {
-            _logger.Log(LogLevel.Error, "SaveConfig: {0}", e);
-            MessageBox.Show(e.ToString());
-        }
-    }
+			_container.Resolve<BuiltinEventConfig>().SaveConfig(Config);
+			Config.SaveJson(force);
+		} catch (Exception e) {
+			_logger.Log(LogLevel.Error, "SaveConfig: {0}", e);
+			MessageBox.Show(e.ToString());
+		}
+	}
 
-    /// <summary>
-    ///     設定ファイルのパスを取得します。
-    /// </summary>
-    /// <returns></returns>
-    private string GetConfigPath(bool xml = false) {
-        Directory.CreateDirectory(ConfigPath);
-        var path = Path.Combine(ConfigPath, "RainbowMage.OverlayPlugin.config." + (xml ? "xml" : "json"));
+	/// <summary>
+	///     設定ファイルのパスを取得します。
+	/// </summary>
+	/// <returns></returns>
+	private string GetConfigPath(bool xml = false) {
+		Directory.CreateDirectory(ConfigPath);
+		var path = Path.Combine(ConfigPath, "RainbowMage.OverlayPlugin.config." + (xml ? "xml" : "json"));
 
-        return path;
-    }
+		return path;
+	}
 }

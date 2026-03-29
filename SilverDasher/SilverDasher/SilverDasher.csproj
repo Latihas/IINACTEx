@@ -11,6 +11,9 @@
       <HintPath>../../external_dependencies/SDK/FFXIV_ACT_Plugin.Common.dll</HintPath>
       <Private>False</Private>
     </Reference>
+    <Content Include="SilverDasher.Weaver.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <ProjectReference Include="../../machina/Machina.FFXIV/Machina.FFXIV.csproj"/>
     <ProjectReference Include="../../NotACT/NotACT.csproj"/>
   </ItemGroup>
