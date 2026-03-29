@@ -95,8 +95,9 @@ public abstract class EnmityMemory : IEnmityMemory {
 					return new MemoryEnmityListEntry();
 				}
 				// ReSharper disable once RedundantFixedPointerDeclaration
-				fixed (byte* p = EntryBuffer)
+				fixed (byte* p = EntryBuffer) {
 					return *(MemoryEnmityListEntry*)&p[index * MemoryEnmityListEntry.Size];
+				}
 			}
 		}
 	}

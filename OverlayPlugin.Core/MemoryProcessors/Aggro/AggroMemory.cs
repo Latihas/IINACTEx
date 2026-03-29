@@ -102,8 +102,9 @@ public abstract class AggroMemory : IAggroMemory {
 					return new MemoryAggroListEntry();
 				}
 				// ReSharper disable once RedundantFixedPointerDeclaration
-				fixed (byte* p = EntryBuffer)
+				fixed (byte* p = EntryBuffer) {
 					return *(MemoryAggroListEntry*)&p[index * MemoryAggroListEntry.Size];
+				}
 			}
 		}
 	}

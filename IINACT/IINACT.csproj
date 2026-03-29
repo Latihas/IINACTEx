@@ -14,7 +14,7 @@
     <IconUrl>https://raw.githubusercontent.com/marzent/IINACT/master/images/icon.png</IconUrl>
     <RepoUrl>https://github.com/Latihas/IINACTEx</RepoUrl>
     <Tags>parsing;plugin;ACT</Tags>
-    <AssemblyVersion>7.45.2.6</AssemblyVersion>
+    <AssemblyVersion>7.45.2.7</AssemblyVersion>
   </PropertyGroup>
   <PropertyGroup>
     <Nullable>enable</Nullable>
