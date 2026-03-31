@@ -12,7 +12,6 @@
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
     <LangVersion>latest</LangVersion>
     <GenerateSatelliteAssembliesForCore>false</GenerateSatelliteAssembliesForCore>
-    <DalamudLibPath>$(appdata)\XIVLauncherCN\addon\Hooks\dev\</DalamudLibPath>
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
     <!--测试-->
     <NoWarn>$(NoWarn);IL2026;IL2075;CA2022;CS0168;CS0169;CS0414;CS0649;CS8524;CS8714;CS8767;SYSLIB0014;SYSLIB0051</NoWarn>

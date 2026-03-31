@@ -113,6 +113,12 @@ public class PluginControl {
 					Keeper.Config.NotifyDiedTTS = NotifyDiedTTS;
 					Config.Save();
 				}
+				var TTSExtend = Keeper.Config.TTSExtend;
+				if (ImGui.Checkbox("播报拓展信息（坐标）##TTSExtend", ref TTSExtend)) {
+					Keeper.Config.TTSExtend = TTSExtend;
+					Config.Save();
+				}
+				
 			}
 			ImGui.Unindent();
 		}
