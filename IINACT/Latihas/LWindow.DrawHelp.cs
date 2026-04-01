@@ -90,23 +90,17 @@ public static partial class LWindow {
 			ImGui.Text("开发者偏好使用Browsingway，但是IINACT原版的URL生成器指向的在线页面可能不是最新版，建议指向本地ACT的目录");
 			ImGui.Text("比如开发者的ACT装在D盘，那么URL就类似于file:///D:/ACT.DieMoe/Plugins/ACT.OverlayPlugin/cactbot/ui/raidboss/raidboss.html?timeline=1&alerts=1");
 			ImGui.Text("有时候bw会不显示东西（如时间轴），需要手动在bw里面刷新一下");
-			ImGui.Text("更多详情请见·运行状态·栏");
+			ImGui.Text("更多详情请见 初始化-悬浮窗 栏");
 			ImGui.Text("=====TTS/Cactbot=====");
 			ImGui.Text("IINACT CN默认使用了EdgeTTS，如果你EdgeTTS工作正常可以跳过这部分。由于开发者比较喜欢用LatihasTTS(纯本地模型推理)所以也做了接口。由于文件过大放不上Github所以需要联系开发者获取。(其实也没那么必须，只是开发者用着舒服)");
-			ImGui.Text("cactbot资源可在·运行状态·栏找到链接并下载。");
-			ImGui.Text("仅需将相关文件放入插件安装目录下即可使用，加号代表添加的文件，像这样:");
-			ImGui.Text("Cactbot:");
+			ImGui.Text("cactbot资源可在 初始化-悬浮窗 栏找到链接并下载。建议使用一键下载解压。");
+			ImGui.Text("如果手动安装，仅需将相关文件放入插件安装目录下即可使用，加号代表添加的文件，像这样:");
 			ImGui.Text("$(pluginConfigs/IINACTEx)");
 			ImGui.Text("    Scripts/");
+			ImGui.Text("    cactbot_user/");
 			ImGui.Text("    TriggernometryRepoBackups/");
 			ImGui.Text("    PostNamazu.config.xml");
 			ImGui.Text("    Triggernometry.config.xml");
-			ImGui.Text("    + cactbot.zip");
-			ImGui.Text("    ...");
-			ImGui.Text("LatihasTTS:");
-			ImGui.Text("$(installedPlugins/IINACTEx)");
-			ImGui.Text("    Advanced Combat Tracker.dll");
-			ImGui.Text("    Triggernometry.dll");
 			ImGui.Text("    + TtsAssets/");
 			ImGui.Text("        + pinyin.txt");
 			ImGui.Text("        + symbol.txt");
@@ -114,8 +108,11 @@ public static partial class LWindow {
 			ImGui.Text("        + a.ort");
 			ImGui.Text("        + v.ort");
 			ImGui.Text("        + ...");
+			ImGui.Text("    + cactbot/");
+			ImGui.Text("        + resources/");
+			ImGui.Text("        + ui/");
+			ImGui.Text("        + user/");
 			ImGui.Text("    ...");
-			ImGui.Text("目前支持cactbot.zip一键下载安装，比较依赖网络环境。手动的话资源放在插件Config目录，cactbot可以选择手动解压，也可以在插件下次加载时自动解压。");
 		}
 		if (ImGui.CollapsingHeader("已知限制")) {
 			ImGui.Text("Act原版插件支持非常有限(复杂的几乎都不支持)");
