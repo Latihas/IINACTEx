@@ -56,11 +56,11 @@ public static partial class LWindow {
 			}
 			if (FileDownloaderCactbot != null) {
 				ImGui.SameLine();
-				ImGui.ProgressBar(FileDownloaderCactbot.Progress, new Vector2(-1, -1), "下载中");
+				ImGui.ProgressBar(FileDownloaderCactbot.Progress, new Vector2(0, 0), "下载中");
 			}
 			ImGui.Text("如果下载失败，请尝试从url下载: ");
 			ImGui.SameLine();
-			if(ImGui.Button(cactboturl))ImGui.SetClipboardText(cactboturl);
+			if (ImGui.Button(cactboturl)) ImGui.SetClipboardText(cactboturl);
 			ImGui.Text("然后参考 帮助-项目介绍-TTS/Cactbot 进行设置");
 			ImGui.Separator();
 			Plugin.MainWindow.DrawOverlayGen();
@@ -73,7 +73,7 @@ public static partial class LWindow {
 		ImGui.PushStyleColor(ImGuiCol.Text, ImGuiColors.DalamudRed);
 		ImGui.Text("如果频繁炸游戏，可能是VfxModule的问题，在 触发器-ModuleBase-启用ModuleBase-取消VfxModule勾选 即可禁用");
 		ImGui.PopStyleColor(1);
-		if (ImGui.CollapsingHeader("更新日志")) 
+		if (ImGui.CollapsingHeader("更新日志"))
 			ImGui.Text("原版ACT统计和银山雀儿已迁移至卫月API。如果有任何bug或是修改建议请提Issue。");
 		if (ImGui.CollapsingHeader("项目介绍")) {
 			ImGui.Text("修改IINACT的初衷旨在尽可能满足日常对ACT的基本需求，替代ACT，假装自己是西瓜玩。");
