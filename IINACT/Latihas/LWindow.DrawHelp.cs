@@ -94,7 +94,7 @@ public static partial class LWindow {
 			ImGui.Text("=====TTS/Cactbot=====");
 			ImGui.Text("IINACT CN默认使用了EdgeTTS，如果你EdgeTTS工作正常可以跳过这部分。由于开发者比较喜欢用LatihasTTS(纯本地模型推理)所以也做了接口。由于文件过大放不上Github所以需要联系开发者获取。(其实也没那么必须，只是开发者用着舒服)");
 			ImGui.Text("cactbot资源可在 初始化-悬浮窗 栏找到链接并下载。建议使用一键下载解压。");
-			ImGui.Text("如果手动安装，仅需将相关文件放入插件安装目录下即可使用，加号代表添加的文件，像这样:");
+			ImGui.Text("如果手动安装，仅需将相关文件放入插件数据目录下即可使用，加号代表添加的文件，像这样:");
 			ImGui.Text("$(pluginConfigs/IINACTEx)");
 			ImGui.Text("    Scripts/");
 			ImGui.Text("    cactbot_user/");

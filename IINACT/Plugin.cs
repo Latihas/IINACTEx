@@ -88,6 +88,7 @@ public sealed class Plugin : IDalamudPlugin {
 	private readonly DateTime startLogTick = DateTime.Now;
 	internal static EdgeTTSWindow EdgeTTSWindow = null!;
 	public static Plugin Instance;
+	private const int LatestConfigVersion = 2;
 
 	public string PluginAssemblyDirectory => PluginInterface.AssemblyLocation.Directory!.ToString();
 	public string PluginConfigDirectory => PluginInterface.ConfigDirectory.ToString();
@@ -198,12 +199,13 @@ public sealed class Plugin : IDalamudPlugin {
 		LogTick("FfxivActPlugin Inited");
 		OverlayPlugin.InitPlugin(extraOpcodes);
 		LogTick("OverlayPlugin Initialized");
+		
 		var taskTrn = Task.Run(() => {
 			LogTick("Trn Initializing");
-			TriggernometryProxyPlugin.InitPlugin(this, PluginInterface, Log, ClientState, Framework, GameInteropProvider, ObjectTable, GameGui, SigScanner);
+			TriggernometryProxyPlugin.InitPlugin(this, PluginInterface, Log, ClientState, Framework, GameInteropProvider, ObjectTable, GameGui, SigScanner,
+				LatestConfigVersion);
 		});
 		if (!Configuration.AsyncOnInit) taskTrn.Wait();
-
 		if (opcodesjsoncReplaced) Log.Warning("opcodesjsonc Replaced");
 		var registry = Container.Resolve<Registry>();
 		MainWindow.OverlayPresets = registry.OverlayPresets;

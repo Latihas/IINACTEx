@@ -62,7 +62,7 @@ public class Configuration : IPluginConfiguration {
 		set => ActGlobals.oFormActMain.DisableWritingPvpLogFile = value;
 	}
 	public List<string> ActScriptsEnabled { get; set; } = [];
-	public int Version { get; set; } = 1;
+	public int Version { get; set; }
 
 	public string? SelectedOverlay { get; set; }
 
