@@ -120,7 +120,7 @@ public static partial class LWindow {
 				: "失败，详情见/xllog";
 		ImGui.SameLine();
 		if (ImGui.Button("编译并运行代码(无反馈)"))
-			RealPlugin._instance.scripting.Evaluate(TestCode, null, null);
+			RealPlugin.Instance.scripting.Evaluate(TestCode, null, null);
 		ImGui.SameLine();
 		if (ImGui.Button("清空编译错误历史")) RealPlugin.Instance.cfg.CompileFailedScripts.Clear();
 		ImGui.Separator();
@@ -615,7 +615,7 @@ public static partial class LWindow {
 	internal static void DrawTriggerVarTextAuraSettings() {
 		using var tab = ImRaii.TabItem("文本悬浮窗");
 		if (!tab) return;
-		NewTable(["悬浮窗名称", "名称", "文本"], RealPlugin._instance.textauras.ToArray(), [
+		NewTable(["悬浮窗名称", "名称", "文本"], RealPlugin.Instance.textauras.ToArray(), [
 			i => ImGui.Text(i.Key),
 			i => ImGui.Text(i.Value.AuraName),
 			i => ImGui.Text(i.Value.TextExpression.ToString())

@@ -160,13 +160,13 @@ public static partial class LWindow {
 		if (ImGui.Button("打开Log目录"))
 			Start(Plugin.Configuration.LogFilePath);
 		if (ImGui.Button("打开卫月Log"))
-			RealPlugin._instance.InvokeNamedCallback("command", "/xllog");
+			RealPlugin.Instance.InvokeNamedCallback("command", "/xllog");
 		ImGui.SameLine();
 		if (ImGui.Button("刷新Bw悬浮窗"))
 			Plugin.Instance.RefreshBw();
 		ImGui.SameLine();
 		if (ImGui.Button("打开bw设置"))
-			RealPlugin._instance.InvokeNamedCallback("command", "/bw config");
+			RealPlugin.Instance.InvokeNamedCallback("command", "/bw config");
 		if (ImGui.Button("打开伤害统计悬浮窗"))
 			Plugin.Instance.OverlayWindow.IsOpen = true;
 		ImGui.Separator();
