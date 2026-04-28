@@ -35,8 +35,8 @@ jobs:
           tag_name: ${{ steps.generate_version.outputs.VERSION }}
           name: Release ${{ steps.generate_version.outputs.VERSION }}
           files: |
-            ./IINACT/bin/IINACTEx/latest.zip 
-            ./IINACT/bin/IINACTEx/IINACTEx.json
+            ./bin/IINACTEx/latest.zip 
+            ./bin/IINACTEx/IINACTEx.json
           generate_release_notes: true
       - name: Trigger Auto Update repo.json
         uses: actions/github-script@v7
