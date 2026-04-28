@@ -1,6 +1,7 @@
 using System.Globalization;
 using System.Runtime.InteropServices;
 using Advanced_Combat_Tracker;
+using Dalamud.Game.Chat;
 using Dalamud.Game.ClientState.Conditions;
 using Dalamud.Game.Text;
 using Dalamud.Game.Text.SeStringHandling;
@@ -178,10 +179,10 @@ public partial class FfxivActPluginWrapper : IDisposable {
 	}
 
 	private void OnChatMessage(
-		XivChatType type, int senderId, ref SeString sender, ref SeString message, ref bool isHandled) {
-		var evenType = (uint)type;
-		var player = sender.TextValue;
-		var text = message.TextValue.Replace('\r', ' ').Replace('\n', ' ')
+		IHandleableChatMessage handleableChatMessage) {
+		var evenType = (uint)handleableChatMessage.LogKind;
+		var player = handleableChatMessage.Sender.TextValue;
+		var text = handleableChatMessage.Message.TextValue.Replace('\r', ' ').Replace('\n', ' ')
 			.Replace('|', '❘');
 		var line = logFormat.FormatChatMessage(evenType, player, text);
 
