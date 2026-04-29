@@ -30,7 +30,7 @@
     <ProjectReference Include="../OverlayPlugin.Common/OverlayPlugin.Common.csproj"/>
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Microsoft.Extensions.ObjectPool" Version="*"/>
+    <PackageReference Include="Microsoft.Extensions.ObjectPool" Version="10.0.7" />
     <PackageReference Include="NetCoreServer" Version="*"/>
   </ItemGroup>
   <ItemGroup>

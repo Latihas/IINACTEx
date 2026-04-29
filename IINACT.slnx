@@ -16,5 +16,6 @@
   <Project Path="Triggernometry/Source/Triggernometry/TriggernometryPlugin.csproj"/>
   <Project Path="TrnDevEnv/TrnDevEnv.csproj"/>
   <Project Path="Unscrambler/Unscrambler.DataGenerator/Unscrambler.DataGenerator.csproj"/>
+  <Project Path="Unscrambler/Unscrambler.CodeGenerator/Unscrambler.CodeGenerator.csproj"/>
   <Project Path="Unscrambler/Unscrambler/Unscrambler.csproj"/>
 </Solution>

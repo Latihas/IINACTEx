@@ -10,9 +10,9 @@
       },
       "Microsoft.Extensions.ObjectPool": {
         "type": "Direct",
-        "requested": "[*, )",
-        "resolved": "10.0.5",
-        "contentHash": "91t1kPt6F+1cTJ4dZFY89BopLr1JyGlZ2pROIkIuyE28jUXhdelOzn22UwvNk8EwW/9x8D7GXyLqiMJShgIGhQ=="
+        "requested": "[10.0.7, )",
+        "resolved": "10.0.7",
+        "contentHash": "flWxDEhfc7fueGP+mvNp8Avrm5YcZVfcpyI96MkJEnGu+1X/eH8XcHfx6deBAdCU3ZPpmQ7AVp/9t4aikKP07w=="
       },
       "NetCoreServer": {
         "type": "Direct",
