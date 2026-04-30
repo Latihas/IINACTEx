@@ -1,4 +1,4 @@
-name: Sample PR Builder for SamplePlugin
+name: Compile
 
 on:
   push:
