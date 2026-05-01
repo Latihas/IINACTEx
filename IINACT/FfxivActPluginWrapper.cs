@@ -178,11 +178,11 @@ public partial class FfxivActPluginWrapper : IDisposable {
 			throw new InvalidOperationException("Game offsets could not be found");
 	}
 
-	private void OnChatMessage(
-		IHandleableChatMessage handleableChatMessage) {
-		var evenType = (uint)handleableChatMessage.LogKind;
-		var player = handleableChatMessage.Sender.TextValue;
-		var text = handleableChatMessage.Message.TextValue.Replace('\r', ' ').Replace('\n', ' ')
+    private void OnChatMessage(IHandleableChatMessage message)
+    {
+        var evenType = (uint)message.LogKind;
+        var player = message.Sender.TextValue;
+        var text = message.Message.TextValue.Replace('\r', ' ').Replace('\n', ' ')
 			.Replace('|', '❘');
 		var line = logFormat.FormatChatMessage(evenType, player, text);
 
