@@ -3,8 +3,6 @@ using System.Runtime.InteropServices;
 using Advanced_Combat_Tracker;
 using Dalamud.Game.Chat;
 using Dalamud.Game.ClientState.Conditions;
-using Dalamud.Game.Text;
-using Dalamud.Game.Text.SeStringHandling;
 using Dalamud.Plugin.Services;
 using FFXIV_ACT_Plugin;
 using FFXIV_ACT_Plugin.Common;
