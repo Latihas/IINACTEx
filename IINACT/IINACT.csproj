@@ -2,7 +2,7 @@
   <PropertyGroup>
     <Author>Usagi, Latihas</Author>
     <Company>Dezent</Company>
-        <Version>2.10.1.2</Version>
+    <Version>2.10.1.2</Version>
     <Description>A parsing plugin.</Description>
     <AssemblyName>IINACTEx</AssemblyName>
     <OutputPath>../bin</OutputPath>
@@ -14,7 +14,7 @@
     <IconUrl>https://raw.githubusercontent.com/marzent/IINACT/master/images/icon.png</IconUrl>
     <RepoUrl>https://github.com/Latihas/IINACTEx</RepoUrl>
     <Tags>parsing;plugin;ACT</Tags>
-    <AssemblyVersion>7.50.0.5</AssemblyVersion>
+    <AssemblyVersion>7.50.0.6</AssemblyVersion>
   </PropertyGroup>
   <PropertyGroup>
     <Nullable>enable</Nullable>
