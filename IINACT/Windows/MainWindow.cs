@@ -302,7 +302,7 @@ public class MainWindow : Window {
 		}
 	}
 
-	private static void CopyDirectoryContents(string sourceDir, string targetDir, bool overwrite) {
+	internal static void CopyDirectoryContents(string sourceDir, string targetDir, bool overwrite) {
 		foreach (var filePath in Directory.GetFiles(sourceDir)) {
 			var fileName = Path.GetFileName(filePath);
 			var targetFilePath = Path.Combine(targetDir, fileName);

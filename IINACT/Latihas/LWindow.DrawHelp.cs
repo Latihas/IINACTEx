@@ -11,7 +11,6 @@ using Dalamud.Interface.Utility.Raii;
 using RainbowMage.OverlayPlugin;
 using Triggernometry;
 using Triggernometry.Core;
-using Triggernometry.Expressions.Tests;
 using static Triggernometry.PScript.ScriptUtils;
 
 namespace IINACT.Latihas;
@@ -145,8 +144,6 @@ public static partial class LWindow {
 		}
 	}
 
-	private static readonly BasicTest Test1 = new();
-	private static readonly FunctionTest Test2 = new();
 
 	private static void DrawTestIINACTSettings() {
 		using var tab = ImRaii.TabItem("IINACT");

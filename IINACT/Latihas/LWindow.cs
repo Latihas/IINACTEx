@@ -69,7 +69,6 @@ public static partial class LWindow {
 		DrawTriggerDebugLog();
 		DrawTriggerDebugTrigger();
 		DrawTriggerDebugEvalTest();
-		DrawTriggerDebugInternalTest();
 		DrawTriggerDebugCommonExpr();
 		DrawTestIINACTSettings();
 		DrawTestDrawSettings();
@@ -94,18 +93,7 @@ public static partial class LWindow {
 		if (ImGui.Button("清空日志队列")) RealPlugin.Instance.ClearLog();
 	}
 
-	private static void DrawTriggerDebugInternalTest() {
-		using var tab = ImRaii.TabItem("内置测试表达式");
-		if (!tab) return;
-		ImGui.Text("内置测试表达式");
-		foreach (var t in Test1.Test().Concat(Test2.Test())) {
-			var ts = t.ToString();
-			if (t.IsCorrect is null or false) {
-				if (ImGui.Button(ts))
-					ImGui.SetClipboardText(ts);
-			} else ImGui.Text($"{t}");
-		}
-	}
+
 
 	private static string Sbe = "";
 
@@ -295,7 +283,7 @@ public static partial class LWindow {
 		ImGui.SameLine();
 		if (ImGui.Button("点击查看IINACTEx脚本教程")) Start("https://github.com/Latihas/TrnDevEnv");
 		ImGui.PushStyleColor(ImGuiCol.Text, ImGuiColors.DalamudYellow);
-		ImGui.Text("该设置仍在开发，危险性中等，请自行斟酌使用。");
+		ImGui.Text("该设置仍在开发，危险性中等，请自行斟酌使用。内含一些开发者写的脚本，可以尝试，但不保证能用。");
 		ImGui.PopStyleColor(1);
 		ImGui.Text("支持加载实现IActPluginV1接口的脚本文件(可能支持编译好的dll，没有测试过)。");
 		ImGui.Text("原版ACT插件支持较为有限，银山雀儿，抹茶等无法载入，请用Sonar等插件替换。");

@@ -199,7 +199,7 @@ public sealed class Plugin : IDalamudPlugin {
 		LogTick("FfxivActPlugin Inited");
 		OverlayPlugin.InitPlugin(extraOpcodes);
 		LogTick("OverlayPlugin Initialized");
-		
+
 		var taskTrn = Task.Run(() => {
 			LogTick("Trn Initializing");
 			TriggernometryProxyPlugin.InitPlugin(this, PluginInterface, Log, ClientState, Framework, GameInteropProvider, ObjectTable, GameGui, SigScanner,
@@ -242,6 +242,10 @@ public sealed class Plugin : IDalamudPlugin {
 		var token = postCts.Token;
 		if (Configuration.AsyncOnInit) taskTrn.Wait();
 		LogTick("Triggernometry & PostNamazu & Callback Initialized");
+		var sourceDir = Path.Combine(Instance.PluginAssemblyDirectory, "scripts");
+		var targetDir = Instance.PluginActScriptDirectory;
+		Directory.CreateDirectory(targetDir);
+		MainWindow.CopyDirectoryContents(sourceDir, targetDir, true);
 		foreach (var rt in Directory.GetFiles(PluginActScriptDirectory, "*.cs", SearchOption.TopDirectoryOnly).Select(Path.GetFileName).Cast<string>())
 			if (Configuration.ActScriptsEnabled.Contains(rt))
 				LoadPScript(rt, true);
