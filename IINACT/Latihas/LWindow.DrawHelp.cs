@@ -181,6 +181,8 @@ public static partial class LWindow {
 		if (ImGui.Button("以自己为中心绘制半径7.5, 90度的扇形，随面向改变")) DrawShape(new IGCone(Me_Position, 7.5, Me_Rotation, Deg2Rad(90), 5000));
 		if (ImGui.Button("以自己为中心绘制半径10, 60度的三角形(不动)")) DrawShape(new IGCone(Me_Position(), 10, Me_Rotation(), Deg2Rad(60), 5000, 1));
 		if (ImGui.Button("以自己为中心绘制外径20, 内径10的环形")) DrawShape(new IGRing(Me_Position, 20, 10, 5000));
+		if (ImGui.Button("以自己为中心绘制长10，宽2.5的矩形")) DrawShape(new IGRect(Me_Position, () => Me_Position() + new Vector3(0, 0, 10), 5000, 2.5f));
+		if (ImGui.Button("以自己为中心绘制长10，宽10的射线,随面向改变")) DrawShape(new IGRay(Me_Position, 60, Me_Rotation, 5000, 10));
 	}
 
 	private static string testLogline;
