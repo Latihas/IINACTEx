@@ -1,4 +1,6 @@
-﻿namespace IINACT.Network;
+﻿using System;
+
+namespace IINACT.Network;
 
 internal class SimpleBuffer(int size) {
 	private readonly byte[] buffer = new byte[size];

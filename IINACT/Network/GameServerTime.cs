@@ -1,3 +1,5 @@
+using System;
+
 namespace IINACT.Network;
 
 internal static class GameServerTime {

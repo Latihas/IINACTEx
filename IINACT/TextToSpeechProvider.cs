@@ -1,9 +1,13 @@
+using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using System.Net.Http;
 using System.Reflection;
 using System.Runtime.Loader;
 using System.Speech.Synthesis;
+using System.Threading;
+using System.Threading.Tasks;
 using Advanced_Combat_Tracker;
 using Dalamud.Utility;
 using IINACT.TextToSpeech;
