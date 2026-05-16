@@ -123,6 +123,7 @@ public class MainWindow : Window {
 	}
 
 	public override void Draw() {
+		WindowName = $"IINACTEx[{Assembly.GetExecutingAssembly().GetName().Version.ToString()}] [核心{Instance.Version}] [解析{typeof(FFXIV_ACT_Plugin.FFXIV_ACT_Plugin).Assembly.GetName().Version}]";
 		foreach (var p in ImGuiColor) ImGui.PushStyleColor(p.Key, p.Value);
 		foreach (var p in ImGuiVar) ImGui.PushStyleVar(p.Key, p.Value);
 		var time = (float)ImGui.GetTime();
@@ -392,7 +393,7 @@ public class MainWindow : Window {
 					selectedOverlayIndex = i;
 
 		ImGui.SetNextItemWidth(comboWidth);
-		if (ImGui.Combo("悬浮窗##OverlayCombo", ref selectedOverlayIndex,  OverlayNames)) {
+		if (ImGui.Combo("悬浮窗##OverlayCombo", ref selectedOverlayIndex, OverlayNames)) {
 			Plugin.Configuration.SelectedOverlay = OverlayNames[selectedOverlayIndex];
 			Plugin.Configuration.Save();
 		}
