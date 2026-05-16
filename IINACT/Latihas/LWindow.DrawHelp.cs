@@ -22,7 +22,7 @@ public static partial class LWindow {
 	private static FileDownloader? FileDownloaderCactbot;
 
 	internal static void DrawInitSettings() {
-		if (ImGui.CollapsingHeader("首次安装配置", ImGuiTreeNodeFlags.DefaultOpen)) {
+		if (ImGui.CollapsingHeader("首次安装配置##CH首次安装配置", ImGuiTreeNodeFlags.DefaultOpen)) {
 			ImGui.Text("IINACTEx下载下来不动也可以正常使用。以下的配置为增加使用体验的配置。");
 			ImGui.Text("1. 点击下方`悬浮窗`板块一键下载解压cactbot。");
 			ImGui.Text("2. 安装插件Browsingway(卫月主库就有)，并打开Browsingway的设置界面");
@@ -35,7 +35,7 @@ public static partial class LWindow {
 			ImGui.Text("9. 启用IINACTEx");
 			ImGui.Text("*. 如果你看了教程还是不明白，或者觉得教程有值得改进的地方，请提issue。");
 		}
-		if (ImGui.CollapsingHeader("悬浮窗", ImGuiTreeNodeFlags.DefaultOpen)) {
+		if (ImGui.CollapsingHeader("悬浮窗##CH悬浮窗", ImGuiTreeNodeFlags.DefaultOpen)) {
 			ImGui.Text("cactbot: ");
 			ImGui.SameLine();
 			const string cactboturl = "https://raw.githubusercontent.com/Latihas/dalamud-plugins/main/cactbot.zip";
@@ -73,9 +73,9 @@ public static partial class LWindow {
 		ImGui.PushStyleColor(ImGuiCol.Text, ImGuiColors.DalamudRed);
 		ImGui.Text("如果频繁炸游戏，可能是VfxModule的问题，在 触发器-ModuleBase-启用ModuleBase-取消VfxModule勾选 即可禁用");
 		ImGui.PopStyleColor(1);
-		if (ImGui.CollapsingHeader("更新日志"))
+		if (ImGui.CollapsingHeader("更新日志##CH更新日志"))
 			ImGui.Text("原版ACT统计和银山雀儿已迁移至卫月API。如果有任何bug或是修改建议请提Issue。");
-		if (ImGui.CollapsingHeader("项目介绍")) {
+		if (ImGui.CollapsingHeader("项目介绍##CH项目介绍")) {
 			ImGui.Text("修改IINACT的初衷旨在尽可能满足日常对ACT的基本需求，替代ACT，假装自己是西瓜玩。");
 			ImGui.Text("本项目仍然处于野蛮开发期，代码管理极其混乱，暗藏神秘bug，仅作开发测试使用。");
 			ImGui.Text("该插件会在一个类ACT的环境下运行FFXIV_ACT_Plugin与大量修改的Overlay Plugin以适配现代.NET。与此同时，也添加了大量修改的Triggernometry与Postnamazu。包括类ACT、Triggernometry、Postnamazu在内，这些并非完整的代码移植，并且仍在开发完善中，可能缺少部分原版的函数，开发时请注意。");
@@ -114,7 +114,7 @@ public static partial class LWindow {
 			ImGui.Text("        + user/");
 			ImGui.Text("    ...");
 		}
-		if (ImGui.CollapsingHeader("已知限制")) {
+		if (ImGui.CollapsingHeader("已知限制##已知限制")) {
 			ImGui.Text("Act原版插件支持非常有限(复杂的几乎都不支持)");
 			ImGui.Text("!!! Triggernometry有时会因为宝宝椅的鲇鱼精扩展功能炸游戏/显示异常/...。开发者用Penumbra可以恢复部分图形问题");
 			ImGui.SameLine();
@@ -137,7 +137,7 @@ public static partial class LWindow {
 			ImGui.Text("    //DalamudDirReferenes");
 			foreach (var asm in CSharpScriptCompiler.DalamudDirReferenes) ImGui.Text("    " + asm);
 		}
-		if (ImGui.CollapsingHeader("常见问题", ImGuiTreeNodeFlags.DefaultOpen)) {
+		if (ImGui.CollapsingHeader("常见问题##常见问题", ImGuiTreeNodeFlags.DefaultOpen)) {
 			ImGui.Text("问题太多了。如果出现bug，试着关开一下插件，说不定就自己会好了。");
 			ImGui.Text("当然也可能是我懒得写了，你也可以帮助我完善这一部分。");
 			ImGui.Text("其他问题可在Github仓库提issue解决。");

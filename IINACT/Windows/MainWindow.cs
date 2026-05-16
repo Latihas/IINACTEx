@@ -392,17 +392,9 @@ public class MainWindow : Window {
 					selectedOverlayIndex = i;
 
 		ImGui.SetNextItemWidth(comboWidth);
-		if (ImGui.BeginCombo("悬浮窗", selectedOverlayName)) {
-			for (var i = 0; i < OverlayNames?.Length; i++) {
-				var currentOverlayName = OverlayNames?[i] ?? "";
-				if (ImGui.Selectable(currentOverlayName, currentOverlayName == selectedOverlayName)) {
-					selectedOverlayIndex = i;
-					Plugin.Configuration.SelectedOverlay = currentOverlayName;
-					Plugin.Configuration.Save();
-				}
-			}
-
-			ImGui.EndCombo();
+		if (ImGui.Combo("悬浮窗##OverlayCombo", ref selectedOverlayIndex,  OverlayNames)) {
+			Plugin.Configuration.SelectedOverlay = OverlayNames[selectedOverlayIndex];
+			Plugin.Configuration.Save();
 		}
 
 		var selectedOverlay = OverlayPresets?[selectedOverlayIndex];
@@ -502,16 +494,10 @@ public class MainWindow : Window {
 		}
 		ImGui.Spacing();
 		ImGui.SetNextItemWidth(elementWidth);
-		if (ImGui.BeginCombo("解析过滤器",
-			    GetParseFilterModeText((ParseFilterMode)Plugin.Configuration.ParseFilterMode))) {
-			foreach (var filter in Enum.GetValues<ParseFilterMode>())
-				if (ImGui.Selectable(GetParseFilterModeText(filter),
-					    (ParseFilterMode)Plugin.Configuration.ParseFilterMode == filter)) {
-					Plugin.Configuration.ParseFilterMode = (int)filter;
-					Plugin.Configuration.Save();
-				}
-
-			ImGui.EndCombo();
+		var idx = Plugin.Configuration.ParseFilterMode;
+		if (ImGui.Combo("解析过滤器", ref idx, Enum.GetValues<ParseFilterMode>().Select(GetParseFilterModeText).ToList())) {
+			Plugin.Configuration.ParseFilterMode = idx;
+			Plugin.Configuration.Save();
 		}
 
 		ImGui.Spacing();
