@@ -1,4 +1,5 @@
 using System.IO.Compression;
+using System.Text.Json.Nodes;
 using System.Text.RegularExpressions;
 using Dalamud.Plugin.Services;
 
@@ -31,43 +32,32 @@ public partial class FetchDependencies {
 
 		if (!NeedsUpdate(pluginPath))
 			return;
-
+		
+		if (!File.Exists(pluginZipPath))
+		{
+			DownloadPlugin(pluginZipPath);
+		}
+		
 		if (IsChinese)
 			DownloadFile(PluginUrlChinese, pluginPath);
-		else
-			HandleZipDownloadAndExtract(PluginUrlGlobal, pluginZipPath);
-
-		CleanupDeucalion();
+		else {
+			try {
+				ZipFile.ExtractToDirectory(pluginZipPath, DependenciesDir, true);
+			} catch (InvalidDataException) {
+				DownloadPlugin(pluginZipPath);
+				ZipFile.ExtractToDirectory(pluginZipPath, DependenciesDir, true);
+			}
+			File.Delete(pluginZipPath);
+		}
+		foreach (var deucalionDll in Directory.GetFiles(DependenciesDir, "deucalion*.dll"))
+			File.Delete(deucalionDll);
 
 		var patcher = new Patcher(PluginVersion, DependenciesDir);
 		patcher.MainPlugin();
 		patcher.LogFilePlugin();
 		patcher.MemoryPlugin();
 	}
-
-	private void HandleZipDownloadAndExtract(string url, string zipPath) {
-		if (!File.Exists(zipPath))
-			DownloadFile(url, zipPath);
-
-		try {
-			ZipFile.ExtractToDirectory(zipPath, DependenciesDir, true);
-		} catch (InvalidDataException) {
-			File.Delete(zipPath);
-			DownloadFile(url, zipPath);
-			ZipFile.ExtractToDirectory(zipPath, DependenciesDir, true);
-		} finally {
-			if (File.Exists(zipPath)) File.Delete(zipPath);
-		}
-	}
-
-	private void CleanupDeucalion() {
-		foreach (var deucalionDll in Directory.GetFiles(DependenciesDir, "deucalion*.dll")) {
-			try {
-				File.Delete(deucalionDll);
-			} catch {
-			}
-		}
-	}
+	
 
 	[GeneratedRegex(@"build_version\s*=\s*([0-9.]+)", RegexOptions.Multiline)]
 	private static partial Regex DieMoeBuildVersionRegex();
@@ -112,6 +102,29 @@ public partial class FetchDependencies {
 			return buildVersion != localVersion;
 		} catch {
 			return false;
+		}
+	}
+	private void DownloadPlugin(string pluginZipPath)
+	{
+		try
+		{
+			DownloadFile(IsChinese ? PluginUrlChinese : PluginUrlGlobal, pluginZipPath);
+		}
+		catch
+		{
+			using var request = new HttpRequestMessage(HttpMethod.Get, "https://api.github.com/repos/ravahn/FFXIV_ACT_Plugin/releases/latest");
+			request.Headers.UserAgent.ParseAdd("IINACT/1.0");
+			using var response = HttpClient.Send(request);
+			response.EnsureSuccessStatusCode();
+
+			using var stream = response.Content.ReadAsStream();
+			var json = JsonNode.Parse(stream);
+			var downloadUrl = json?["assets"]?[0]?["browser_download_url"]?.ToString();
+
+			if (string.IsNullOrEmpty(downloadUrl))
+				throw new Exception("Could not find fallback download URL from GitHub API.");
+
+			DownloadFile(downloadUrl, pluginZipPath);
 		}
 	}
 
