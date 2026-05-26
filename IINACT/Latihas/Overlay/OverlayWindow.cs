@@ -28,7 +28,6 @@ public partial class OverlayWindow() : Window("IINACTEx Overlay###IINACTEx Overl
 		if (webSocketClient is not { Ready: true }) return;
 		try {
 			var x = JsonConvert.DeserializeObject<CombatDataWrapper>(data);
-			Plugin.Log.Info(data);
 			if (x is { type: "broadcast", msgtype: "CombatData" } && x.msg.Combatant.Count != 0) {
 				currentCombatData = x;
 				var newActive = bool.Parse(x.msg.isActive);
