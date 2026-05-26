@@ -20,7 +20,7 @@ public class ScriptSl : IScriptBase {
 		new(MTTS("月环"), Id: 0xC475), //神龙啸
 		new(MTTS("冰柱"), Id: 0xC44A), //召唤冰柱
 		new(MTTS("雷伤"), Id: 0xC438), //制裁之雷
-		new(MTTS("火伤"), Id: 0xC444), //超新星
+		new(MTTS("火伤"), Id: 0xC444) //超新星
 	];
 	public override List<(Regex, Action<GroupCollection>)> CustomList => [
 		new(new Regex("^.{14} 261 105:Add:.+?:BNpcNameID:1886:.+?:Heading:(?<r>[^:]+):.+?:PosX:(?<x>[^:]+):PosY:(?<y>[^:]+):PosZ:(?<z>[^:]+):"), Groups => {
@@ -43,11 +43,11 @@ public class ScriptSl : IScriptBase {
 				"【分摊 → MT无敌 → ST无敌 → 分摊】",
 				"■ 钻石星辰：H2滑冰",
 				"■ 大地吐息：奶妈=左、DPS=右",
-				"■ 小怪阶段：MT=中间大龙、ST=其他",
+				"■ 小怪阶段：MT=中间大龙、ST=其他"
 			]);
 		})
 	];
 	public override List<TargetIcon> TargetIconList => [
-		new(MTTS("龙尾点你"), Me_HexID, 0x007E),
+		new(MTTS("龙尾点你"), Me_HexID, 0x007E)
 	];
 }

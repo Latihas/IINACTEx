@@ -11,25 +11,15 @@ namespace SilverDasher.ACT.Views;
 public class PluginControl {
 	private readonly Painter Painter;
 	private static readonly Dictionary<PluginStatus, string> ChineseStatusText = new() {
-		{
-			PluginStatus.SLEEPING, "睡觉中"
-		}, {
-			PluginStatus.INITIALIZED, "待命"
-		}, {
-			PluginStatus.CONNECTING, "连线中"
-		}, {
-			PluginStatus.CONNECTED, "在线"
-		}, {
-			PluginStatus.EXPIRED, "已过期"
-		}, {
-			PluginStatus.BANNED, "封印中"
-		}, {
-			PluginStatus.BLOCKED, "迷路中"
-		}, {
-			PluginStatus.FAILED, "连接失败"
-		}, {
-			PluginStatus.LEFT, "消失了"
-		}
+		[PluginStatus.SLEEPING] = "睡觉中",
+		[PluginStatus.INITIALIZED] = "待命",
+		[PluginStatus.CONNECTING] = "连线中",
+		[PluginStatus.CONNECTED] = "在线",
+		[PluginStatus.EXPIRED] = "已过期",
+		[PluginStatus.BANNED] = "封印中",
+		[PluginStatus.BLOCKED] = "迷路中",
+		[PluginStatus.FAILED] = "连接失败",
+		[PluginStatus.LEFT] = "消失了"
 	};
 
 	private readonly List<string> textLog = [];
@@ -118,7 +108,6 @@ public class PluginControl {
 					Keeper.Config.TTSExtend = TTSExtend;
 					Config.Save();
 				}
-				
 			}
 			ImGui.Unindent();
 		}

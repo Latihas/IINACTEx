@@ -138,7 +138,7 @@ public class LineCombatant : IDisposable {
 			})
 		};
 
-		private static readonly string[] IgnoreFieldNames = new[] {
+		private static readonly string[] IgnoreFieldNames = [
 			// "ID" is always printed
 			nameof(Combatant.ID),
 			// Exclude "Effects" due to object complexity
@@ -157,7 +157,7 @@ public class LineCombatant : IDisposable {
 
 			// CP and GP are pointless since this is currently restricted to combat-only.
 			nameof(Combatant.CurrentCP), nameof(Combatant.MaxCP), nameof(Combatant.CurrentGP), nameof(Combatant.MaxGP)
-		};
+		];
 
 		// Fields that should be written out for add or full list of changes
 		public static readonly FieldInfo[] AllFields = typeof(Combatant).GetFields()

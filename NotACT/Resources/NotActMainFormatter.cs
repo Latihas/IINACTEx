@@ -864,76 +864,42 @@ public static class NotActMainFormatter {
 		CombatantData.ColumnDefs["EncHPS"].GetCellForeColor = _ => Color.DarkBlue;
 		CombatantData.ColumnDefs["DamageTaken"].GetCellForeColor = _ => Color.DarkOrange;
 		CombatantData.OutgoingDamageTypeDataObjects = new Dictionary<string, CombatantData.DamageTypeDef> {
-			{
-				"Auto-Attack (Out)", new CombatantData.DamageTypeDef("Auto-Attack (Out)", -1, Color.DarkGoldenrod)
-			}, {
-				"Skill/Ability (Out)", new CombatantData.DamageTypeDef("Skill/Ability (Out)", -1, Color.DarkOrange)
-			}, {
-				"Outgoing Damage", new CombatantData.DamageTypeDef("Outgoing Damage", 0, Color.Orange)
-			}, {
-				"Healed (Out)", new CombatantData.DamageTypeDef("Healed (Out)", 1, Color.Blue)
-			}, {
-				"Power Drain (Out)", new CombatantData.DamageTypeDef("Power Drain (Out)", -1, Color.Purple)
-			}, {
-				"Power Replenish (Out)", new CombatantData.DamageTypeDef("Power Replenish (Out)", 1, Color.Violet)
-			}, {
-				"Cure/Dispel (Out)", new CombatantData.DamageTypeDef("Cure/Dispel (Out)", 0, Color.Wheat)
-			}, {
-				"Threat (Out)", new CombatantData.DamageTypeDef("Threat (Out)", -1, Color.Yellow)
-			}, {
-				"All Outgoing (Ref)", new CombatantData.DamageTypeDef("All Outgoing (Ref)", 0, Color.Black)
-			}
+			["Auto-Attack (Out)"] = new("Auto-Attack (Out)", -1, Color.DarkGoldenrod),
+			["Skill/Ability (Out)"] = new("Skill/Ability (Out)", -1, Color.DarkOrange),
+			["Outgoing Damage"] = new("Outgoing Damage", 0, Color.Orange),
+			["Healed (Out)"] = new("Healed (Out)", 1, Color.Blue),
+			["Power Drain (Out)"] = new("Power Drain (Out)", -1, Color.Purple),
+			["Power Replenish (Out)"] = new("Power Replenish (Out)", 1, Color.Violet),
+			["Cure/Dispel (Out)"] = new("Cure/Dispel (Out)", 0, Color.Wheat),
+			["Threat (Out)"] = new("Threat (Out)", -1, Color.Yellow),
+			["All Outgoing (Ref)"] = new("All Outgoing (Ref)", 0, Color.Black)
 		};
 		CombatantData.IncomingDamageTypeDataObjects = new Dictionary<string, CombatantData.DamageTypeDef> {
-			{
-				"Incoming Damage", new CombatantData.DamageTypeDef("Incoming Damage", -1, Color.Red)
-			}, {
-				"Healed (Inc)", new CombatantData.DamageTypeDef("Healed (Inc)", 1, Color.LimeGreen)
-			}, {
-				"Power Drain (Inc)", new CombatantData.DamageTypeDef("Power Drain (Inc)", -1, Color.Magenta)
-			}, {
-				"Power Replenish (Inc)", new CombatantData.DamageTypeDef("Power Replenish (Inc)", 1, Color.MediumPurple)
-			}, {
-				"Cure/Dispel (Inc)", new CombatantData.DamageTypeDef("Cure/Dispel (Inc)", 0, Color.Wheat)
-			}, {
-				"Threat (Inc)", new CombatantData.DamageTypeDef("Threat (Inc)", -1, Color.Yellow)
-			}, {
-				"All Incoming (Ref)", new CombatantData.DamageTypeDef("All Incoming (Ref)", 0, Color.Black)
-			}
+			["Incoming Damage"] = new("Incoming Damage", -1, Color.Red),
+			["Healed (Inc)"] = new("Healed (Inc)", 1, Color.LimeGreen),
+			["Power Drain (Inc)"] = new("Power Drain (Inc)", -1, Color.Magenta),
+			["Power Replenish (Inc)"] = new("Power Replenish (Inc)", 1, Color.MediumPurple),
+			["Cure/Dispel (Inc)"] = new("Cure/Dispel (Inc)", 0, Color.Wheat),
+			["Threat (Inc)"] = new("Threat (Inc)", -1, Color.Yellow),
+			["All Incoming (Ref)"] = new("All Incoming (Ref)", 0, Color.Black)
 		};
 		CombatantData.SwingTypeToDamageTypeDataLinksOutgoing = new SortedDictionary<int, List<string>> {
-			{
-				1, ["Auto-Attack (Out)", "Outgoing Damage"]
-			}, {
-				2, ["Skill/Ability (Out)", "Outgoing Damage"]
-			}, {
-				3, ["Healed (Out)"]
-			}, {
-				10, ["Power Drain (Out)"]
-			}, {
-				13, ["Power Replenish (Out)"]
-			}, {
-				20, ["Cure/Dispel (Out)"]
-			}, {
-				16, ["Threat (Out)"]
-			}
+			[1]=["Auto-Attack (Out)", "Outgoing Damage"], 
+			[2]=["Skill/Ability (Out)", "Outgoing Damage"],
+			[3]=["Healed (Out)"], 
+			[10]=["Power Drain (Out)"],
+			[13]=["Power Replenish (Out)"],
+			[20]=["Cure/Dispel (Out)"], 
+			[16]=["Threat (Out)"]
 		};
 		CombatantData.SwingTypeToDamageTypeDataLinksIncoming = new SortedDictionary<int, List<string>> {
-			{
-				1, ["Incoming Damage"]
-			}, {
-				2, ["Incoming Damage"]
-			}, {
-				3, ["Healed (Inc)"]
-			}, {
-				10, ["Power Drain (Inc)"]
-			}, {
-				13, ["Power Replenish (Inc)"]
-			}, {
-				20, ["Cure/Dispel (Inc)"]
-			}, {
-				16, ["Threat (Inc)"]
-			}
+			[1]=["Incoming Damage"],
+			[2]=["Incoming Damage"], 
+			[3]=["Healed (Inc)"], 
+			[10]=["Power Drain (Inc)"],
+			[13]=["Power Replenish (Inc)"],
+			[20]=["Cure/Dispel (Inc)"],
+			[16]=["Threat (Inc)"]
 		};
 		CombatantData.DamageSwingTypes = [1, 2];
 		CombatantData.HealingSwingTypes = [3];

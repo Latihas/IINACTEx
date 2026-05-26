@@ -25,15 +25,8 @@ using static IINACT.Plugin;
 
 namespace IINACT.Windows;
 
-public class MainWindow : Window {
+public class MainWindow() : Window(WindowPrefix) {
 	private int selectedOverlayIndex;
-
-	public MainWindow() : base(WindowPrefix) {
-		SizeConstraints = new WindowSizeConstraints {
-			MinimumSize = new Vector2(307, 207),
-			MaximumSize = new Vector2(float.MaxValue, float.MaxValue)
-		};
-	}
 
 	public IPluginConfig? OverlayPluginConfig { get; set; }
 	public IReadOnlyList<IOverlayPreset>? OverlayPresets { get; set; }
@@ -51,26 +44,26 @@ public class MainWindow : Window {
 	}
 
 	private readonly Dictionary<ImGuiCol, Vector4> ImGuiColor = new() {
-		{ ImGuiCol.Border, new Vector4(1, 1, 1, .5f) },
-		{ ImGuiCol.Separator, new Vector4(1, 1, 1, .5f) },
-		{ ImGuiCol.ChildBg, new Vector4(36 / 255f, 40 / 255f, 47 / 255f, 1) },
-		{ ImGuiCol.FrameBg, new Vector4(37 / 255f, 39 / 255f, 44 / 255f, 1) },
-		{ ImGuiCol.Button, new Vector4(62 / 255f, 78 / 255f, 105 / 255f, 1) },
-		{ ImGuiCol.ButtonHovered, new Vector4(50 / 255f, 58 / 255f, 75 / 255f, 1) },
-		{ ImGuiCol.ButtonActive, new Vector4(88 / 255f, 111 / 255f, 150 / 255f, 1) },
-		{ ImGuiCol.CheckMark, new Vector4(26 / 255f, 159 / 255f, 1, 1) },
-		{ ImGuiCol.ScrollbarBg, new Vector4(0, 0, 0, 0) },
-		{ ImGuiCol.ScrollbarGrab, new Vector4(96 / 255f, 103 / 255f, 116 / 255f, 1) },
-		{ ImGuiCol.ScrollbarGrabHovered, new Vector4(123 / 255f, 131 / 255f, 146 / 255f, 1) },
-		{ ImGuiCol.ScrollbarGrabActive, new Vector4(123 / 255f, 131 / 255f, 146 / 255f, 1) },
-		{ ImGuiCol.Header, new Vector4(62 / 255f, 78 / 255f, 105 / 255f, 1) },
-		{ ImGuiCol.HeaderHovered, new Vector4(50 / 255f, 58 / 255f, 75 / 255f, 1) },
-		{ ImGuiCol.HeaderActive, new Vector4(88 / 255f, 111 / 255f, 150 / 255f, 1) },
-		{ ImGuiCol.PlotHistogram, new Vector4(20 / 255f, 90 / 255f, 141 / 255f, 1) }
+		[ImGuiCol.Border] = new Vector4(1, 1, 1, .5f),
+		[ImGuiCol.Separator] = new Vector4(1, 1, 1, .5f),
+		[ImGuiCol.ChildBg] = new Vector4(36 / 255f, 40 / 255f, 47 / 255f, 1),
+		[ImGuiCol.FrameBg] = new Vector4(37 / 255f, 39 / 255f, 44 / 255f, 1),
+		[ImGuiCol.Button] = new Vector4(62 / 255f, 78 / 255f, 105 / 255f, 1),
+		[ImGuiCol.ButtonHovered] = new Vector4(50 / 255f, 58 / 255f, 75 / 255f, 1),
+		[ImGuiCol.ButtonActive] = new Vector4(88 / 255f, 111 / 255f, 150 / 255f, 1),
+		[ImGuiCol.CheckMark] = new Vector4(26 / 255f, 159 / 255f, 1, 1),
+		[ImGuiCol.ScrollbarBg] = new Vector4(0, 0, 0, 0),
+		[ImGuiCol.ScrollbarGrab] = new Vector4(96 / 255f, 103 / 255f, 116 / 255f, 1),
+		[ImGuiCol.ScrollbarGrabHovered] = new Vector4(123 / 255f, 131 / 255f, 146 / 255f, 1),
+		[ImGuiCol.ScrollbarGrabActive] = new Vector4(123 / 255f, 131 / 255f, 146 / 255f, 1),
+		[ImGuiCol.Header] = new Vector4(62 / 255f, 78 / 255f, 105 / 255f, 1),
+		[ImGuiCol.HeaderHovered] = new Vector4(50 / 255f, 58 / 255f, 75 / 255f, 1),
+		[ImGuiCol.HeaderActive] = new Vector4(88 / 255f, 111 / 255f, 150 / 255f, 1),
+		[ImGuiCol.PlotHistogram] = new Vector4(20 / 255f, 90 / 255f, 141 / 255f, 1)
 	};
 	private readonly Dictionary<ImGuiStyleVar, int> ImGuiVar = new() {
-		{ ImGuiStyleVar.ChildBorderSize, 4 },
-		{ ImGuiStyleVar.FrameBorderSize, 2 }
+		[ImGuiStyleVar.ChildBorderSize] = 4,
+		[ImGuiStyleVar.FrameBorderSize] = 2
 	};
 
 	private static (float r, float g, float b) HsvToRgb(float hue, float saturation, float value) {
@@ -128,6 +121,7 @@ public class MainWindow : Window {
 		foreach (var p in ImGuiVar) ImGui.PushStyleVar(p.Key, p.Value);
 		var time = (float)ImGui.GetTime();
 		var hsv = HsvToRgb(time * 90 % 360, .1f, .9f);
+		ImGui.PushClipRect(ImGui.GetWindowPos(), ImGui.GetWindowPos() + ImGui.GetWindowSize(), false);
 		ImGui.PushStyleColor(ImGuiCol.Border, new Vector4(hsv.r, hsv.g, hsv.b, 0.9f));
 		if (ImGui.BeginChild("##IINACTEx_LeftTabPanel", new Vector2(200, -1), true)) {
 			if (logoTexture == null) {
@@ -147,26 +141,22 @@ public class MainWindow : Window {
 				var alphaBreath = MathF.Cos(time * 1.7f) * 0.4f + 0.6f;
 				var tlA = (byte)(alphaBreath * 0x6F);
 				var tlR = (byte)(0x92 + hueOffset * 0x30);
-				byte tlG = 0xFE;
+				const byte tlG = 0xFE;
 				var tlB = (byte)(0x9D - hueOffset * 0x20);
 				var trA = (byte)(alphaBreath * 0x6F);
 				var trR = (byte)(0xFF - hueOffset * 0x30);
-				byte trG = 0x00;
+				const byte trG = 0x00;
 				var trB = (byte)(0x6E + hueOffset * 0x20);
-				var rotationSpeed = 2f;
+				const float rotationSpeed = 2f;
 				var rotationPhase = time * rotationSpeed;
 				var phaseTL = rotationPhase;
-				var phaseTR = rotationPhase + MathF.PI / 2; // 右上：相位+90度
-				var phaseBR = rotationPhase + MathF.PI; // 右下：相位+180度
-				var phaseBL = rotationPhase + MathF.PI * 3 / 2; // 左下：相位+270度
-
-// 4. 计算每个角的颜色混合因子（0~1 平滑过渡，Sin函数保证循环）
-				var mixTL = (MathF.Sin(phaseTL) + 1f) / 2f; // 0→1→0 循环
+				var phaseTR = rotationPhase + MathF.PI / 2;
+				var phaseBR = rotationPhase + MathF.PI;
+				var phaseBL = rotationPhase + MathF.PI * 3 / 2;
+				var mixTL = (MathF.Sin(phaseTL) + 1f) / 2f;
 				var mixTR = (MathF.Sin(phaseTR) + 1f) / 2f;
 				var mixBR = (MathF.Sin(phaseBR) + 1f) / 2f;
 				var mixBL = (MathF.Sin(phaseBL) + 1f) / 2f;
-
-// 5. 混合每个角的颜色（mix=0 取TL色，mix=1 取TR色，过渡平缓）
 				var colorTL_Final = (uint)tlA << 24 | (uint)(tlR * (1 - mixTL) + trR * mixTL) << 16 |
 				                    (uint)(tlG * (1 - mixTL) + trG * mixTL) << 8 | (uint)(tlB * (1 - mixTL) + trB * mixTL);
 				var colorTR_Final = (uint)trA << 24 | (uint)(tlR * (1 - mixTR) + trR * mixTR) << 16 |
@@ -175,14 +165,8 @@ public class MainWindow : Window {
 				                    (uint)(tlG * (1 - mixBR) + trG * mixBR) << 8 | (uint)(tlB * (1 - mixBR) + trB * mixBR);
 				var colorBL_Final = (uint)trA << 24 | (uint)(tlR * (1 - mixBL) + trR * mixBL) << 16 |
 				                    (uint)(tlG * (1 - mixBL) + trG * mixBL) << 8 | (uint)(tlB * (1 - mixBL) + trB * mixBL);
-
-// 6. 绘制四色渐变矩形（四个角颜色循环）
 				ImGui.GetWindowDrawList().AddRectFilledMultiColor(
-					pos, pos + iconSize,
-					colorTL_Final, // 左上
-					colorTR_Final, // 右上
-					colorBR_Final, // 右下
-					colorBL_Final // 左下
+					pos, pos + iconSize, colorTL_Final, colorTR_Final, colorBR_Final, colorBL_Final
 				);
 				ImGui.Spacing();
 			}
@@ -220,8 +204,6 @@ public class MainWindow : Window {
 		}
 		ImGui.SameLine();
 		if (ImGui.BeginChild("##IINACTEx_RightTabPanel", new Vector2(-1, 0), true)) {
-			// using var bar = ImRaii.TabBar("settingsTabs");
-			// if (!bar) return;
 			switch (currentPage) {
 				case "解析":
 					DrawParseSettings();
@@ -258,13 +240,12 @@ public class MainWindow : Window {
 			}
 			ImGui.EndChild();
 		}
+		ImGui.PopClipRect();
 		ImGui.PopStyleColor(ImGuiColor.Count + 1);
 		ImGui.PopStyleVar(ImGuiVar.Count);
 	}
 
 	private static void DrawSettingsPostnamazu() {
-		// using var tab = ImRaii.TabItem("Postnamazu");
-		// if (!tab) return;
 		var PluginUi = Instance.PostNamazuPlugin.PluginUi;
 		var TextPort = PluginUi.TextPort.Text;
 		if (ImGui.InputText("鲇鱼精端口", ref TextPort)) {
@@ -333,16 +314,9 @@ public class MainWindow : Window {
 			ClientState, ObjectTable, Framework, NotificationManager);
 	}
 
-	// private static void DrawWinForm() {
-	//     using var tab = ImRaii.TabItem("怀旧组件");
-	//     if (!tab) return;
-	// }
-
 	internal static SilverDasher.ACT.SilverDasher? SilverDasherPlugin;
 
 	private static void DrawSilverDasher() {
-		// using var tab = ImRaii.TabItem("SilverDasher");
-		// if (!tab) return;
 		if (SilverDasherPlugin == null) {
 			if (ImGui.Button("启用")) EnableSilverDasher();
 		} else {
@@ -360,9 +334,8 @@ public class MainWindow : Window {
 			Plugin.Configuration.Save();
 		}
 		ImGui.Separator();
-		if (SilverDasherPlugin != null) {
+		if (SilverDasherPlugin != null)
 			SilverDasher.ACT.SilverDasher.Instance.Painter.DrawImGui();
-		}
 	}
 
 	internal void DrawOverlayLink() {
@@ -477,9 +450,6 @@ public class MainWindow : Window {
 
 
 	private void DrawParseSettings() {
-		// using var tab = ImRaii.TabItem("解析设置");
-		// if (!tab) return;
-
 		ImGui.Spacing();
 		var elementWidth = ImGui.GetWindowWidth() - 150 * ImGuiHelpers.GlobalScale;
 		var logFilePath = Plugin.Configuration.LogFilePath;
@@ -563,9 +533,6 @@ public class MainWindow : Window {
 	}
 
 	private void DrawWebSocketSettings() {
-		// using var tab = ImRaii.TabItem("WebSocket 服务");
-		// if (!tab) return;
-
 		ImGui.Spacing();
 		var wsServerIp = OverlayPluginConfig?.WSServerIP ?? "";
 		ImGui.InputText("IP地址", ref wsServerIp, 100);

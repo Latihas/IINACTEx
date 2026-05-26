@@ -13,63 +13,38 @@ public class Config {
 	[JsonIgnore] public string VersionString { get; } = string.Join(".", BitConverter.GetBytes(DataStorage.Version));
 
 	[JsonProperty("TTSNotifications")] public Dictionary<HuntState, bool> TTSNotifications = new() {
-		{
-			HuntState.Healthy, true
-		}, {
-			HuntState.Taunted, true
-		}, {
-			HuntState.Dying, true
-		}, {
-			HuntState.Died, true
-		}
+		[HuntState.Healthy] = true,
+		[HuntState.Taunted] = true,
+		[HuntState.Dying] = true,
+		[HuntState.Died] = true
 	};
 
 	[JsonProperty("ToastNotifications")] public Dictionary<HuntState, bool> ToastNotifications = new() {
-		{
-			HuntState.Healthy, true
-		}, {
-			HuntState.Taunted, true
-		}, {
-			HuntState.Dying, true
-		}, {
-			HuntState.Died, true
-		}
+		[HuntState.Healthy] = true,
+		[HuntState.Taunted] = true,
+		[HuntState.Dying] = true,
+		[HuntState.Died] = true
 	};
 
 	[JsonProperty("CWHunts")] public Dictionary<Rank, bool> CWHunts = new() {
-		{
-			Rank.SS, true
-		}, {
-			Rank.SSMinion, true
-		}, {
-			Rank.S, true
-		}, {
-			Rank.A, false
-		}, {
-			Rank.B, false
-		}
+		[Rank.SS] = true,
+		[Rank.SSMinion] = true,
+		[Rank.S] = true,
+		[Rank.A] = false,
+		[Rank.B] = false
 	};
 
 	[JsonIgnore] private Dictionary<Rank, bool> CDCHunts = new() {
-		{
-			Rank.SS, false
-		}, {
-			Rank.SSMinion, false
-		}, {
-			Rank.S, false
-		}, {
-			Rank.A, false
-		}, {
-			Rank.B, false
-		}
+		[Rank.SS] = false,
+		[Rank.SSMinion] = false,
+		[Rank.S] = false,
+		[Rank.A] = false,
+		[Rank.B] = false
 	};
 
 	[JsonProperty("CWFates")] public Dictionary<string, bool> CWFates = new() {
-		{
-			"common", false
-		}, {
-			"special", true
-		}
+		["common"] = false,
+		["special"] = true
 	};
 
 	[JsonProperty("hunts")] public List<int> HuntSubscriptions = [];
@@ -211,64 +186,39 @@ public class Config {
 			TTS = true,
 			TTSExtend = true,
 			TTSNotifications = new Dictionary<HuntState, bool> {
-				{
-					HuntState.Healthy, true
-				}, {
-					HuntState.Taunted, false
-				}, {
-					HuntState.Dying, false
-				}, {
-					HuntState.Died, true
-				}
+				[HuntState.Healthy] = true,
+				[HuntState.Taunted] = false,
+				[HuntState.Dying] = false,
+				[HuntState.Died] = true
 			},
 			SystemToast = true,
 			ToastType = "UWP",
 			ToastNotifications = new Dictionary<HuntState, bool> {
-				{
-					HuntState.Healthy, true
-				}, {
-					HuntState.Taunted, false
-				}, {
-					HuntState.Dying, false
-				}, {
-					HuntState.Died, true
-				}
+				[HuntState.Healthy] = true,
+				[HuntState.Taunted] = false,
+				[HuntState.Dying] = false,
+				[HuntState.Died] = true
 			},
 			CrossWorldHunt = true,
 			CWHunts = new Dictionary<Rank, bool> {
-				{
-					Rank.SS, true
-				}, {
-					Rank.SSMinion, true
-				}, {
-					Rank.S, true
-				}, {
-					Rank.A, true
-				}, {
-					Rank.B, true
-				}
+				[Rank.SS] = true,
+				[Rank.SSMinion] = true,
+				[Rank.S] = true,
+				[Rank.A] = true,
+				[Rank.B] = true
 			},
 			CrossDCHunt = false,
 			CDCHunts = new Dictionary<Rank, bool> {
-				{
-					Rank.SS, false
-				}, {
-					Rank.SSMinion, false
-				}, {
-					Rank.S, false
-				}, {
-					Rank.A, false
-				}, {
-					Rank.B, false
-				}
+				[Rank.SS] = false,
+				[Rank.SSMinion] = false,
+				[Rank.S] = false,
+				[Rank.A] = false,
+				[Rank.B] = false
 			},
 			CrossWorldFate = true,
 			CWFates = new Dictionary<string, bool> {
-				{
-					"common", false
-				}, {
-					"special", true
-				}
+				["common"] = false,
+				["special"] = true
 			},
 			UseExtraServer = false,
 			ExtraServer = "",

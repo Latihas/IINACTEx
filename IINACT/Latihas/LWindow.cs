@@ -98,7 +98,6 @@ public static partial class LWindow {
 	}
 
 
-
 	private static string Sbe = "";
 
 	private static void DrawTriggerDebugEvalTest() {

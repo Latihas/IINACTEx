@@ -35,7 +35,7 @@ public partial class OverlayWindow() : Window("IINACTEx Overlay###IINACTEx Overl
 					AddHistoricalRecord(currentCombatData);
 				isActive = newActive;
 			}
-		} catch (Exception) {
+		} catch {
 			//
 		}
 	}
