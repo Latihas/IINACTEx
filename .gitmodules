@@ -4,6 +4,7 @@
 [submodule "OverlayPlugin.Core/resources/act-overlays"]
 	path = OverlayPlugin.Core/resources/act-overlays
 	url = https://github.com/MeowZWR/act-overlays
+	branch = cn
 [submodule "PostNamazu"]
 	path = PostNamazu
 	url = https://github.com/Latihas/PostNamazu
@@ -16,6 +17,8 @@
 [submodule "Unscrambler"]
 	path = Unscrambler
 	url = https://github.com/Latihas/Unscrambler
+	branch = main
 [submodule "machina"]
 	path = machina
 	url = https://github.com/Latihas/machina
+	branch = cn
