@@ -1,1 +1,21 @@
-﻿
+[submodule "EdgeTTS"]
+	path = EdgeTTS
+	url = https://github.com/Latihas/EdgeTTS
+[submodule "OverlayPlugin.Core/resources/act-overlays"]
+	path = OverlayPlugin.Core/resources/act-overlays
+	url = https://github.com/MeowZWR/act-overlays
+[submodule "PostNamazu"]
+	path = PostNamazu
+	url = https://github.com/Latihas/PostNamazu
+[submodule "Triggernometry"]
+	path = Triggernometry
+	url = https://github.com/Latihas/Triggernometry
+[submodule "TrnDevEnv"]
+	path = TrnDevEnv
+	url = https://github.com/Latihas/TrnDevEnv
+[submodule "Unscrambler"]
+	path = Unscrambler
+	url = https://github.com/Latihas/Unscrambler
+[submodule "machina"]
+	path = machina
+	url = https://github.com/Latihas/machina
