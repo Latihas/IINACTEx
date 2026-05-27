@@ -116,7 +116,7 @@ public class MainWindow() : Window(WindowPrefix) {
 	}
 
 	public override void Draw() {
-		WindowName = $"IINACTEx[版本{Assembly.GetExecutingAssembly().GetName().Version.ToString()}] [核心{Instance.Version}] [解析{typeof(FFXIV_ACT_Plugin.FFXIV_ACT_Plugin).Assembly.GetName().Version}]###IINACTEx";
+		WindowName = $"IINACTEx[版本{Assembly.GetExecutingAssembly().GetName().Version?.ToString()}] [核心{Instance.Version}] [解析{typeof(FFXIV_ACT_Plugin.FFXIV_ACT_Plugin).Assembly.GetName().Version}]###IINACTEx";
 		foreach (var p in ImGuiColor) ImGui.PushStyleColor(p.Key, p.Value);
 		foreach (var p in ImGuiVar) ImGui.PushStyleVar(p.Key, p.Value);
 		var time = (float)ImGui.GetTime();
@@ -367,7 +367,7 @@ public class MainWindow() : Window(WindowPrefix) {
 
 		ImGui.SetNextItemWidth(comboWidth);
 		if (ImGui.Combo("悬浮窗##OverlayCombo", ref selectedOverlayIndex, OverlayNames)) {
-			Plugin.Configuration.SelectedOverlay = OverlayNames[selectedOverlayIndex];
+			Plugin.Configuration.SelectedOverlay = OverlayNames?[selectedOverlayIndex];
 			Plugin.Configuration.Save();
 		}
 
