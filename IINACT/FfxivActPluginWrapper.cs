@@ -26,7 +26,6 @@ namespace IINACT;
 
 public partial class FfxivActPluginWrapper : IDisposable {
 	public readonly FFXIV_ACT_Plugin.FFXIV_ACT_Plugin ffxivActPlugin;
-	private readonly Container iocContainer;
 	private ISettingsMediator settingsMediator = null!;
 	private readonly ParseMediator parseMediator;
 
@@ -39,14 +38,10 @@ public partial class FfxivActPluginWrapper : IDisposable {
 
 	private readonly int mobArraySize;
 	private readonly int combatantSize;
-	private readonly int combatantBufferSize;
 	private readonly nint mobData;
 	private readonly nint[] mobDataOffsets;
 	private readonly SemaphoreSlim refreshSemaphore = new(0);
 	private byte mobDataAge = byte.MaxValue;
-
-	private readonly Thread scanThread;
-	private readonly CancellationTokenSource cancellationTokenSource;
 
 	private readonly ILogOutput logOutput;
 	private readonly ILogFormat logFormat;
@@ -61,15 +56,15 @@ public partial class FfxivActPluginWrapper : IDisposable {
 		ffxivActPlugin = new FFXIV_ACT_Plugin.FFXIV_ACT_Plugin();
 		Plugin.Log.Information($"Initializing FFXIV_ACT_Plugin version {typeof(FFXIV_ACT_Plugin.FFXIV_ACT_Plugin).Assembly.GetName().Version}");
 		ffxivActPlugin.ConfigureIOC();
-		iocContainer = ffxivActPlugin._iocContainer;
+		var iocContainer1 = ffxivActPlugin._iocContainer;
 		Plugin.LogTick("FFXIV_ACT_Plugin IOC Configured");
-		iocContainer.Resolve<ResourceManager>().LoadResources();
+		iocContainer1.Resolve<ResourceManager>().LoadResources();
 		Plugin.LogTick("FFXIV_ACT_Plugin Resources Loaded");
-		Subscription = iocContainer.Resolve<DataSubscription>();
+		Subscription = iocContainer1.Resolve<DataSubscription>();
 		ffxivActPlugin.SetProperty("DataSubscription", Subscription);
-		parseMediator = iocContainer.Resolve<ParseMediator>();
+		parseMediator = iocContainer1.Resolve<ParseMediator>();
 
-		ffxivActPlugin._dataCollection = iocContainer.Resolve<DataCollection>();
+		ffxivActPlugin._dataCollection = iocContainer1.Resolve<DataCollection>();
 
 		logOutput = ffxivActPlugin._dataCollection._logOutput;
 		logFormat = ffxivActPlugin._dataCollection._logFormat;
@@ -88,7 +83,7 @@ public partial class FfxivActPluginWrapper : IDisposable {
 		SetupDataSubscription();
 
 		SetupSettingsMediator();
-		Repository = iocContainer.Resolve<IDataRepository>();
+		Repository = iocContainer1.Resolve<IDataRepository>();
 		ffxivActPlugin.SetProperty("DataRepository", Repository);
 
 		ffxivActPlugin._dataCollection.StartMemory();
@@ -97,17 +92,13 @@ public partial class FfxivActPluginWrapper : IDisposable {
 		ActGlobals.oFormActMain.BeforeLogLineRead += OFormActMain_BeforeLogLineRead;
 		serverTimeProcessor.ServerTime = DateTime.Now;
 
-		cancellationTokenSource = new CancellationTokenSource();
-		scanThread = new Thread(() => ScanMemory(cancellationTokenSource.Token)) {
-			IsBackground = true
-		};
-		scanThread.Start();
+		Plugin.Framework.Update += ScanMemory;
 
 		mobArraySize = mobArrayProcessor._internalMmobArray.Length;
 		var combatantProcessor = (CombatantProcessor)combatantManager._combatantProcessor;
-		combatantBufferSize = ((ReadCombatant)combatantProcessor._readCombatant)._buffer.Length;
+		var combatantBufferSize1 = ((ReadCombatant)combatantProcessor._readCombatant)._buffer.Length;
 		combatantSize = sizeof(CombatantStruct);
-		mobData = Marshal.AllocHGlobal(mobArraySize * combatantSize + (combatantBufferSize - combatantSize));
+		mobData = Marshal.AllocHGlobal(mobArraySize * combatantSize + (combatantBufferSize1 - combatantSize));
 		mobDataOffsets = new nint[mobArraySize];
 		for (var i = 0; i < mobArraySize; i++)
 			mobDataOffsets[i] = mobData + i * combatantSize;
@@ -126,8 +117,7 @@ public partial class FfxivActPluginWrapper : IDisposable {
 		};
 
 	public void Dispose() {
-		cancellationTokenSource.Cancel();
-		cancellationTokenSource.Dispose();
+		Plugin.Framework.Update -= ScanMemory;
 		Plugin.Framework.Update -= MobDataRefresh;
 		Plugin.ChatGui.ChatMessage -= OnChatMessage;
 		ActGlobals.oFormActMain.BeforeLogLineRead -= OFormActMain_BeforeLogLineRead;
@@ -184,7 +174,7 @@ public partial class FfxivActPluginWrapper : IDisposable {
 		var evenType = (uint)message.LogKind;
 		var player = message.Sender.TextValue;
 		var text = message.Message.TextValue.Replace('\r', ' ').Replace('\n', ' ').Replace('|', '❘');
-		if (message.LogKind == XivChatType.SystemMessage) 
+		if (message.LogKind == XivChatType.SystemMessage)
 			evenType = evenType | (uint)message.TargetKind << 7 | (uint)message.SourceKind << 11;
 		var line = logFormat.FormatChatMessage(evenType, player, text);
 		logOutput.WriteLine(LogMessageType.ChatLog, GameServerTime.CurrentServerTime, line);
@@ -260,29 +250,26 @@ public partial class FfxivActPluginWrapper : IDisposable {
 		refreshSemaphore.Release();
 	}
 
-	private void ScanMemory(CancellationToken token) {
-		while (!token.IsCancellationRequested) {
-			try {
-				refreshSemaphore.Wait(token);
-				serverTimeProcessor.ServerTime = GameServerTime.CurrentServerTime;
+	private void ScanMemory(IFramework framework) {
+		try {
+			serverTimeProcessor.ServerTime = GameServerTime.CurrentServerTime;
 
-				var zoneId = zoneMapProcessor.ZoneID;
-				zoneMapProcessor.Refresh();
-				if (zoneMapProcessor.ZoneID == 0)
-					continue;
-
-				if (zoneId != zoneMapProcessor.ZoneID)
-					combatantManager.Rescan();
-				else
-					combatantManager.Refresh();
-
-				playerProcessor.Refresh();
-				partyProcessor.Refresh();
-			} catch (Exception ex) when (ex is ThreadAbortException or OperationCanceledException or ObjectDisposedException) {
+			var zoneId = zoneMapProcessor.ZoneID;
+			zoneMapProcessor.Refresh();
+			if (zoneMapProcessor.ZoneID == 0)
 				return;
-			} catch (Exception ex) {
-				Plugin.Log.Error(ex, "[FFXIV_ACT_Plugin] ScanMemory failure");
-			}
+
+			if (zoneId != zoneMapProcessor.ZoneID)
+				combatantManager.Rescan();
+			else
+				combatantManager.Refresh();
+
+			playerProcessor.Refresh();
+			partyProcessor.Refresh();
+		} catch (Exception ex) when (ex is ThreadAbortException or OperationCanceledException or ObjectDisposedException) {
+			return;
+		} catch (Exception ex) {
+			Plugin.Log.Error(ex, "[FFXIV_ACT_Plugin] ScanMemory failure");
 		}
 	}
 }
