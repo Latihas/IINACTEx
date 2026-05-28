@@ -260,8 +260,7 @@ public sealed class Plugin : IDalamudPlugin {
 			LogTick("Asyc Post Process Done");
 		}, token);
 		if (!Configuration.AsyncOnInit) taskPP.Wait();
-		if (Configuration.LoadSilverDasherOnInit)
-			Framework.RunOnFrameworkThread(MainWindow.EnableSilverDasher);
+		if (Configuration.LoadSilverDasherOnInit) MainWindow.EnableSilverDasher();
 		if (Directory.Exists(Path.Combine(PluginConfigDirectory, "cactbot"))) RefreshBw();
 		if (Configuration.ShowWindowOnInit) MainWindow.Toggle();
 		if (Configuration.ShowOverlayOnInit) OverlayWindow.Toggle();

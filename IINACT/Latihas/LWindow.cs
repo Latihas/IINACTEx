@@ -634,8 +634,8 @@ public static partial class LWindow {
 					ImGui.TableSetColumnIndex(i);
 					acts[i](res);
 				}
+				if (setColor != null) ImGui.PopStyleColor(2);
 			}
-			if (setColor != null) ImGui.PopStyleColor(2 * data.Length);
 			ImGui.EndTable();
 		}
 	}
