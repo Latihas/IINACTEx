@@ -5,6 +5,7 @@ using System.Threading;
 using Advanced_Combat_Tracker;
 using Dalamud.Game.Chat;
 using Dalamud.Game.ClientState.Conditions;
+using Dalamud.Game.Text;
 using Dalamud.Plugin.Services;
 using FFXIV_ACT_Plugin;
 using FFXIV_ACT_Plugin.Common;
@@ -114,6 +115,7 @@ public partial class FfxivActPluginWrapper : IDisposable {
 		Plugin.Framework.Update += MobDataRefresh;
 	}
 
+
 	private Language ClientLanguage =>
 		Plugin.DataManager.Language switch {
 			Dalamud.Game.ClientLanguage.Japanese => Language.Japanese,
@@ -181,10 +183,10 @@ public partial class FfxivActPluginWrapper : IDisposable {
 	private void OnChatMessage(IHandleableChatMessage message) {
 		var evenType = (uint)message.LogKind;
 		var player = message.Sender.TextValue;
-		var text = message.Message.TextValue.Replace('\r', ' ').Replace('\n', ' ')
-			.Replace('|', '❘');
+		var text = message.Message.TextValue.Replace('\r', ' ').Replace('\n', ' ').Replace('|', '❘');
+		if (message.LogKind == XivChatType.SystemMessage) 
+			evenType = evenType | (uint)message.TargetKind << 7 | (uint)message.SourceKind << 11;
 		var line = logFormat.FormatChatMessage(evenType, player, text);
-
 		logOutput.WriteLine(LogMessageType.ChatLog, GameServerTime.CurrentServerTime, line);
 	}
 
