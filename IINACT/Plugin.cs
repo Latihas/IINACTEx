@@ -260,14 +260,12 @@ public sealed class Plugin : IDalamudPlugin {
 			BridgeNamazu.InitializeModules();
 			BridgeNamazu.RegisterAnnotatedMethods();
 			FormActMain.PluginInitialized = true;
-			var method = typeof(DataSubscription).GetMethod(
-				"OnZoneChanged",
-				BindingFlags.Public | BindingFlags.Instance,
-				[typeof(uint), typeof(string)]
-			);
-			var t = DataManager.GetExcelSheet<TerritoryType>().FirstOrDefault(i => i.RowId == ClientState.TerritoryType);
-			method.Invoke(FfxivActPluginWrapper.ffxivActPlugin.DataSubscription, [ClientState.TerritoryType, t.PlaceName.Value.Name.ToString()]);
-			// oFormActMain.ChangeZone(t.PlaceName.Value.Name.ToString());
+			try {
+				typeof(DataSubscription).GetMethod("OnZoneChanged", BindingFlags.Public | BindingFlags.Instance, [typeof(uint), typeof(string)]
+				)!.Invoke(FfxivActPluginWrapper.ffxivActPlugin.DataSubscription, [ClientState.TerritoryType, DataManager.GetExcelSheet<TerritoryType>().FirstOrDefault(i => i.RowId == ClientState.TerritoryType).PlaceName.Value.Name.ToString()]);
+			} catch (Exception ex) {
+				Log.Warning(ex.ToString());
+			}
 			LogTick("Asyc Post Process Done");
 		}, token);
 		if (!Configuration.AsyncOnInit) taskPP.Wait();
