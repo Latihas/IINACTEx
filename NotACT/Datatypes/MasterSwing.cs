@@ -74,9 +74,9 @@ public class MasterSwing : IComparable, IComparable<MasterSwing> {
 
 	public Dnum Damage => damage;
 
-	public string Attacker => attacker;
+	public string Attacker => attacker == ActGlobals.oFormActMain.ObjectTable.LocalPlayer?.Name.ToString() ? ActGlobals.charName : attacker;
 
-	public string Victim => victim;
+	public string Victim => victim == ActGlobals.oFormActMain.ObjectTable.LocalPlayer?.Name.ToString() ? ActGlobals.charName : victim;
 
 	public string AttackType => attackType;
 

@@ -5,6 +5,7 @@ using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.Media;
 using System.Text.RegularExpressions;
 using System.Threading;
@@ -23,6 +24,7 @@ public partial class FormActMain : Form, ISynchronizeInvoke {
 	public IPluginLog PluginLog { get; }
 	public dynamic DalamudPlugin;
 	public IFramework PluginFramework;
+	public IObjectTable ObjectTable;
 
 	private readonly ConcurrentQueue<MasterSwing> afterActionsQueue = new();
 	// private Thread afterActionQueueThread;
@@ -39,10 +41,11 @@ public partial class FormActMain : Form, ISynchronizeInvoke {
 
 	internal volatile bool refreshTree;
 
-	public FormActMain(IDalamudPlugin plugin, IPluginLog pluginLog, IFramework framework) {
+	public FormActMain(IDalamudPlugin plugin, IPluginLog pluginLog, IFramework framework, IObjectTable objectTable) {
 		PluginLog = pluginLog;
 		DalamudPlugin = plugin;
 		PluginFramework = framework;
+		ObjectTable = objectTable;
 		// InitializeComponent();
 		AppDataFolder = new DirectoryInfo(DalamudPlugin.PluginConfigDirectory);
 		// ActGlobals.ActLocalization.Init();
@@ -202,7 +205,7 @@ public partial class FormActMain : Form, ISynchronizeInvoke {
 	public void TTS(string message) => TextToSpeech(message);
 
 	public void ChangeZone(string ZoneName) {
-		if (lastZoneRecord != null) lastZoneRecord.EndTime = LastKnownTime;
+		lastZoneRecord?.EndTime = LastKnownTime;
 
 		CurrentZone = ZoneName;
 		var lastLastRecord = lastZoneRecord;
@@ -217,8 +220,8 @@ public partial class FormActMain : Form, ISynchronizeInvoke {
 
 		if (ActiveZone != null) return;
 		ActiveZone = new ZoneData(DateTime.Now, CurrentZone, true, false, false);
-		ZoneList.Add(ActiveZone);
-	}
+		// ZoneList.Add(ActiveZone);
+	}	
 
 	public void ActCommands(string commandText) {
 		if (commandText != "end") return;
@@ -246,10 +249,7 @@ public partial class FormActMain : Form, ISynchronizeInvoke {
 			    lastZoneRecord.StartTime != ActiveZone.StartTime) {
 				// Look for the last active zone
 				var zoneFound = false;
-				foreach (var zone in ZoneList) {
-					if (zone.StartTime != lastZoneRecord.StartTime || lastZoneRecord.Label != zone.ZoneName)
-						continue;
-
+				foreach (var zone in ZoneList.Where(zone => zone.StartTime == lastZoneRecord.StartTime && lastZoneRecord.Label == zone.ZoneName)) {
 					// Found the active zone
 					zoneFound = true;
 					ActiveZone = zone;
@@ -368,7 +368,9 @@ public partial class FormActMain : Form, ISynchronizeInvoke {
 		PluginFramework.Update += LogReader;
 	}
 
+	public static bool PluginInitialized;
 	private void LogReader(IFramework _) {
+		if (!PluginInitialized) return;
 		var logOutput = (LogOutput)FfxivPlugin!._dataCollection._logOutput;
 		lock (logOutput._LogQueueLock) {
 			while (logOutput._LogQueue.TryDequeue(out var line))

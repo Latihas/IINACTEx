@@ -17,10 +17,12 @@ using Dalamud.Interface.Windowing;
 using Dalamud.IoC;
 using Dalamud.Plugin;
 using Dalamud.Plugin.Services;
+using FFXIV_ACT_Plugin.Memory;
 using IINACT.Latihas.Overlay;
 using IINACT.Network;
 using IINACT.TextToSpeech;
 using IINACT.Windows;
+using Lumina.Excel.Sheets;
 using Machina.FFXIV;
 using Machina.FFXIV.Headers.Opcodes;
 using RainbowMage.OverlayPlugin;
@@ -131,7 +133,7 @@ public sealed class Plugin : IDalamudPlugin {
 		Version = Version.Parse(Assembly.GetExecutingAssembly().GetCustomAttribute<AssemblyInformationalVersionAttribute>()!.InformationalVersion.Split('+')[0]);
 		Instance = this;
 		Init();
-		oFormActMain = new FormActMain(this, Log, Framework);
+		oFormActMain = new FormActMain(this, Log, Framework, ObjectTable);
 		Configuration = PluginInterface.GetPluginConfig() as Configuration ?? new Configuration();
 		HttpClient = new HttpClient();
 		var TaskFetchDependencies = Task.Run(() => {
@@ -257,6 +259,15 @@ public sealed class Plugin : IDalamudPlugin {
 		var taskPP = Task.Run(() => {
 			BridgeNamazu.InitializeModules();
 			BridgeNamazu.RegisterAnnotatedMethods();
+			FormActMain.PluginInitialized = true;
+			var method = typeof(DataSubscription).GetMethod(
+				"OnZoneChanged",
+				BindingFlags.Public | BindingFlags.Instance,
+				[typeof(uint), typeof(string)]
+			);
+			var t = DataManager.GetExcelSheet<TerritoryType>().FirstOrDefault(i => i.RowId == ClientState.TerritoryType);
+			method.Invoke(FfxivActPluginWrapper.ffxivActPlugin.DataSubscription, [ClientState.TerritoryType, t.PlaceName.Value.Name.ToString()]);
+			// oFormActMain.ChangeZone(t.PlaceName.Value.Name.ToString());
 			LogTick("Asyc Post Process Done");
 		}, token);
 		if (!Configuration.AsyncOnInit) taskPP.Wait();

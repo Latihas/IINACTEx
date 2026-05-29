@@ -151,6 +151,9 @@ public static partial class LWindow {
 			ImGui.Text("2. IINACTEx是否已经可以完全代替原版ACT?");
 			ImGui.Text("    : 看个人需求，基本上99%的常用功能都搬过来了，日常使用体验几乎没有差别。");
 			ImGui.Separator();
+			ImGui.Text("3. 悬浮窗一直显示'等待战斗数据'");
+			ImGui.Text("    : 多半是端口占用了，请改变Overlay Plugin的端口，然后重启游戏/插件。");
+			ImGui.Separator();
 			ImGui.Text("如果出现bug，试着关开一下插件，说不定就自己会好了。");
 			ImGui.Text("当然也可能是我懒得写了，你也可以帮助我完善这一部分。");
 			ImGui.Text("其他问题或是许愿可在Github仓库提issue解决。");

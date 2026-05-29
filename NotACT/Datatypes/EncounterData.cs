@@ -24,7 +24,7 @@ public class EncounterData {
 
 	private bool alliesManual;
 
-	private List<CombatantData> cachedAllies;
+	private List<CombatantData>? cachedAllies;
 
 	private string cachedEncId;
 
@@ -275,7 +275,6 @@ public class EncounterData {
 			// If this action is already included, do nothing
 			return;
 		}
-
 		// Add the action's time sorter to the included time sorters collection
 		if (DuplicateDetection)
 			includedTimeSorters.Add(action.TimeSorter);
@@ -289,13 +288,11 @@ public class EncounterData {
 		// Get the attacker and victim names in uppercase
 		var attackerName = action.Attacker.ToUpper();
 		var victimName = action.Victim.ToUpper();
-
 		// Check if we should skip parsing based on selective lists and ignoreEnemies setting
 		var shouldSkipParsing =
 			!sParsing ||
 			ActGlobals.oFormActMain.SelectiveListGetSelected(attackerName) ||
 			ActGlobals.oFormActMain.SelectiveListGetSelected(victimName) && !ignoreEnemies;
-
 		// Add the action to the appropriate combatant's collection
 		if (shouldSkipParsing) {
 			if (!Items.TryGetValue(attackerName, out var combatant)) {
@@ -329,7 +326,6 @@ public class EncounterData {
 	private void AddReverseCombatAction(MasterSwing action) {
 		// Get the victim name in uppercase
 		var victimName = action.Victim.ToUpper();
-
 		// Look up the victim combatant in the dictionary
 		if (!Items.TryGetValue(victimName, out var victimCombatant)) {
 			// If the victim combatant is not found, create a new CombatantData object and add it to the dictionary
@@ -356,7 +352,7 @@ public class EncounterData {
 		if (!alliesManual) alliesCached = false;
 	}
 
-	public void SetAllies(List<CombatantData> allies) {
+	public void SetAllies(List<CombatantData>? allies) {
 		if (allies == null || allies.Count == 0) {
 			alliesCached = false;
 			alliesManual = false;
@@ -367,9 +363,8 @@ public class EncounterData {
 		}
 	}
 
-	public List<CombatantData> GetAllies() => GetAllies(false);
 
-	public List<CombatantData> GetAllies(bool allowLimited) {
+	public List<CombatantData> GetAllies(bool allowLimited = false) {
 		if (alliesCached || allowLimited && DateTime.Now.Second == alliesLastCall.Second ||
 		    cachedAllies != null && Active && Title == ActGlobals.Trans["mergedEncounterTerm-all"]) {
 			return cachedAllies;
@@ -385,9 +380,7 @@ public class EncounterData {
 		}
 
 		var sortedAllies = new SortedList<string, AllyObject> {
-			{
-				combatant.Name.ToUpper(), new AllyObject(combatant)
-			}
+			[combatant.Name.ToUpper()] = new(combatant)
 		};
 
 		var listChanged = true;
@@ -402,16 +395,16 @@ public class EncounterData {
 					continue;
 				}
 				foreach (var (name, value) in subAllies) {
-					if (!sortedAllies.ContainsKey(name)) {
+					if (!sortedAllies.TryGetValue(name, out var value1)) {
 						var combatant2 = GetCombatant(name);
 						if (combatant2 == null)
 							continue;
-
-						sortedAllies.Add(name, new AllyObject(combatant2));
+						value1 = new AllyObject(combatant2);
+						sortedAllies.Add(name, value1);
 						listChanged = true;
 					}
 
-					sortedAllies[name].allyVal += sortedAllies.Values[i].allyVal > 0 ? value : -value;
+					value1.allyVal += sortedAllies.Values[i].allyVal > 0 ? value : -value;
 				}
 			}
 		}
@@ -434,13 +427,12 @@ public class EncounterData {
 		cachedAllies = list;
 		alliesCached = true;
 		alliesLastCall = DateTime.Now;
-
 		return cachedAllies;
 	}
 
 
 	public CombatantData? GetCombatant(string? Name) =>
-		Name == null ? null : Items.TryGetValue(Name.ToUpper(), out var value) ? value : null;
+		Name == null ? null : Items.GetValueOrDefault(Name.ToUpper());
 
 	public int GetEncounterSuccessLevel() {
 		if (sParsing && ignoreEnemies)

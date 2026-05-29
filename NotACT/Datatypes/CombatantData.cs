@@ -444,7 +444,6 @@ public class CombatantData : IComparable, IEquatable<CombatantData>, IComparable
 
 		// Get the name of the combatant who was attacked
 		var combatant = action.Victim.ToUpper();
-
 		// Check if the swing type is supported
 		if (SwingTypeToDamageTypeDataLinksOutgoing.ContainsKey(action.SwingType)) {
 			// Loop through the damage types linked to the swing type
@@ -486,7 +485,6 @@ public class CombatantData : IComparable, IEquatable<CombatantData>, IComparable
 
 		// Get the name of the attacker and make it uppercase
 		var combatant = action.Attacker.ToUpper();
-
 		// Check if there are any damage type links for this swing type
 		if (!SwingTypeToDamageTypeDataLinksIncoming.TryGetValue(action.SwingType, out var links))
 			return;

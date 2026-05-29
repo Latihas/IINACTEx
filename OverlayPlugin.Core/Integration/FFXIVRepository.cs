@@ -70,16 +70,16 @@ public enum LogMessageType {
 
 public class FFXIVRepository {
 	private readonly ILogger logger;
-	private IDataRepository repository;
-	private IDataSubscription subscription;
+	private IDataRepository? repository;
+	private IDataSubscription? subscription;
 
 	public FFXIVRepository(TinyIoCContainer container) {
 		logger = container.Resolve<ILogger>();
 	}
 
-	internal static FFXIV_ACT_Plugin.FFXIV_ACT_Plugin GetPluginData() => ActGlobals.oFormActMain.FfxivPlugin;
+	internal static FFXIV_ACT_Plugin.FFXIV_ACT_Plugin? GetPluginData() => ActGlobals.oFormActMain.FfxivPlugin;
 
-	private IDataRepository GetRepository() {
+	private IDataRepository? GetRepository() {
 		if (repository != null)
 			return repository;
 
@@ -95,7 +95,7 @@ public class FFXIVRepository {
 		return repository;
 	}
 
-	private IDataSubscription GetSubscription() {
+	private IDataSubscription? GetSubscription() {
 		if (subscription != null)
 			return subscription;
 
@@ -112,16 +112,15 @@ public class FFXIVRepository {
 	}
 
 	[MethodImpl(MethodImplOptions.NoInlining)]
-	private Process GetCurrentFFXIVProcessImpl() {
+	private Process? GetCurrentFFXIVProcessImpl() {
 		var repo = GetRepository();
-		if (repo == null) return null;
 
-		return repo.GetCurrentFFXIVProcess();
+		return repo?.GetCurrentFFXIVProcess();
 	}
 
 	[Obsolete("Subscribe to the ProcessChanged event instead (See RegisterProcessChangedHandler())")]
 	[MethodImpl(MethodImplOptions.NoInlining)]
-	public Process GetCurrentFFXIVProcess() {
+	public Process? GetCurrentFFXIVProcess() {
 		try {
 			return GetCurrentFFXIVProcessImpl();
 		} catch (FileNotFoundException) {
@@ -155,9 +154,9 @@ public class FFXIVRepository {
 	}
 
 
-	public Version GetOverlayPluginVersion() => Assembly.GetExecutingAssembly().GetName().Version;
+	public Version? GetOverlayPluginVersion() => Assembly.GetExecutingAssembly().GetName().Version;
 
-	public Version GetPluginVersion() => typeof(FFXIV_ACT_Plugin.FFXIV_ACT_Plugin).Assembly.GetName().Version;
+	public Version? GetPluginVersion() => typeof(FFXIV_ACT_Plugin.FFXIV_ACT_Plugin).Assembly.GetName().Version;
 
 	public string GetPluginPath() => typeof(IDataRepository).Assembly.Location;
 
@@ -192,16 +191,14 @@ public class FFXIVRepository {
 		}
 	}
 
-	public string GetPlayerNameImpl() {
+	public string? GetPlayerNameImpl() {
 		var repo = GetRepository();
 		if (repo == null) return null;
 
 		var playerId = repo.GetCurrentPlayerID();
 
 		var playerInfo = repo.GetCombatantList().FirstOrDefault(x => x.ID == playerId);
-		if (playerInfo == null) return null;
-
-		return playerInfo.Name;
+		return playerInfo?.Name;
 	}
 
 	[MethodImpl(MethodImplOptions.NoInlining)]
@@ -222,7 +219,7 @@ public class FFXIVRepository {
 	}
 
 	[MethodImpl(MethodImplOptions.NoInlining)]
-	public string GetPlayerName() {
+	public string? GetPlayerName() {
 		try {
 			return GetPlayerNameImpl();
 		} catch (FileNotFoundException) {
