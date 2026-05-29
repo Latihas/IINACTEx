@@ -1,4 +1,6 @@
-﻿namespace Advanced_Combat_Tracker;
+﻿using System;
+
+namespace Advanced_Combat_Tracker;
 
 public delegate void LogLineEventDelegate(bool isImport, LogLineEventArgs logInfo);
 

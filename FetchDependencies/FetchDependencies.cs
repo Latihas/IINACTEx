@@ -1,6 +1,10 @@
+using System;
+using System.IO;
 using System.IO.Compression;
+using System.Net.Http;
 using System.Text.Json.Nodes;
 using System.Text.RegularExpressions;
+using System.Threading;
 using Dalamud.Plugin.Services;
 
 namespace FetchDependencies;

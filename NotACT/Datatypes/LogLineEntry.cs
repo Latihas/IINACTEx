@@ -1,4 +1,6 @@
-﻿namespace Advanced_Combat_Tracker;
+﻿using System;
+
+namespace Advanced_Combat_Tracker;
 
 public class LogLineEntry {
 	public LogLineEntry(DateTime Time, string LogLine, int ParsedType, int GlobalTimeSorter) {

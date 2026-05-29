@@ -1,4 +1,7 @@
-﻿namespace Advanced_Combat_Tracker;
+﻿using System.IO;
+using System.Windows.Forms;
+
+namespace Advanced_Combat_Tracker;
 
 public class ActPluginData {
 	public Panel pPluginInfo = new();

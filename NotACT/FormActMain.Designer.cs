@@ -1,4 +1,6 @@
 ﻿using System.ComponentModel;
+using System.Drawing;
+using System.Windows.Forms;
 
 namespace Advanced_Combat_Tracker {
     partial class FormActMain {

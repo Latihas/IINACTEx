@@ -1,15 +1,10 @@
 <Project Sdk="Dalamud.NET.Sdk/15.0.0">
 
   <PropertyGroup>
-    <EnableWindowsTargeting>true</EnableWindowsTargeting>
-    <Nullable>enable</Nullable>
     <UseWindowsForms>true</UseWindowsForms>
-    <ImplicitUsings>enable</ImplicitUsings>
     <AssemblyName>Advanced Combat Tracker</AssemblyName>
     <RootNamespace>Advanced_Combat_Tracker</RootNamespace>
     <Version>6.9</Version>
-    <ProduceReferenceAssembly>false</ProduceReferenceAssembly>
-    <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
     <Use_DalamudPackager>false</Use_DalamudPackager>
   </PropertyGroup>
 

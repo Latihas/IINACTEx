@@ -1,10 +1,5 @@
 <Project Sdk="Dalamud.NET.Sdk/15.0.0">
   <PropertyGroup>
-    <ProduceReferenceAssembly>false</ProduceReferenceAssembly>
-    <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
-    <EnableWindowsTargeting>true</EnableWindowsTargeting>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
     <Use_DalamudPackager>false</Use_DalamudPackager>
   </PropertyGroup>
   <ItemGroup>

@@ -115,10 +115,7 @@ public static partial class LWindow {
 			ImGui.Text("    ...");
 		}
 		if (ImGui.CollapsingHeader("已知限制##已知限制")) {
-			ImGui.Text("Act原版插件支持非常有限(复杂的几乎都不支持)");
-			ImGui.Text("!!! Triggernometry有时会因为宝宝椅的鲇鱼精扩展功能炸游戏/显示异常/...。开发者用Penumbra可以恢复部分图形问题");
-			ImGui.SameLine();
-			if (ImGui.Button("/penumbra redraw")) RealPlugin.Instance.InvokeNamedCallback("command", "/penumbra redraw");
+			ImGui.Text("Act原版插件支持非常有限(复杂的几乎都不支持)，但是基本都迁移过来了。");
 			ImGui.Text("触发器有时候声音比较小，减小游戏音量以调整。");
 			ImGui.Text("Triggernometry的配置文件完全兼容ACT版本，可以直接把act的配置文件复制到插件配置目录下");
 			ImGui.Text("Triggernometry的触发器导入窗口不支持导入文件，且有长度限制，过大的触发器建议右键从剪切板导入。");
@@ -127,21 +124,38 @@ public static partial class LWindow {
 			ImGui.Text("Triggernometry的重复触发器导入重命名可能有问题，请尽量不要二次导入相同的触发器");
 			ImGui.Text("Triggernometry的部分编辑还没写");
 			ImGui.Text("Triggernometry的绝大部分Form或Control因兼容性被移除，可能误伤配置弹出框，一般报错中可以看出来。");
-			ImGui.Text("Triggernometry的脚本执行引用库如下，若超出引用库不可编译：");
-			ImGui.Text("    //SystemReferenes");
-			foreach (var asm in CSharpScriptCompiler.SystemReferenes) ImGui.Text("    " + asm);
-			ImGui.Text("    //SystemTypeReferenes");
-			foreach (var asm in CSharpScriptCompiler.SystemTypeReferenes) ImGui.Text("    " + asm);
-			ImGui.Text("    //PluginDirReferenes");
-			foreach (var asm in CSharpScriptCompiler.PluginDirReferenes) ImGui.Text("    " + asm);
-			ImGui.Text("    //DalamudDirReferenes");
-			foreach (var asm in CSharpScriptCompiler.DalamudDirReferenes) ImGui.Text("    " + asm);
+			ImGui.Text("Triggernometry的脚本执行引用库如下，若超出引用库不可编译(如有需求，可以提issue等让我添加)：");
+			ImGui.Indent();
+			ImGui.Text("// SystemReferenes");
+			ImGui.Indent();
+			foreach (var asm in CSharpScriptCompiler.SystemReferenes) ImGui.Text(asm);
+			ImGui.Unindent();
+			ImGui.Text("// SystemTypeReferenes");
+			ImGui.Indent();
+			foreach (var asm in CSharpScriptCompiler.SystemTypeReferenes) ImGui.Text(asm);
+			ImGui.Unindent();
+			ImGui.Text("// PluginDirReferenes");
+			ImGui.Indent();
+			foreach (var asm in CSharpScriptCompiler.PluginDirReferenes) ImGui.Text(asm);
+			ImGui.Unindent();
+			ImGui.Text("// DalamudDirReferenes");
+			ImGui.Indent();
+			foreach (var asm in CSharpScriptCompiler.DalamudDirReferenes) ImGui.Text(asm);
+			ImGui.Unindent();
+			ImGui.Unindent();
 		}
 		if (ImGui.CollapsingHeader("常见问题##常见问题", ImGuiTreeNodeFlags.DefaultOpen)) {
-			ImGui.Text("问题太多了。如果出现bug，试着关开一下插件，说不定就自己会好了。");
+			ImGui.Text("1. 是否可以与原版ACT系列(如呆萌, 咖啡等)一起使用?");
+			ImGui.Text("    : 是。但是需要先开IINACTEx, 再开原版ACT系列。反过来不行。");
+			ImGui.Separator();
+			ImGui.Text("2. IINACTEx是否已经可以完全代替原版ACT?");
+			ImGui.Text("    : 看个人需求，基本上99%的常用功能都搬过来了，日常使用体验几乎没有差别。");
+			ImGui.Separator();
+			ImGui.Text("如果出现bug，试着关开一下插件，说不定就自己会好了。");
 			ImGui.Text("当然也可能是我懒得写了，你也可以帮助我完善这一部分。");
-			ImGui.Text("其他问题可在Github仓库提issue解决。");
-			ImGui.Text("如果是第一次使用，可以在左侧的\"初始化\"栏下载与配置资源(如悬浮窗，cactbot)");
+			ImGui.Text("其他问题或是许愿可在Github仓库提issue解决。");
+			ImGui.Text("如果是第一次使用，可以在左侧的\"初始化\"栏下载与配置资源(如悬浮窗，cactbot)。");
+			ImGui.Text("提问前请确保已经看过教程。");
 		}
 	}
 

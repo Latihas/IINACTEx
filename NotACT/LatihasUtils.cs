@@ -1,4 +1,7 @@
-﻿namespace Advanced_Combat_Tracker;
+﻿using System;
+using System.Drawing;
+
+namespace Advanced_Combat_Tracker;
 
 public static class LatihasUtils {
 	public static Color ToAdjustedColor(this Color color, bool InvertLuminosity, float OffsetLuminosity = 0f, float OffsetSaturation = 0f) {

@@ -1,4 +1,8 @@
-﻿using System.Globalization;
+﻿using System;
+using System.Collections.Generic;
+using System.Drawing;
+using System.Globalization;
+using System.Linq;
 using static Advanced_Combat_Tracker.ActGlobals;
 
 namespace Advanced_Combat_Tracker.Resources;

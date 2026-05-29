@@ -1,3 +1,5 @@
+using System;
+
 namespace FetchDependencies;
 
 public static class ApiVersion {

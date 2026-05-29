@@ -1,4 +1,9 @@
-﻿namespace Advanced_Combat_Tracker;
+﻿using System;
+using System.Collections.Generic;
+using System.Drawing;
+using System.Linq;
+
+namespace Advanced_Combat_Tracker;
 
 public enum AttackTypeTypeEnum {
 	Melee,

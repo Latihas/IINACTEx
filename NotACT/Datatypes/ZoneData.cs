@@ -1,4 +1,7 @@
-﻿namespace Advanced_Combat_Tracker;
+﻿using System;
+using System.Collections.Generic;
+
+namespace Advanced_Combat_Tracker;
 
 public class ZoneData : IComparable<ZoneData> {
 	public ZoneData(DateTime Start, string ZoneName, bool PopulateAll, bool FullSelective, bool IgnoreEnemies) {

@@ -1,4 +1,7 @@
-﻿namespace Advanced_Combat_Tracker;
+﻿using System;
+using System.Collections.Generic;
+
+namespace Advanced_Combat_Tracker;
 
 public static partial class ActGlobals {
 	public static class ActLocalization {

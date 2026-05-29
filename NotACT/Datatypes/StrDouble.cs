@@ -1,4 +1,6 @@
-﻿namespace Advanced_Combat_Tracker;
+﻿using System;
+
+namespace Advanced_Combat_Tracker;
 
 public class StrDouble : IComparable, IEquatable<StrDouble> {
 	public StrDouble(string Name, double Val) {

@@ -1,3 +1,8 @@
+using System;
+using System.Collections.Generic;
+using System.Drawing;
+using System.Linq;
+
 namespace Advanced_Combat_Tracker;
 
 public class DamageTypeData : IEquatable<DamageTypeData>, IComparable<DamageTypeData> {

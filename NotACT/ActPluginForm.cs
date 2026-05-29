@@ -1,4 +1,7 @@
-﻿namespace Advanced_Combat_Tracker;
+﻿using System.Drawing;
+using System.Windows.Forms;
+
+namespace Advanced_Combat_Tracker;
 
 public class ActPluginForm : Form {
 	public readonly Label lblPluginStatus = new();

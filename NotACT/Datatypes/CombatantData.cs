@@ -1,4 +1,8 @@
-﻿using static System.String;
+﻿using System;
+using System.Collections.Generic;
+using System.Drawing;
+using System.Linq;
+using static System.String;
 
 
 namespace Advanced_Combat_Tracker;
