@@ -6,6 +6,7 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
 using System.Threading;
+using System.Threading.Tasks;
 using Dalamud.Plugin.Services;
 using Microsoft.ML.OnnxRuntime;
 using NAudio.Wave;
@@ -49,19 +50,16 @@ public partial class LatihasTts : IDisposable {
 		// onnxruntimedll.Add(LoadLibrary(Path.Combine(Assetsdir, "onnxruntime_providers_shared.dll")));
 	}
 
-	private static void _Speak(string message) {
+	private static void _Speak(object? message) {
 		try {
-			var player = new TtsEngine.Player();
-			var smg = message;
+			if (message == null) return;
+			var smg = message.ToString();
 			if (string.IsNullOrEmpty(smg)) return;
 			smg = smg.Replace("AA", ",A,A")
 				.Replace("aa", ",a,a")
 				.Replace("AOE", "AAOOE")
 				.Replace("aoe", "aaooe");
-			foreach (var line in StrRegex().Split(smg)) {
-				if (!Alive[0]) return;
-				player.Play(TtsEngine.GetWav(line), line is "A" or "a");
-			}
+			_ = new TtsEngine.Player(StrRegex().Split(smg));
 			Log.Info("TTS: " + message);
 		} catch (Exception e) {
 			Log.Error("TTS: " + message + e);
@@ -78,7 +76,7 @@ public partial class LatihasTts : IDisposable {
 	public bool CheckAssets() => AssetsList.All(File.Exists);
 
 	public static partial class TtsEngine {
-		internal static MemoryStream GetWav(string text) {
+		private static MemoryStream GetWav(string text) {
 			if (string.IsNullOrEmpty(text)) return new MemoryStream();
 			var tmpfp = Path.Combine(Tmpdir, text + ".wav");
 			if (File.Exists(tmpfp)) {
@@ -109,23 +107,20 @@ public partial class LatihasTts : IDisposable {
 		public class Player {
 			private readonly Queue<WavInfo> streams = new();
 
-			internal Player() {
-				new Thread(() => {
+			internal Player(string[] split) {
+				Task.Run(() => {
+					foreach (var line in split)
+						streams.Enqueue(new WavInfo(GetWav(line), line is "A" or "a"));
 					while (Alive[0] && streams.Count > 0) {
-						try {
+						if (streams.Count > 0) {
 							var mStream = streams.Dequeue();
 							PlayWav(mStream.Stream);
 							mStream.Stream.Close();
 							if (mStream.LongDelay) Thread.Sleep(75);
-						} catch {
-							// ignored
-						}
+						} else Thread.Sleep(50);
 					}
-				}).Start();
+				});
 			}
-
-			internal void Play(MemoryStream stream, bool longDelay = false) => 
-				streams.Enqueue(new WavInfo(stream, longDelay));
 
 			private static void PlayWav(MemoryStream stream) {
 				try {
@@ -147,9 +142,9 @@ public partial class LatihasTts : IDisposable {
 		}
 
 		private static partial class PaddleTextTokenizer {
-			private static readonly Dictionary<string, string> Vocab = new();
-			private static readonly Dictionary<string, string> Pinyin = new();
-			private static readonly Dictionary<string, long> Symbol = new();
+			private static readonly Dictionary<string, string> Vocab = [];
+			private static readonly Dictionary<string, string> Pinyin = [];
+			private static readonly Dictionary<string, long> Symbol = [];
 
 			static PaddleTextTokenizer() {
 				using (var sr = File.OpenText(Path.Combine(Assetsdir, "vocab.txt"))) {
@@ -186,8 +181,9 @@ public partial class LatihasTts : IDisposable {
 
 			public static long[] Encode(string text) {
 				var list = new List<long>();
-				foreach (var t in Py(text)) 
-					if (Symbol.TryGetValue(t, out var value)) list.Add(value);
+				foreach (var t in Py(text))
+					if (Symbol.TryGetValue(t, out var value))
+						list.Add(value);
 				return list.ToArray();
 			}
 
@@ -259,18 +255,14 @@ public partial class LatihasTts : IDisposable {
 					ids.Length
 				]);
 				var inputs1 = new Dictionary<string, OrtValue> {
-					{
-						"text", inputOrtValue
-					}
+					["text"] = inputOrtValue
 				};
 				using var outputs1 = SessionFastspeech.Run(RunOptions, inputs1, SessionFastspeech.OutputNames);
 				var inputs2 = new Dictionary<string, OrtValue> {
-					{
-						"logmel", outputs1.First()
-					}
+					["logmel"] = outputs1[0]
 				};
 				using var results = SessionVcoder.Run(RunOptions, inputs2, SessionVcoder.OutputNames);
-				return results.First().GetTensorMutableDataAsSpan<float>().ToArray();
+				return results[0].GetTensorMutableDataAsSpan<float>().ToArray();
 			}
 		}
 	}
