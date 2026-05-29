@@ -17,7 +17,7 @@ using static IINACT.Plugin;
 namespace IINACT;
 
 internal class TextToSpeechProvider : IDisposable {
-	private readonly object speechLock = new();
+	private readonly Lock speechLock = new();
 	private readonly HttpClient client = new();
 	private SpeechSynthesizer? speechSynthesizer;
 	private readonly EdgeTTSManager? edgeTTSManager;
@@ -39,7 +39,7 @@ internal class TextToSpeechProvider : IDisposable {
 				latihasTtsAssembly = AssemblyLoadContext.GetLoadContext(Assembly.GetExecutingAssembly())!.LoadFromStream(memoryStream);
 			}
 			LatihasTts = Activator.CreateInstance(latihasTtsAssembly.GetType("LatihasTTS.LatihasTts")!)!;
-			LatihasTts.Init(assetsdir, Path.Combine(Instance.PluginConfigDirectory, "tmp"), Log, Framework);
+			LatihasTts.Init(assetsdir, Path.Combine(Instance.PluginConfigDirectory, "tmp"), Log);
 			if (!LatihasTts.CheckAssets()) Log.Warning("LatihasTts Assets Lost");
 		} catch (Exception ex) {
 			Log.Info(ex, "Failed to initialize LatihasTTS engine");
@@ -55,22 +55,22 @@ internal class TextToSpeechProvider : IDisposable {
 	}
 
 
-	public void SetUseEdgeTTS(bool useEdgeTTS) {
-		if (useEdgeTTS) Plugin.Configuration.UseLatihasTts = useLatihasTTS = false;
-		Plugin.Configuration.UseEdgeTts = this.useEdgeTTS = useEdgeTTS;
+	public void SetUseEdgeTTS(bool useEdgeTTS_) {
+		if (useEdgeTTS_) Plugin.Configuration.UseLatihasTts = useLatihasTTS = false;
+		Plugin.Configuration.UseEdgeTts = useEdgeTTS = useEdgeTTS_;
 		Plugin.Configuration.Save();
 	}
 
-	public void SetUseLatihasTTS(bool useLatihasTTS) {
-		if (useLatihasTTS) {
+	public void SetUseLatihasTTS(bool useLatihasTTS_) {
+		if (useLatihasTTS_) {
 			if (LatihasTts == null || !LatihasTts!.CheckAssets()) {
-				Plugin.Configuration.UseLatihasTts = this.useLatihasTTS = false;
+				Plugin.Configuration.UseLatihasTts = useLatihasTTS = false;
 				Plugin.Configuration.Save();
 				return;
 			}
 			Plugin.Configuration.UseEdgeTts = useEdgeTTS = false;
 		}
-		Plugin.Configuration.UseLatihasTts = this.useLatihasTTS = useLatihasTTS;
+		Plugin.Configuration.UseLatihasTts = useLatihasTTS = useLatihasTTS_;
 		Plugin.Configuration.Save();
 	}
 

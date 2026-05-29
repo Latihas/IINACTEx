@@ -6,11 +6,9 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
 using System.Threading;
-using System.Threading.Tasks;
 using Dalamud.Plugin.Services;
 using Microsoft.ML.OnnxRuntime;
 using NAudio.Wave;
-using static LatihasTTS.LatihasTts.TtsEngine;
 
 namespace LatihasTTS;
 
@@ -21,7 +19,7 @@ public partial class LatihasTts : IDisposable {
 	private static string Assetsdir;
 	private static string[] AssetsList;
 	private static IPluginLog Log;
-	private static IFramework Framework;
+	private static readonly bool[] Alive = [true];
 	private readonly List<IntPtr> onnxruntimedll = [];
 
 	[DllImport("kernel32.dll", SetLastError = true)]
@@ -30,11 +28,10 @@ public partial class LatihasTts : IDisposable {
 	[DllImport("kernel32.dll", SetLastError = true)]
 	private static extern IntPtr LoadLibrary(string lpFileName);
 
-	public void Init(string assetsDir, string tmpDir, IPluginLog log, IFramework framework) {
+	public void Init(string assetsDir, string tmpDir, IPluginLog log) {
 		Log = log;
 		Assetsdir = assetsDir;
 		Tmpdir = tmpDir;
-		Framework = framework;
 		AssetsList = [
 			Path.Combine(Assetsdir, "vocab.txt"),
 			Path.Combine(Assetsdir, "pinyin.txt"),
@@ -52,22 +49,18 @@ public partial class LatihasTts : IDisposable {
 		// onnxruntimedll.Add(LoadLibrary(Path.Combine(Assetsdir, "onnxruntime_providers_shared.dll")));
 	}
 
-	private bool _playerInited;
-
-	private void _Speak(object message) {
+	private static void _Speak(string message) {
 		try {
-			if (!_playerInited) {
-				Framework.Update += Player.ProcessSpeakQueue;
-				_playerInited = true;
-			}
-			var smg = message.ToString();
+			var player = new TtsEngine.Player();
+			var smg = message;
 			if (string.IsNullOrEmpty(smg)) return;
 			smg = smg.Replace("AA", ",A,A")
 				.Replace("aa", ",a,a")
 				.Replace("AOE", "AAOOE")
 				.Replace("aoe", "aaooe");
 			foreach (var line in StrRegex().Split(smg)) {
-				Player.Play(GetWav(line), line is "A" or "a");
+				if (!Alive[0]) return;
+				player.Play(TtsEngine.GetWav(line), line is "A" or "a");
 			}
 			Log.Info("TTS: " + message);
 		} catch (Exception e) {
@@ -75,10 +68,8 @@ public partial class LatihasTts : IDisposable {
 		}
 	}
 
-	[SuppressMessage("ReSharper", "UnusedMember.Global")]
 	public void Speak(string message) {
-		if (!CheckAssets()) return;
-		_Speak(message);
+		if (CheckAssets()) _Speak(message);
 	}
 
 	[SuppressMessage("ReSharper", "MemberCanBeMadeStatic.Global")]
@@ -86,7 +77,7 @@ public partial class LatihasTts : IDisposable {
 	[SuppressMessage("Performance", "CA1822")]
 	public bool CheckAssets() => AssetsList.All(File.Exists);
 
-	public static class TtsEngine {
+	public static partial class TtsEngine {
 		internal static MemoryStream GetWav(string text) {
 			if (string.IsNullOrEmpty(text)) return new MemoryStream();
 			var tmpfp = Path.Combine(Tmpdir, text + ".wav");
@@ -102,7 +93,7 @@ public partial class LatihasTts : IDisposable {
 			var ad = new byte[2 * a.Length];
 			var iter = 0;
 			foreach (var da in a) ad[iter++] = ad[iter++] = (byte)(da * 128 * 1.25);
-			Task.Run(() => {
+			new Thread(() => {
 				try {
 					if (!Directory.Exists(Tmpdir)) Directory.CreateDirectory(Tmpdir);
 					using var fostream = new MemoryStream(ad);
@@ -111,29 +102,30 @@ public partial class LatihasTts : IDisposable {
 				} catch (Exception e) {
 					Log.Error(e.ToString());
 				}
-			});
+			}).Start();
 			return new MemoryStream(ad);
 		}
 
-		public static class Player {
-			private static readonly Queue<WavInfo> streams = new();
+		public class Player {
+			private readonly Queue<WavInfo> streams = new();
 
-			internal static void ProcessSpeakQueue(IFramework _) {
-				try {
-					if (streams.Count > 0) {
-						var mStream = streams.Dequeue();
-						PlayWav(mStream.Stream);
-						mStream.Stream.Close();
-						if (mStream.LongDelay) Thread.Sleep(75);
-					} else Thread.Sleep(50);
-				} catch (Exception ex) {
-					Log.Warning($"Speak Err:{ex}");
-				}
+			internal Player() {
+				new Thread(() => {
+					while (Alive[0] && streams.Count > 0) {
+						try {
+							var mStream = streams.Dequeue();
+							PlayWav(mStream.Stream);
+							mStream.Stream.Close();
+							if (mStream.LongDelay) Thread.Sleep(75);
+						} catch {
+							// ignored
+						}
+					}
+				}).Start();
 			}
 
-			internal static void Play(MemoryStream stream, bool longDelay = false) {
+			internal void Play(MemoryStream stream, bool longDelay = false) => 
 				streams.Enqueue(new WavInfo(stream, longDelay));
-			}
 
 			private static void PlayWav(MemoryStream stream) {
 				try {
@@ -154,7 +146,7 @@ public partial class LatihasTts : IDisposable {
 			}
 		}
 
-		private static class PaddleTextTokenizer {
+		private static partial class PaddleTextTokenizer {
 			private static readonly Dictionary<string, string> Vocab = new();
 			private static readonly Dictionary<string, string> Pinyin = new();
 			private static readonly Dictionary<string, long> Symbol = new();
@@ -165,7 +157,7 @@ public partial class LatihasTts : IDisposable {
 						try {
 							var array = nextLine.Split(':');
 							Vocab[array[0]] = array[1];
-						} catch (Exception) {
+						} catch {
 							// ignored
 						}
 					}
@@ -175,7 +167,7 @@ public partial class LatihasTts : IDisposable {
 						try {
 							var array = nextLine.Split(':');
 							Pinyin[array[0]] = array[1];
-						} catch (Exception) {
+						} catch {
 							// ignored
 						}
 					}
@@ -185,7 +177,7 @@ public partial class LatihasTts : IDisposable {
 						try {
 							var array = nextLine.Split(' ');
 							Symbol[array[0]] = long.Parse(array[1]);
-						} catch (Exception) {
+						} catch {
 							// ignored
 						}
 					}
@@ -194,9 +186,8 @@ public partial class LatihasTts : IDisposable {
 
 			public static long[] Encode(string text) {
 				var list = new List<long>();
-				foreach (var t in Py(text)) {
+				foreach (var t in Py(text)) 
 					if (Symbol.TryGetValue(t, out var value)) list.Add(value);
-				}
 				return list.ToArray();
 			}
 
@@ -215,12 +206,12 @@ public partial class LatihasTts : IDisposable {
 						list.Add(what);
 					}
 					foreach (var x in zhTone.Split(' ')) {
-						var key = Regex.Replace(x, "\\d+$", "");
+						var key = NumRegex().Replace(x, "");
 						if (!Pinyin.TryGetValue(key, out var what)) {
 							Log.Error($"{key} is not pinyin.");
 							continue;
 						}
-						what += x.Substring(x.Length - 1);
+						what += x[^1..];
 						list.Add(what);
 					}
 				}
@@ -246,6 +237,9 @@ public partial class LatihasTts : IDisposable {
 				}
 				return res;
 			}
+
+			[GeneratedRegex("\\d+$")]
+			private static partial Regex NumRegex();
 		}
 
 		private static class GenTts {
@@ -282,7 +276,7 @@ public partial class LatihasTts : IDisposable {
 	}
 
 	public void Dispose() {
-		Framework.Update -= Player.ProcessSpeakQueue;
+		Alive[0] = false;
 		foreach (var onnx in onnxruntimedll) {
 			try {
 				FreeLibrary(onnx);

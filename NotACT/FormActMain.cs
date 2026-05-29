@@ -1,5 +1,6 @@
 using System.Collections.Concurrent;
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Media;
 using System.Text.RegularExpressions;
@@ -18,17 +19,17 @@ public partial class FormActMain : Form, ISynchronizeInvoke {
 	public IFramework PluginFramework;
 
 	private readonly ConcurrentQueue<MasterSwing> afterActionsQueue = new();
-	private Thread afterActionQueueThread;
-	public DateTimeLogParser GetDateTimeFromLog;
+	// private Thread afterActionQueueThread;
+	public DateTimeLogParser? GetDateTimeFromLog;
 	private volatile bool inCombat;
 	private readonly ReaderWriterLockSlim lastKnownLock = new(LockRecursionPolicy.SupportsRecursion);
 	private DateTime lastKnownTime;
 	private long lastKnownTicks;
-	private DateTime lastSetEncounter;
+	// private DateTime lastSetEncounter;
 	private HistoryRecord? lastZoneRecord;
 	// private Thread logReaderThread;
 	// private Thread logWriterThread;
-	private bool pluginActive = true;
+	// private bool pluginActive = true;
 
 	internal volatile bool refreshTree;
 
@@ -141,7 +142,7 @@ public partial class FormActMain : Form, ISynchronizeInvoke {
 	}
 
 	[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-	public ZoneData ActiveZone { get; set; }
+	public ZoneData? ActiveZone { get; set; }
 
 	// Don't run anything on the non existing WinForms UI thread
 	public new object? Invoke(Delegate method, object?[]? args) => method.DynamicInvoke(args);
@@ -156,9 +157,10 @@ public partial class FormActMain : Form, ISynchronizeInvoke {
 
 	public new object? Invoke(Delegate method) => Invoke(method, null);
 
-	public event LogLineEventDelegate BeforeLogLineRead;
-	public event LogLineEventDelegate OnLogLineRead;
+	public event LogLineEventDelegate? BeforeLogLineRead;
+	public event LogLineEventDelegate? OnLogLineRead;
 
+	[SuppressMessage("Performance", "CS0067")]
 	public event LogFileChangedDelegate LogFileChanged;
 
 	public event CombatActionDelegate AfterCombatAction;
@@ -176,19 +178,18 @@ public partial class FormActMain : Form, ISynchronizeInvoke {
 
 	public void ParseRawLogLine(string logLine) {
 		if (WriteLogFile && !DisableWritingPvpLogFile) LogQueue.Enqueue(logLine);
-		if (BeforeLogLineRead == null || GetDateTimeFromLog == null)
-			return;
+		if (BeforeLogLineRead == null || GetDateTimeFromLog == null) return;
 		var parsedLogTime = GetDateTimeFromLog(logLine);
 		LastKnownTime = parsedLogTime;
 		var logLineEventArgs = new LogLineEventArgs(logLine, 0, parsedLogTime, CurrentZone, inCombat, "Plugin");
 		BeforeLogLineRead(false, logLineEventArgs);
 		if (WriteLogFile && WriteActLogFile)
 			ActLogQueue.Enqueue(logLineEventArgs.logLine);
-		if (OnLogLineRead == null)
-			return;
-		var logLineEventArgs2 = new LogLineEventArgs(logLineEventArgs.logLine, logLineEventArgs.detectedType,
-			parsedLogTime, CurrentZone, inCombat, "Plugin");
-		OnLogLineRead(false, logLineEventArgs2);
+		Task.Run(() => {
+			if (OnLogLineRead == null) return;
+			OnLogLineRead(false, new LogLineEventArgs(logLineEventArgs.logLine, logLineEventArgs.detectedType,
+				parsedLogTime, CurrentZone, inCombat, "Plugin"));
+		});
 	}
 
 
@@ -220,12 +221,10 @@ public partial class FormActMain : Form, ISynchronizeInvoke {
 
 	public void EndCombat(bool export) {
 		if (inCombat) inCombat = false;
-		if (ActiveZone.ActiveEncounter.Active) {
-			if (ActiveZone.PopulateAll)
-				ActiveZone.Items[0].EndCombat(false);
-
-			ActiveZone.ActiveEncounter.EndCombat(true);
-		}
+		if (ActiveZone is not { ActiveEncounter.Active: true }) return;
+		if (ActiveZone.PopulateAll)
+			ActiveZone.Items[0].EndCombat(false);
+		ActiveZone.ActiveEncounter.EndCombat(true);
 	}
 
 	public bool SelectiveListGetSelected(string Player) {
@@ -235,7 +234,7 @@ public partial class FormActMain : Form, ISynchronizeInvoke {
 
 	public bool SetEncounter(DateTime Time, string Attacker, string Victim) {
 		// Check if not already in combat
-		if (!inCombat) {
+		if (!inCombat && lastZoneRecord != null && ActiveZone != null) {
 			// Check if a new zone or session has started
 			if (lastZoneRecord.Label != ActiveZone.ZoneName || CurrentZone != ActiveZone.ZoneName ||
 			    lastZoneRecord.StartTime != ActiveZone.StartTime) {
@@ -272,11 +271,11 @@ public partial class FormActMain : Form, ISynchronizeInvoke {
 			// Set the active encounter
 			ActiveZone.ActiveEncounter = new EncounterData(ActGlobals.charName, CurrentZone, ActiveZone);
 			ActiveZone.Items.Add(ActiveZone.ActiveEncounter);
-			lastSetEncounter = LastKnownTime;
+			// lastSetEncounter = LastKnownTime;
 		}
 
 		// Check if the encounter is selective
-		if (ActiveZone.ActiveEncounter.GetIsSelective()) {
+		if (ActiveZone != null && ActiveZone.ActiveEncounter.GetIsSelective()) {
 			if (SelectiveListGetSelected(Attacker) || SelectiveListGetSelected(Victim)) {
 				// The encounter is selective and either the attacker or the victim is selected
 				refreshTree = true;
@@ -323,66 +322,51 @@ public partial class FormActMain : Form, ISynchronizeInvoke {
 		afterActionsQueue.Enqueue(Action);
 	}
 
+	private FileStream? stream, streamAct, streamTrn;
+	private StreamWriter? outputWriter, outputWriterAct, outputWriterTrn;
+
 	private void StartLogWriterThread() {
 		PluginFramework.Update += LogWriter;
+		PluginFramework.Update += LogWriterAct;
+		PluginFramework.Update += LogWriterTrn;
 	}
 
 	private void LogWriter(IFramework _) {
-		try {
-			using var stream = new FileStream(LogFilePath, FileMode.Append, FileAccess.Write, FileShare.ReadWrite);
-			using var outputWriter = new StreamWriter(stream);
-			using var streamAct = new FileStream(LogFilePath + ".actxt", FileMode.Append, FileAccess.Write, FileShare.ReadWrite);
-			using var outputWriterAct = new StreamWriter(streamAct);
-			using var streamTrn = new FileStream(LogFilePath + ".trnxt", FileMode.Append, FileAccess.Write, FileShare.ReadWrite);
-			using var outputWriterTrn = new StreamWriter(streamTrn);
-			while (pluginActive) {
-				if (!WriteLogFile || DisableWritingPvpLogFile) {
-					Thread.Sleep(2000);
-					continue;
-				}
-				while (LogQueue.TryDequeue(out var line))
-					outputWriter.WriteLine(line);
-				while (ActLogQueue.TryDequeue(out var line))
-					outputWriterAct.WriteLine(line);
-				while (TrnLogQueue.TryDequeue(out var line))
-					outputWriterTrn.WriteLine(line);
-				outputWriter.Flush();
-				outputWriterAct.Flush();
-				outputWriterTrn.Flush();
-				Thread.Sleep(500);
-			}
-		} catch (ObjectDisposedException) {
-		} catch (ThreadAbortException) {
-		} catch (Exception ex) {
-			WriteExceptionLog(ex, "StartLogReaderThread failed, restarting thread");
-			// StartLogWriterThread();
-		}
+		if (!WriteLogFile || DisableWritingPvpLogFile) return;
+		stream ??= new FileStream(LogFilePath, FileMode.Append, FileAccess.Write, FileShare.ReadWrite);
+		outputWriter ??= new StreamWriter(stream);
+		while (LogQueue.TryDequeue(out var line))
+			outputWriter?.WriteLine(line);
+		outputWriter?.Flush();
+	}
+
+	private void LogWriterAct(IFramework _) {
+		if (!WriteLogFile || !WriteActLogFile || DisableWritingPvpLogFile) return;
+		streamAct ??= new FileStream(LogFilePath + ".actxt", FileMode.Append, FileAccess.Write, FileShare.ReadWrite);
+		outputWriterAct ??= new StreamWriter(streamAct);
+		while (ActLogQueue.TryDequeue(out var line))
+			outputWriterAct?.WriteLine(line);
+		outputWriterAct?.Flush();
+	}
+
+	private void LogWriterTrn(IFramework _) {
+		if (!WriteLogFile || !WriteTrnLogFile || DisableWritingPvpLogFile) return;
+		streamTrn ??= new FileStream(LogFilePath + ".trnxt", FileMode.Append, FileAccess.Write, FileShare.ReadWrite);
+		outputWriterTrn ??= new StreamWriter(streamTrn);
+		while (TrnLogQueue.TryDequeue(out var line))
+			outputWriterTrn?.WriteLine(line);
+		outputWriterTrn?.Flush();
 	}
 
 	private void StartLogReaderThread() {
 		PluginFramework.Update += LogReader;
 	}
 
-	private void LogReader(IFramework framework) {
-		try {
-			var logOutput = (LogOutput)FfxivPlugin._dataCollection._logOutput;
-			while (pluginActive) {
-				string? logLine = null;
-				lock (logOutput._LogQueueLock) {
-					if (logOutput._LogQueue.Count > 0)
-						logLine = logOutput._LogQueue.Dequeue();
-				}
-
-				if (logLine != null)
-					ParseRawLogLine(logLine);
-				else
-					Thread.Sleep(50);
-			}
-		} catch (ObjectDisposedException) {
-		} catch (ThreadAbortException) {
-		} catch (Exception ex) {
-			WriteExceptionLog(ex, "StartLogReaderThread failed, restarting thread");
-			// StartLogReaderThread();
+	private void LogReader(IFramework _) {
+		var logOutput = (LogOutput)FfxivPlugin!._dataCollection._logOutput;
+		lock (logOutput._LogQueueLock) {
+			while (logOutput._LogQueue.TryDequeue(out var line))
+				ParseRawLogLine(line);
 		}
 	}
 
@@ -391,27 +375,15 @@ public partial class FormActMain : Form, ISynchronizeInvoke {
 	}
 
 	private void ThreadAfterCombatAction(IFramework _) {
-		try {
-			while (pluginActive) {
-				while (afterActionsQueue.TryDequeue(out var masterSwing)) {
-					ActiveZone.AddCombatAction(masterSwing);
-					if (AfterCombatAction == null) continue;
-
-					var actionInfo = new CombatActionEventArgs(masterSwing);
-					try {
-						AfterCombatAction(false, actionInfo);
-					} catch (Exception ex2) {
-						WriteExceptionLog(ex2, "AddCombatAction->AfterCombatAction event\n");
-					}
-				}
-
-				Thread.Sleep(2);
+		while (afterActionsQueue.TryDequeue(out var masterSwing)) {
+			ActiveZone?.AddCombatAction(masterSwing);
+			if (AfterCombatAction == null) continue;
+			var actionInfo = new CombatActionEventArgs(masterSwing);
+			try {
+				AfterCombatAction(false, actionInfo);
+			} catch (Exception ex2) {
+				WriteExceptionLog(ex2, "AddCombatAction->AfterCombatAction event\n");
 			}
-		} catch (ObjectDisposedException) {
-		} catch (ThreadAbortException) {
-		} catch (Exception ex5) {
-			WriteExceptionLog(ex5, "AfterCombatActionDequeue failed, restarting thread");
-			StartAfterCombatActionThread();
 		}
 	}
 
@@ -471,13 +443,17 @@ public partial class FormActMain : Form, ISynchronizeInvoke {
 		}
 	}
 
-	internal void Exit() {
-		pluginActive = false;
-	}
-
 	internal void RemoveFrameworkUpdates() {
 		PluginFramework.Update -= LogWriter;
+		PluginFramework.Update -= LogWriterAct;
+		PluginFramework.Update -= LogWriterTrn;
 		PluginFramework.Update -= LogReader;
 		PluginFramework.Update -= ThreadAfterCombatAction;
+		outputWriter?.Dispose();
+		outputWriterAct?.Dispose();
+		outputWriterTrn?.Dispose();
+		stream?.Dispose();
+		streamAct?.Dispose();
+		streamTrn?.Dispose();
 	}
 }
