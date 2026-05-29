@@ -266,9 +266,7 @@ public partial class FfxivActPluginWrapper : IDisposable {
 
 			playerProcessor.Refresh();
 			partyProcessor.Refresh();
-		} catch (Exception ex) when (ex is ThreadAbortException or OperationCanceledException or ObjectDisposedException) {
-			return;
-		} catch (Exception ex) {
+		} catch (Exception ex) when (ex is ThreadAbortException or OperationCanceledException or ObjectDisposedException) { } catch (Exception ex) {
 			Plugin.Log.Error(ex, "[FFXIV_ACT_Plugin] ScanMemory failure");
 		}
 	}

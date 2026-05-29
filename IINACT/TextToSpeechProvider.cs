@@ -39,10 +39,10 @@ internal class TextToSpeechProvider : IDisposable {
 				latihasTtsAssembly = AssemblyLoadContext.GetLoadContext(Assembly.GetExecutingAssembly())!.LoadFromStream(memoryStream);
 			}
 			LatihasTts = Activator.CreateInstance(latihasTtsAssembly.GetType("LatihasTTS.LatihasTts")!)!;
-			LatihasTts.Init(assetsdir, Path.Combine(Instance.PluginConfigDirectory, "tmp"), Log);
+			LatihasTts.Init(assetsdir, Path.Combine(Instance.PluginConfigDirectory, "tmp"), Log, Framework);
 			if (!LatihasTts.CheckAssets()) Log.Warning("LatihasTts Assets Lost");
 		} catch (Exception ex) {
-			Log.Warning(ex, "Failed to initialize LatihasTTS engine");
+			Log.Info(ex, "Failed to initialize LatihasTTS engine");
 		}
 		try {
 			edgeTTSManager = new EdgeTTSManager(Log, Instance.PluginConfigDirectory);

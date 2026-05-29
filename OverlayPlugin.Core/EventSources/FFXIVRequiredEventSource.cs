@@ -19,13 +19,13 @@ internal class FFXIVRequiredEventSource : EventSourceBase {
 	private PartyListsStruct cachedPartyList = new();
 
 	private static Dictionary<uint, string> StatusMap = new() {
-		[0]="Online",
-		[12]="Busy", 
-		[15]="InCutscene",
-		[17]="AFK", 
-		[21]="LookingToMeld",
-		[22]="RP", 
-		[23]="LookingForParty"
+		[0] = "Online",
+		[12] = "Busy",
+		[15] = "InCutscene",
+		[17] = "AFK",
+		[21] = "LookingToMeld",
+		[22] = "RP",
+		[23] = "LookingForParty"
 	};
 
 	private const string OnlineStatusChangedEvent = "OnlineStatusChanged";
@@ -315,7 +315,7 @@ internal class FFXIVRequiredEventSource : EventSourceBase {
 				cachedPartyList.currentPartyFlags
 			},
 #if DEBUG
-                debugPartyStruct = cachedPartyList,
+			debugPartyStruct = cachedPartyList,
 #endif
 		}));
 	}

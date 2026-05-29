@@ -1,7 +1,8 @@
+using System.Diagnostics.CodeAnalysis;
+
 namespace IINACT.Network;
 
-#pragma warning disable CS0649 // Field is never assigned to, and will always have its default value
-
+[SuppressMessage("Performance", "CS0649")]
 internal struct PacketElementHeader {
 	public readonly uint Size;
 	public uint SrcEntity;
@@ -10,6 +11,8 @@ internal struct PacketElementHeader {
 	public ushort Padding;
 }
 
+[SuppressMessage("Performance", "CS0649")]
+[SuppressMessage("ReSharper", "UnusedMember.Global")]
 internal struct FrameHeader {
 	public unsafe fixed byte Prefix[16];
 
@@ -23,8 +26,7 @@ internal struct FrameHeader {
 	public uint DecompressedLength;
 }
 
-#pragma warning restore CS0649 // Field is never assigned to, and will always have its default value
-
+[SuppressMessage("ReSharper", "UnusedMember.Global")]
 internal enum PacketType : ushort {
 	None = 0x0,
 	SessionInit = 0x1,
@@ -40,6 +42,7 @@ internal enum PacketType : ushort {
 	UnknownB = 0xB
 }
 
+[SuppressMessage("ReSharper", "UnusedMember.Global")]
 internal enum PacketProtocol : ushort {
 	None = 0x0,
 	Zone = 0x1,
@@ -47,6 +50,7 @@ internal enum PacketProtocol : ushort {
 	Lobby = 0x3
 }
 
+[SuppressMessage("ReSharper", "UnusedMember.Global")]
 internal enum CompressionType : byte {
 	None = 0x0,
 	Zlib = 0x1,

@@ -3,7 +3,7 @@
     <Use_DalamudPackager>false</Use_DalamudPackager>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Microsoft.ML.OnnxRuntime" Version="1.26.0" />
+    <PackageReference Include="Microsoft.ML.OnnxRuntime" Version="1.26.0"/>
     <PackageReference Include="NAudio" Version="2.3.0"/>
   </ItemGroup>
   <PropertyGroup Condition="'$(GITHUB_ACTIONS)' == ''">

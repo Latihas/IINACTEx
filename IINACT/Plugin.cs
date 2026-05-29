@@ -61,10 +61,10 @@ public sealed class Plugin : IDalamudPlugin {
 	[PluginService] public static IGameGui GameGui { get; private set; }
 	[PluginService] public static ITextureProvider TextureProvider { get; private set; }
 	public static Configuration Configuration { get; private set; }
-#pragma warning disable CA1822
-	// ReSharper disable once UnusedMember.Global
+	[SuppressMessage("Performance", "CA1822")]
+	[SuppressMessage("ReSharper", "UnusedMember.Global")]
 	public Configuration ConfigurationInstance => Configuration;
-#pragma warning restore CA1822
+
 	internal static TextToSpeechProvider TextToSpeechProvider { get; private set; }
 	internal static MainWindow MainWindow = null!;
 	internal static FileDialogManager FileDialogManager { get; private set; }
@@ -131,7 +131,7 @@ public sealed class Plugin : IDalamudPlugin {
 		Version = Version.Parse(Assembly.GetExecutingAssembly().GetCustomAttribute<AssemblyInformationalVersionAttribute>()!.InformationalVersion.Split('+')[0]);
 		Instance = this;
 		Init();
-		oFormActMain = new FormActMain(this, Log);
+		oFormActMain = new FormActMain(this, Log, Framework);
 		Configuration = PluginInterface.GetPluginConfig() as Configuration ?? new Configuration();
 		HttpClient = new HttpClient();
 		var TaskFetchDependencies = Task.Run(() => {

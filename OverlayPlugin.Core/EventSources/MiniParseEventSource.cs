@@ -191,8 +191,8 @@ internal partial class MiniParseEventSource : EventSourceBase {
 		}
 
 #if DEBUG
-            var stopwatch = new Stopwatch();
-            stopwatch.Start();
+		var stopwatch = new Stopwatch();
+		stopwatch.Start();
 #endif
 
 		var allies = ActGlobals.oFormActMain.ActiveZone.ActiveEncounter.GetAllies();
@@ -245,8 +245,8 @@ internal partial class MiniParseEventSource : EventSourceBase {
 		obj["isActive"] = ActGlobals.oFormActMain.ActiveZone.ActiveEncounter?.Active == true ? "true" : "false";
 
 #if DEBUG
-            stopwatch.Stop();
-            Log(LogLevel.Trace, "CreateUpdateScript: {0} msec", stopwatch.Elapsed.TotalMilliseconds);
+		stopwatch.Stop();
+		Log(LogLevel.Trace, "CreateUpdateScript: {0} msec", stopwatch.Elapsed.TotalMilliseconds);
 #endif
 		return obj;
 	}

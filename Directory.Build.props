@@ -1,6 +1,6 @@
 ﻿<Project>
   <PropertyGroup>
-    <NoWarn>NU1701;CS8618;CS8765;CS8625;EnableGenerateDocumentationFile;CS0659;CA2211</NoWarn>
+    <NoWarn>NU1701;CS8618;CS8765;CS8625;EnableGenerateDocumentationFile;CS0659;CA2211;CA1862</NoWarn>
     <!--NU1701是framework与core的版本不匹配警告，CS8618是退出构造函数时null!字段警告，CS8765、CS8625是无法将null字面量转换为非null的引用类型-->
     <!--CS0659重写Object.Equals(object o) 但不重写 Object.GetHashCode()-->
     <!--CA2211: 非常量字段应当不可见-->
@@ -14,8 +14,8 @@
     <GenerateSatelliteAssembliesForCore>false</GenerateSatelliteAssembliesForCore>
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
     <!--测试-->
-<!--    <NoWarn>$(NoWarn);IL2026;IL2075;CA2022;CS0168;CS0169;CS0414;CS0649;CS8524;CS8714;CS8767;SYSLIB0014;SYSLIB0051</NoWarn>-->
-<!--    <NoWarn>$(NoWarn);CS8073;CS8600;CS8601;CS8602;CS8603;CS8604;CS8605;CS8612;CS8619;CS8620;CS8622;CS8629</NoWarn>-->
+    <!--    <NoWarn>$(NoWarn);IL2026;IL2075;CA2022;CS0168;CS0169;CS0414;CS0649;CS8524;CS8714;CS8767;SYSLIB0014;SYSLIB0051</NoWarn>-->
+    <!--    <NoWarn>$(NoWarn);CS8073;CS8600;CS8601;CS8602;CS8603;CS8604;CS8605;CS8612;CS8619;CS8620;CS8622;CS8629</NoWarn>-->
   </PropertyGroup>
   <PropertyGroup>
     <Optimize>true</Optimize>

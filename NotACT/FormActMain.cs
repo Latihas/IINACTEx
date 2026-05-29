@@ -15,6 +15,7 @@ public partial class FormActMain : Form, ISynchronizeInvoke {
 
 	public IPluginLog PluginLog { get; }
 	public dynamic DalamudPlugin;
+	public IFramework PluginFramework;
 
 	private readonly ConcurrentQueue<MasterSwing> afterActionsQueue = new();
 	private Thread afterActionQueueThread;
@@ -24,16 +25,17 @@ public partial class FormActMain : Form, ISynchronizeInvoke {
 	private DateTime lastKnownTime;
 	private long lastKnownTicks;
 	private DateTime lastSetEncounter;
-	private HistoryRecord lastZoneRecord;
-	private Thread logReaderThread;
-	private Thread logWriterThread;
+	private HistoryRecord? lastZoneRecord;
+	// private Thread logReaderThread;
+	// private Thread logWriterThread;
 	private bool pluginActive = true;
 
 	internal volatile bool refreshTree;
 
-	public FormActMain(IDalamudPlugin plugin, IPluginLog pluginLog) {
+	public FormActMain(IDalamudPlugin plugin, IPluginLog pluginLog, IFramework framework) {
 		PluginLog = pluginLog;
 		DalamudPlugin = plugin;
+		PluginFramework = framework;
 		// InitializeComponent();
 		AppDataFolder = new DirectoryInfo(DalamudPlugin.PluginConfigDirectory);
 		// ActGlobals.ActLocalization.Init();
@@ -157,10 +159,7 @@ public partial class FormActMain : Form, ISynchronizeInvoke {
 	public event LogLineEventDelegate BeforeLogLineRead;
 	public event LogLineEventDelegate OnLogLineRead;
 
-	public event LogFileChangedDelegate LogFileChanged {
-		add { }
-		remove { }
-	}
+	public event LogFileChangedDelegate LogFileChanged;
 
 	public event CombatActionDelegate AfterCombatAction;
 
@@ -325,15 +324,10 @@ public partial class FormActMain : Form, ISynchronizeInvoke {
 	}
 
 	private void StartLogWriterThread() {
-		logWriterThread = new Thread(LogWriter) {
-			IsBackground = true,
-			Name = "LogWriterThread",
-			Priority = ThreadPriority.BelowNormal
-		};
-		logWriterThread.Start();
+		PluginFramework.Update += LogWriter;
 	}
 
-	private void LogWriter() {
+	private void LogWriter(IFramework _) {
 		try {
 			using var stream = new FileStream(LogFilePath, FileMode.Append, FileAccess.Write, FileShare.ReadWrite);
 			using var outputWriter = new StreamWriter(stream);
@@ -361,20 +355,15 @@ public partial class FormActMain : Form, ISynchronizeInvoke {
 		} catch (ThreadAbortException) {
 		} catch (Exception ex) {
 			WriteExceptionLog(ex, "StartLogReaderThread failed, restarting thread");
-			StartLogWriterThread();
+			// StartLogWriterThread();
 		}
 	}
 
 	private void StartLogReaderThread() {
-		logReaderThread = new Thread(LogReader) {
-			IsBackground = true,
-			Name = "LogReaderThread",
-			Priority = ThreadPriority.Normal
-		};
-		logReaderThread.Start();
+		PluginFramework.Update += LogReader;
 	}
 
-	private void LogReader() {
+	private void LogReader(IFramework framework) {
 		try {
 			var logOutput = (LogOutput)FfxivPlugin._dataCollection._logOutput;
 			while (pluginActive) {
@@ -393,20 +382,15 @@ public partial class FormActMain : Form, ISynchronizeInvoke {
 		} catch (ThreadAbortException) {
 		} catch (Exception ex) {
 			WriteExceptionLog(ex, "StartLogReaderThread failed, restarting thread");
-			StartLogReaderThread();
+			// StartLogReaderThread();
 		}
 	}
 
 	private void StartAfterCombatActionThread() {
-		afterActionQueueThread = new Thread(ThreadAfterCombatAction) {
-			IsBackground = true,
-			Name = "AfterActionQueueThread",
-			Priority = ThreadPriority.Normal
-		};
-		afterActionQueueThread.Start();
+		PluginFramework.Update += ThreadAfterCombatAction;
 	}
 
-	private void ThreadAfterCombatAction() {
+	private void ThreadAfterCombatAction(IFramework _) {
 		try {
 			while (pluginActive) {
 				while (afterActionsQueue.TryDequeue(out var masterSwing)) {
@@ -489,5 +473,11 @@ public partial class FormActMain : Form, ISynchronizeInvoke {
 
 	internal void Exit() {
 		pluginActive = false;
+	}
+
+	internal void RemoveFrameworkUpdates() {
+		PluginFramework.Update -= LogWriter;
+		PluginFramework.Update -= LogReader;
+		PluginFramework.Update -= ThreadAfterCombatAction;
 	}
 }

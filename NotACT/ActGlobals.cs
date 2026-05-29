@@ -42,6 +42,7 @@ public static partial class ActGlobals {
 	}
 
 	public static void Dispose() {
+		oFormActMain.RemoveFrameworkUpdates();
 		oFormActMain.Exit();
 		oFormActMain.Dispose();
 		oFormActMain = null!;

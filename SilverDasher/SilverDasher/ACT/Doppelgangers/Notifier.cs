@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
 using Advanced_Combat_Tracker;
 using Dalamud.Interface.ImGuiNotification;
@@ -141,10 +142,12 @@ internal class Notifier(SilverDasher self) : Doppelganger(self) {
 		if (Keeper.Config.TTSExtend) message += coord;
 		ActGlobals.oFormActMain.TTS(message + MobStorage.GetStateName(status));
 	}
-#pragma warning disable SYSLIB1054,CA2101
+
+	[SuppressMessage("Performance", "SYSLIB1054")]
+	[SuppressMessage("Performance", "CA2101")]
 	[DllImport("winmm.dll")]
 	private static extern bool PlaySound(string pszSound, IntPtr hmod, uint fdwSound);
-#pragma warning restore SYSLIB1054,CA2101
+
 
 	private void SendToast(string message, HuntState status, string coord = "", bool checkPermit = true) {
 		lock (this) {

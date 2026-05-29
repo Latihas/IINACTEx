@@ -32,12 +32,11 @@ public partial class FetchDependencies {
 
 		if (!NeedsUpdate(pluginPath))
 			return;
-		
-		if (!File.Exists(pluginZipPath))
-		{
+
+		if (!File.Exists(pluginZipPath)) {
 			DownloadPlugin(pluginZipPath);
 		}
-		
+
 		if (IsChinese)
 			DownloadFile(PluginUrlChinese, pluginPath);
 		else {
@@ -57,7 +56,7 @@ public partial class FetchDependencies {
 		patcher.LogFilePlugin();
 		patcher.MemoryPlugin();
 	}
-	
+
 
 	[GeneratedRegex(@"build_version\s*=\s*([0-9.]+)", RegexOptions.Multiline)]
 	private static partial Regex DieMoeBuildVersionRegex();
@@ -104,14 +103,11 @@ public partial class FetchDependencies {
 			return false;
 		}
 	}
-	private void DownloadPlugin(string pluginZipPath)
-	{
-		try
-		{
+
+	private void DownloadPlugin(string pluginZipPath) {
+		try {
 			DownloadFile(IsChinese ? PluginUrlChinese : PluginUrlGlobal, pluginZipPath);
-		}
-		catch
-		{
+		} catch {
 			using var request = new HttpRequestMessage(HttpMethod.Get, "https://api.github.com/repos/ravahn/FFXIV_ACT_Plugin/releases/latest");
 			request.Headers.UserAgent.ParseAdd("IINACT/1.0");
 			using var response = HttpClient.Send(request);

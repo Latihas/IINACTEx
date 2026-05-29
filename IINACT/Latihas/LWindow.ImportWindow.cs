@@ -1,8 +1,6 @@
 ﻿using System.Numerics;
-using System.Threading.Tasks;
 using Dalamud.Bindings.ImGui;
 using Dalamud.Interface.Windowing;
-using Triggernometry.Core;
 using Triggernometry.UI.CustomControls;
 
 namespace IINACT.Latihas;

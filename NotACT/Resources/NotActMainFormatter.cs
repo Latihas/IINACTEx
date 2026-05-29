@@ -884,22 +884,22 @@ public static class NotActMainFormatter {
 			["All Incoming (Ref)"] = new("All Incoming (Ref)", 0, Color.Black)
 		};
 		CombatantData.SwingTypeToDamageTypeDataLinksOutgoing = new SortedDictionary<int, List<string>> {
-			[1]=["Auto-Attack (Out)", "Outgoing Damage"], 
-			[2]=["Skill/Ability (Out)", "Outgoing Damage"],
-			[3]=["Healed (Out)"], 
-			[10]=["Power Drain (Out)"],
-			[13]=["Power Replenish (Out)"],
-			[20]=["Cure/Dispel (Out)"], 
-			[16]=["Threat (Out)"]
+			[1] = ["Auto-Attack (Out)", "Outgoing Damage"],
+			[2] = ["Skill/Ability (Out)", "Outgoing Damage"],
+			[3] = ["Healed (Out)"],
+			[10] = ["Power Drain (Out)"],
+			[13] = ["Power Replenish (Out)"],
+			[20] = ["Cure/Dispel (Out)"],
+			[16] = ["Threat (Out)"]
 		};
 		CombatantData.SwingTypeToDamageTypeDataLinksIncoming = new SortedDictionary<int, List<string>> {
-			[1]=["Incoming Damage"],
-			[2]=["Incoming Damage"], 
-			[3]=["Healed (Inc)"], 
-			[10]=["Power Drain (Inc)"],
-			[13]=["Power Replenish (Inc)"],
-			[20]=["Cure/Dispel (Inc)"],
-			[16]=["Threat (Inc)"]
+			[1] = ["Incoming Damage"],
+			[2] = ["Incoming Damage"],
+			[3] = ["Healed (Inc)"],
+			[10] = ["Power Drain (Inc)"],
+			[13] = ["Power Replenish (Inc)"],
+			[20] = ["Cure/Dispel (Inc)"],
+			[16] = ["Threat (Inc)"]
 		};
 		CombatantData.DamageSwingTypes = [1, 2];
 		CombatantData.HealingSwingTypes = [3];

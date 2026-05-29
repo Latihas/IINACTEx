@@ -1,8 +1,11 @@
-﻿using FFXIVClientStructs.FFXIV.Client.System.Framework;
+﻿using System.Diagnostics.CodeAnalysis;
+using FFXIVClientStructs.FFXIV.Client.System.Framework;
 
-#pragma warning disable CS0169 // Field is never used
 namespace IINACT.Network;
 
+[SuppressMessage("Performance", "CS0169")]
+[SuppressMessage("ReSharper", "UnusedMember.Global")]
+[SuppressMessage("ReSharper", "UnassignedField.Global")]
 public unsafe struct PacketDispatcher {
 	private void* Unknown1;
 	private void* Unknown2;

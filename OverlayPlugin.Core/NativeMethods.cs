@@ -1,5 +1,6 @@
 using System;
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
 
 namespace RainbowMage.OverlayPlugin;
@@ -49,7 +50,8 @@ internal class NativeMethods {
 
 	// C# compiler can't track assignments in unmanaged code and thus complains about variables that
 	// are never assigned to. Disable the warning here since it's pointless.
-#pragma warning disable 0649
+
+	[SuppressMessage("Performance", "CS0649")]
 	public struct BlendFunction {
 		public byte BlendOp;
 		public byte BlendFlags;
@@ -60,11 +62,13 @@ internal class NativeMethods {
 	public const byte AC_SRC_ALPHA = 1;
 	public const byte AC_SRC_OVER = 0;
 
+	[SuppressMessage("Performance", "CS0649")]
 	public struct Point {
 		public int X;
 		public int Y;
 	}
 
+	[SuppressMessage("Performance", "CS0649")]
 	public struct Size {
 		public int Width;
 		public int Height;
@@ -280,8 +284,6 @@ internal class NativeMethods {
 	[DllImport("kernel32.dll")]
 	public static extern bool ReadProcessMemory(
 		IntPtr hProcess, IntPtr lpBaseAddress, byte[] lpBuffer, IntPtr nSize, ref IntPtr lpNumberOfBytesRead);
-
-#pragma warning restore 0649
 }
 
 [Flags]

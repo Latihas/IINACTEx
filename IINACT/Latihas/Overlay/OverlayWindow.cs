@@ -127,7 +127,7 @@ public partial class OverlayWindow() : Window("IINACTEx Overlay###IINACTEx Overl
 		}
 	}
 
-	private static readonly Func<Cat, int> Catval = c => c.ValueString is "∞" or "---" or "Infinity" ? 0 : 
+	private static readonly Func<Cat, int> Catval = c => c.ValueString is "∞" or "---" or "Infinity" ? 0 :
 		int.TryParse(c.ValueString, out var v) ? v : -1;
 
 	private void DrawCatDetails(string name, Func<Combatant, Cat> selector) {
