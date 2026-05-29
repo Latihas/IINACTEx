@@ -7,10 +7,7 @@
     <AssemblyName>IINACTEx</AssemblyName>
     <OutputPath>../bin</OutputPath>
     <Copyright></Copyright>
-    <Nullable>enable</Nullable>
-    <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
     <UseWindowsForms>true</UseWindowsForms>
-    <UseWpf>true</UseWpf>
     <Description>该插件会在一个类ACT的环境下运行FFXIV_ACT_Plugin与大量修改的Overlay Plugin以适配现代.NET。与此同时，也添加了大量修改的Triggernometry与Postnamazu。包括类ACT、Triggernometry、Postnamazu在内，这些并非完整的代码移植，并且仍在开发完善中，可能缺少部分原版的函数，开发时请注意。</Description>
     <PunchLine>我用ACT，我是绿玩。(如果加载失败，再加载一次即可。如果你是从上古版本更新而来，有文件占用bug，请先禁用旧版插件，然后!!!重启游戏!!!，然后删除旧版插件，再安装新版插件)</PunchLine>
     <PackageProjectUrl>https://github.com/Latihas/IINACTEx</PackageProjectUrl>
@@ -18,7 +15,7 @@
     <IconUrl>https://raw.githubusercontent.com/marzent/IINACT/master/images/icon.png</IconUrl>
     <RepoUrl>https://github.com/Latihas/IINACTEx</RepoUrl>
     <Tags>parsing;plugin;ACT</Tags>
-    <AssemblyVersion>7.50.1.21</AssemblyVersion>
+    <AssemblyVersion>7.50.1.23</AssemblyVersion>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.Windows.CsWin32" Version="0.3.275">

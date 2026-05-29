@@ -12,6 +12,7 @@ using System.Threading.Tasks;
 using Advanced_Combat_Tracker;
 using Dalamud.Bindings.ImGui;
 using Dalamud.Interface.Colors;
+using Dalamud.Interface.ImGuiNotification;
 using Dalamud.Interface.Utility.Raii;
 using Triggernometry;
 using Triggernometry.Core;
@@ -165,16 +166,16 @@ public static partial class LWindow {
 		ImGui.InputText("触发器Id", ref TestTriggerId);
 		ImGui.SameLine();
 		if (ImGui.Button("验证触发器")) {
-			if (RealPlugin.Instance.Triggers.Any(t => t.Id.ToString() == TestTriggerId)) {
-			}
-			if (RealPlugin.Instance.ActiveTextTriggers.Any(t => t.Id.ToString() == TestTriggerId)) {
-			}
-			if (RealPlugin.Instance.ActiveACTTriggers.Any(t => t.Id.ToString() == TestTriggerId)) {
-			}
-			if (RealPlugin.Instance.ActiveEndpointTriggers.Any(t => t.Id.ToString() == TestTriggerId)) {
-			}
-			if (RealPlugin.Instance.ActiveFFXIVNetworkTriggers.Any(t => t.Id.ToString() == TestTriggerId)) {
-			}
+			List<string> sb = [];
+			if (RealPlugin.Instance.Triggers.Any(t => t.Id.ToString() == TestTriggerId)) sb.Add("Triggers");
+			if (RealPlugin.Instance.ActiveTextTriggers.Any(t => t.Id.ToString() == TestTriggerId)) sb.Add("ActiveTextTriggers");
+			if (RealPlugin.Instance.ActiveACTTriggers.Any(t => t.Id.ToString() == TestTriggerId)) sb.Add("ActiveACTTriggers");
+			if (RealPlugin.Instance.ActiveEndpointTriggers.Any(t => t.Id.ToString() == TestTriggerId)) sb.Add("ActiveEndpointTriggers");
+			if (RealPlugin.Instance.ActiveFFXIVNetworkTriggers.Any(t => t.Id.ToString() == TestTriggerId)) sb.Add("ActiveFFXIVNetworkTriggers");
+			Plugin.NotificationManager.AddNotification(new Notification {
+				Type = NotificationType.Info,
+				Content = sb.Count == 0 ? "不存在" : $"存在于{string.Join(',', sb)}"
+			});
 		}
 	}
 

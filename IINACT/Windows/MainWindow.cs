@@ -16,6 +16,7 @@ using Dalamud.Interface.ImGuiNotification;
 using Dalamud.Interface.Textures.TextureWraps;
 using Dalamud.Interface.Utility;
 using Dalamud.Interface.Windowing;
+using FetchDependencies;
 using FFXIV_ACT_Plugin.Config;
 using IINACT.Latihas.Overlay;
 using RainbowMage.OverlayPlugin;
@@ -115,8 +116,10 @@ public class MainWindow() : Window(WindowPrefix) {
 		return (r, g, b);
 	}
 
+	private string? _windowName;
 	public override void Draw() {
-		WindowName = $"IINACTEx[版本{Assembly.GetExecutingAssembly().GetName().Version?.ToString()}] [核心{Instance.Version}] [解析{typeof(FFXIV_ACT_Plugin.FFXIV_ACT_Plugin).Assembly.GetName().Version}]###IINACTEx";
+		WindowName = _windowName ??=
+			$"IINACTEx [{ApiVersion.NamespaceIdentifier}] [版本{Assembly.GetExecutingAssembly().GetName().Version?.ToString()}] [核心{Instance.Version}] [解析{typeof(FFXIV_ACT_Plugin.FFXIV_ACT_Plugin).Assembly.GetName().Version}]###IINACTEx";
 		foreach (var p in ImGuiColor) ImGui.PushStyleColor(p.Key, p.Value);
 		foreach (var p in ImGuiVar) ImGui.PushStyleVar(p.Key, p.Value);
 		var time = (float)ImGui.GetTime();
@@ -380,10 +383,9 @@ public class MainWindow() : Window(WindowPrefix) {
 		           !string.IsNullOrEmpty(OverlayPluginConfig.WSServerIP) &&
 		           OverlayPluginConfig.WSServerPort > 0) {
 			Uri.TryCreate($"ws://{OverlayPluginConfig.WSServerIP}:{OverlayPluginConfig.WSServerPort}/ws",
-				UriKind.Absolute,
-				out webSocketServer);
+				UriKind.Absolute, out webSocketServer);
 		}
-		var overlayUri = selectedOverlay?.ToOverlayUri(webSocketServer);
+		var overlayUri = selectedOverlay?.ToOverlayUri(webSocketServer!);
 		var overlayUriString = overlayUri?.ToString() ?? "<生成URI失败>";
 		ImGui.SetNextItemWidth(comboWidth);
 		ImGui.InputText("URI", ref overlayUriString, 1000, ImGuiInputTextFlags.ReadOnly);
