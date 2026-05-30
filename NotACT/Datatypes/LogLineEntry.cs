@@ -2,22 +2,10 @@
 
 namespace Advanced_Combat_Tracker;
 
-public class LogLineEntry {
-	public LogLineEntry(DateTime Time, string LogLine, int ParsedType, int GlobalTimeSorter) {
-		this.LogLine = LogLine;
-		Type = ParsedType;
-		SearchSelected = false;
-		this.Time = Time;
-		this.GlobalTimeSorter = GlobalTimeSorter;
-	}
-
-	public int GlobalTimeSorter { get; }
-
-	public DateTime Time { get; set; }
-
-	public string LogLine { get; }
-
-	public int Type { get; }
-
-	public bool SearchSelected { get; set; }
+public class LogLineEntry(DateTime time, string logLine, int parsedType, int globalTimeSorter) {
+	public int GlobalTimeSorter { get; } = globalTimeSorter;
+	public DateTime Time { get; set; } = time;
+	public string LogLine { get; } = logLine;
+	public int Type { get; } = parsedType;
+	public bool SearchSelected { get; set; } = false;
 }

@@ -24,11 +24,9 @@ public class EventDispatcher {
 	}
 
 	public void RegisterHandler(string name, Func<JObject, JToken> handler) {
-		if (handlers.ContainsKey(name)) {
+		if (!handlers.TryAdd(name, handler)) {
 			throw new Exception(string.Format(Resources.DuplicateHandlerError, name));
 		}
-
-		handlers[name] = handler;
 	}
 
 	public void RegisterEventTypes(List<string> names) {

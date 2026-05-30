@@ -19,6 +19,9 @@
       <HintPath>../external_dependencies/SDK/FFXIV_ACT_Plugin.Logfile.dll</HintPath>
     </Reference>
   </ItemGroup>
+  <ItemGroup>
+    <Compile Remove="LatihasUtils.cs"/>
+  </ItemGroup>
   <PropertyGroup Condition="'$(GITHUB_ACTIONS)' == ''">
     <DalamudLibPath>$(appdata)/XIVLauncherCN/addon/Hooks/dev</DalamudLibPath>
     <AssemblySearchPaths>$(AssemblySearchPaths);$(DalamudLibPath)</AssemblySearchPaths>

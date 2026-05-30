@@ -13,20 +13,17 @@ public class ActPluginForm : Form {
 		Text = "插件面板";
 		Size = new Size(1200, 900);
 		StartPosition = FormStartPosition.CenterScreen;
-
 		lblPluginStatus.Dock = DockStyle.Top;
 		lblPluginStatus.Height = 150;
 		lblPluginStatus.Padding = new Padding(10, 0, 0, 0);
 		lblPluginStatus.BackColor = Color.LightGray;
-
-		var tabControl1 = new TabControl();
-		tabControl1.Dock = DockStyle.Fill;
-		tabControl1.AllowDrop = false;
-		tabControl1.Multiline = false;
-
+		var tabControl1 = new TabControl {
+			Dock = DockStyle.Fill,
+			AllowDrop = false,
+			Multiline = false
+		};
 		tpPluginSpace.Text = "插件界面";
 		tpPluginSpace.UseVisualStyleBackColor = true;
-
 		tabControl1.TabPages.Add(tpPluginSpace);
 		FormClosing += (_, e) => {
 			if (canClose) return;

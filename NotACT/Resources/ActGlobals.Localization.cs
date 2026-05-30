@@ -1,12 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Advanced_Combat_Tracker;
 
 public static partial class ActGlobals {
 	public static class ActLocalization {
 		private static readonly Dictionary<string, LocalizationObject> Strings = new();
-
+		[SuppressMessage("ReSharper", "UnusedMember.Global")]
 		public static Dictionary<string, LocalizationObject> LocalizationStrings {
 			get {
 				try {
@@ -1657,12 +1658,12 @@ public static partial class ActGlobals {
 				get {
 					try {
 						if (Strings.TryGetValue(key, out var s)) return s;
-
 						return key;
 					} catch (Exception) {
 						return key;
 					}
 				}
+				[SuppressMessage("ReSharper", "UnusedMember.Global")]
 				set {
 					try {
 						if (Strings.ContainsKey(key))

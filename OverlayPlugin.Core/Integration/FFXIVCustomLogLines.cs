@@ -131,7 +131,7 @@ public class FFXIVCustomLogLines {
 			$"{ID}|{Source}|{Name}|{entry.Version}");
 		registry[ID] = entry;
 		return (line, timestamp) => {
-			if (line.Contains("\r") || line.Contains("\n")) {
+			if (line.Contains('\r') || line.Contains('\n')) {
 				logger.Log(LogLevel.Warning, $"Attempted to write custom log line with CR or LF with ID of {ID}");
 				return false;
 			}

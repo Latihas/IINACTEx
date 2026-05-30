@@ -136,10 +136,7 @@ public sealed class Plugin : IDalamudPlugin {
 		oFormActMain = new FormActMain(this, Log, Framework, ObjectTable);
 		Configuration = PluginInterface.GetPluginConfig() as Configuration ?? new Configuration();
 		HttpClient = new HttpClient();
-		var TaskFetchDependencies = Task.Run(() => {
-			new FetchDependencies.FetchDependencies(Version, PluginAssemblyDirectory,
-				DataManager.Language.ToString() == "ChineseSimplified", HttpClient, Log).GetFfxivPlugin(); //非CN SDK无ChineseSimplified
-		});
+		var TaskFetchDependencies = Task.Run(() => new FetchDependencies.FetchDependencies(Version, PluginAssemblyDirectory, DataManager.Language.ToString() == "ChineseSimplified", HttpClient, Log).GetFfxivPlugin()); //非CN SDK无ChineseSimplified
 		if (!Configuration.AsyncOnInit) TaskFetchDependencies.Wait();
 		if (!Directory.Exists(PluginActScriptDirectory)) Directory.CreateDirectory(PluginActScriptDirectory);
 		var region = DataManager.Language.ToString() == "ChineseSimplified" ? GameRegion.Chinese : GameRegion.Global; //非CN SDK无ChineseSimplified
@@ -206,7 +203,6 @@ public sealed class Plugin : IDalamudPlugin {
 		LogTick("FfxivActPlugin Inited");
 		OverlayPlugin.InitPlugin(extraOpcodes);
 		LogTick("OverlayPlugin Initialized");
-
 		var taskTrn = Task.Run(() => {
 			LogTick("Trn Initializing");
 			TriggernometryProxyPlugin.InitPlugin(this, PluginInterface, Log, ClientState, Framework, GameInteropProvider, ObjectTable, GameGui, SigScanner,

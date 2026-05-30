@@ -15,31 +15,57 @@ using Advanced_Combat_Tracker.Resources;
 using Dalamud.Plugin;
 using Dalamud.Plugin.Services;
 using FFXIV_ACT_Plugin.Logfile;
+using static System.ComponentModel.DesignerSerializationVisibility;
 
 namespace Advanced_Combat_Tracker;
 
 public partial class FormActMain : Form, ISynchronizeInvoke {
 	public delegate DateTime DateTimeLogParser(string logLine);
 
+	public delegate void TextToSpeechDelegate(string text);
+
 	public IPluginLog PluginLog { get; }
 	public dynamic DalamudPlugin;
 	public IFramework PluginFramework;
 	public IObjectTable ObjectTable;
-
 	private readonly ConcurrentQueue<MasterSwing> afterActionsQueue = new();
-	// private Thread afterActionQueueThread;
 	public DateTimeLogParser? GetDateTimeFromLog;
 	private volatile bool inCombat;
 	private readonly ReaderWriterLockSlim lastKnownLock = new(LockRecursionPolicy.SupportsRecursion);
 	private DateTime lastKnownTime;
 	private long lastKnownTicks;
-	// private DateTime lastSetEncounter;
 	private HistoryRecord? lastZoneRecord;
+	internal volatile bool refreshTree;
+	private FileStream? stream, streamAct, streamTrn;
+	private StreamWriter? outputWriter, outputWriterAct, outputWriterTrn;
+	public static bool PluginInitialized;
+	public new object? Invoke(Delegate method, object?[]? args) => method.DynamicInvoke(args);
+	public new IAsyncResult BeginInvoke(Delegate method, object?[]? args) => Task.FromResult(Invoke(method, args));
+	public new object? EndInvoke(IAsyncResult result) => ((Task<object?>)result).Result;
+	public new void Invoke(Action method) => _ = Invoke(method, null);
+	public new object? Invoke(Delegate method) => Invoke(method, null);
+	public event LogLineEventDelegate? BeforeLogLineRead;
+	public event LogLineEventDelegate? OnLogLineRead;
+	[SuppressMessage("Performance", "CS0067")]
+	public event LogFileChangedDelegate LogFileChanged;
+	public event CombatActionDelegate AfterCombatAction;
+	public event TextToSpeechDelegate TextToSpeech;
+
+	// private DateTime lastSetEncounter;
 	// private Thread logReaderThread;
 	// private Thread logWriterThread;
 	// private bool pluginActive = true;
+	[SuppressMessage("Performance", "CA1822")]
+	public void ValidateLists() {
+	}
 
-	internal volatile bool refreshTree;
+	[SuppressMessage("Performance", "CA1822")]
+	public void ValidateTableSetup() {
+	}
+
+	[SuppressMessage("Performance", "CA1822")]
+	public void OpenLog(bool GetCurrentZone, bool GetCharNameFromFile) {
+	}
 
 	public FormActMain(IDalamudPlugin plugin, IPluginLog pluginLog, IFramework framework, IObjectTable objectTable) {
 		PluginLog = pluginLog;
@@ -52,69 +78,63 @@ public partial class FormActMain : Form, ISynchronizeInvoke {
 		// ActGlobals.ActLocalization.AddPrebuild();
 		NotActMainFormatter.SetupEnvironment();
 		LastKnownTime = DateTime.Now;
-		StartAfterCombatActionThread();
+		PluginFramework.Update += ThreadAfterCombatAction;
 	}
 
-	[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+	[DesignerSerializationVisibility(Hidden)]
 	public bool ReadThreadLock { get; set; }
-	[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+	[DesignerSerializationVisibility(Hidden)]
 	public bool WriteLogFile { get; set; } = true;
-	[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+	[DesignerSerializationVisibility(Hidden)]
 	public bool WriteActLogFile { get; set; } = true;
-	[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+	[DesignerSerializationVisibility(Hidden)]
 	public bool WriteTrnLogFile { get; set; } = true;
-	[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+	[DesignerSerializationVisibility(Hidden)]
 	public bool DisableWritingPvpLogFile { get; set; }
-	[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+	[DesignerSerializationVisibility(Hidden)]
 	public int GlobalTimeSorter { get; set; }
-	[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+	[DesignerSerializationVisibility(Hidden)]
 	public List<ZoneData> ZoneList { get; set; } = [];
-	[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+	[DesignerSerializationVisibility(Hidden)]
 	public string LogFileFilter { get; set; } = "notact*.txt";
-
-	[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+	[DesignerSerializationVisibility(Hidden)]
 	public string LogFilePath { get; set; }
-
-	[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+	[DesignerSerializationVisibility(Hidden)]
 	public DirectoryInfo AppDataFolder { get; private set; }
-	[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+	[SuppressMessage("ReSharper", "AutoPropertyCanBeMadeGetOnly.Local")]
+	[DesignerSerializationVisibility(Hidden)]
 	public ConcurrentQueue<string> LogQueue { get; private set; } = new();
-	[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+	[SuppressMessage("ReSharper", "AutoPropertyCanBeMadeGetOnly.Local")]
+	[DesignerSerializationVisibility(Hidden)]
 	public ConcurrentQueue<string> ActLogQueue { get; private set; } = new();
-	[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+	[SuppressMessage("ReSharper", "AutoPropertyCanBeMadeGetOnly.Local")]
+	[DesignerSerializationVisibility(Hidden)]
 	public ConcurrentQueue<string> TrnLogQueue { get; private set; } = new();
-	[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+	[DesignerSerializationVisibility(Hidden)]
 	public string CurrentZone { get; set; }
-	[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+	[DesignerSerializationVisibility(Hidden)]
 	public FFXIV_ACT_Plugin.FFXIV_ACT_Plugin? FfxivPlugin { get; set; }
-	[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+	[DesignerSerializationVisibility(Hidden)]
 	public dynamic OverlayPluginContainer { get; set; }
-
-	[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+	[DesignerSerializationVisibility(Hidden)]
 	public dynamic TriggernometryPlugin { get; set; }
-	[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+	[DesignerSerializationVisibility(Hidden)]
 	public dynamic PostNamazuPlugin { get; set; }
-
-	[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+	[DesignerSerializationVisibility(Hidden)]
 	public DateTime LastHostileTime { get; private set; }
 	public object AfterCombatActionDataLock => ActGlobals.ActionDataLock;
-
-	[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+	[DesignerSerializationVisibility(Hidden)]
 	public Regex ZoneChangeRegex { get; set; }
-
-	[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+	[DesignerSerializationVisibility(Hidden)]
 	public bool LogPathHasCharName { get; set; }
-
-	[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+	[DesignerSerializationVisibility(Hidden)]
 	public bool InCombat {
 		get => inCombat;
 		set => inCombat = value;
 	}
-
-	[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+	[DesignerSerializationVisibility(Hidden)]
 	public int TimeStampLen { get; set; }
-
-	[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+	[DesignerSerializationVisibility(Hidden)]
 	public DateTime LastKnownTime {
 		get {
 			lastKnownLock.EnterReadLock();
@@ -127,7 +147,6 @@ public partial class FormActMain : Form, ISynchronizeInvoke {
 		set {
 			if (value == DateTime.MinValue)
 				return;
-
 			lastKnownLock.EnterWriteLock();
 			try {
 				lastKnownTime = value;
@@ -137,53 +156,21 @@ public partial class FormActMain : Form, ISynchronizeInvoke {
 			}
 		}
 	}
-
 	public DateTime LastEstimatedTime {
 		get {
 			lastKnownLock.EnterReadLock();
 			try {
-				var ticksPassed = Environment.TickCount64 - lastKnownTicks;
-				return lastKnownTime.AddMilliseconds(ticksPassed);
+				return lastKnownTime.AddMilliseconds(Environment.TickCount64 - lastKnownTicks);
 			} finally {
 				lastKnownLock.ExitReadLock();
 			}
 		}
 	}
-
-	[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+	[DesignerSerializationVisibility(Hidden)]
 	public ZoneData? ActiveZone { get; set; }
-
-	// Don't run anything on the non existing WinForms UI thread
-	public new object? Invoke(Delegate method, object?[]? args) => method.DynamicInvoke(args);
-
-	public new IAsyncResult BeginInvoke(Delegate method, object?[]? args) => Task.FromResult(Invoke(method, args));
-
-	public new object? EndInvoke(IAsyncResult result) => ((Task<object?>)result).Result;
-
-	public new void Invoke(Action method) {
-		_ = Invoke(method, null);
-	}
-
-	public new object? Invoke(Delegate method) => Invoke(method, null);
-
-	public event LogLineEventDelegate? BeforeLogLineRead;
-	public event LogLineEventDelegate? OnLogLineRead;
-
-	[SuppressMessage("Performance", "CS0067")]
-	public event LogFileChangedDelegate LogFileChanged;
-
-	public event CombatActionDelegate AfterCombatAction;
-
-	public delegate void TextToSpeechDelegate(string text);
-
-	public event TextToSpeechDelegate TextToSpeech;
-
 
 	public void WriteExceptionLog(Exception ex, string MoreInfo) =>
 		PluginLog.Error(ex, $"[NotAct] {MoreInfo}");
-
-	public void OpenLog(bool GetCurrentZone, bool GetCharNameFromFile) {
-	}
 
 	public void ParseRawLogLine(string logLine) {
 		if (WriteLogFile && !DisableWritingPvpLogFile) LogQueue.Enqueue(logLine);
@@ -201,27 +188,25 @@ public partial class FormActMain : Form, ISynchronizeInvoke {
 		});
 	}
 
-
 	public void TTS(string message) => TextToSpeech(message);
 
 	public void ChangeZone(string ZoneName) {
 		lastZoneRecord?.EndTime = LastKnownTime;
-
 		CurrentZone = ZoneName;
 		var lastLastRecord = lastZoneRecord;
 		lastZoneRecord = new HistoryRecord(0, LastKnownTime, LastKnownTime.AddDays(1.0), CurrentZone,
 			ActGlobals.charName);
-
 		if (lastLastRecord == null) {
 			//first run after parser init
-			StartLogReaderThread();
-			StartLogWriterThread();
+			PluginFramework.Update += LogReader;
+			PluginFramework.Update += LogWriter;
+			PluginFramework.Update += LogWriterAct;
+			PluginFramework.Update += LogWriterTrn;
 		}
-
 		if (ActiveZone != null) return;
 		ActiveZone = new ZoneData(DateTime.Now, CurrentZone, true, false, false);
 		// ZoneList.Add(ActiveZone);
-	}	
+	}
 
 	public void ActCommands(string commandText) {
 		if (commandText != "end") return;
@@ -255,12 +240,10 @@ public partial class FormActMain : Form, ISynchronizeInvoke {
 					ActiveZone = zone;
 					break;
 				}
-
 				// If the last active zone is not found, create a new zone
 				if (!zoneFound) {
 					var start = lastZoneRecord.Label != CurrentZone ? Time : lastZoneRecord.StartTime;
 					ActiveZone = new ZoneData(start, CurrentZone, true, false, false);
-
 					// Insert the new zone into the list of zones
 					var index = ZoneList.Count;
 					for (var i = 1; i < ZoneList.Count; i++) {
@@ -269,17 +252,14 @@ public partial class FormActMain : Form, ISynchronizeInvoke {
 							break;
 						}
 					}
-
 					ZoneList.Insert(index, ActiveZone);
 				}
 			}
-
 			// Set the active encounter
 			ActiveZone.ActiveEncounter = new EncounterData(ActGlobals.charName, CurrentZone, ActiveZone);
 			ActiveZone.Items.Add(ActiveZone.ActiveEncounter);
 			// lastSetEncounter = LastKnownTime;
 		}
-
 		// Check if the encounter is selective
 		if (ActiveZone != null && ActiveZone.ActiveEncounter.GetIsSelective()) {
 			if (SelectiveListGetSelected(Attacker) || SelectiveListGetSelected(Victim)) {
@@ -289,11 +269,9 @@ public partial class FormActMain : Form, ISynchronizeInvoke {
 				inCombat = true;
 				return true;
 			}
-
 			// The encounter is selective and neither the attacker nor the victim is selected
 			return false;
 		}
-
 		// The encounter is not selective
 		refreshTree = true;
 		LastHostileTime = Time;
@@ -302,19 +280,14 @@ public partial class FormActMain : Form, ISynchronizeInvoke {
 	}
 
 	public void AddCombatAction(MasterSwing Action) {
-		if (!ActGlobals.oFormActMain.InCombat) {
-			throw new InvalidOperationException(
-				"Do not add combat actions while ActGlobals.oFormActMain.InCombat is false");
-		}
-
+		if (!ActGlobals.oFormActMain.InCombat)
+			throw new InvalidOperationException("Do not add combat actions while ActGlobals.oFormActMain.InCombat is false");
 		if (string.IsNullOrWhiteSpace(Action.Special) || Action.Special == "hit" || Action.Special == "hits")
 			Action.special = "specialAttackTerm-none";
-
 		Action.attacker = Action.Attacker.Trim();
 		Action.victim = Action.Victim.Trim();
 		Action.attackType = Action.AttackType.Trim();
 		var combatActionEventArgs = new CombatActionEventArgs(Action);
-
 		Action.swingType = combatActionEventArgs.swingType;
 		Action.critical = combatActionEventArgs.critical;
 		Action.special = string.Intern(combatActionEventArgs.special);
@@ -326,15 +299,6 @@ public partial class FormActMain : Form, ISynchronizeInvoke {
 		Action.damageType = string.Intern(combatActionEventArgs.theDamageType);
 		Action.victim = string.Intern(combatActionEventArgs.victim);
 		afterActionsQueue.Enqueue(Action);
-	}
-
-	private FileStream? stream, streamAct, streamTrn;
-	private StreamWriter? outputWriter, outputWriterAct, outputWriterTrn;
-
-	private void StartLogWriterThread() {
-		PluginFramework.Update += LogWriter;
-		PluginFramework.Update += LogWriterAct;
-		PluginFramework.Update += LogWriterTrn;
 	}
 
 	private void LogWriter(IFramework _) {
@@ -364,11 +328,6 @@ public partial class FormActMain : Form, ISynchronizeInvoke {
 		outputWriterTrn?.Flush();
 	}
 
-	private void StartLogReaderThread() {
-		PluginFramework.Update += LogReader;
-	}
-
-	public static bool PluginInitialized;
 	private void LogReader(IFramework _) {
 		if (!PluginInitialized) return;
 		var logOutput = (LogOutput)FfxivPlugin!._dataCollection._logOutput;
@@ -376,10 +335,6 @@ public partial class FormActMain : Form, ISynchronizeInvoke {
 			while (logOutput._LogQueue.TryDequeue(out var line))
 				ParseRawLogLine(line);
 		}
-	}
-
-	private void StartAfterCombatActionThread() {
-		PluginFramework.Update += ThreadAfterCombatAction;
 	}
 
 	private void ThreadAfterCombatAction(IFramework _) {
@@ -395,18 +350,12 @@ public partial class FormActMain : Form, ISynchronizeInvoke {
 		}
 	}
 
-	public void ValidateLists() {
-	}
-
-	public void ValidateTableSetup() {
-	}
-
+	[SuppressMessage("Performance", "CA1822")]
 	public string CreateDamageString(long Damage, bool UseSuffix, bool UseDecimals) {
 		const long trillion = 1000000000000L;
 		const long billion = 1000000000;
 		const long million = 1000000;
 		const long thousand = 1000;
-
 		switch (Damage) {
 			case long.MinValue:
 				return float.NaN.ToString(CultureInfo.InvariantCulture);
@@ -414,7 +363,7 @@ public partial class FormActMain : Form, ISynchronizeInvoke {
 				return float.PositiveInfinity.ToString(CultureInfo.InvariantCulture);
 			default:
 				if (UseSuffix) {
-					if (UseDecimals) {
+					if (UseDecimals)
 						switch (Damage) {
 							case >= trillion:
 								return $"{Damage / 1E+15:0.00}Q";
@@ -425,7 +374,7 @@ public partial class FormActMain : Form, ISynchronizeInvoke {
 							case >= thousand:
 								return $"{Damage / thousand:0.00}K";
 						}
-					} else {
+					else
 						switch (Damage) {
 							case >= trillion:
 								return $"{Damage / trillion}T";
@@ -436,7 +385,6 @@ public partial class FormActMain : Form, ISynchronizeInvoke {
 							case >= thousand:
 								return $"{Damage / thousand}K";
 						}
-					}
 				}
 				return $"{Damage}";
 		}

@@ -1,25 +1,23 @@
-﻿// Advanced_Combat_Tracker.ListViewNoFlicker
-
-using System;
+﻿using System;
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Drawing;
 using System.Windows.Forms;
+using static System.ComponentModel.DesignerSerializationVisibility;
 
 namespace Advanced_Combat_Tracker;
 
 [ToolboxBitmap(typeof(ListView))]
+[SuppressMessage("ReSharper", "UnusedType.Global")]
 public class ListViewNoFlicker : ListView {
 	private bool updating;
-
 	private bool antiFlicker;
-
+	private int updateCount;
 	// private LVS_EX styles;
 
-	private int updateCount;
-
-	[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+	[SuppressMessage("ReSharper", "UnusedAutoPropertyAccessor.Global")]
+	[DesignerSerializationVisibility(Hidden)]
 	public bool CustomGridLines { get; set; } = true;
-
 
 	public ListViewNoFlicker() {
 		DrawColumnHeader += ListViewNoFlicker_DrawColumnHeader;
@@ -28,11 +26,9 @@ public class ListViewNoFlicker : ListView {
 		OwnerDraw = true;
 	}
 
-	private void ListViewNoFlicker_DrawItem(object? _, DrawListViewItemEventArgs e) {
-		e.DrawDefault = true;
-	}
+	private static void ListViewNoFlicker_DrawItem(object? _, DrawListViewItemEventArgs e) => e.DrawDefault = true;
 
-	private void ListViewNoFlicker_DrawSubItem(object? _, DrawListViewSubItemEventArgs e) {
+	private static void ListViewNoFlicker_DrawSubItem(object? _, DrawListViewSubItemEventArgs e) {
 		try {
 			if (e.Bounds.Width > 0) {
 				Color color;
@@ -71,7 +67,7 @@ public class ListViewNoFlicker : ListView {
 		}
 	}
 
-	private void ListViewNoFlicker_DrawColumnHeader(object? _, DrawListViewColumnHeaderEventArgs e) {
+	private static void ListViewNoFlicker_DrawColumnHeader(object? _, DrawListViewColumnHeaderEventArgs e) {
 		try {
 			if (e.Bounds.Width > 0) {
 				var rect = e.Bounds with {
@@ -115,22 +111,23 @@ public class ListViewNoFlicker : ListView {
 		}
 	}
 
+	[SuppressMessage("ReSharper", "UnusedMember.Global")]
 	public new void BeginUpdate() {
 		base.BeginUpdate();
 		updating = true;
 		updateCount++;
 	}
 
+	[SuppressMessage("ReSharper", "MemberCanBePrivate.Global")]
 	public new void EndUpdate() {
 		updating = false;
 		base.EndUpdate();
 		updateCount--;
 	}
 
+	[SuppressMessage("ReSharper", "UnusedMember.Global")]
 	public void FlushUpdate() {
-		while (updateCount > 0) {
-			EndUpdate();
-		}
+		while (updateCount > 0) EndUpdate();
 	}
 
 	protected override void WndProc(ref Message messg) {
@@ -143,6 +140,7 @@ public class ListViewNoFlicker : ListView {
 		}
 	}
 
+	[SuppressMessage("ReSharper", "UnusedMember.Global")]
 	public void SetExStyles() {
 		CustomGridLines = GridLines;
 		GridLines = false;

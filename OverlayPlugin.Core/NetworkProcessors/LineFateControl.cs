@@ -30,10 +30,9 @@ internal class LineFateControl : LineBaseSubMachina<LineFateControl.FateControlP
 
 			// Do some basic filtering on fate data to avoid spamming the log needlessly.
 			if (category == Server_ActorControlCategory.FateAdd) {
-				if (fates.ContainsKey(fateID)) {
+				if (!fates.TryAdd(fateID, 0)) {
 					return null;
 				}
-				fates.Add(fateID, 0);
 			} else if (category == Server_ActorControlCategory.FateRemove) {
 				if (!fates.Remove(fateID)) {
 					return null;

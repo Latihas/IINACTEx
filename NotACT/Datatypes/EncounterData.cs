@@ -1,47 +1,30 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Diagnostics.CodeAnalysis;
 using System.Drawing;
 using System.Linq;
 
 namespace Advanced_Combat_Tracker;
 
 public class EncounterData {
+	[SuppressMessage("ReSharper", "UnusedType.Global")]
 	public delegate Color ColorDataCallback(EncounterData Data);
 
-	public delegate string ExportStringDataCallback(
-		EncounterData Data, List<CombatantData> SelectiveAllies, string ExtraFormat);
+	public delegate string ExportStringDataCallback(EncounterData Data, List<CombatantData> SelectiveAllies, string ExtraFormat);
 
 	public delegate string StringDataCallback(EncounterData Data);
 
 	public static Dictionary<string, TextExportFormatter> ExportVariables = new();
-
 	public static Dictionary<string, ColumnDef> ColumnDefs = new();
-
 	private bool alliesCached;
-
 	private DateTime alliesLastCall = DateTime.Now;
-
 	private bool alliesManual;
-
 	private List<CombatantData>? cachedAllies;
-
-	private string cachedEncId;
-
 	private bool encIdCached;
-
-	private List<DateTime> endTimes = [];
-
 	private readonly bool ignoreEnemies;
-
 	private readonly HashSet<int> includedTimeSorters = [];
-
 	private readonly bool sParsing;
-
-	private List<DateTime> startTimes = [];
-
-	private string title = ActGlobals.Trans["encounterData-defaultEncounterName"];
-
 	private string zoneName;
 
 	public EncounterData(string CharName, string ZoneName, bool IgnoreEnemies, ZoneData Parent) {
@@ -61,9 +44,7 @@ public class EncounterData {
 	}
 
 	public HistoryRecord HistoryRecord { get; set; }
-
 	public bool DuplicateDetection { get; set; }
-
 	public static string[] ColTypeCollection {
 		get {
 			var colTypeCollection = new string[ColumnDefs.Count];
@@ -72,11 +53,9 @@ public class EncounterData {
 				colTypeCollection[i] = columnDef.Value.SqlDataType;
 				i++;
 			}
-
 			return colTypeCollection;
 		}
 	}
-
 	public static string[] ColHeaderCollection {
 		get {
 			var colHeaderCollection = new string[ColumnDefs.Count];
@@ -85,13 +64,10 @@ public class EncounterData {
 				colHeaderCollection[i] = columnDef.Value.SqlDataName;
 				i++;
 			}
-
 			return colHeaderCollection;
 		}
 	}
-
 	public static string ColHeaderString => string.Join(",", ColHeaderCollection);
-
 	public string[] ColCollection {
 		get {
 			var colCollection = new string[ColumnDefs.Count];
@@ -100,55 +76,43 @@ public class EncounterData {
 				colCollection[i] = columnDef.Value.GetSqlData(this);
 				i++;
 			}
-
 			return colCollection;
 		}
 	}
-
-	public ZoneData Parent { get; set; }
-
+	public ZoneData? Parent { get; set; }
 	public string CharName { get; set; }
-
 	public string ZoneName {
 		get {
 			if (zoneName == ActGlobals.Trans["mergedEncounterTerm-all"] && Parent != null) return Parent.ZoneName;
-
 			return zoneName;
 		}
 		set => zoneName = value;
 	}
-
 	public bool Active { get; set; }
-
 	public List<DateTime> StartTimes {
 		get {
-			for (var i = startTimes.IndexOf(DateTime.MaxValue);
+			for (var i = field.IndexOf(DateTime.MaxValue);
 			     i >= 0;
-			     i = startTimes.IndexOf(DateTime.MaxValue))
-				startTimes.RemoveAt(i);
-
-			return startTimes;
+			     i = field.IndexOf(DateTime.MaxValue))
+				field.RemoveAt(i);
+			return field;
 		}
-		set => startTimes = value;
-	}
-
+		set;
+	} = [];
 	public List<DateTime> EndTimes {
 		get {
-			for (var i = endTimes.IndexOf(DateTime.MinValue); i >= 0; i = endTimes.IndexOf(DateTime.MinValue))
-				endTimes.RemoveAt(i);
-
-			return endTimes;
+			for (var i = field.IndexOf(DateTime.MinValue); i >= 0; i = field.IndexOf(DateTime.MinValue))
+				field.RemoveAt(i);
+			return field;
 		}
-		set => endTimes = value;
-	}
-
+		set;
+	} = [];
 	public string Title {
 		get => zoneName == ActGlobals.Trans["mergedEncounterTerm-all"]
 			? ActGlobals.Trans["mergedEncounterTerm-all"]
-			: title;
-		set => title = value;
-	}
-
+			: field;
+		set;
+	} = ActGlobals.Trans["encounterData-defaultEncounterName"];
 	public DateTime StartTime {
 		get {
 			var dateTime = DateTime.MaxValue;
@@ -156,108 +120,80 @@ public class EncounterData {
 				var combatantData = Items.Values[i];
 				if (combatantData.StartTime < dateTime) dateTime = combatantData.StartTime;
 			}
-
 			return dateTime;
 		}
 	}
-
 	public DateTime EndTime {
 		get {
-			if (ActGlobals.longDuration) {
-				var dateTime = DateTime.MinValue;
-				for (var i = 0; i < Items.Count; i++) {
-					var combatantData = Items.Values[i];
-					if (combatantData.EndTime > dateTime) dateTime = combatantData.EndTime;
-				}
-
-				return dateTime;
+			if (!ActGlobals.longDuration) return ShortEndTime;
+			var dateTime = DateTime.MinValue;
+			for (var i = 0; i < Items.Count; i++) {
+				var combatantData = Items.Values[i];
+				if (combatantData.EndTime > dateTime) dateTime = combatantData.EndTime;
 			}
-
-			return ShortEndTime;
+			return dateTime;
 		}
 	}
-
 	public DateTime ShortEndTime {
 		get {
 			var dateTime = DateTime.MinValue;
 			var allies = !ignoreEnemies ? GetAllies() : [..Items.Values];
 			if (allies.Count == 0) allies = [..Items.Values];
-
 			foreach (var combatantData in allies)
 				if (combatantData.ShortEndTime > dateTime)
 					dateTime = combatantData.ShortEndTime;
-
 			return dateTime;
 		}
 	}
-
 	public TimeSpan Duration {
 		get {
 			if (StartTimes.Count > 1) {
 				try {
-					var duration = default(TimeSpan);
+					var duration = TimeSpan.Zero;
 					for (var i = 0; i < StartTimes.Count; i++)
 						if (EndTimes.Count == i)
 							duration += EndTime - StartTimes[i];
 						else
 							duration += EndTimes[i] - StartTimes[i];
-
 					return duration;
 				} catch {
 					return TimeSpan.Zero;
 				}
 			}
-
 			if (EndTime > StartTime) return EndTime - StartTime;
-
 			return TimeSpan.Zero;
 		}
 	}
-
 	public string DurationS => Duration.Hours == 0
 		? $"{Duration.Minutes:00}:{Duration.Seconds:00}"
 		: $"{Duration.Hours:00}:{Duration.Minutes:00}:{Duration.Seconds:00}";
-
 	public long Damage =>
 		(!ignoreEnemies ? GetAllies() : [..Items.Values]).Sum(t => t.Damage);
-
 	public int AlliedKills =>
 		(!ignoreEnemies ? GetAllies() : [..Items.Values]).Sum(combatantData => combatantData.Kills);
-
 	public int AlliedDeaths => (!ignoreEnemies ? GetAllies() : [..Items.Values])
-		.Where(combatantData => !combatantData.Name.Contains(" "))
+		.Where(combatantData => !combatantData.Name.Contains(' '))
 		.Sum(combatantData => combatantData.Deaths);
-
 	public long Healed =>
 		(!ignoreEnemies ? GetAllies() : [..Items.Values]).Sum(combatantData => combatantData.Healed);
-
 	public double DPS => Damage / Duration.TotalSeconds;
-
-	public string EncId {
+	public string? EncId {
 		get {
-			if (encIdCached) return cachedEncId;
-
+			if (encIdCached) return field;
 			try {
-				cachedEncId = GetHashCode().ToString("x8");
+				field = GetHashCode().ToString("x8");
 			} catch (InvalidOperationException) {
-				return cachedEncId ?? "";
+				return field ?? "";
 			}
-
 			encIdCached = true;
-			return cachedEncId;
+			return field;
 		}
 	}
-
 	public int NumCombatants => Items.Count;
-
 	public int NumAllies => GetAllies().Count;
-
 	public int NumEnemies => NumCombatants - NumAllies;
-
 	public SortedList<string, CombatantData> Items { get; set; } = new();
-
 	public List<LogLineEntry> LogLines { get; set; } = [];
-
 	public Dictionary<string, object> Tags { get; set; } = new();
 
 	public string GetColumnByName(string name) =>
@@ -278,13 +214,10 @@ public class EncounterData {
 		// Add the action's time sorter to the included time sorters collection
 		if (DuplicateDetection)
 			includedTimeSorters.Add(action.TimeSorter);
-
 		// Set the parent encounter of the action to the current instance
 		action.ParentEncounter = this;
-
 		// Invalidate any cached values
 		InvalidateCachedValues();
-
 		// Get the attacker and victim names in uppercase
 		var attackerName = action.Attacker.ToUpper();
 		var victimName = action.Victim.ToUpper();
@@ -300,21 +233,14 @@ public class EncounterData {
 				combatant = new CombatantData(action.Attacker, this);
 				Items.Add(attackerName, combatant);
 			}
-
 			// Add the action to the combatant's collection
 			combatant.AddCombatAction(action);
 		}
-
 		// Add the reverse combat action if parsing is not skipped
-		if (shouldSkipParsing) {
-			AddReverseCombatAction(action);
-		}
+		if (shouldSkipParsing) AddReverseCombatAction(action);
 	}
 
-
-	public void InvalidateCachedValues() {
-		encIdCached = false;
-	}
+	public void InvalidateCachedValues() => encIdCached = false;
 
 	public void InvalidateCachedValues(bool Recursive) {
 		InvalidateCachedValues();
@@ -332,11 +258,9 @@ public class EncounterData {
 			victimCombatant = new CombatantData(action.Victim, this);
 			Items.Add(victimName, victimCombatant);
 		}
-
 		// Add the reverse combat action to the victim combatant
 		victimCombatant.AddReverseCombatAction(action);
 	}
-
 
 	public void EndCombat(bool Finalize) {
 		lock (ActGlobals.ActionDataLock) {
@@ -363,30 +287,20 @@ public class EncounterData {
 		}
 	}
 
-
 	public List<CombatantData> GetAllies(bool allowLimited = false) {
 		if (alliesCached || allowLimited && DateTime.Now.Second == alliesLastCall.Second ||
 		    cachedAllies != null && Active && Title == ActGlobals.Trans["mergedEncounterTerm-all"]) {
 			return cachedAllies;
 		}
-
-		if (GetIgnoreEnemies()) {
-			return [..Items.Values];
-		}
-
+		if (GetIgnoreEnemies()) return [..Items.Values];
 		var combatant = GetCombatant(CharName);
-		if (combatant == null) {
-			return [];
-		}
-
+		if (combatant == null) return [];
 		var sortedAllies = new SortedList<string, AllyObject> {
 			[combatant.Name.ToUpper()] = new(combatant)
 		};
-
 		var listChanged = true;
 		while (listChanged) {
 			listChanged = false;
-
 			for (var i = 0; i < sortedAllies.Count; i++) {
 				ImmutableArray<KeyValuePair<string, int>> subAllies;
 				try {
@@ -403,74 +317,43 @@ public class EncounterData {
 						sortedAllies.Add(name, value1);
 						listChanged = true;
 					}
-
 					value1.allyVal += sortedAllies.Values[i].allyVal > 0 ? value : -value;
 				}
 			}
 		}
-
-		var list = new List<CombatantData>();
 		var thisCombatantIsEnemy = sortedAllies[combatant.Name.ToUpper()].allyVal < 0;
-
-		foreach (var ally in sortedAllies) {
-			if (thisCombatantIsEnemy) {
-				if (ally.Value.allyVal < 0) {
-					list.Add(ally.Value.cd);
-				}
-			} else if (ally.Value.allyVal > 0) {
-				list.Add(ally.Value.cd);
-			}
-		}
-
+		var list = sortedAllies.Where(ally => thisCombatantIsEnemy && ally.Value.allyVal < 0 || ally.Value.allyVal > 0)
+			.Select(ally => ally.Value.cd).ToList();
 		list.RemoveAll(item => item == null);
-
-		cachedAllies = list;
+		cachedAllies = list.ToList();
 		alliesCached = true;
 		alliesLastCall = DateTime.Now;
 		return cachedAllies;
 	}
 
-
 	public CombatantData? GetCombatant(string? Name) =>
 		Name == null ? null : Items.GetValueOrDefault(Name.ToUpper());
 
 	public int GetEncounterSuccessLevel() {
-		if (sParsing && ignoreEnemies)
-			return 0;
-
+		if (sParsing && ignoreEnemies) return 0;
 		var allies = GetAllies();
-		if (allies.Count == 0)
-			return 0;
-
+		if (allies.Count == 0) return 0;
 		var strongestEnemy = GetStrongestEnemy(CharName);
 		var strongestEnemyCombatant = GetCombatant(strongestEnemy);
-		if (strongestEnemyCombatant == null)
-			return 0;
-
+		if (strongestEnemyCombatant == null) return 0;
 		var isEnemyDefeated = strongestEnemyCombatant.Deaths > 0;
 		var areAlliesAlive = allies.Any(combatantData =>
 			combatantData.Deaths == 0 && combatantData.Name != "Unknown" &&
-			!combatantData.Name.Contains(" "));
-
-		if (isEnemyDefeated && areAlliesAlive)
-			return 1;
-		if (isEnemyDefeated || areAlliesAlive)
-			return 2;
-
+			!combatantData.Name.Contains(' '));
+		if (isEnemyDefeated && areAlliesAlive) return 1;
+		if (isEnemyDefeated || areAlliesAlive) return 2;
 		return 3;
 	}
 
-
 	public string? GetStrongestEnemy(string combatantName) {
-		if (sParsing && ignoreEnemies) {
-			return ActGlobals.Trans["encounterData-defaultEncounterName"];
-		}
-
+		if (sParsing && ignoreEnemies) return ActGlobals.Trans["encounterData-defaultEncounterName"];
 		var allies = GetAllies();
-		if (allies.Count == 0) {
-			return ActGlobals.Trans["encounterData-defaultEncounterName"];
-		}
-
+		if (allies.Count == 0) return ActGlobals.Trans["encounterData-defaultEncounterName"];
 		var enemies = Items.Values
 			.Where(c => !allies.Contains(c))
 			.Select(c => new {
@@ -479,35 +362,25 @@ public class EncounterData {
 			})
 			.OrderByDescending(c => c.DamagePerDeath)
 			.ToList();
-
 		return enemies.Count == 0 ? null : enemies[0].Name;
 	}
 
-
 	public string GetMaxHit(bool ShowType = true, bool UseSuffix = true) {
 		var allies = ignoreEnemies ? [..Items.Values] : GetAllies();
-
 		var maxSwing = allies
 			.SelectMany(combatant => combatant.GetAttackType(ActGlobals.Trans["attackTypeTerm-all"],
 					CombatantData.DamageTypeDataOutgoingDamage)
 				?.Items ?? [])
 			.Where(swing => swing.Damage > 0).MaxBy(swing => swing.Damage);
-
-		if (maxSwing == null)
-			return string.Empty;
-
+		if (maxSwing == null) return string.Empty;
 		var arg = allies.FirstOrDefault(combatant => combatant.GetAttackType(ActGlobals.Trans["attackTypeTerm-all"],
 			CombatantData.DamageTypeDataOutgoingDamage)?.Items.Contains(maxSwing) ?? false)?.Name;
-
-		if (arg == null)
-			return string.Empty;
-
+		if (arg == null) return string.Empty;
 		var damageString = ActGlobals.oFormActMain.CreateDamageString(maxSwing.Damage, UseSuffix, !ShowType);
 		return ShowType
 			? $"{arg}-{maxSwing.AttackType}-{damageString}"
 			: $"{arg}-{damageString}";
 	}
-
 
 	public string GetMaxHeal(bool ShowType = true, bool CountWards = true, bool UseSuffix = true) {
 		var allies = !ignoreEnemies ? GetAllies() : [..Items.Values];
@@ -515,28 +388,22 @@ public class EncounterData {
 			.Where(a => a.GetAttackType(ActGlobals.Trans["attackTypeTerm-all"], CombatantData.DamageTypeDataOutgoingHealing) != null)
 			.SelectMany(a => a.GetAttackType(ActGlobals.Trans["attackTypeTerm-all"], CombatantData.DamageTypeDataOutgoingHealing)?.Items!)
 			.Where(s => CountWards || s.DamageType != ActGlobals.Trans["specialAttackTerm-wardAbsorb"]).MaxBy(s => s.Damage);
-
-		if (maxHealSwing == null)
-			return string.Empty;
-
+		if (maxHealSwing == null) return string.Empty;
 		var combatantName =
 			allies.FirstOrDefault(a => a.GetAttackType(ActGlobals.Trans["attackTypeTerm-all"],
 				                           CombatantData.DamageTypeDataOutgoingHealing)?.Items.Contains(maxHealSwing) ??
 			                           false)?.Name ?? string.Empty;
 		var damageString = ActGlobals.oFormActMain.CreateDamageString(maxHealSwing.Damage, UseSuffix, ShowType);
-
 		return ShowType
 			? $"{combatantName}-{maxHealSwing.AttackType}-{damageString}"
 			: $"{combatantName}-{damageString}";
 	}
 
 	public bool GetIsSelective() => sParsing;
-
 	public bool GetIgnoreEnemies() => ignoreEnemies;
 
 	public override string ToString() {
 		if (StartTime == DateTime.MaxValue) return $"{Title} - [{DurationS}]";
-
 		return (DateTime.Now - StartTime).TotalHours > 12.0
 			? string.Format("{0} - [{1}] ({3}) {2}", Title, DurationS, StartTime.ToLongTimeString(),
 				StartTime.ToShortDateString())
@@ -544,75 +411,39 @@ public class EncounterData {
 	}
 
 	public override bool Equals(object? obj) {
-		if (obj == null || GetType() != obj.GetType())
-			return false;
-
+		if (obj == null || GetType() != obj.GetType()) return false;
 		var encounterData = (EncounterData)obj;
 		return ToString().Equals(encounterData.ToString());
 	}
 
-
+	[SuppressMessage("ReSharper", "NonReadonlyMemberInGetHashCode")]
 	public override int GetHashCode() {
 		var items = new List<CombatantData>(Items.Values);
 		var num = items.Aggregate(0L, (current, combatantData) => current + combatantData.GetHashCode());
 		return num.GetHashCode();
 	}
 
-	public class TextExportFormatter {
-		public ExportStringDataCallback GetExportString;
-
-		public TextExportFormatter(
-			string Name, string Label, string Description, ExportStringDataCallback FormatterCallback) {
-			this.Name = Name;
-			this.Label = Label;
-			this.Description = Description;
-			GetExportString = FormatterCallback;
-		}
-
-		public string Label { get; }
-
-		public string Description { get; }
-
-		public string Name { get; }
+	public class TextExportFormatter(string name, string label, string description, ExportStringDataCallback formatterCallback) {
+		public readonly ExportStringDataCallback GetExportString = formatterCallback;
+		// public string Label { get; } = label;
+		// public string Description { get; } = description;
+		// public string Name { get; } = name;
 	}
 
-	public class ColumnDef {
-		public ColorDataCallback GetCellBackColor = _ => Color.Transparent;
-		public StringDataCallback GetCellData;
-
-		public ColorDataCallback GetCellForeColor = _ => Color.Transparent;
-
-		public StringDataCallback GetSqlData;
-
-		public ColumnDef(
-			string Label, bool DefaultVisible, string SqlDataType, string SqlDataName,
-			StringDataCallback CellDataCallback, StringDataCallback SqlDataCallback) {
-			this.Label = Label;
-			this.DefaultVisible = DefaultVisible;
-			this.SqlDataType = SqlDataType;
-			this.SqlDataName = SqlDataName;
-			GetCellData = CellDataCallback;
-			GetSqlData = SqlDataCallback;
-		}
-
-		public string SqlDataType { get; }
-
-		public string SqlDataName { get; }
-
-		public bool DefaultVisible { get; }
-
-		public string Label { get; }
+	public class ColumnDef(string label, bool defaultVisible, string sqlDataType, string sqlDataName, StringDataCallback cellDataCallback, StringDataCallback sqlDataCallback) {
+		public readonly StringDataCallback GetCellData = cellDataCallback;
+		// public string Label { get; } = label;
+		public readonly StringDataCallback GetSqlData = sqlDataCallback;
+		public string SqlDataType { get; } = sqlDataType;
+		public string SqlDataName { get; } = sqlDataName;
+		// public ColorDataCallback GetCellBackColor = _ => Color.Transparent;
+		// public ColorDataCallback GetCellForeColor = _ => Color.Transparent;
+		// public bool DefaultVisible { get; } = defaultVisible;
 	}
 
-	private class AllyObject {
+	private class AllyObject(CombatantData combatant) {
 		public int allyVal;
-		public readonly CombatantData cd;
-
-		public AllyObject(CombatantData combatant) {
-			cd = combatant;
-			allyVal = 0;
-		}
-
+		public readonly CombatantData cd = combatant;
 		public override string ToString() => allyVal.ToString();
 	}
 }

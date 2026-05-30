@@ -83,7 +83,7 @@ public unsafe class ZoneDownHookManager : IDisposable {
 
 	private static bool IsModulePointer(ReadOnlySpan<byte> memory, int offset, nint moduleBase, long moduleSize) {
 		if (offset + 8 > memory.Length) return false;
-		var ptr = BitConverter.ToUInt64(memory.Slice(offset));
+		var ptr = BitConverter.ToUInt64(memory[offset..]);
 		return ptr >= (ulong)moduleBase && ptr < (ulong)(moduleBase + moduleSize);
 	}
 

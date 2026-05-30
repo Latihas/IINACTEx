@@ -93,7 +93,7 @@ public class ServerController {
 	}
 
 	public string GetModernUrl(string url) {
-		if (url.Contains("?"))
+		if (url.Contains('?'))
 			url += "&";
 		else
 			url += "?";
