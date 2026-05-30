@@ -13,6 +13,7 @@ using Dalamud.Bindings.ImGui;
 using Dalamud.Bindings.ImPlot;
 using Dalamud.Interface.Textures;
 using Dalamud.Interface.Textures.TextureWraps;
+using static System.Drawing.Color;
 using static Advanced_Combat_Tracker.ActGlobals;
 
 namespace IINACT.Latihas.Overlay;
@@ -97,12 +98,10 @@ public partial class OverlayWindow {
 	private readonly Lock _textureLock = new();
 
 	private static Bitmap GenDamageTypeGraph(DamageTypeData DamageTypeSource, int SizeX, int SizeY, string Sorting) {
-		if (SizeX < 16 || SizeY < 16)
-			return new Bitmap(16, 16);
+		if (SizeX < 16 || SizeY < 16) return new Bitmap(16, 16);
 		var bitmap = new Bitmap(SizeX, SizeY);
 		try {
 			var list = new List<AttackType>(DamageTypeSource.Items.Values);
-			// ttg.Items.Clear();
 			List<StrDouble> list2 = [];
 			try {
 				list.Sort(AttackType.ColumnDefs[Sorting].SortComparer);
@@ -114,9 +113,7 @@ public partial class OverlayWindow {
 			var attackType = list.FirstOrDefault(item => item.Type == Trans["attackTypeTerm-all"]);
 			if (Sorting == "Resist") {
 				var dictionary = new Dictionary<string, long> {
-					{
-						Trans["attackTypeTerm-all"], 0L
-					}
+					[Trans["attackTypeTerm-all"]] = 0
 				};
 				if (attackType != null)
 					foreach (var masterSwing in attackType.Items) {
@@ -144,80 +141,77 @@ public partial class OverlayWindow {
 					}
 				}
 			}
-			var brush = new SolidBrush(Color.FromArgb(150, Color.FromArgb(-16777216)));
-			var solidBrush = new SolidBrush(Color.FromArgb(-1842205));
-			var brush2 = new SolidBrush(Color.FromArgb(-16777216));
-			var brush3 = new SolidBrush(Color.FromArgb(-6250336));
-			var pen = new Pen(Color.FromArgb(-16777216));
+			var brush = new SolidBrush(FromArgb(150, FromArgb(-16777216)));
+			var solidBrush = new SolidBrush(FromArgb(-1842205));
+			var brush2 = new SolidBrush(FromArgb(-16777216));
+			var brush3 = new SolidBrush(FromArgb(-6250336));
+			var pen = new Pen(FromArgb(-16777216));
 			// new Pen(Color.FromArgb(-6250336));
 			SolidBrush[] array = [
-				new(Color.FromArgb(-4194112)),
-				new(Color.FromArgb(-32513)),
-				new(Color.FromArgb(-16777024)),
-				new(Color.FromArgb(-8355585)),
-				new(Color.FromArgb(-16727872)),
-				new(Color.FromArgb(-8323073)),
-				new(Color.FromArgb(-16728064)),
-				new(Color.FromArgb(-8323200)),
-				new(Color.FromArgb(-4145152)),
-				new(Color.FromArgb(-128)),
-				new(Color.FromArgb(-4177920)),
-				new(Color.FromArgb(-16256)),
-				new(Color.FromArgb(-4194304)),
-				new(Color.FromArgb(-32640)),
-				new(Color.FromArgb(-65281)),
-				new(Color.FromArgb(-12582848)),
-				new(Color.FromArgb(-16776961)),
-				new(Color.FromArgb(-16777152)),
-				new(Color.FromArgb(-16711681)),
-				new(Color.FromArgb(-16760768)),
-				new(Color.FromArgb(-16711936)),
-				new(Color.FromArgb(-16760832)),
-				new(Color.FromArgb(-256)),
-				new(Color.FromArgb(-12566528)),
-				new(Color.FromArgb(-32768)),
-				new(Color.FromArgb(-8372160)),
-				new(Color.FromArgb(-65536)),
-				new(Color.FromArgb(-12582912))
+				new(FromArgb(-4194112)),
+				new(FromArgb(-32513)),
+				new(FromArgb(-16777024)),
+				new(FromArgb(-8355585)),
+				new(FromArgb(-16727872)),
+				new(FromArgb(-8323073)),
+				new(FromArgb(-16728064)),
+				new(FromArgb(-8323200)),
+				new(FromArgb(-4145152)),
+				new(FromArgb(-128)),
+				new(FromArgb(-4177920)),
+				new(FromArgb(-16256)),
+				new(FromArgb(-4194304)),
+				new(FromArgb(-32640)),
+				new(FromArgb(-65281)),
+				new(FromArgb(-12582848)),
+				new(FromArgb(-16776961)),
+				new(FromArgb(-16777152)),
+				new(FromArgb(-16711681)),
+				new(FromArgb(-16760768)),
+				new(FromArgb(-16711936)),
+				new(FromArgb(-16760832)),
+				new(FromArgb(-256)),
+				new(FromArgb(-12566528)),
+				new(FromArgb(-32768)),
+				new(FromArgb(-8372160)),
+				new(FromArgb(-65536)),
+				new(FromArgb(-12582912))
 			];
 			Pen[] array2 = [
-				new(Color.FromArgb(-4194112), 2f),
-				new(Color.FromArgb(-32513), 2f),
-				new(Color.FromArgb(-16777024), 2f),
-				new(Color.FromArgb(-8355585), 2f),
-				new(Color.FromArgb(-16727872), 2f),
-				new(Color.FromArgb(-8323073), 2f),
-				new(Color.FromArgb(-16728064), 2f),
-				new(Color.FromArgb(-8323200), 2f),
-				new(Color.FromArgb(-4145152), 2f),
-				new(Color.FromArgb(-128), 2f),
-				new(Color.FromArgb(-4177920), 2f),
-				new(Color.FromArgb(-16256), 2f),
-				new(Color.FromArgb(-4194304), 2f),
-				new(Color.FromArgb(-32640), 2f),
-				new(Color.FromArgb(-65281), 2f),
-				new(Color.FromArgb(-12582848), 2f),
-				new(Color.FromArgb(-16776961), 2f),
-				new(Color.FromArgb(-16777152), 2f),
-				new(Color.FromArgb(-16711681), 2f),
-				new(Color.FromArgb(-16760768), 2f),
-				new(Color.FromArgb(-16711936), 2f),
-				new(Color.FromArgb(-16760832), 2f),
-				new(Color.FromArgb(-256), 2f),
-				new(Color.FromArgb(-12566528), 2f),
-				new(Color.FromArgb(-32768), 2f),
-				new(Color.FromArgb(-8372160), 2f),
-				new(Color.FromArgb(-65536), 2f),
-				new(Color.FromArgb(-12582912), 2f)
+				new(FromArgb(-4194112), 2f),
+				new(FromArgb(-32513), 2f),
+				new(FromArgb(-16777024), 2f),
+				new(FromArgb(-8355585), 2f),
+				new(FromArgb(-16727872), 2f),
+				new(FromArgb(-8323073), 2f),
+				new(FromArgb(-16728064), 2f),
+				new(FromArgb(-8323200), 2f),
+				new(FromArgb(-4145152), 2f),
+				new(FromArgb(-128), 2f),
+				new(FromArgb(-4177920), 2f),
+				new(FromArgb(-16256), 2f),
+				new(FromArgb(-4194304), 2f),
+				new(FromArgb(-32640), 2f),
+				new(FromArgb(-65281), 2f),
+				new(FromArgb(-12582848), 2f),
+				new(FromArgb(-16776961), 2f),
+				new(FromArgb(-16777152), 2f),
+				new(FromArgb(-16711681), 2f),
+				new(FromArgb(-16760768), 2f),
+				new(FromArgb(-16711936), 2f),
+				new(FromArgb(-16760832), 2f),
+				new(FromArgb(-256), 2f),
+				new(FromArgb(-12566528), 2f),
+				new(FromArgb(-32768), 2f),
+				new(FromArgb(-8372160), 2f),
+				new(FromArgb(-65536), 2f),
+				new(FromArgb(-12582912), 2f)
 			];
 			var font = new Font("Arial", 8f);
 			var graphics = Graphics.FromImage(bitmap);
 			graphics.SmoothingMode = SmoothingMode.AntiAlias;
 			graphics.Clear(solidBrush.Color);
-			if (list2.Count == 0) {
-				bitmap = GraphDrawMessage(Trans["graphAttackTypes-noDataError"], 12f, bitmap);
-				return bitmap;
-			}
+			if (list2.Count == 0) return GraphDrawMessage(Trans["graphAttackTypes-noDataError"], 12f, bitmap);
 			const float num2 = 16f * DpiScale;
 			var rectangleF = new RectangleF(num2 / 4f, num2 / 4f, bitmap.Height - num2 / 2f, bitmap.Height - num2 / 2f);
 			graphics.DrawRectangle(pen, rectangleF.X, rectangleF.Y, rectangleF.Width, rectangleF.Height);
@@ -272,8 +266,7 @@ public partial class OverlayWindow {
 
 	// ReSharper disable PossibleLossOfFraction
 	private static Bitmap GenAttackTypeGraph(AttackType AttackTypeSource, int SizeX, int SizeY, string Sorting) {
-		if (SizeX < 16 || SizeY < 16)
-			return new Bitmap(16, 16);
+		if (SizeX < 16 || SizeY < 16) return new Bitmap(16, 16);
 		var bitmap = new Bitmap(SizeX, SizeY);
 		try {
 			var list = new List<MasterSwing>(AttackTypeSource.Items);
@@ -283,23 +276,23 @@ public partial class OverlayWindow {
 				WriteExceptionLog(ex, string.Empty);
 				bitmap = GraphDrawMessage(ex.ToString(), 12f, bitmap);
 			}
-			var solidBrush = new SolidBrush(Color.FromArgb(-1842205));
-			var brush = new SolidBrush(Color.FromArgb(-16777216));
-			var pen = new Pen(Color.FromArgb(-16777216));
-			var pen2 = new Pen(Color.FromArgb(-6250336));
+			var solidBrush = new SolidBrush(FromArgb(-1842205));
+			var brush = new SolidBrush(FromArgb(-16777216));
+			var pen = new Pen(FromArgb(-16777216));
+			var pen2 = new Pen(FromArgb(-6250336));
 			var dictionary = new Dictionary<int, SolidBrush>();
 			foreach (var item in CombatantData.SwingTypeToDamageTypeDataLinksOutgoing.Where(item => !dictionary.ContainsKey(item.Key))) {
-				dictionary.Add(item.Key, new SolidBrush(Color.FromArgb(180, CombatantData.OutgoingDamageTypeDataObjects[item.Value[0]].TypeColor)));
+				dictionary.Add(item.Key, new SolidBrush(FromArgb(180, CombatantData.OutgoingDamageTypeDataObjects[item.Value[0]].TypeColor)));
 			}
 			foreach (var item2 in CombatantData.SwingTypeToDamageTypeDataLinksIncoming.Where(item2 => !dictionary.ContainsKey(item2.Key))) {
-				dictionary.Add(item2.Key, new SolidBrush(Color.FromArgb(180, CombatantData.IncomingDamageTypeDataObjects[item2.Value[0]].TypeColor)));
+				dictionary.Add(item2.Key, new SolidBrush(FromArgb(180, CombatantData.IncomingDamageTypeDataObjects[item2.Value[0]].TypeColor)));
 			}
 			var dictionary2 = new Dictionary<int, SolidBrush>();
 			foreach (var item3 in CombatantData.SwingTypeToDamageTypeDataLinksOutgoing.Where(item3 => !dictionary2.ContainsKey(item3.Key))) {
-				dictionary2.Add(item3.Key, new SolidBrush(Color.FromArgb(255, CombatantData.OutgoingDamageTypeDataObjects[item3.Value[0]].TypeColor)));
+				dictionary2.Add(item3.Key, new SolidBrush(FromArgb(255, CombatantData.OutgoingDamageTypeDataObjects[item3.Value[0]].TypeColor)));
 			}
 			foreach (var item4 in CombatantData.SwingTypeToDamageTypeDataLinksIncoming.Where(item4 => !dictionary2.ContainsKey(item4.Key))) {
-				dictionary2.Add(item4.Key, new SolidBrush(Color.FromArgb(255, CombatantData.IncomingDamageTypeDataObjects[item4.Value[0]].TypeColor)));
+				dictionary2.Add(item4.Key, new SolidBrush(FromArgb(255, CombatantData.IncomingDamageTypeDataObjects[item4.Value[0]].TypeColor)));
 			}
 			var graphics = Graphics.FromImage(bitmap);
 			graphics.SmoothingMode = SmoothingMode.AntiAlias;
@@ -379,10 +372,8 @@ public partial class OverlayWindow {
 		return bitmap;
 	}
 
-
 	private static Bitmap GenEncounterGraph(EncounterData? EncounterSource, int SizeX, int SizeY, string Sorting) {
-		if (SizeX < 16 || SizeY < 16)
-			return new Bitmap(16, 16);
+		if (SizeX < 16 || SizeY < 16) return new Bitmap(16, 16);
 		var bitmap = new Bitmap(SizeX, SizeY);
 		if (EncounterSource == null) return bitmap;
 		var list = new List<CombatantData>(EncounterSource.Items.Values);
@@ -396,15 +387,15 @@ public partial class OverlayWindow {
 			}
 			list.Reverse();
 			var list2 = !EncounterSource.GetIsSelective() || !EncounterSource.GetIgnoreEnemies() ? EncounterSource.GetAllies() : list;
-			var brush = new SolidBrush(Color.FromArgb(100, Color.FromArgb(-16777216)));
-			var solidBrush = new SolidBrush(Color.FromArgb(-1842205));
-			var brush2 = new SolidBrush(Color.FromArgb(-16777216));
-			var pen = new Pen(Color.FromArgb(-16777216));
-			var pen2 = new Pen(Color.FromArgb(-6250336));
-			var solidBrush2 = new SolidBrush(Color.FromArgb(-7667712));
-			var solidBrush3 = new SolidBrush(Color.FromArgb(-16777077));
-			var brush3 = new SolidBrush(Color.FromArgb(-7077677));
-			var brush4 = new SolidBrush(Color.FromArgb(-1));
+			var brush = new SolidBrush(FromArgb(100, FromArgb(-16777216)));
+			var solidBrush = new SolidBrush(FromArgb(-1842205));
+			var brush2 = new SolidBrush(FromArgb(-16777216));
+			var pen = new Pen(FromArgb(-16777216));
+			var pen2 = new Pen(FromArgb(-6250336));
+			var solidBrush2 = new SolidBrush(FromArgb(-7667712));
+			var solidBrush3 = new SolidBrush(FromArgb(-16777077));
+			var brush3 = new SolidBrush(FromArgb(-7077677));
+			var brush4 = new SolidBrush(FromArgb(-1));
 			var graphics = Graphics.FromImage(bitmap);
 			graphics.SmoothingMode = SmoothingMode.AntiAlias;
 			graphics.Clear(solidBrush.Color);
@@ -514,7 +505,7 @@ public partial class OverlayWindow {
 		public TreeNodeData? Parent { get; init; }
 		public List<TreeNodeData> Children { get; } = [];
 
-		public Color ForeColor { get; set; } = Color.White;
+		public Color ForeColor { get; set; } = White;
 		public object? Data { get; set; }
 	}
 
@@ -523,8 +514,8 @@ public partial class OverlayWindow {
 	internal static Bitmap GraphDrawMessage(string Message, float FontSize, Bitmap BlankImage) {
 		var graphics = Graphics.FromImage(BlankImage);
 		graphics.SmoothingMode = SmoothingMode.AntiAlias;
-		graphics.Clear(Color.FromArgb(-1842205));
-		graphics.DrawString(Message, new Font("Arial Black", FontSize, FontStyle.Regular), new SolidBrush(Color.FromArgb(-16777216)), 12f, 12f);
+		graphics.Clear(FromArgb(-1842205));
+		graphics.DrawString(Message, new Font("Arial Black", FontSize, FontStyle.Regular), new SolidBrush(FromArgb(-16777216)), 12f, 12f);
 		return BlankImage;
 	}
 
@@ -677,11 +668,11 @@ public partial class OverlayWindow {
 				for (var j = 0; j < rowData.Count; j++) {
 					ImGui.TableNextColumn();
 					var cellColor = GetCellColor(i, j);
-					if (cellColor != Color.Transparent) {
+					if (cellColor != Transparent) {
 						ImGui.PushStyleColor(ImGuiCol.Text, ColorToImGui(cellColor));
 					}
 					ImGui.Text(rowData[j]);
-					if (cellColor != Color.Transparent)
+					if (cellColor != Transparent)
 						ImGui.PopStyleColor();
 					if (ImGui.IsItemClicked(ImGuiMouseButton.Left) && ImGui.IsMouseDoubleClicked(ImGuiMouseButton.Left))
 						HandleItemActivate(i);
@@ -984,19 +975,19 @@ public partial class OverlayWindow {
 	private static Color GetEncounterColor(EncounterData encounter) {
 		try {
 			return encounter.GetEncounterSuccessLevel() switch {
-				1 => Color.FromArgb(-14513374),
-				2 => Color.FromArgb(-29696),
-				3 => Color.FromArgb(-2354116),
-				_ => Color.FromArgb(-16744193)
+				1 => FromArgb(-14513374),
+				2 => FromArgb(-29696),
+				3 => FromArgb(-2354116),
+				_ => FromArgb(-16744193)
 			};
 		} catch {
-			return Color.White;
+			return White;
 		}
 	}
 
 
 	// ReSharper disable once UnusedParameter.Local
-	private static Color GetCellColor(int rowIndex, int colIndex) => colIndex % 2 == 0 ? Color.Transparent : Color.Bisque;
+	private static Color GetCellColor(int rowIndex, int colIndex) => colIndex % 2 == 0 ? Transparent : Bisque;
 
 	private const ImPlotFlags plotFlag = ImPlotFlags.NoTitle | ImPlotFlags.NoLegend | ImPlotFlags.NoFrame | ImPlotFlags.NoBoxSelect;
 

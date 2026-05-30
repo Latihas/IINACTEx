@@ -5,6 +5,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Drawing;
 using System.Linq;
 
+// ReSharper disable once CheckNamespace
 namespace Advanced_Combat_Tracker;
 
 public class EncounterData {
@@ -20,7 +21,7 @@ public class EncounterData {
 	private bool alliesCached;
 	private DateTime alliesLastCall = DateTime.Now;
 	private bool alliesManual;
-	private List<CombatantData>? cachedAllies;
+	private List<CombatantData> cachedAllies = [];
 	private bool encIdCached;
 	private readonly bool ignoreEnemies;
 	private readonly HashSet<int> includedTimeSorters = [];
@@ -289,7 +290,7 @@ public class EncounterData {
 
 	public List<CombatantData> GetAllies(bool allowLimited = false) {
 		if (alliesCached || allowLimited && DateTime.Now.Second == alliesLastCall.Second ||
-		    cachedAllies != null && Active && Title == ActGlobals.Trans["mergedEncounterTerm-all"]) {
+		    Active && Title == ActGlobals.Trans["mergedEncounterTerm-all"]) {
 			return cachedAllies;
 		}
 		if (GetIgnoreEnemies()) return [..Items.Values];
@@ -302,17 +303,11 @@ public class EncounterData {
 		while (listChanged) {
 			listChanged = false;
 			for (var i = 0; i < sortedAllies.Count; i++) {
-				ImmutableArray<KeyValuePair<string, int>> subAllies;
-				try {
-					subAllies = [..sortedAllies.Values[i].cd.Allies];
-				} catch (InvalidOperationException) {
-					continue;
-				}
+				ImmutableArray<KeyValuePair<string, int>> subAllies = [..sortedAllies.Values[i].cd.Allies];
 				foreach (var (name, value) in subAllies) {
 					if (!sortedAllies.TryGetValue(name, out var value1)) {
 						var combatant2 = GetCombatant(name);
-						if (combatant2 == null)
-							continue;
+						if (combatant2 == null) continue;
 						value1 = new AllyObject(combatant2);
 						sortedAllies.Add(name, value1);
 						listChanged = true;
@@ -322,10 +317,9 @@ public class EncounterData {
 			}
 		}
 		var thisCombatantIsEnemy = sortedAllies[combatant.Name.ToUpper()].allyVal < 0;
-		var list = sortedAllies.Where(ally => thisCombatantIsEnemy && ally.Value.allyVal < 0 || ally.Value.allyVal > 0)
+		// list.RemoveAll(item => item == null);
+		cachedAllies = sortedAllies.Where(ally => thisCombatantIsEnemy && ally.Value.allyVal < 0 || !thisCombatantIsEnemy && ally.Value.allyVal > 0)
 			.Select(ally => ally.Value.cd).ToList();
-		list.RemoveAll(item => item == null);
-		cachedAllies = list.ToList();
 		alliesCached = true;
 		alliesLastCall = DateTime.Now;
 		return cachedAllies;
@@ -423,6 +417,7 @@ public class EncounterData {
 		return num.GetHashCode();
 	}
 
+	[SuppressMessage("Performance", "CS9113")]
 	public class TextExportFormatter(string name, string label, string description, ExportStringDataCallback formatterCallback) {
 		public readonly ExportStringDataCallback GetExportString = formatterCallback;
 		// public string Label { get; } = label;
@@ -430,6 +425,7 @@ public class EncounterData {
 		// public string Name { get; } = name;
 	}
 
+	[SuppressMessage("Performance", "CS9113")]
 	public class ColumnDef(string label, bool defaultVisible, string sqlDataType, string sqlDataName, StringDataCallback cellDataCallback, StringDataCallback sqlDataCallback) {
 		public readonly StringDataCallback GetCellData = cellDataCallback;
 		// public string Label { get; } = label;
