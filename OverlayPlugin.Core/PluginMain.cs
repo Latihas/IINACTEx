@@ -180,8 +180,6 @@ public class PluginMain {
 	/// </summary>
 	/// <param name="extraOpcodes"></param>
 	public void InitPlugin(string? extraOpcodes = null) {
-		var watch = new Stopwatch();
-		watch.Start();
 		try {
 			// ** Init phase 2
 			Status = @"初始化阶段2：集成";

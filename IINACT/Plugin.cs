@@ -128,6 +128,8 @@ public sealed class Plugin : IDalamudPlugin {
 		lastLogTick = DateTime.Now;
 	}
 
+	private FetchDependencies.FetchDependencies _fetchDependencies = null!;
+
 	public Plugin() {
 		LogTick("Start Initializing");
 		Version = Version.Parse(Assembly.GetExecutingAssembly().GetCustomAttribute<AssemblyInformationalVersionAttribute>()!.InformationalVersion.Split('+')[0]);
@@ -136,10 +138,12 @@ public sealed class Plugin : IDalamudPlugin {
 		oFormActMain = new FormActMain(this, Log, Framework, ObjectTable);
 		Configuration = PluginInterface.GetPluginConfig() as Configuration ?? new Configuration();
 		HttpClient = new HttpClient();
-		var TaskFetchDependencies = Task.Run(() => new FetchDependencies.FetchDependencies(Version, PluginAssemblyDirectory, DataManager.Language.ToString() == "ChineseSimplified", HttpClient, Log).GetFfxivPlugin()); //非CN SDK无ChineseSimplified
-		if (!Configuration.AsyncOnInit) TaskFetchDependencies.Wait();
+		_fetchDependencies = new FetchDependencies.FetchDependencies(Version, PluginAssemblyDirectory, DataManager.Language.ToString() == "ChineseSimplified", HttpClient, Log);
+		_fetchDependencies.GetFfxivPluginIfNullOrUpdate(Configuration.FFXIV_ACT_Plugin_CN_Update);
+		Configuration.FFXIV_ACT_Plugin_CN_Update = false;
+		LogTick("Dependencies Fetched");
 		if (!Directory.Exists(PluginActScriptDirectory)) Directory.CreateDirectory(PluginActScriptDirectory);
-		var region = DataManager.Language.ToString() == "ChineseSimplified" ? GameRegion.Chinese : GameRegion.Global; //非CN SDK无ChineseSimplified
+		var region = DataManager.Language.ToString() == "ChineseSimplified" ? GameRegion.Chinese : GameRegion.Global;
 		if (opcodestxtCanReplace) {
 			try {
 				var d1 = OpcodeManager.Instance._opcodes[region].ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
@@ -158,8 +162,6 @@ public sealed class Plugin : IDalamudPlugin {
 		} else
 			OpcodeManager.Instance.SetRegion(region);
 		FileDialogManager = new FileDialogManager();
-		// PluginLogTraceListener = new PluginLogTraceListener();
-		// Trace.Listeners.Add(PluginLogTraceListener);
 		ActLocalization.Init();
 		ActLocalization.AddPrebuild();
 		oFormActMain.LogFilePath = Configuration.LogFilePath;
@@ -195,10 +197,7 @@ public sealed class Plugin : IDalamudPlugin {
 		oFormActMain.TriggernometryPlugin = TriggernometryProxyPlugin = new ProxyPlugin();
 		oFormActMain.PostNamazuPlugin = PostNamazuPlugin = new PostNamazu.PostNamazu();
 
-		LogTick("Waiting Dependencies");
 		var extraOpcodes = opcodesjsoncCanReplace ? File.ReadAllText(opcodesjsoncPath) : null;
-		if (Configuration.AsyncOnInit) TaskFetchDependencies.Wait();
-		LogTick("Dependencies Fetched");
 		FormActMain.AddDefaultPlugins(FfxivActPluginWrapper = new FfxivActPluginWrapper(), new PluginLoader(OverlayPlugin), TriggernometryProxyPlugin, PostNamazuPlugin);
 		LogTick("FfxivActPlugin Inited");
 		OverlayPlugin.InitPlugin(extraOpcodes);
@@ -235,6 +234,7 @@ public sealed class Plugin : IDalamudPlugin {
 			LeavePvP();
 		ClientState.EnterPvP += EnterPvP;
 		ClientState.LeavePvP += LeavePvP;
+		Framework.Update += CheckCnUpdate;
 		ZoneDownHookManager = new ZoneDownHookManager();
 		foreach (var rt in Directory.GetFiles(PluginActScriptDirectory, "*.dll", SearchOption.TopDirectoryOnly).Select(Path.GetFileName).Cast<string>())
 			if (Configuration.ActScriptsEnabled.Contains(rt))
@@ -271,6 +271,14 @@ public sealed class Plugin : IDalamudPlugin {
 		if (Configuration.ShowOverlayOnInit) OverlayWindow.Toggle();
 		if (Configuration.TtsOnInit) oFormActMain.TTS("插件加载完成");
 		Log.Info($"[StartTick] IINACTEx Inited. Total {(DateTime.Now - startLogTick).TotalSeconds}s");
+	}
+
+	private DateTime lastCnUpdateCheck = DateTime.Now.AddMinutes(-8);
+
+	private void CheckCnUpdate(IFramework _) {
+		if (!((DateTime.Now - lastCnUpdateCheck).TotalMinutes > 10)) return;
+		Configuration.FFXIV_ACT_Plugin_CN_Update = _fetchDependencies.CheckCnUpdate();
+		lastCnUpdateCheck = DateTime.Now;
 	}
 
 	public static void InitIActPluginV1(ActPluginData plugin, bool preserveEnableState = false) {

@@ -117,9 +117,10 @@ public class MainWindow() : Window(WindowPrefix) {
 	}
 
 	private string? _windowName;
+
 	public override void Draw() {
 		WindowName = _windowName ??=
-			$"IINACTEx [{ApiVersion.NamespaceIdentifier}] [版本{Assembly.GetExecutingAssembly().GetName().Version?.ToString()}] [核心{Instance.Version}] [解析{typeof(FFXIV_ACT_Plugin.FFXIV_ACT_Plugin).Assembly.GetName().Version}]###IINACTEx";
+			$"IINACTEx [{ApiVersion.NamespaceIdentifier}] [版本{Assembly.GetExecutingAssembly().GetName().Version?.ToString()}] [核心{Instance.Version}] [解析{typeof(FFXIV_ACT_Plugin.FFXIV_ACT_Plugin).Assembly.GetName().Version}({(Plugin.Configuration.FFXIV_ACT_Plugin_CN_Update ? "解析插件可更新，请重新加载插件以更新" : "解析插件无更新")})]###IINACTEx";
 		foreach (var p in ImGuiColor) ImGui.PushStyleColor(p.Key, p.Value);
 		foreach (var p in ImGuiVar) ImGui.PushStyleVar(p.Key, p.Value);
 		var time = (float)ImGui.GetTime();

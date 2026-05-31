@@ -67,6 +67,7 @@ public class Configuration : IPluginConfiguration {
 	public int Version { get; set; }
 
 	public string? SelectedOverlay { get; set; }
+	public bool FFXIV_ACT_Plugin_CN_Update { get; set; }
 
 	public void Save() => Plugin.PluginInterface.SavePluginConfig(this);
 }

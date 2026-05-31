@@ -152,7 +152,7 @@ public static partial class LWindow {
 			ImGui.TextWrapped("    : 看个人需求，基本上99%的常用功能都搬过来了，日常使用体验几乎没有差别。");
 			ImGui.Separator();
 			ImGui.Text("3. 悬浮窗一直显示'等待战斗数据'");
-			ImGui.TextWrapped("    : 多半是端口占用了，请改变Overlay Plugin的端口，然后重启游戏/插件。");
+			ImGui.TextWrapped("    : 多半是端口占用了，请改变Overlay Plugin的端口，然后重启游戏/插件；或是直接使用最后一栏的'历史记录'，直接走内存不走端口。");
 			ImGui.Separator();
 			ImGui.Text("4. 我可以多开吗");
 			ImGui.TextWrapped("    : 可以。但是依赖WebSocket的，例如伤害统计除了'历史记录'栏、Browsingway伤害统计等可能需要设置不同的Overlay Plugin服务的端口号来查看。其余因为是内存解析，基本不受影响。");

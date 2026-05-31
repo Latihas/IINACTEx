@@ -30,19 +30,18 @@ public partial class FetchDependencies {
 	internal static IPluginLog Log;
 	public static string RemoteDieMoeBuildVersion = "";
 
+	public bool CheckCnUpdate() {
+		if (!IsChinese) return false;
+		return NeedsUpdate(Path.Combine(DependenciesDir, "FFXIV_ACT_Plugin.dll"));
+	}
+
 	public void GetFfxivPlugin() {
 		var pluginZipPath = Path.Combine(DependenciesDir, "FFXIV_ACT_Plugin.zip");
 		var pluginPath = Path.Combine(DependenciesDir, "FFXIV_ACT_Plugin.dll");
 
-		if (!NeedsUpdate(pluginPath))
-			return;
-
-		if (!File.Exists(pluginZipPath)) {
-			DownloadPlugin(pluginZipPath);
-		}
-
-		if (IsChinese)
-			DownloadFile(PluginUrlChinese, pluginPath);
+		if (!NeedsUpdate(pluginPath)) return;
+		if (!File.Exists(pluginZipPath)) DownloadPlugin(pluginZipPath);
+		if (IsChinese) DownloadFile(PluginUrlChinese, pluginPath);
 		else {
 			try {
 				ZipFile.ExtractToDirectory(pluginZipPath, DependenciesDir, true);
@@ -61,6 +60,10 @@ public partial class FetchDependencies {
 		patcher.MemoryPlugin();
 	}
 
+	public void GetFfxivPluginIfNullOrUpdate(bool canUpdate) {
+		var pluginPath = Path.Combine(DependenciesDir, "FFXIV_ACT_Plugin.dll");
+		if (!File.Exists(pluginPath) || canUpdate) GetFfxivPlugin();
+	}
 
 	[GeneratedRegex(@"build_version\s*=\s*([0-9.]+)", RegexOptions.Multiline)]
 	private static partial Regex DieMoeBuildVersionRegex();
@@ -85,10 +88,7 @@ public partial class FetchDependencies {
 		}
 		try {
 			using var plugin = new TargetAssembly(dllPath);
-
-			if (!plugin.ApiVersionMatches())
-				return true;
-
+			if (!plugin.ApiVersionMatches()) return true;
 			using var cancelAfterDelay = new CancellationTokenSource(TimeSpan.FromSeconds(3));
 			if (!IsChinese)
 				return new Version(HttpClient
