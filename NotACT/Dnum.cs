@@ -3,6 +3,7 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace Advanced_Combat_Tracker;
 
+[SuppressMessage("ReSharper", "UnusedMember.Global")] 
 public class Dnum(long numberValue, string customDamageString) : IComparable {
 	[SuppressMessage("ReSharper", "MemberCanBePrivate.Global")]
 	public Dnum(long numberValue) : this(numberValue, string.Empty) { }
@@ -13,8 +14,8 @@ public class Dnum(long numberValue, string customDamageString) : IComparable {
 	public static Dnum ThreatPosition => -11L;
 	[SuppressMessage("ReSharper", "MemberCanBePrivate.Global")]
 	public long Number { get; } = numberValue;
-	// public static Dnum NoDamage => 0L;
-	// public static Dnum Unknown => -9L;
+	public static Dnum NoDamage => 0L;
+	public static Dnum Unknown => -9L;
 
 	public string DamageString {
 		get => string.IsNullOrEmpty(damageString) ? ToString() : damageString;

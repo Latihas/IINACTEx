@@ -418,23 +418,25 @@ public class EncounterData {
 	}
 
 	[SuppressMessage("Performance", "CS9113")]
+	[SuppressMessage("ReSharper", "UnusedMember.Global")]
 	public class TextExportFormatter(string name, string label, string description, ExportStringDataCallback formatterCallback) {
 		public readonly ExportStringDataCallback GetExportString = formatterCallback;
-		// public string Label { get; } = label;
-		// public string Description { get; } = description;
-		// public string Name { get; } = name;
+		public string Label { get; } = label;
+		public string Description { get; } = description;
+		public string Name { get; } = name;
 	}
 
 	[SuppressMessage("Performance", "CS9113")]
+	[SuppressMessage("ReSharper", "UnusedMember.Global")]
 	public class ColumnDef(string label, bool defaultVisible, string sqlDataType, string sqlDataName, StringDataCallback cellDataCallback, StringDataCallback sqlDataCallback) {
 		public readonly StringDataCallback GetCellData = cellDataCallback;
-		// public string Label { get; } = label;
 		public readonly StringDataCallback GetSqlData = sqlDataCallback;
 		public string SqlDataType { get; } = sqlDataType;
 		public string SqlDataName { get; } = sqlDataName;
-		// public ColorDataCallback GetCellBackColor = _ => Color.Transparent;
-		// public ColorDataCallback GetCellForeColor = _ => Color.Transparent;
-		// public bool DefaultVisible { get; } = defaultVisible;
+		public ColorDataCallback GetCellBackColor = _ => Color.Transparent;
+		public ColorDataCallback GetCellForeColor = _ => Color.Transparent;
+		public bool DefaultVisible { get; } = defaultVisible;
+		public string Label { get; } = label;
 	}
 
 	private class AllyObject(CombatantData combatant) {

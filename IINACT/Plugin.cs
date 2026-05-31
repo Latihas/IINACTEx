@@ -259,8 +259,9 @@ public sealed class Plugin : IDalamudPlugin {
 			BridgeNamazu.RegisterAnnotatedMethods();
 			FormActMain.PluginInitialized = true;
 			try {
-				typeof(DataSubscription).GetMethod("OnZoneChanged", BindingFlags.Public | BindingFlags.Instance, [typeof(uint), typeof(string)]
-				)!.Invoke(FfxivActPluginWrapper.ffxivActPlugin.DataSubscription, [ClientState.TerritoryType, DataManager.GetExcelSheet<TerritoryType>().FirstOrDefault(i => i.RowId == ClientState.TerritoryType).PlaceName.Value.Name.ToString()]);
+				((DataSubscription)FfxivActPluginWrapper.ffxivActPlugin.DataSubscription)
+					.OnZoneChanged(ClientState.TerritoryType,
+						DataManager.GetExcelSheet<TerritoryType>().FirstOrDefault(i => i.RowId == ClientState.TerritoryType).PlaceName.Value.Name.ToString());
 			} catch (Exception ex) {
 				Log.Warning(ex.ToString());
 			}

@@ -518,12 +518,13 @@ public class CombatantData : IComparable, IEquatable<CombatantData>, IComparable
 		return compareTo;
 	}
 
+	[SuppressMessage("ReSharper", "FieldCanBeMadeReadOnly.Global")]
+	[SuppressMessage("ReSharper", "UnusedMember.Global")]
 	public class TextExportFormatter(string name, string label, string description, ExportStringDataCallback formatterCallback) {
 		public readonly ExportStringDataCallback GetExportString = formatterCallback;
-
-		// public string Label { get; } = label;
-		// public string Description { get; } = description;
-		// public string Name { get; } = name;
+		public string Label { get; } = label;
+		public string Description { get; } = description;
+		public string Name { get; } = name;
 	}
 
 	[SuppressMessage("ReSharper", "FieldCanBeMadeReadOnly.Global")]

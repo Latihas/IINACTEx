@@ -210,7 +210,7 @@ public static partial class LWindow {
 			Plugin.Configuration.endEncounterOutOfCombatDelayMs = endEncounterOutOfCombatDelayMs;
 		}
 		ImGui.Separator();
-		ImGui.Text($"解析插件更新检测倒计时:{(Plugin.lastCnUpdateCheck.AddMinutes(10) - DateTime.Now).TotalSeconds:1f}s");
+		ImGui.Text($"解析插件更新检测倒计时:{(Plugin.lastCnUpdateCheck.AddMinutes(10) - DateTime.Now).TotalSeconds:F1}s");
 	}
 
 	private static void DrawSettingsModuleBase() {
@@ -228,12 +228,6 @@ public static partial class LWindow {
 					if (cChecked) RealPlugin.Instance.cfg.PostnamazuModuleDisabled.Remove(name);
 					else RealPlugin.Instance.cfg.PostnamazuModuleDisabled.Add(name);
 				}
-				// if (name == "VfxModule" && cChecked) {
-				//     ImGui.Indent();
-				//     var UseImGui4VfxModule = RealPlugin.Instance.cfg.UseImGui4VfxModule;
-				//     if (ImGui.Checkbox("使用ImGui替代", ref UseImGui4VfxModule)) RealPlugin.Instance.cfg.UseImGui4VfxModule = UseImGui4VfxModule;
-				//     ImGui.Unindent();
-				// }
 				ImGui.Unindent();
 			}
 		}
