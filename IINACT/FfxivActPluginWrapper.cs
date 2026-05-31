@@ -107,7 +107,7 @@ public partial class FfxivActPluginWrapper : IDisposable {
 	}
 
 
-	internal static Language ClientLanguage =>
+	private static Language ClientLanguage =>
 		Plugin.DataManager.Language switch {
 			Dalamud.Game.ClientLanguage.Japanese => Language.Japanese,
 			Dalamud.Game.ClientLanguage.English => Language.English,
@@ -182,32 +182,22 @@ public partial class FfxivActPluginWrapper : IDisposable {
 
 	private void SetupActWrapper() {
 		var actWrapper = logOutput.GetField<ACTWrapper>("_actWrapper");
-
 		actWrapper.TimeStampLen = DateTime.Now.ToString("HH:mm:ss.fff", CultureInfo.InvariantCulture).Length + 3;
 		actWrapper.LogPathHasCharName = false;
 		actWrapper.OverrideMainFormVisible = true;
-
 		ACT_UIMods.UpdateACTTables(false);
-
 		ActGlobals.oFormActMain.FfxivPlugin = ffxivActPlugin;
 	}
 
-	private void OFormActMain_BeforeLogLineRead(bool isImport, LogLineEventArgs logInfo) {
+	private void OFormActMain_BeforeLogLineRead(bool isImport, LogLineEventArgs logInfo) =>
 		(logInfo.logLine, logInfo.detectedType) =
-			parseMediator.BeforeLogLineRead(isImport, logInfo.detectedTime, logInfo.logLine);
-	}
+		parseMediator.BeforeLogLineRead(isImport, logInfo.detectedTime, logInfo.logLine);
 
-	private void SetupDataSubscription() {
-		ffxivActPlugin.DataSubscription.ZoneChanged += OnZoneChanged;
-	}
+	private void SetupDataSubscription() => ffxivActPlugin.DataSubscription.ZoneChanged += OnZoneChanged;
 
-	private static void OnZoneChanged(uint zoneId, string zoneName) {
-		ActGlobals.oFormActMain.ChangeZone(zoneName);
-	}
+	private static void OnZoneChanged(uint zoneId, string zoneName) => ActGlobals.oFormActMain.ChangeZone(zoneName);
 
-	private static void OnProcessException(DateTime timestamp, string text) {
-		Plugin.Log.Debug($"[FFXIV_ACT_Plugin] {text}");
-	}
+	private static void OnProcessException(DateTime timestamp, string text) => Plugin.Log.Warning($"[FFXIV_ACT_Plugin] {text}");
 
 	[SuppressGCTransition]
 	[LibraryImport("SafeMemoryReader.dll")]

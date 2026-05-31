@@ -92,12 +92,12 @@ public class EventDispatcher {
 
 	public void DispatchEvent(JObject e) {
 		var eventType = e["type"].ToString();
-		if (!eventFilter.ContainsKey(eventType)) {
+		if (!eventFilter.TryGetValue(eventType, out var value)) 
 			throw new Exception(string.Format(Resources.MissingEventDispatchError, eventType));
-		}
 
-		lock (eventFilter[eventType]) {
-			foreach (var receiver in eventFilter[eventType]) {
+
+		lock (value) {
+			foreach (var receiver in value) {
 				try {
 					receiver.HandleEvent(e);
 				} catch (Exception ex) {
@@ -109,11 +109,10 @@ public class EventDispatcher {
 
 	public JToken CallHandler(JObject e) {
 		var handlerName = e["call"].ToString();
-		if (!handlers.ContainsKey(handlerName)) {
+		if (!handlers.TryGetValue(handlerName, out var value)) 
 			throw new Exception(string.Format(Resources.MissingHandlerError, handlerName));
-		}
 
-		var result = handlers[handlerName](e);
+		var result = value(e);
 		if (result != null && result.Type != JTokenType.Object) {
 			throw new Exception("Handler response must be an object or null");
 		}

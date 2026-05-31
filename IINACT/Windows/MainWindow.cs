@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Linq;
@@ -7,6 +8,7 @@ using System.Net;
 using System.Net.Sockets;
 using System.Numerics;
 using System.Reflection;
+using System.Text;
 using System.Windows.Forms;
 using Dalamud.Bindings.ImGui;
 using Dalamud.Interface;
@@ -449,8 +451,52 @@ public class MainWindow() : Window(WindowPrefix) {
 			}
 		}
 		DrawWebSocketSettings();
+		if (ImGui.Button("尝试杀死其他占用端口程序"))
+			KillOccupiedProcessByPort(Server?.Port);
 	}
 
+	private static void KillOccupiedProcessByPort(int? port) {
+		if (port is null or < 1 or > 65535) return;
+		int currentPid;
+		using (var currentProcess = Process.GetCurrentProcess()) {
+			currentPid = currentProcess.Id;
+		}
+		var pidSet = new HashSet<int>();
+		var cmd = $"netstat -ano | findstr \":{port}\"";
+		using (var proc = new Process()) {
+			proc.StartInfo = new ProcessStartInfo {
+				FileName = "cmd.exe",
+				Arguments = $"/c {cmd}",
+				UseShellExecute = false,
+				RedirectStandardOutput = true,
+				CreateNoWindow = true,
+				StandardOutputEncoding = Encoding.UTF8
+			};
+			proc.Start();
+			var output = proc.StandardOutput.ReadToEnd();
+			proc.WaitForExit();
+			var lines = output.Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries);
+			foreach (var line in lines) {
+				var trimLine = line.Trim();
+				if (!trimLine.Contains("LISTENING")) continue;
+				var parts = trimLine.Split([' '], StringSplitOptions.RemoveEmptyEntries);
+				if (parts.Length == 0) continue;
+				if (int.TryParse(parts.Last(), out var pid) && pid > 0 && pid != currentPid)
+					pidSet.Add(pid);
+			}
+		}
+		if (pidSet.Count == 0) return;
+		foreach (var pid in pidSet) {
+			try {
+				using var process = Process.GetProcessById(pid);
+				process.CloseMainWindow();
+				if (process.HasExited) continue;
+				process.Kill();
+			} catch {
+				//
+			}
+		}
+	}
 
 	private void DrawParseSettings() {
 		ImGui.Spacing();

@@ -258,13 +258,6 @@ public sealed class Plugin : IDalamudPlugin {
 			BridgeNamazu.InitializeModules();
 			BridgeNamazu.RegisterAnnotatedMethods();
 			FormActMain.PluginInitialized = true;
-			try {
-				((DataSubscription)FfxivActPluginWrapper.ffxivActPlugin.DataSubscription)
-					.OnZoneChanged(ClientState.TerritoryType,
-						DataManager.GetExcelSheet<TerritoryType>().FirstOrDefault(i => i.RowId == ClientState.TerritoryType).PlaceName.Value.Name.ToString());
-			} catch (Exception ex) {
-				Log.Warning(ex.ToString());
-			}
 			LogTick("Asyc Post Process Done");
 		}, token);
 		if (!Configuration.AsyncOnInit) taskPP.Wait();
