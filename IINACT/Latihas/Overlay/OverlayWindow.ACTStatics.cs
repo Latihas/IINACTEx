@@ -687,15 +687,12 @@ public partial class OverlayWindow {
 		lock (_textureLock) {
 			if (_currentTexture != null) {
 				var graphSize = ImGui.GetContentRegionAvail();
-				// var pos = ImGui.GetCursorPos();
-				// ImGui.SetCursorPos(pos);
 				ImGui.Image(_currentTexture.Handle, graphSize);
 			} else {
 				ImGui.Text("No graph data");
 			}
 		}
 	}
-
 
 	private void PopulateTreeView(TreeNodeData? parentNode = null) {
 		try {

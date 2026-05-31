@@ -128,8 +128,7 @@ public sealed class Plugin : IDalamudPlugin {
 		Log.Info($"[StartTick] {s}({(DateTime.Now - lastLogTick).TotalSeconds}s)");
 		lastLogTick = DateTime.Now;
 	}
-
-
+	
 	public Plugin() {
 		LogTick("Start Initializing");
 		Version = Version.Parse(Assembly.GetExecutingAssembly().GetCustomAttribute<AssemblyInformationalVersionAttribute>()!.InformationalVersion.Split('+')[0]);

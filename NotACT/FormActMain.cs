@@ -221,10 +221,11 @@ public partial class FormActMain : Form, ISynchronizeInvoke {
 		ActiveZone.ActiveEncounter.EndCombat(true);
 	}
 
-	public bool SelectiveListGetSelected(string Player) {
-		var key = Player.ToUpper();
-		return ActGlobals.selectiveList.ContainsKey(key) && ActGlobals.selectiveList[key];
-	}
+	[SuppressMessage("Performance", "CA1822")]
+	public bool SelectiveListGetSelected(string Player) =>
+		// var key = Player.ToUpper();
+		// return ActGlobals.selectiveList.ContainsKey(key) && ActGlobals.selectiveList[key];
+		false;
 
 	public bool SetEncounter(DateTime Time, string Attacker, string Victim) {
 		// Check if not already in combat

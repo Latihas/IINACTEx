@@ -41,7 +41,7 @@ public class SilverDasher {
 		Framework = framework;
 		NotificationManager = notificationManager;
 		Instance = this;
-		Framework.RunOnFrameworkThread(() => {
+		Framework.RunOnTick(() => {
 			SummonDoppelgangers();
 			StartLoop(tokenSource.Token);
 		});
