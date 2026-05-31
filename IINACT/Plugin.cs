@@ -17,12 +17,10 @@ using Dalamud.Interface.Windowing;
 using Dalamud.IoC;
 using Dalamud.Plugin;
 using Dalamud.Plugin.Services;
-using FFXIV_ACT_Plugin.Memory;
 using IINACT.Latihas.Overlay;
 using IINACT.Network;
 using IINACT.TextToSpeech;
 using IINACT.Windows;
-using Lumina.Excel.Sheets;
 using Machina.FFXIV;
 using Machina.FFXIV.Headers.Opcodes;
 using RainbowMage.OverlayPlugin;
@@ -34,6 +32,7 @@ using Triggernometry.PScript;
 using TriggernometryProxy;
 using static Advanced_Combat_Tracker.ActGlobals;
 using static IINACT.Latihas.LWindow;
+using static IINACT.Windows.MainWindow;
 
 namespace IINACT;
 
@@ -128,7 +127,7 @@ public sealed class Plugin : IDalamudPlugin {
 		Log.Info($"[StartTick] {s}({(DateTime.Now - lastLogTick).TotalSeconds}s)");
 		lastLogTick = DateTime.Now;
 	}
-	
+
 	public Plugin() {
 		LogTick("Start Initializing");
 		Version = Version.Parse(Assembly.GetExecutingAssembly().GetCustomAttribute<AssemblyInformationalVersionAttribute>()!.InformationalVersion.Split('+')[0]);
@@ -236,6 +235,7 @@ public sealed class Plugin : IDalamudPlugin {
 		ClientState.EnterPvP += EnterPvP;
 		ClientState.LeavePvP += LeavePvP;
 		Framework.Update += CheckCnUpdate;
+		ClientState.Logout += OnLogOut;
 		ZoneDownHookManager = new ZoneDownHookManager();
 		foreach (var rt in Directory.GetFiles(PluginActScriptDirectory, "*.dll", SearchOption.TopDirectoryOnly).Select(Path.GetFileName).Cast<string>())
 			if (Configuration.ActScriptsEnabled.Contains(rt))
@@ -249,7 +249,7 @@ public sealed class Plugin : IDalamudPlugin {
 		var sourceDir = Path.Combine(Instance.PluginAssemblyDirectory, "scripts");
 		var targetDir = Instance.PluginActScriptDirectory;
 		Directory.CreateDirectory(targetDir);
-		MainWindow.CopyDirectoryContents(sourceDir, targetDir, true);
+		CopyDirectoryContents(sourceDir, targetDir, true);
 		foreach (var rt in Directory.GetFiles(PluginActScriptDirectory, "*.cs", SearchOption.TopDirectoryOnly).Select(Path.GetFileName).Cast<string>())
 			if (Configuration.ActScriptsEnabled.Contains(rt))
 				LoadPScript(rt, true);
@@ -260,7 +260,7 @@ public sealed class Plugin : IDalamudPlugin {
 			LogTick("Asyc Post Process Done");
 		}, token);
 		if (!Configuration.AsyncOnInit) taskPP.Wait();
-		if (Configuration.LoadSilverDasherOnInit) MainWindow.EnableSilverDasher();
+		if (Configuration.LoadSilverDasherOnInit) EnableSilverDasher();
 		if (Directory.Exists(Path.Combine(PluginConfigDirectory, "cactbot"))) RefreshBw();
 		if (Configuration.ShowWindowOnInit) MainWindow.Toggle();
 		if (Configuration.ShowOverlayOnInit) OverlayWindow.Toggle();
@@ -268,6 +268,14 @@ public sealed class Plugin : IDalamudPlugin {
 		Configuration.Version = LatestConfigVersion;
 		Configuration.Save();
 		Log.Info($"[StartTick] IINACTEx Inited. Total {(DateTime.Now - startLogTick).TotalSeconds}s");
+	}
+
+	private static void OnLogOut(int type, int code) {
+		if (DisableSilverDasher())
+			Task.Run(async () => {
+				await Task.Delay(5000);
+				EnableSilverDasher();
+			});
 	}
 
 	internal static DateTime lastCnUpdateCheck = DateTime.Now.AddMinutes(-8);
@@ -355,12 +363,14 @@ public sealed class Plugin : IDalamudPlugin {
 		PluginInterface.UiBuilder.OpenMainUi -= DrawConfigUI;
 		ClientState.EnterPvP -= EnterPvP;
 		ClientState.LeavePvP -= LeavePvP;
+		Framework.Update -= CheckCnUpdate;
+		ClientState.Logout -= OnLogOut;
 		IpcProviders.Dispose();
 		ZoneDownHookManager.Dispose();
 		// Trace.Listeners.Remove(PluginLogTraceListener);
 		WindowSystem.RemoveAllWindows();
 		OverlayWindow.Dispose();
-		MainWindow.SilverDasherPlugin?.DeInitPlugin();
+		SilverDasherPlugin?.DeInitPlugin();
 		CommandManager.RemoveHandler(MainWindowCommandName);
 		CommandManager.RemoveHandler(EndEncCommandName);
 		CommandManager.RemoveHandler(OverlayCommandName);

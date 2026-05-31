@@ -3,7 +3,7 @@ using SilverDasher.ACT.Views;
 namespace SilverDasher.ACT.Doppelgangers;
 
 public class Painter(SilverDasher silverDasher) : Doppelganger(silverDasher) {
-	internal PluginControl pluginControl;
+	internal PluginControl? pluginControl;
 
 	internal override void Init() {
 		pluginControl ??= new PluginControl(this);
@@ -14,6 +14,7 @@ public class Painter(SilverDasher silverDasher) : Doppelganger(silverDasher) {
 	}
 
 	internal void RepaintNodes() {
+		if (pluginControl == null) return;
 		var obj = pluginControl.ViewModel;
 		obj.ClearAllNodes();
 		obj.SetPatchNames(Painter.Keeper.Patches.PatchByCode);
@@ -21,5 +22,5 @@ public class Painter(SilverDasher silverDasher) : Doppelganger(silverDasher) {
 		obj.SetupFates(Painter.Keeper.Fates.FateByID, Painter.Keeper.SpFates.FateGroupsTree, Keeper.Config.FateSubscriptions);
 	}
 
-	public void DrawImGui() => pluginControl.Draw();
+	public void DrawImGui() => pluginControl?.Draw();
 }

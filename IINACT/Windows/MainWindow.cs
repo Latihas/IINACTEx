@@ -226,14 +226,12 @@ public class MainWindow() : Window(WindowPrefix) {
 				case "银山雀儿":
 					DrawSilverDasher();
 					break;
-
 				case "脚本":
 					DrawSettingsScripts();
 					break;
 				case "调试":
 					DrawTriggerDebug();
 					break;
-
 				case "初始化":
 					DrawInitSettings();
 					break;
@@ -320,16 +318,20 @@ public class MainWindow() : Window(WindowPrefix) {
 			ClientState, ObjectTable, Framework, NotificationManager);
 	}
 
+	internal static bool DisableSilverDasher() {
+		if (SilverDasherPlugin == null) return false;
+		SilverDasherPlugin.DeInitPlugin();
+		SilverDasherPlugin = null;
+		return true;
+	}
+
 	internal static SilverDasher.ACT.SilverDasher? SilverDasherPlugin;
 
 	private static void DrawSilverDasher() {
 		if (SilverDasherPlugin == null) {
 			if (ImGui.Button("启用")) EnableSilverDasher();
 		} else {
-			if (ImGui.Button("禁用")) {
-				SilverDasherPlugin.DeInitPlugin();
-				SilverDasherPlugin = null;
-			}
+			if (ImGui.Button("禁用")) DisableSilverDasher();
 		}
 		ImGui.SameLine();
 		ImGui.Text("银山雀儿");
@@ -585,23 +587,15 @@ public class MainWindow() : Window(WindowPrefix) {
 		ImGui.Spacing();
 		var wsServerIp = OverlayPluginConfig?.WSServerIP ?? "";
 		ImGui.InputText("IP地址", ref wsServerIp, 100);
-
-		if (IPAddress.TryParse(wsServerIp, out var address)) {
-			if (OverlayPluginConfig is not null)
-				OverlayPluginConfig.WSServerIP = address.ToString();
-		} else if (wsServerIp == "*") {
-			if (OverlayPluginConfig is not null)
-				OverlayPluginConfig.WSServerIP = "*";
-		}
+		if (IPAddress.TryParse(wsServerIp, out var address))
+			OverlayPluginConfig?.WSServerIP = address.ToString();
+		else if (wsServerIp == "*")
+			OverlayPluginConfig?.WSServerIP = "*";
 
 		var wsServerPort = OverlayPluginConfig?.WSServerPort.ToString() ?? "";
 		ImGui.InputText("端口", ref wsServerPort, 100);
-
-		if (int.TryParse(wsServerPort, out var port)) {
-			if (OverlayPluginConfig is not null)
-				OverlayPluginConfig.WSServerPort = port;
-		}
-
+		if (int.TryParse(wsServerPort, out var port))
+			OverlayPluginConfig?.WSServerPort = port;
 		OverlayPluginConfig?.Save();
 	}
 

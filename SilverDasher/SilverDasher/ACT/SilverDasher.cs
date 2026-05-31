@@ -41,10 +41,8 @@ public class SilverDasher {
 		Framework = framework;
 		NotificationManager = notificationManager;
 		Instance = this;
-		Framework.RunOnTick(() => {
-			SummonDoppelgangers();
-			StartLoop(tokenSource.Token);
-		});
+		SummonDoppelgangers();
+		StartLoop(tokenSource.Token);
 		Framework.Update += WriteLog;
 		ClientState.ZoneInit += ZI;
 	}
