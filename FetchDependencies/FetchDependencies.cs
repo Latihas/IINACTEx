@@ -10,11 +10,12 @@ using Dalamud.Plugin.Services;
 namespace FetchDependencies;
 
 public partial class FetchDependencies {
-	public FetchDependencies(Version version, string assemblyDir, bool isChinese, HttpClient httpClient, IPluginLog log) {
+	public FetchDependencies(Version version, string assemblyDir, bool isChinese, int languagePreserve, HttpClient httpClient, IPluginLog log) {
 		PluginVersion = version;
 		DependenciesDir = assemblyDir;
 		IsChinese = isChinese;
 		HttpClient = httpClient;
+		LanguagePreserve = languagePreserve;
 		Log = log;
 	}
 
@@ -26,6 +27,7 @@ public partial class FetchDependencies {
 	private Version PluginVersion { get; }
 	private string DependenciesDir { get; }
 	private bool IsChinese { get; }
+	private int LanguagePreserve { get; }
 	private HttpClient HttpClient { get; }
 	internal static IPluginLog Log;
 	public static string RemoteDieMoeBuildVersion = "";
@@ -58,6 +60,7 @@ public partial class FetchDependencies {
 		patcher.MainPlugin();
 		patcher.LogFilePlugin();
 		patcher.MemoryPlugin();
+		if (IsChinese && LanguagePreserve != 0 && LanguagePreserve != 1) patcher.ResourcePlugin(LanguagePreserve);
 	}
 
 	public void GetFfxivPluginIfNullOrUpdate(bool canUpdate) {

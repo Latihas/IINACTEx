@@ -65,6 +65,44 @@ public class Patcher(Version version, string workPath) {
 		logfile.WriteOut();
 	}
 
+	public void ResourcePlugin(int LanguagePreserve) {
+		var resource = new TargetAssembly(Path.Combine(WorkPath, "FFXIV_ACT_Plugin.Resource.dll"));
+		var common = new TargetAssembly(Path.Combine(WorkPath, "FFXIV_ACT_Plugin.Common.dll"));
+		ResourcePluginMethod(resource, common, "FFXIV_ACT_Plugin.Resource.ActionList::LoadGeneratedDefinitions()", LanguagePreserve);
+		ResourcePluginMethod(resource, common, "FFXIV_ACT_Plugin.Resource.StatusList::LoadResources()", LanguagePreserve);
+		resource.WriteOut();
+	}
+
+	private static void ResourcePluginMethod(TargetAssembly resource, TargetAssembly common, string s, int LanguagePreserve) {
+		var method = resource.GetMethod(s);
+		var il = method.Body.GetILProcessor();
+		var instructions = method.Body.Instructions;
+		var langDef = common.Assembly.MainModule.GetType("FFXIV_ACT_Plugin.Common.Language");
+		var langType = resource.Assembly.MainModule.ImportReference(langDef);
+		var arrayType = resource.Assembly.MainModule.ImportReference(typeof(Array));
+		var arrayGetEnumDef = arrayType.Resolve()
+			.Methods.First(m => m.Name == "GetEnumerator" && !m.HasParameters);
+		var arrayGetEnumerator = resource.Assembly.MainModule.ImportReference(arrayGetEnumDef);
+
+		var oldInstructions = instructions.Take(4).ToList();
+		foreach (var instr in oldInstructions) il.Remove(instr);
+		var firstInsertPoint = instructions.First();
+		il.InsertBefore(firstInsertPoint, il.Create(OpCodes.Ldc_I4_2));
+		il.InsertBefore(firstInsertPoint, il.Create(OpCodes.Newarr, langType));
+
+		il.InsertBefore(firstInsertPoint, il.Create(OpCodes.Dup));
+		il.InsertBefore(firstInsertPoint, il.Create(OpCodes.Ldc_I4_0));
+		il.InsertBefore(firstInsertPoint, il.Create(OpCodes.Ldc_I4_1));
+		il.InsertBefore(firstInsertPoint, il.Create(OpCodes.Stelem_Any, langType));
+
+		il.InsertBefore(firstInsertPoint, il.Create(OpCodes.Dup));
+		il.InsertBefore(firstInsertPoint, il.Create(OpCodes.Ldc_I4_1));
+		il.InsertBefore(firstInsertPoint, il.Create(OpCodes.Ldc_I4, LanguagePreserve));
+		il.InsertBefore(firstInsertPoint, il.Create(OpCodes.Stelem_Any, langType));
+
+		il.InsertBefore(firstInsertPoint, il.Create(OpCodes.Callvirt, arrayGetEnumerator));
+	}
+
 	public void MemoryPlugin() {
 		var memory = new TargetAssembly(Path.Combine(WorkPath, "FFXIV_ACT_Plugin.Memory.dll"));
 
@@ -180,18 +218,5 @@ public class Patcher(Version version, string workPath) {
 		}
 
 		memory.WriteOut();
-	}
-
-	public static bool SilverDasherPlugin(string dll, string outdll) {
-		var plugin = new TargetAssembly(dll);
-		if (plugin.ApiVersionMatches()) return false;
-		var wasHere = new TypeDefinition(ApiVersion.NamespaceIdentifier, "WasHere", TypeAttributes.Public | TypeAttributes.Class) {
-			BaseType = plugin.Assembly.MainModule.TypeSystem.Object
-		};
-		plugin.Assembly.MainModule.Types.Add(wasHere);
-		plugin.RemoveStrongNaming();
-		plugin.MakePublic();
-		plugin.WriteOut(outdll);
-		return true;
 	}
 }

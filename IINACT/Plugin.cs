@@ -95,8 +95,10 @@ public sealed class Plugin : IDalamudPlugin {
 	private readonly DateTime startLogTick = DateTime.Now;
 	internal static EdgeTTSWindow EdgeTTSWindow = null!;
 	public static Plugin Instance;
-	private const int LatestConfigVersion = 2;
-
+	private const int LatestConfigVersion = 3;
+	private readonly FetchDependencies.FetchDependencies _fetchDependencies;
+	// ReSharper disable once MemberCanBePrivate.Global
+	public readonly TinyIoCContainer Container;
 	public string PluginAssemblyDirectory => PluginInterface.AssemblyLocation.Directory!.ToString();
 	public string PluginConfigDirectory => PluginInterface.ConfigDirectory.ToString();
 	public string PluginActScriptDirectory => Path.Combine(PluginConfigDirectory, "ActScript");
@@ -108,8 +110,7 @@ public sealed class Plugin : IDalamudPlugin {
 	public bool opcodesjsoncCanReplace => File.Exists(opcodesjsoncPath);
 	public string opcodesjsoncPath => Path.Combine(PluginAssemblyDirectory, "opcodes.jsonc");
 	public string cactbotDir => Path.Combine(Instance.PluginConfigDirectory, "cactbot");
-	// ReSharper disable once MemberCanBePrivate.Global
-	public readonly TinyIoCContainer Container;
+
 
 	public static void UnzipWithoutPassword(string zipFilePath, string extractDir, bool overwrite = false) {
 		try {
@@ -128,7 +129,6 @@ public sealed class Plugin : IDalamudPlugin {
 		lastLogTick = DateTime.Now;
 	}
 
-	private FetchDependencies.FetchDependencies _fetchDependencies = null!;
 
 	public Plugin() {
 		LogTick("Start Initializing");
@@ -138,7 +138,9 @@ public sealed class Plugin : IDalamudPlugin {
 		oFormActMain = new FormActMain(this, Log, Framework, ObjectTable);
 		Configuration = PluginInterface.GetPluginConfig() as Configuration ?? new Configuration();
 		HttpClient = new HttpClient();
-		_fetchDependencies = new FetchDependencies.FetchDependencies(Version, PluginAssemblyDirectory, DataManager.Language.ToString() == "ChineseSimplified", HttpClient, Log);
+		if (Configuration.Version != LatestConfigVersion)
+			Directory.GetFiles(PluginAssemblyDirectory, "FFXIV_ACT_Plugin*.dll").ToList().ForEach(File.Delete);
+		_fetchDependencies = new FetchDependencies.FetchDependencies(Version, PluginAssemblyDirectory, DataManager.Language.ToString() == "ChineseSimplified", 5, HttpClient, Log);
 		_fetchDependencies.GetFfxivPluginIfNullOrUpdate(Configuration.FFXIV_ACT_Plugin_CN_Update);
 		Configuration.FFXIV_ACT_Plugin_CN_Update = false;
 		LogTick("Dependencies Fetched");
@@ -270,14 +272,17 @@ public sealed class Plugin : IDalamudPlugin {
 		if (Configuration.ShowWindowOnInit) MainWindow.Toggle();
 		if (Configuration.ShowOverlayOnInit) OverlayWindow.Toggle();
 		if (Configuration.TtsOnInit) oFormActMain.TTS("插件加载完成");
+		Configuration.Version = LatestConfigVersion;
+		Configuration.Save();
 		Log.Info($"[StartTick] IINACTEx Inited. Total {(DateTime.Now - startLogTick).TotalSeconds}s");
 	}
 
-	private DateTime lastCnUpdateCheck = DateTime.Now.AddMinutes(-8);
+	internal static DateTime lastCnUpdateCheck = DateTime.Now.AddMinutes(-8);
 
 	private void CheckCnUpdate(IFramework _) {
 		if (!((DateTime.Now - lastCnUpdateCheck).TotalMinutes > 10)) return;
 		Configuration.FFXIV_ACT_Plugin_CN_Update = _fetchDependencies.CheckCnUpdate();
+		Configuration.Save();
 		lastCnUpdateCheck = DateTime.Now;
 	}
 

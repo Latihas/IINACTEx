@@ -209,6 +209,8 @@ public static partial class LWindow {
 			Plugin.Configuration.Save();
 			Plugin.Configuration.endEncounterOutOfCombatDelayMs = endEncounterOutOfCombatDelayMs;
 		}
+		ImGui.Separator();
+		ImGui.Text($"解析插件更新检测倒计时:{(Plugin.lastCnUpdateCheck.AddMinutes(10) - DateTime.Now).TotalSeconds:1f}s");
 	}
 
 	private static void DrawSettingsModuleBase() {

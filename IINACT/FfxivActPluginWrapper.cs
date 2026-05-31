@@ -107,7 +107,7 @@ public partial class FfxivActPluginWrapper : IDisposable {
 	}
 
 
-	private Language ClientLanguage =>
+	internal static Language ClientLanguage =>
 		Plugin.DataManager.Language switch {
 			Dalamud.Game.ClientLanguage.Japanese => Language.Japanese,
 			Dalamud.Game.ClientLanguage.English => Language.English,
