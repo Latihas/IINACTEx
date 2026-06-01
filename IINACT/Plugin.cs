@@ -77,7 +77,7 @@ public sealed class Plugin : IDalamudPlugin {
 	[PluginService] private ITextureProvider textureProvider { get; set; }
 	public static ITextureProvider TextureProvider => Instance.textureProvider;
 	private readonly WindowSystem WindowSystem = new("IINACT");
-	public static Configuration Configuration { get; private set; }
+	public Configuration Configuration { get; private set; }
 	internal static TextToSpeechProvider TextToSpeechProvider { get; private set; }
 	internal static MainWindow MainWindow = null!;
 	internal static FileDialogManager FileDialogManager { get; private set; }
@@ -308,8 +308,8 @@ public sealed class Plugin : IDalamudPlugin {
 			plugin.PluginForm?.Show();
 			plugin.pluginObj.InitPlugin(plugin.tpPluginSpace, plugin.lblPluginStatus);
 			if (!preserveEnableState) {
-				Configuration.ActScriptsEnabled.Add(plugin.pluginFileName);
-				Configuration.Save();
+				Instance.Configuration.ActScriptsEnabled.Add(plugin.pluginFileName);
+				Instance.Configuration.Save();
 			}
 		} catch (Exception e) {
 			Log.Error(e.ToString());
@@ -320,8 +320,8 @@ public sealed class Plugin : IDalamudPlugin {
 		try {
 			Log.Info($"正在卸载IActPluginV1 {plugin.pluginFileName}");
 			if (!preserveEnableState) {
-				Configuration.ActScriptsEnabled.Remove(plugin.pluginFileName);
-				Configuration.Save();
+				Instance.Configuration.ActScriptsEnabled.Remove(plugin.pluginFileName);
+				Instance.Configuration.Save();
 			}
 			plugin.pluginObj.DeInitPlugin();
 			if (plugin.PluginForm != null) {
@@ -446,11 +446,11 @@ public sealed class Plugin : IDalamudPlugin {
 	private static void DrawConfigUI() => MainWindow.IsOpen = true;
 
 	private static void EnterPvP() {
-		if (Configuration is not { DisablePvp: true, DisableWritingPvpLogFile: false }) return;
-		Configuration.DisableWritingPvpLogFile = true;
+		if (Instance.Configuration is not { DisablePvp: true, DisableWritingPvpLogFile: false }) return;
+		Instance.Configuration.DisableWritingPvpLogFile = true;
 	}
 
-	private static void LeavePvP() => Configuration.DisableWritingPvpLogFile = false;
+	private static void LeavePvP() => Instance.Configuration.DisableWritingPvpLogFile = false;
 
 	internal static void OpenEdgeTTSWindow() => EdgeTTSWindow.Show();
 }

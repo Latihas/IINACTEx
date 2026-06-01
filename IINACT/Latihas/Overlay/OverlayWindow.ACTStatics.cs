@@ -15,6 +15,7 @@ using Dalamud.Interface.Textures;
 using Dalamud.Interface.Textures.TextureWraps;
 using static System.Drawing.Color;
 using static Advanced_Combat_Tracker.ActGlobals;
+using static IINACT.Plugin;
 
 namespace IINACT.Latihas.Overlay;
 
@@ -533,16 +534,16 @@ public partial class OverlayWindow {
 		var totalAvail = ImGui.GetContentRegionAvail();
 		_splitterWidth = Math.Clamp(_splitterWidth, 50, totalAvail.X - 50);
 		if (ImGui.BeginChild("##LeftTreeView", new Vector2(_splitterWidth, -1), true)) {
-			var UseActPic = Plugin.Configuration.UseActPic;
+			var UseActPic = Instance.Configuration.UseActPic;
 			if (ImGui.Checkbox("使用原版ACT绘图", ref UseActPic)) {
-				Plugin.Configuration.UseActPic = UseActPic;
-				Plugin.Configuration.Save();
+				Instance.Configuration.UseActPic = UseActPic;
+				Instance.Configuration.Save();
 			}
 			ImGui.SetNextItemWidth(_splitterWidth * 0.3f);
-			var ACTStaticsInterval = Plugin.Configuration.ACTUpdateInterval;
+			var ACTStaticsInterval = Instance.Configuration.ACTUpdateInterval;
 			if (ImGui.InputFloat("刷新频率(s)", ref ACTStaticsInterval)) {
-				Plugin.Configuration.ACTUpdateInterval = ACTStaticsInterval;
-				Plugin.Configuration.Save();
+				Instance.Configuration.ACTUpdateInterval = ACTStaticsInterval;
+				Instance.Configuration.Save();
 			}
 			ImGui.Separator();
 			LoadNodeData();
@@ -593,7 +594,7 @@ public partial class OverlayWindow {
 			var graphViewHeight = rightPanelAvail.Y - dataListHeight - _splitterThickness / 2;
 			if (ImGui.BeginChild("##GraphView", new Vector2(-1, graphViewHeight), true)) {
 				GraphViewSize = ImGui.GetContentRegionAvail();
-				if (Plugin.Configuration.UseActPic) DrawGraph();
+				if (Instance.Configuration.UseActPic) DrawGraph();
 				else {
 					switch (_tableType) {
 						case "MD": // DamageTypeData - 饼图
@@ -657,7 +658,7 @@ public partial class OverlayWindow {
 		if (columns.Length == 0) return;
 
 		ImGui.PushStyleVar(ImGuiStyleVar.CellPadding, new Vector2(2, 1));
-		if (ImGui.BeginTable("##DataTable", columns.Length, Plugin.ImGuiTableFlag)) {
+		if (ImGui.BeginTable("##DataTable", columns.Length, ImGuiTableFlag)) {
 			foreach (var t in columns)
 				ImGui.TableSetupColumn(t);
 			ImGui.TableHeadersRow();
@@ -813,13 +814,13 @@ public partial class OverlayWindow {
 				}
 			}
 		} catch (Exception ex) {
-			Plugin.Log.Error($"Failed to populate tree view: {ex}");
+			Log.Error($"Failed to populate tree view: {ex}");
 		}
 	}
 
 	private void LoadNodeData() {
-		if ((DateTime.Now - lastUpdate).TotalSeconds < Plugin.Configuration.ACTUpdateInterval) return;
-		if (Plugin.Configuration.UseActPic) {
+		if ((DateTime.Now - lastUpdate).TotalSeconds < Instance.Configuration.ACTUpdateInterval) return;
+		if (Instance.Configuration.UseActPic) {
 			lock (_textureLock) {
 				_currentTexture?.Dispose();
 				_currentTexture = null;
@@ -839,7 +840,7 @@ public partial class OverlayWindow {
 					var combatantList = new List<object>(encounter.Items.Values);
 					combatantList.Sort();
 					_currentTable = combatantList;
-					if (Plugin.Configuration.UseActPic)
+					if (Instance.Configuration.UseActPic)
 						UpdateGraphTexture(GenEncounterGraph(encounter, (int)GraphViewSize.X, (int)GraphViewSize.Y, _eDSort));
 					break;
 				case "CombatantData":
@@ -853,7 +854,7 @@ public partial class OverlayWindow {
 					var attackTypeList = new List<object>(damageType.Items.Values);
 					attackTypeList.Sort();
 					_currentTable = attackTypeList;
-					if (Plugin.Configuration.UseActPic)
+					if (Instance.Configuration.UseActPic)
 						UpdateGraphTexture(GenDamageTypeGraph(damageType, (int)GraphViewSize.X, (int)GraphViewSize.Y, _mDSort));
 					break;
 				case "AttackType":
@@ -862,12 +863,12 @@ public partial class OverlayWindow {
 					var swingList = new List<object>(attackType.Items);
 					swingList.Sort();
 					_currentTable = swingList;
-					if (Plugin.Configuration.UseActPic)
+					if (Instance.Configuration.UseActPic)
 						UpdateGraphTexture(GenAttackTypeGraph(attackType, (int)GraphViewSize.X, (int)GraphViewSize.Y, _aTSort));
 					break;
 			}
 		} catch (Exception ex) {
-			Plugin.Log.Error($"Failed to load node data: {ex}");
+			Log.Error($"Failed to load node data: {ex}");
 		}
 	}
 
@@ -918,7 +919,7 @@ public partial class OverlayWindow {
 					break;
 			}
 		} catch (Exception ex) {
-			Plugin.Log.Error($"Failed to get row data: {ex}");
+			Log.Error($"Failed to get row data: {ex}");
 			row.AddRange(columns.Select(_ => "Error"));
 		}
 		return row;
@@ -933,7 +934,7 @@ public partial class OverlayWindow {
 			if (childNode == null) return;
 			_currentSelectedNode = childNode;
 		} catch (Exception ex) {
-			Plugin.Log.Error($"Failed to activate item: {ex}");
+			Log.Error($"Failed to activate item: {ex}");
 		}
 	}
 
@@ -957,7 +958,7 @@ public partial class OverlayWindow {
 		} finally {
 			bitmap.UnlockBits(bitmapData);
 		}
-		return Plugin.TextureProvider.CreateFromRaw(RawImageSpecification.Rgba32(bitmap.Width, bitmap.Height), pixelSpan);
+		return TextureProvider.CreateFromRaw(RawImageSpecification.Rgba32(bitmap.Width, bitmap.Height), pixelSpan);
 	}
 
 	internal static uint ColorToImGui(Color color) =>

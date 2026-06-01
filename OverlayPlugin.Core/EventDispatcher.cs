@@ -1,23 +1,16 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using Newtonsoft.Json.Linq;
 
 namespace RainbowMage.OverlayPlugin;
 
-public class EventDispatcher {
-	private ILogger _logger;
-	private Dictionary<string, Func<JObject, JToken>> handlers;
-	private Dictionary<string, List<IEventReceiver>> eventFilter;
-	private Dictionary<string, Func<JObject>> stateCallbacks;
-
-	public EventDispatcher(TinyIoCContainer container) {
-		_logger = container.Resolve<ILogger>();
-
-		handlers = new Dictionary<string, Func<JObject, JToken>>();
-		eventFilter = new Dictionary<string, List<IEventReceiver>>();
-		stateCallbacks = new Dictionary<string, Func<JObject>>();
-	}
+public class EventDispatcher(TinyIoCContainer container) {
+	private readonly ILogger _logger = container.Resolve<ILogger>();
+	private readonly ConcurrentDictionary<string, Func<JObject, JToken>> handlers = [];
+	private readonly ConcurrentDictionary<string, List<IEventReceiver>> eventFilter = [];
+	private readonly ConcurrentDictionary<string, Func<JObject>> stateCallbacks = [];
 
 	private void Log(LogLevel level, string message, params object[] args) {
 		_logger.Log(level, string.Format(message, args));
@@ -47,17 +40,17 @@ public class EventDispatcher {
 	}
 
 	public void Subscribe(string eventName, IEventReceiver receiver) {
-		if (!eventFilter.ContainsKey(eventName)) {
+		if (!eventFilter.TryGetValue(eventName, out var value)) {
 			Log(LogLevel.Error, Resources.MissingEventSubError, eventName);
 			return;
 		}
 
-		if (stateCallbacks.ContainsKey(eventName)) {
-			var ev = stateCallbacks[eventName]();
+		if (stateCallbacks.TryGetValue(eventName, out var callback)) {
+			var ev = callback();
 			if (ev != null) receiver.HandleEvent(ev);
 		}
 
-		lock (eventFilter[eventName]) {
+		lock (value) {
 			if (!eventFilter[eventName].Contains(receiver)) {
 				eventFilter[eventName].Add(receiver);
 			}
@@ -75,7 +68,7 @@ public class EventDispatcher {
 	public void UnsubscribeAll(IEventReceiver receiver) {
 		foreach (var item in eventFilter.Values) {
 			lock (item) {
-				if (item.Contains(receiver)) item.Remove(receiver);
+				item.Remove(receiver);
 			}
 		}
 	}

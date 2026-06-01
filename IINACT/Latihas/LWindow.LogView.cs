@@ -83,7 +83,7 @@ public partial class LWindow {
 							FilePath = str.First();
 							ImportLogs = ReadLockedTextFile(FilePath).Split(Environment.NewLine).ToList();
 						}
-					}, 1, Plugin.Configuration.LogFilePath);
+					}, 1, Plugin.Instance.Configuration.LogFilePath);
 				ImGui.SameLine();
 				ImGui.Text(FilePath);
 			}

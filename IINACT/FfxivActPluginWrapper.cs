@@ -138,13 +138,13 @@ public partial class FfxivActPluginWrapper : IDisposable {
 		settingsMediator.DataCollectionSettings = DataCollectionSettings;
 
 		ParseSettings = new ParseSettings {
-			DisableDamageShield = Plugin.Configuration.DisableDamageShield,
-			DisableCombinePets = Plugin.Configuration.DisableCombinePets,
+			DisableDamageShield = Instance.Configuration.DisableDamageShield,
+			DisableCombinePets = Instance.Configuration.DisableCombinePets,
 			LanguageID = ClientLanguage,
-			ParseFilter = (ParseFilterMode)Plugin.Configuration.ParseFilterMode,
-			SimulateIndividualDoTCrits = Plugin.Configuration.SimulateIndividualDoTCrits,
-			ShowRealDoTTicks = Plugin.Configuration.ShowRealDoTTicks,
-			ShowDebug = Plugin.Configuration.ShowDebug,
+			ParseFilter = (ParseFilterMode)Instance.Configuration.ParseFilterMode,
+			SimulateIndividualDoTCrits = Instance.Configuration.SimulateIndividualDoTCrits,
+			ShowRealDoTTicks = Instance.Configuration.ShowRealDoTTicks,
+			ShowDebug = Instance.Configuration.ShowDebug,
 			EnableBenchmarks = false
 		};
 		settingsMediator.ParseSettings = ParseSettings;

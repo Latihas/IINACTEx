@@ -12,6 +12,7 @@ using Dalamud.Interface.Utility.Raii;
 using RainbowMage.OverlayPlugin;
 using Triggernometry;
 using Triggernometry.Core;
+using static IINACT.Plugin;
 using static Triggernometry.PScript.ScriptUtils;
 
 namespace IINACT.Latihas;
@@ -41,15 +42,15 @@ public static partial class LWindow {
 			const string cactboturl = "https://raw.githubusercontent.com/Latihas/dalamud-plugins/main/cactbot.zip";
 			if (ImGui.Button("一键下载解压")) {
 				if (FileDownloaderCactbot != null) {
-					Plugin.NotificationManager.AddNotification(new Notification {
+					NotificationManager.AddNotification(new Notification {
 						Type = NotificationType.Warning,
 						Content = "有未完成的下载任务"
 					});
 				} else {
-					var zipPath = Path.Combine(Plugin.Instance.PluginConfigDirectory, "cactbot.zip");
+					var zipPath = Path.Combine(Instance.PluginConfigDirectory, "cactbot.zip");
 					FileDownloaderCactbot = new FileDownloader(cactboturl, zipPath, () => {
 						FileDownloaderCactbot = null;
-						Plugin.UnzipWithoutPassword(zipPath, Plugin.Instance.cactbotDir);
+						UnzipWithoutPassword(zipPath, Instance.cactbotDir);
 					});
 					_ = FileDownloaderCactbot.DownloadFileAsync();
 				}
@@ -63,9 +64,9 @@ public static partial class LWindow {
 			if (ImGui.Button(cactboturl)) ImGui.SetClipboardText(cactboturl);
 			ImGui.Text("然后参考 帮助-项目介绍-TTS/Cactbot 进行设置");
 			ImGui.Separator();
-			Plugin.MainWindow.DrawOverlayGen();
+			MainWindow.DrawOverlayGen();
 			ImGui.Text("在线的部分网页(如Timeline)不一定是最新的，IINACTEx尽量提供最新版Diemoe ACT内置的资源");
-			Plugin.MainWindow.DrawOverlayLink();
+			MainWindow.DrawOverlayLink();
 		}
 	}
 
@@ -170,23 +171,23 @@ public static partial class LWindow {
 		using var tab = ImRaii.TabItem("IINACT");
 		if (!tab) return;
 		if (ImGui.Button("打开插件目录"))
-			Start(Plugin.Instance.PluginAssemblyDirectory);
+			Start(Instance.PluginAssemblyDirectory);
 		ImGui.SameLine();
 		if (ImGui.Button("打开配置目录"))
-			Start(Plugin.Instance.PluginConfigDirectory);
+			Start(Instance.PluginConfigDirectory);
 		ImGui.SameLine();
 		if (ImGui.Button("打开Log目录"))
-			Start(Plugin.Configuration.LogFilePath);
+			Start(Instance.Configuration.LogFilePath);
 		if (ImGui.Button("打开卫月Log"))
 			RealPlugin.Instance.InvokeNamedCallback("command", "/xllog");
 		ImGui.SameLine();
 		if (ImGui.Button("刷新Bw悬浮窗"))
-			Plugin.Instance.RefreshBw();
+			Instance.RefreshBw();
 		ImGui.SameLine();
 		if (ImGui.Button("打开bw设置"))
 			RealPlugin.Instance.InvokeNamedCallback("command", "/bw config");
 		if (ImGui.Button("打开伤害统计悬浮窗"))
-			Plugin.Instance.OverlayWindow.IsOpen = true;
+			Instance.OverlayWindow.IsOpen = true;
 		ImGui.Separator();
 		ImGui.InputText("## 测试TTS", ref TestTts);
 		ImGui.SameLine();
@@ -264,7 +265,7 @@ public static partial class LWindow {
 			var hash = newLine[(newLine.LastIndexOf('|') + 1)..];
 			if (ImGui.Button(hash)) {
 				ImGui.SetClipboardText(hash);
-				Plugin.NotificationManager.AddNotification(new Notification {
+				NotificationManager.AddNotification(new Notification {
 					Content = "已复制"
 				});
 			}

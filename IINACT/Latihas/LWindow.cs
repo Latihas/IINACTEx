@@ -20,6 +20,7 @@ using Triggernometry.Core.Serialization;
 using Triggernometry.Core.Variables;
 using Triggernometry.PluginBridges.BridgeNamazu;
 using Triggernometry.UI.CustomControls;
+using static IINACT.Plugin;
 
 namespace IINACT.Latihas;
 
@@ -93,9 +94,9 @@ public static partial class LWindow {
 		var LogFlattenMaxCount = RealPlugin.Instance.cfg.LogFlattenMaxCount.ToString();
 		if (ImGui.InputText("最大日志队列数量", ref LogFlattenMaxCount))
 			RealPlugin.Instance.cfg.LogFlattenMaxCount = int.Parse(LogFlattenMaxCount);
-		if (ImGui.Button("Trn日志")) Plugin.Instance.TriggernometryLogView.Toggle();
+		if (ImGui.Button("Trn日志")) Instance.TriggernometryLogView.Toggle();
 		ImGui.SameLine();
-		if (ImGui.Button("ACT日志")) Plugin.Instance.ACTLogView.Toggle();
+		if (ImGui.Button("ACT日志")) Instance.ACTLogView.Toggle();
 		ImGui.SameLine();
 		if (ImGui.Button("清空日志队列")) RealPlugin.Instance.ClearLog();
 	}
@@ -144,10 +145,10 @@ public static partial class LWindow {
 		ImGui.Text("${_duration} = " + TestContext.ExpandVariables(null, null, false, "${_duration}"));
 		ImGui.Separator();
 		ImGui.Text("目标信息");
-		var targ = Plugin.TargetManager.Target;
+		var targ = TargetManager.Target;
 		if (targ == null)
-			if (Plugin.ObjectTable.LocalPlayer != null)
-				targ = Plugin.ObjectTable.LocalPlayer;
+			if (ObjectTable.LocalPlayer != null)
+				targ = ObjectTable.LocalPlayer;
 		if (targ != null) {
 			ImGui.Text("Target.Name: " + targ.Name);
 			ImGui.Text("Target.Address: 0x" + targ.Address.ToString("X"));
@@ -173,7 +174,7 @@ public static partial class LWindow {
 			if (RealPlugin.Instance.ActiveACTTriggers.Any(t => t.Id.ToString() == TestTriggerId)) sb.Add("ActiveACTTriggers");
 			if (RealPlugin.Instance.ActiveEndpointTriggers.Any(t => t.Id.ToString() == TestTriggerId)) sb.Add("ActiveEndpointTriggers");
 			if (RealPlugin.Instance.ActiveFFXIVNetworkTriggers.Any(t => t.Id.ToString() == TestTriggerId)) sb.Add("ActiveFFXIVNetworkTriggers");
-			Plugin.NotificationManager.AddNotification(new Notification {
+			NotificationManager.AddNotification(new Notification {
 				Type = NotificationType.Info,
 				Content = sb.Count == 0 ? "不存在" : $"存在于{string.Join(',', sb)}"
 			});
@@ -183,34 +184,34 @@ public static partial class LWindow {
 	private static void DrawSettingsIINACT() {
 		using var tab = ImRaii.TabItem("IINACT设置");
 		if (!tab) return;
-		var ShowWindowOnInit = Plugin.Configuration.ShowWindowOnInit;
+		var ShowWindowOnInit = Instance.Configuration.ShowWindowOnInit;
 		if (ImGui.Checkbox("启动时显示界面", ref ShowWindowOnInit)) {
-			Plugin.Configuration.ShowWindowOnInit = ShowWindowOnInit;
-			Plugin.Configuration.Save();
+			Instance.Configuration.ShowWindowOnInit = ShowWindowOnInit;
+			Instance.Configuration.Save();
 		}
-		var ShowOverlayOnInit = Plugin.Configuration.ShowOverlayOnInit;
+		var ShowOverlayOnInit = Instance.Configuration.ShowOverlayOnInit;
 		if (ImGui.Checkbox("启动时显示Overlay", ref ShowOverlayOnInit)) {
-			Plugin.Configuration.ShowOverlayOnInit = ShowOverlayOnInit;
-			Plugin.Configuration.Save();
+			Instance.Configuration.ShowOverlayOnInit = ShowOverlayOnInit;
+			Instance.Configuration.Save();
 		}
-		var TtsOnInit = Plugin.Configuration.TtsOnInit;
+		var TtsOnInit = Instance.Configuration.TtsOnInit;
 		if (ImGui.Checkbox("启动时TTS提示加载完成", ref TtsOnInit)) {
-			Plugin.Configuration.TtsOnInit = TtsOnInit;
-			Plugin.Configuration.Save();
+			Instance.Configuration.TtsOnInit = TtsOnInit;
+			Instance.Configuration.Save();
 		}
-		var AsyncOnInit = Plugin.Configuration.AsyncOnInit;
+		var AsyncOnInit = Instance.Configuration.AsyncOnInit;
 		if (ImGui.Checkbox("启动时使用异步加载(仍在测试，开启后可能会有bug，但是能显著加快加载速度，请留意启动时相关模块有无报错)", ref AsyncOnInit)) {
-			Plugin.Configuration.AsyncOnInit = AsyncOnInit;
-			Plugin.Configuration.Save();
+			Instance.Configuration.AsyncOnInit = AsyncOnInit;
+			Instance.Configuration.Save();
 		}
 		ImGui.Separator();
-		var endEncounterOutOfCombatDelayMs = Plugin.Configuration.endEncounterOutOfCombatDelayMs;
+		var endEncounterOutOfCombatDelayMs = Instance.Configuration.endEncounterOutOfCombatDelayMs;
 		if (ImGui.InputInt("脱战(ms)后分割战斗", ref endEncounterOutOfCombatDelayMs)) {
-			Plugin.Configuration.Save();
-			Plugin.Configuration.endEncounterOutOfCombatDelayMs = endEncounterOutOfCombatDelayMs;
+			Instance.Configuration.Save();
+			Instance.Configuration.endEncounterOutOfCombatDelayMs = endEncounterOutOfCombatDelayMs;
 		}
 		ImGui.Separator();
-		ImGui.Text($"解析插件更新检测倒计时:{(Plugin.lastCnUpdateCheck.AddMinutes(10) - DateTime.Now).TotalSeconds:F1}s");
+		ImGui.Text($"解析插件更新检测倒计时:{(lastCnUpdateCheck.AddMinutes(10) - DateTime.Now).TotalSeconds:F1}s");
 	}
 
 	private static void DrawSettingsModuleBase() {
@@ -258,23 +259,23 @@ public static partial class LWindow {
 		using var tab = ImRaii.TabItem("文字转语音");
 		if (!tab) return;
 		ImGui.Spacing();
-		var useEdgeTTS = Plugin.Configuration.UseEdgeTts;
+		var useEdgeTTS = Instance.Configuration.UseEdgeTts;
 		if (ImGui.Checkbox("使用EdgeTTS（不勾选则使用本地TTS）", ref useEdgeTTS))
 			Plugin.TextToSpeechProvider.SetUseEdgeTTS(useEdgeTTS);
 		if (useEdgeTTS) {
 			ImGui.SameLine();
 			if (ImGui.Button("打开设置")) {
-				Plugin.OpenEdgeTTSWindow();
+				OpenEdgeTTSWindow();
 			}
 		}
-		var useLatihasTTS = Plugin.Configuration.UseLatihasTts;
+		var useLatihasTTS = Instance.Configuration.UseLatihasTts;
 		if (ImGui.Checkbox("使用LatihasTTS（均不勾选则使用本地TTS）", ref useLatihasTTS))
 			Plugin.TextToSpeechProvider.SetUseLatihasTTS(useLatihasTTS);
 		ImGui.Separator();
-		var TtsInterval = Plugin.Configuration.TtsInterval;
+		var TtsInterval = Instance.Configuration.TtsInterval;
 		if (ImGui.InputFloat("同一句话最小间隔(s)", ref TtsInterval)) {
-			Plugin.Configuration.TtsInterval = TtsInterval;
-			Plugin.Configuration.Save();
+			Instance.Configuration.TtsInterval = TtsInterval;
+			Instance.Configuration.Save();
 		}
 	}
 
@@ -294,13 +295,13 @@ public static partial class LWindow {
 		ImGui.Text("“我写的可是ACT插件，我肯定是绿玩。”");
 		ImGui.PopStyleColor(1);
 		ImGui.Separator();
-		if (ImGui.Button("打开脚本文件夹")) Start(Plugin.Instance.PluginActScriptDirectory);
+		if (ImGui.Button("打开脚本文件夹")) Start(Instance.PluginActScriptDirectory);
 		ImGui.Text("已载入插件");
 		foreach (var actPluginData in ActGlobals.oFormActMain.ActPlugins)
 			ImGui.Text(actPluginData.pluginFileName);
 		ImGui.Separator();
-		NewTable(["名称", "状态", "操作"], Directory.GetFiles(Plugin.Instance.PluginActScriptDirectory, "*.cs", SearchOption.TopDirectoryOnly)
-			.Concat(Directory.GetFiles(Plugin.Instance.PluginActScriptDirectory, "*.dll", SearchOption.TopDirectoryOnly))
+		NewTable(["名称", "状态", "操作"], Directory.GetFiles(Instance.PluginActScriptDirectory, "*.cs", SearchOption.TopDirectoryOnly)
+			.Concat(Directory.GetFiles(Instance.PluginActScriptDirectory, "*.dll", SearchOption.TopDirectoryOnly))
 			.Select(Path.GetFileName).Cast<string>().ToArray(), [
 			i => ImGui.Text(i),
 			i => {
@@ -318,12 +319,12 @@ public static partial class LWindow {
 				if (plugins.Count == 0) {
 					if (ImGui.Button($"载入##{i}"))
 						if (i.EndsWith(".cs"))
-							Plugin.LoadPScript(i);
+							LoadPScript(i);
 						else
-							Plugin.LoadIActPluginV1(i);
+							LoadIActPluginV1(i);
 				} else {
 					var plugin = ActGlobals.oFormActMain.ActPlugins.First(x => x.pluginFileName == i);
-					if (ImGui.Button($"禁用##{i}")) Plugin.DeInitIActPluginV1(plugin);
+					if (ImGui.Button($"禁用##{i}")) DeInitIActPluginV1(plugin);
 					ImGui.SameLine();
 				}
 			}
@@ -344,40 +345,40 @@ public static partial class LWindow {
 		ImGui.PushStyleColor(ImGuiCol.Text, ImGuiColors.ParsedPurple);
 		ImGui.Text("当前状态:");
 		ImGui.PopStyleColor(1);
-		if (Plugin.Instance.opcodestxtReplaced) {
+		if (Instance.opcodestxtReplaced) {
 			ImGui.PushStyleColor(ImGuiCol.Text, ImGuiColors.DalamudRed);
 			ImGui.Text("opcodes.txt已替换");
 			ImGui.PopStyleColor(1);
 			ImGui.SameLine();
-			if (Plugin.Instance.opcodestxtCanReplace) {
-				if (ImGui.Button("删除opcodes.txt")) File.Delete(Plugin.Instance.opcodestxtPath);
+			if (Instance.opcodestxtCanReplace) {
+				if (ImGui.Button("删除opcodes.txt")) File.Delete(Instance.opcodestxtPath);
 			} else ImGui.Text("(文件缺失，将在下次加载恢复内置)");
-		} else if (Plugin.Instance.opcodestxtCanReplace) {
+		} else if (Instance.opcodestxtCanReplace) {
 			ImGui.PushStyleColor(ImGuiCol.Text, ImGuiColors.DalamudYellow);
 			ImGui.Text("opcodes.txt将在下次加载插件时替换");
 			ImGui.PopStyleColor(1);
 			ImGui.SameLine();
-			if (ImGui.Button("删除opcodes.txt")) File.Delete(Plugin.Instance.opcodestxtPath);
+			if (ImGui.Button("删除opcodes.txt")) File.Delete(Instance.opcodestxtPath);
 		} else ImGui.Text("opcodes.txt为内置版本");
-		if (Plugin.Instance.opcodesjsoncReplaced) {
+		if (Instance.opcodesjsoncReplaced) {
 			ImGui.PushStyleColor(ImGuiCol.Text, ImGuiColors.DalamudRed);
 			ImGui.Text("opcodes.jsonc已替换");
 			ImGui.PopStyleColor(1);
 			ImGui.SameLine();
-			if (Plugin.Instance.opcodesjsoncCanReplace) {
-				if (ImGui.Button("删除opcodes.jsonc")) File.Delete(Plugin.Instance.opcodesjsoncPath);
+			if (Instance.opcodesjsoncCanReplace) {
+				if (ImGui.Button("删除opcodes.jsonc")) File.Delete(Instance.opcodesjsoncPath);
 			} else ImGui.Text("(文件缺失，将在下次加载恢复内置)");
-		} else if (Plugin.Instance.opcodesjsoncCanReplace) {
+		} else if (Instance.opcodesjsoncCanReplace) {
 			ImGui.PushStyleColor(ImGuiCol.Text, ImGuiColors.DalamudYellow);
 			ImGui.Text("opcodes.jsonc将在下次加载插件时替换");
 			ImGui.PopStyleColor(1);
 			ImGui.SameLine();
-			if (ImGui.Button("删除opcodes.jsonc")) File.Delete(Plugin.Instance.opcodesjsoncPath);
+			if (ImGui.Button("删除opcodes.jsonc")) File.Delete(Instance.opcodesjsoncPath);
 		} else ImGui.Text("opcodes.jsonc为内置版本");
-		if (Plugin.Instance.opcodestxtDiff.Length == 0) ImGui.Text("opcodes.txt无差异");
+		if (Instance.opcodestxtDiff.Length == 0) ImGui.Text("opcodes.txt无差异");
 		else {
-			ImGui.Text($"opcodes.txt有差异({Plugin.Instance.opcodestxtDiff.Length}个)");
-			NewTable(["项目", "原始", "替换"], Plugin.Instance.opcodestxtDiff, [
+			ImGui.Text($"opcodes.txt有差异({Instance.opcodestxtDiff.Length}个)");
+			NewTable(["项目", "原始", "替换"], Instance.opcodestxtDiff, [
 				i => ImGui.Text(i.Item1),
 				i => ImGui.Text("0x" + i.Item2.ToString("X")),
 				i => ImGui.Text("0x" + i.Item3.ToString("X"))
@@ -387,12 +388,12 @@ public static partial class LWindow {
 		ImGui.Text("这里可以在线获取两个文件");
 		if (!FileDownloaderOpcodes.ContainsKey("[CN][Diemoe]opcodes.txt")) {
 			if (ImGui.Button("[CN][Diemoe]opcodes.txt")) {
-				var dp = Path.Combine(Plugin.Instance.PluginAssemblyDirectory, "chinese.zip");
+				var dp = Path.Combine(Instance.PluginAssemblyDirectory, "chinese.zip");
 				FileDownloaderOpcodes["[CN][Diemoe]opcodes.txt"] = new FileDownloader("https://cdn.diemoe.net/files/ACT.DieMoe/Packs/FFXIV_ACT_Plugin/chinese.zip", dp, () => {
 					FileDownloaderOpcodes.Remove("[CN][Diemoe]opcodes.txt");
 					try {
-						var exp = Path.Combine(Plugin.Instance.PluginAssemblyDirectory, "chinese");
-						Plugin.UnzipWithoutPassword(dp, exp, true);
+						var exp = Path.Combine(Instance.PluginAssemblyDirectory, "chinese");
+						UnzipWithoutPassword(dp, exp, true);
 						var alc = new AssemblyLoadContext(null, true);
 						var dllAssembly = alc.LoadFromAssemblyPath(Path.Combine(exp, "FFXIV_ACT_Plugin.dll"));
 						var dllp = Path.Combine(exp, "machina.ffxiv.dll");
@@ -402,13 +403,13 @@ public static partial class LWindow {
 							deflateStream.CopyTo(destination);
 						}
 						dllAssembly = alc.LoadFromAssemblyPath(dllp);
-						var outputPath = Path.Combine(Plugin.Instance.PluginAssemblyDirectory, "opcodes.txt");
+						var outputPath = Path.Combine(Instance.PluginAssemblyDirectory, "opcodes.txt");
 						using (var resourceStream2 = dllAssembly.GetManifestResourceStream("Machina.FFXIV.Headers.Opcodes.Chinese.txt")!)
 						using (var fileStream2 = new FileStream(outputPath, FileMode.Create, FileAccess.Write)) {
 							resourceStream2.CopyTo(fileStream2);
 						}
 					} catch (Exception e) {
-						Plugin.Log.Error(e.ToString());
+						Log.Error(e.ToString());
 					}
 				});
 				_ = FileDownloaderOpcodes["[CN][Diemoe]opcodes.txt"].DownloadFileAsync();
@@ -417,7 +418,7 @@ public static partial class LWindow {
 		ImGui.SameLine();
 		if (!FileDownloaderOpcodes.ContainsKey("[CN][Karashiiro]扩展的opcodes.txt")) {
 			if (ImGui.Button("[CN][Karashiiro]扩展的opcodes.txt")) {
-				var dp = Path.Combine(Plugin.Instance.PluginAssemblyDirectory, "opcodes.txt.json");
+				var dp = Path.Combine(Instance.PluginAssemblyDirectory, "opcodes.txt.json");
 				FileDownloaderOpcodes["[CN][Karashiiro]扩展的opcodes.txt"] = new FileDownloader("https://cdn.jsdelivr.net/gh/karashiiro/FFXIVOpcodes@latest/opcodes.min.json", dp, () => {
 					FileDownloaderOpcodes.Remove("[CN][Karashiiro]扩展的opcodes.txt");
 					try {
@@ -433,9 +434,9 @@ public static partial class LWindow {
 								}
 							}
 						}
-						File.WriteAllText(Path.Combine(Plugin.Instance.PluginAssemblyDirectory, "opcodes.txt"), sb.ToString());
+						File.WriteAllText(Path.Combine(Instance.PluginAssemblyDirectory, "opcodes.txt"), sb.ToString());
 					} catch (Exception e) {
-						Plugin.Log.Error(e.ToString());
+						Log.Error(e.ToString());
 					}
 				});
 				_ = FileDownloaderOpcodes["[CN][Karashiiro]扩展的opcodes.txt"].DownloadFileAsync();
@@ -443,7 +444,7 @@ public static partial class LWindow {
 		} else ImGui.Text("处理中");
 		if (!FileDownloaderOpcodes.ContainsKey("[Diemoe]opcodes.jsonc")) {
 			if (ImGui.Button("[Diemoe]opcodes.jsonc")) {
-				FileDownloaderOpcodes["[Diemoe]opcodes.jsonc"] = new FileDownloader("https://assets.diemoe.net/OverlayPlugin/OverlayPlugin.Core/resources/opcodes.jsonc", Path.Combine(Plugin.Instance.PluginAssemblyDirectory, "opcodes.jsonc"),
+				FileDownloaderOpcodes["[Diemoe]opcodes.jsonc"] = new FileDownloader("https://assets.diemoe.net/OverlayPlugin/OverlayPlugin.Core/resources/opcodes.jsonc", Path.Combine(Instance.PluginAssemblyDirectory, "opcodes.jsonc"),
 					() => FileDownloaderOpcodes.Remove("[Diemoe]opcodes.jsonc"));
 				_ = FileDownloaderOpcodes["[Diemoe]opcodes.jsonc"].DownloadFileAsync();
 			}
@@ -452,7 +453,7 @@ public static partial class LWindow {
 		if (!FileDownloaderOpcodes.ContainsKey("[OverlayPlugin]opcodes.jsonc")) {
 			if (ImGui.Button("[OverlayPlugin]opcodes.jsonc")) {
 				FileDownloaderOpcodes["[OverlayPlugin]opcodes.jsonc"] = new FileDownloader("https://raw.githubusercontent.com/OverlayPlugin/OverlayPlugin/main/OverlayPlugin.Core/resources/opcodes.jsonc",
-					Path.Combine(Plugin.Instance.PluginAssemblyDirectory, "opcodes.jsonc"),
+					Path.Combine(Instance.PluginAssemblyDirectory, "opcodes.jsonc"),
 					() => FileDownloaderOpcodes.Remove("[OverlayPlugin]opcodes.jsonc"));
 				_ = FileDownloaderOpcodes["[OverlayPlugin]opcodes.jsonc"].DownloadFileAsync();
 			}
@@ -618,7 +619,7 @@ public static partial class LWindow {
 
 	private static void NewTable<T>(string[] header, T[]? data, Action<T>[] acts, Func<T, Vector4>? setColor = null) {
 		if (data is null || data.Length == 0) return;
-		if (ImGui.BeginTable("Table", acts.Length, Plugin.ImGuiTableFlag)) {
+		if (ImGui.BeginTable("Table", acts.Length, ImGuiTableFlag)) {
 			foreach (var item in header) ImGui.TableSetupColumn(item, ImGuiTableColumnFlags.WidthStretch);
 			ImGui.TableHeadersRow();
 			foreach (var res in data) {

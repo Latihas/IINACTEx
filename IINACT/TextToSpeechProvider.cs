@@ -50,28 +50,28 @@ internal class TextToSpeechProvider : IDisposable {
 			Log.Warning(ex, "Failed to initialize EdgeTTS engine");
 		}
 		ActGlobals.oFormActMain.TextToSpeech += Speak;
-		SetUseEdgeTTS(Plugin.Configuration.UseEdgeTts);
-		SetUseLatihasTTS(Plugin.Configuration.UseLatihasTts);
+		SetUseEdgeTTS(Instance.Configuration.UseEdgeTts);
+		SetUseLatihasTTS(Instance.Configuration.UseLatihasTts);
 	}
 
 
 	public void SetUseEdgeTTS(bool useEdgeTTS_) {
-		if (useEdgeTTS_) Plugin.Configuration.UseLatihasTts = useLatihasTTS = false;
-		Plugin.Configuration.UseEdgeTts = useEdgeTTS = useEdgeTTS_;
-		Plugin.Configuration.Save();
+		if (useEdgeTTS_) Instance.Configuration.UseLatihasTts = useLatihasTTS = false;
+		Instance.Configuration.UseEdgeTts = useEdgeTTS = useEdgeTTS_;
+		Instance.Configuration.Save();
 	}
 
 	public void SetUseLatihasTTS(bool useLatihasTTS_) {
 		if (useLatihasTTS_) {
 			if (LatihasTts == null || !LatihasTts!.CheckAssets()) {
-				Plugin.Configuration.UseLatihasTts = useLatihasTTS = false;
-				Plugin.Configuration.Save();
+				Instance.Configuration.UseLatihasTts = useLatihasTTS = false;
+				Instance.Configuration.Save();
 				return;
 			}
-			Plugin.Configuration.UseEdgeTts = useEdgeTTS = false;
+			Instance.Configuration.UseEdgeTts = useEdgeTTS = false;
 		}
-		Plugin.Configuration.UseLatihasTts = useLatihasTTS = useLatihasTTS_;
-		Plugin.Configuration.Save();
+		Instance.Configuration.UseLatihasTts = useLatihasTTS = useLatihasTTS_;
+		Instance.Configuration.Save();
 	}
 
 	private static readonly Dictionary<string, DateTime> time = new();
@@ -79,7 +79,7 @@ internal class TextToSpeechProvider : IDisposable {
 	public void Speak(string message) {
 		if (string.IsNullOrEmpty(message)) return;
 		lock (time) {
-			if (time.TryGetValue(message, out var value) && (DateTime.Now - value).TotalSeconds < Plugin.Configuration.TtsInterval) return;
+			if (time.TryGetValue(message, out var value) && (DateTime.Now - value).TotalSeconds < Instance.Configuration.TtsInterval) return;
 			time[message] = DateTime.Now;
 		}
 		if (useEdgeTTS && edgeTTSManager != null) {

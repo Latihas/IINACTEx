@@ -122,7 +122,7 @@ public class MainWindow() : Window(WindowPrefix) {
 
 	public override void Draw() {
 		WindowName = _windowName ??=
-			$"IINACTEx [{ApiVersion.NamespaceIdentifier}] [版本{Assembly.GetExecutingAssembly().GetName().Version?.ToString()}] [核心{Instance.Version}] [解析{typeof(FFXIV_ACT_Plugin.FFXIV_ACT_Plugin).Assembly.GetName().Version}({(Plugin.Configuration.FFXIV_ACT_Plugin_CN_Update ? "解析插件可更新，请重新加载插件以更新" : "解析插件无更新")})]###IINACTEx";
+			$"IINACTEx [{ApiVersion.NamespaceIdentifier}] [版本{Assembly.GetExecutingAssembly().GetName().Version?.ToString()}] [核心{Instance.Version}] [解析{typeof(FFXIV_ACT_Plugin.FFXIV_ACT_Plugin).Assembly.GetName().Version}({(Instance.Configuration.FFXIV_ACT_Plugin_CN_Update ? "解析插件可更新，请重新加载插件以更新" : "解析插件无更新")})]###IINACTEx";
 		foreach (var p in ImGuiColor) ImGui.PushStyleColor(p.Key, p.Value);
 		foreach (var p in ImGuiVar) ImGui.PushStyleVar(p.Key, p.Value);
 		var time = (float)ImGui.GetTime();
@@ -336,10 +336,10 @@ public class MainWindow() : Window(WindowPrefix) {
 		ImGui.SameLine();
 		ImGui.Text("银山雀儿");
 		ImGui.SameLine();
-		var LoadSilverDasherOnInit = Plugin.Configuration.LoadSilverDasherOnInit;
+		var LoadSilverDasherOnInit = Instance.Configuration.LoadSilverDasherOnInit;
 		if (ImGui.Checkbox("启动时加载", ref LoadSilverDasherOnInit)) {
-			Plugin.Configuration.LoadSilverDasherOnInit = LoadSilverDasherOnInit;
-			Plugin.Configuration.Save();
+			Instance.Configuration.LoadSilverDasherOnInit = LoadSilverDasherOnInit;
+			Instance.Configuration.Save();
 		}
 		ImGui.Separator();
 		if (SilverDasherPlugin != null)
@@ -367,7 +367,7 @@ public class MainWindow() : Window(WindowPrefix) {
 		var comboWidth = ImGui.GetWindowWidth() * 0.8f;
 
 		var selectedIndexOverlayName = OverlayNames?[selectedOverlayIndex] ?? "";
-		var selectedOverlayName = Plugin.Configuration.SelectedOverlay ?? selectedIndexOverlayName;
+		var selectedOverlayName = Instance.Configuration.SelectedOverlay ?? selectedIndexOverlayName;
 		if (selectedOverlayName != selectedIndexOverlayName)
 			for (var i = 0; i < OverlayNames?.Length; i++)
 				if (OverlayNames?[i] == selectedOverlayName)
@@ -375,8 +375,8 @@ public class MainWindow() : Window(WindowPrefix) {
 
 		ImGui.SetNextItemWidth(comboWidth);
 		if (ImGui.Combo("悬浮窗##OverlayCombo", ref selectedOverlayIndex, OverlayNames)) {
-			Plugin.Configuration.SelectedOverlay = OverlayNames?[selectedOverlayIndex];
-			Plugin.Configuration.Save();
+			Instance.Configuration.SelectedOverlay = OverlayNames?[selectedOverlayIndex];
+			Instance.Configuration.Save();
 		}
 
 		var selectedOverlay = OverlayPresets?[selectedOverlayIndex];
@@ -503,65 +503,65 @@ public class MainWindow() : Window(WindowPrefix) {
 	private void DrawParseSettings() {
 		ImGui.Spacing();
 		var elementWidth = ImGui.GetWindowWidth() - 150 * ImGuiHelpers.GlobalScale;
-		var logFilePath = Plugin.Configuration.LogFilePath;
+		var logFilePath = Instance.Configuration.LogFilePath;
 		ImGui.SetNextItemWidth(elementWidth);
 		ImGui.InputText("日志文件路径", ref logFilePath, 200, ImGuiInputTextFlags.ReadOnly);
 		ImGui.SameLine();
 		if (ImGuiComponents.DisabledButton(FontAwesomeIcon.Folder)) {
 			FileDialogManager.OpenFolderDialog("选择保存日志的文件夹", (success, path) => {
 				if (!success) return;
-				Plugin.Configuration.LogFilePath = path;
-				Plugin.Configuration.Save();
-			}, Plugin.Configuration.LogFilePath);
+				Instance.Configuration.LogFilePath = path;
+				Instance.Configuration.Save();
+			}, Instance.Configuration.LogFilePath);
 		}
 		ImGui.Spacing();
 		ImGui.SetNextItemWidth(elementWidth);
-		var idx = Plugin.Configuration.ParseFilterMode;
+		var idx = Instance.Configuration.ParseFilterMode;
 		if (ImGui.Combo("解析过滤器", ref idx, Enum.GetValues<ParseFilterMode>().Select(GetParseFilterModeText).ToList())) {
-			Plugin.Configuration.ParseFilterMode = idx;
-			Plugin.Configuration.Save();
+			Instance.Configuration.ParseFilterMode = idx;
+			Instance.Configuration.Save();
 		}
 
 		ImGui.Spacing();
-		var WriteLogFile = Plugin.Configuration.WriteLogFile;
+		var WriteLogFile = Instance.Configuration.WriteLogFile;
 		if (ImGui.Checkbox("写入网络日志文件", ref WriteLogFile)) {
-			Plugin.Configuration.WriteLogFile = WriteLogFile;
-			Plugin.Configuration.Save();
+			Instance.Configuration.WriteLogFile = WriteLogFile;
+			Instance.Configuration.Save();
 		}
-		var WriteActLogFile = Plugin.Configuration.WriteActLogFile;
-		if (Plugin.Configuration.WriteLogFile && ImGui.Checkbox("写入ACT日志文件(.actxt)", ref WriteActLogFile)) {
-			Plugin.Configuration.WriteActLogFile = WriteActLogFile;
-			Plugin.Configuration.Save();
+		var WriteActLogFile = Instance.Configuration.WriteActLogFile;
+		if (Instance.Configuration.WriteLogFile && ImGui.Checkbox("写入ACT日志文件(.actxt)", ref WriteActLogFile)) {
+			Instance.Configuration.WriteActLogFile = WriteActLogFile;
+			Instance.Configuration.Save();
 		}
-		var WriteTrnLogFile = Plugin.Configuration.WriteTrnLogFile;
-		if (Plugin.Configuration.WriteLogFile && ImGui.Checkbox("写入Trn日志文件(.trnxt)", ref WriteTrnLogFile)) {
-			Plugin.Configuration.WriteTrnLogFile = WriteTrnLogFile;
-			Plugin.Configuration.Save();
+		var WriteTrnLogFile = Instance.Configuration.WriteTrnLogFile;
+		if (Instance.Configuration.WriteLogFile && ImGui.Checkbox("写入Trn日志文件(.trnxt)", ref WriteTrnLogFile)) {
+			Instance.Configuration.WriteTrnLogFile = WriteTrnLogFile;
+			Instance.Configuration.Save();
 		}
-		var disablePvp = Plugin.Configuration.DisablePvp;
+		var disablePvp = Instance.Configuration.DisablePvp;
 		if (ImGui.Checkbox("在PvP中禁用写入网络日志文件", ref disablePvp)) {
-			if (ClientState.IsPvP && disablePvp) Plugin.Configuration.DisableWritingPvpLogFile = true;
+			if (ClientState.IsPvP && disablePvp) Instance.Configuration.DisableWritingPvpLogFile = true;
 
-			Plugin.Configuration.DisablePvp = disablePvp;
-			Plugin.Configuration.Save();
+			Instance.Configuration.DisablePvp = disablePvp;
+			Instance.Configuration.Save();
 		}
 
-		var disableDamageShield = Plugin.Configuration.DisableDamageShield;
+		var disableDamageShield = Instance.Configuration.DisableDamageShield;
 		if (ImGui.Checkbox("禁用伤害盾估计", ref disableDamageShield)) {
-			Plugin.Configuration.DisableDamageShield = disableDamageShield;
-			Plugin.Configuration.Save();
+			Instance.Configuration.DisableDamageShield = disableDamageShield;
+			Instance.Configuration.Save();
 		}
 
-		var disableCombinePets = Plugin.Configuration.DisableCombinePets;
+		var disableCombinePets = Instance.Configuration.DisableCombinePets;
 		if (ImGui.Checkbox("禁用宠物合并", ref disableCombinePets)) {
-			Plugin.Configuration.DisableCombinePets = disableCombinePets;
-			Plugin.Configuration.Save();
+			Instance.Configuration.DisableCombinePets = disableCombinePets;
+			Instance.Configuration.Save();
 		}
 
-		var showDebug = Plugin.Configuration.ShowDebug;
+		var showDebug = Instance.Configuration.ShowDebug;
 		if (ImGui.Checkbox("显示调试选项", ref showDebug)) {
-			Plugin.Configuration.ShowDebug = showDebug;
-			Plugin.Configuration.Save();
+			Instance.Configuration.ShowDebug = showDebug;
+			Instance.Configuration.Save();
 		}
 
 		if (!showDebug) return;
@@ -570,16 +570,16 @@ public class MainWindow() : Window(WindowPrefix) {
 		ImGui.Separator();
 		ImGui.Spacing();
 
-		var simulateIndividualDoTCrits = Plugin.Configuration.SimulateIndividualDoTCrits;
+		var simulateIndividualDoTCrits = Instance.Configuration.SimulateIndividualDoTCrits;
 		if (ImGui.Checkbox("模拟单体 DoT 暴击", ref simulateIndividualDoTCrits)) {
-			Plugin.Configuration.SimulateIndividualDoTCrits = simulateIndividualDoTCrits;
-			Plugin.Configuration.Save();
+			Instance.Configuration.SimulateIndividualDoTCrits = simulateIndividualDoTCrits;
+			Instance.Configuration.Save();
 		}
 
-		var showRealDoTTicks = Plugin.Configuration.ShowRealDoTTicks;
+		var showRealDoTTicks = Instance.Configuration.ShowRealDoTTicks;
 		if (ImGui.Checkbox("显示真实 DoT Ticks", ref showRealDoTTicks)) {
-			Plugin.Configuration.ShowRealDoTTicks = showRealDoTTicks;
-			Plugin.Configuration.Save();
+			Instance.Configuration.ShowRealDoTTicks = showRealDoTTicks;
+			Instance.Configuration.Save();
 		}
 	}
 
