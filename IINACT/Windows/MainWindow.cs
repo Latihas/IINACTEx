@@ -25,7 +25,6 @@ using RainbowMage.OverlayPlugin;
 using RainbowMage.OverlayPlugin.WebSocket;
 using static IINACT.Latihas.LWindow;
 using static IINACT.Plugin;
-using static Utils.Interfaces.I_IINACTEx_Plugin;
 
 namespace IINACT.Windows;
 

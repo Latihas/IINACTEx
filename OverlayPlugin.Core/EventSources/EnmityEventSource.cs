@@ -42,7 +42,7 @@ public class EnmityEventSource : EventSourceBase {
 		public bool inGameCombat;
 	}
 
-	public int endEncounterOutOfCombatDelayMs => ActGlobals.oFormActMain.DalamudPlugin.ConfigurationInstance.endEncounterOutOfCombatDelayMs;
+	public int endEncounterOutOfCombatDelayMs => ActGlobals.oFormActMain.DalamudPlugin.Instance.Configuration.endEncounterOutOfCombatDelayMs;
 	private CancellationTokenSource endEncounterToken;
 
 	public BuiltinEventConfig Config { get; set; }
@@ -55,14 +55,12 @@ public class EnmityEventSource : EventSourceBase {
 			Log(LogLevel.Warning, "Could not construct EnmityEventSource: missing combatantMemory");
 			return;
 		}
-		targetMemory = container.Resolve<ITargetMemory>();
-		enmityMemory = container.Resolve<IEnmityMemory>();
-		aggroMemory = container.Resolve<IAggroMemory>();
-		enmityHudMemory = container.Resolve<IEnmityHudMemory>();
-
+		Task.WaitAll(Task.Run(() => targetMemory = container.Resolve<ITargetMemory>()),
+			Task.Run(() => enmityMemory = container.Resolve<IEnmityMemory>()),
+			Task.Run(() => aggroMemory = container.Resolve<IAggroMemory>()),
+			Task.Run(() => enmityHudMemory = container.Resolve<IEnmityHudMemory>()));
 		RegisterEventTypes([EnmityTargetDataEvent, EnmityAggroListEvent, TargetableEnemiesEvent]);
 		RegisterCachedEventType(InCombatEvent);
-
 		lineInCombat = container.Resolve<LineInCombat>();
 		lineInCombat.OnInCombatChanged += OnInCombatChanged;
 

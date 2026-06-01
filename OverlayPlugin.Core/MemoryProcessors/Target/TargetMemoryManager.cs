@@ -15,67 +15,34 @@ public interface ITargetMemory : IVersionedMemory {
 internal class TargetMemoryManager : ITargetMemory {
 	private readonly TinyIoCContainer container;
 	private readonly FFXIVRepository repository;
-	private ITargetMemory memory;
+	private ITargetMemory? memory;
 
 	public TargetMemoryManager(TinyIoCContainer container) {
 		this.container = container;
 		container.Register<ITargetMemory70, TargetMemory70>();
 		repository = container.Resolve<FFXIVRepository>();
-
-		var memory = container.Resolve<FFXIVMemory>();
-		memory.RegisterOnProcessChangeHandler(FindMemory);
+		container.Resolve<FFXIVMemory>().RegisterOnProcessChangeHandler(FindMemory);
 	}
 
-	private void FindMemory(object sender, Process p) {
+	private void FindMemory(object? sender, Process p) {
 		memory = null;
-		if (p == null) {
-			return;
-		}
-
 		ScanPointers();
 	}
 
 	public void ScanPointers() {
-		var candidates = new List<ITargetMemory>();
-		candidates.Add(container.Resolve<ITargetMemory70>());
+		List<ITargetMemory> candidates = [
+			container.Resolve<ITargetMemory70>()
+		];
 		memory = FFXIVMemory.FindCandidate(candidates, repository.GetMachinaRegion());
 	}
 
-	public bool IsValid() {
-		if (memory == null || !memory.IsValid()) {
-			return false;
-		}
+	public bool IsValid() => memory != null && memory.IsValid();
 
-		return true;
-	}
+	public Version? GetVersion() => !IsValid() ? null : memory?.GetVersion();
 
-	public Version GetVersion() {
-		if (!IsValid())
-			return null;
-		return memory.GetVersion();
-	}
+	public Combatant.Combatant? GetTargetCombatant() => !IsValid() ? null : memory?.GetTargetCombatant();
 
-	public Combatant.Combatant GetTargetCombatant() {
-		if (!IsValid()) {
-			return null;
-		}
+	public Combatant.Combatant? GetFocusCombatant() => !IsValid() ? null : memory?.GetFocusCombatant();
 
-		return memory.GetTargetCombatant();
-	}
-
-	public Combatant.Combatant GetFocusCombatant() {
-		if (!IsValid()) {
-			return null;
-		}
-
-		return memory.GetFocusCombatant();
-	}
-
-	public Combatant.Combatant GetHoverCombatant() {
-		if (!IsValid()) {
-			return null;
-		}
-
-		return memory.GetHoverCombatant();
-	}
+	public Combatant.Combatant? GetHoverCombatant() => !IsValid() ? null : memory?.GetHoverCombatant();
 }

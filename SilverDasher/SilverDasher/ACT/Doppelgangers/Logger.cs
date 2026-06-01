@@ -27,6 +27,6 @@ internal class Logger(SilverDasher self) : Doppelganger(self) {
 
 	internal static void LogToFile(string s) {
 		Trace.WriteLine(s);
-		lock (SilverDasher.FileLogs) SilverDasher.FileLogs.Add(s);
+		SilverDasher.FileLogs.Enqueue(s);
 	}
 }

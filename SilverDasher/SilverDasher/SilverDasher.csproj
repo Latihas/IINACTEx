@@ -6,7 +6,6 @@
 	</PropertyGroup>
 	<ItemGroup>
 		<PackageReference Include="MQTTnet" Version="5.1.0.1559"/>
-		<ProjectReference Include="..\..\Utils\Utils.csproj"/>
 		<Reference Include="FFXIV_ACT_Plugin">
 			<HintPath>..\..\external_dependencies\FFXIV_ACT_Plugin.dll</HintPath>
 		</Reference>

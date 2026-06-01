@@ -109,26 +109,6 @@ public class Patcher(Version version, string workPath) {
 		var dataSubscription = memory.Assembly.MainModule.Types.First(type => type.Name == "DataSubscription");
 		var delegates = dataSubscription.Methods.Where(method => method.Name.StartsWith("On"));
 
-		void BeginInvokeFix(MethodDefinition method) {
-			var originalIl = method.Body.Instructions.ToArray();
-			var invokeIndex =
-				Array.FindIndex(
-					originalIl,
-					code => code.OpCode == OpCodes.Callvirt && code.Operand.ToString()!.Contains("BeginInvoke"));
-			if (invokeIndex == -1)
-				throw new DllNotFoundException("Could not find BeginInvoke instruction");
-			var invokeInstruction = originalIl[invokeIndex];
-			var ilProcessor = method.Body.GetILProcessor();
-			ilProcessor.RemoveAt(invokeIndex + 1);
-			ilProcessor.InsertBefore(invokeInstruction, Instruction.Create(OpCodes.Pop));
-			ilProcessor.InsertBefore(invokeInstruction, Instruction.Create(OpCodes.Pop));
-			var beginInvokeMethod = invokeInstruction.Operand as MethodReference;
-			var declaringType = beginInvokeMethod!.DeclaringType.Resolve();
-			var invokeMethod = declaringType.Methods.First(methodDefinition => methodDefinition.Name == "Invoke");
-			var invokeMethodReference = memory.Assembly.MainModule.ImportReference(invokeMethod);
-			ilProcessor.Replace(invokeInstruction, Instruction.Create(OpCodes.Callvirt, invokeMethodReference));
-		}
-
 		foreach (var method in delegates)
 			BeginInvokeFix(method);
 
@@ -144,24 +124,12 @@ public class Patcher(Version version, string workPath) {
 		                                                         "System.Void System.Runtime.InteropServices.Marshal::Copy(System.IntPtr,System.Byte[],System.Int32,System.Int32)");
 		var marshallCopyBufferReference = memory.Assembly.MainModule.ImportReference(marshallCopyBuffer);
 
-		void UseMarshallCopyBuffer(MethodDefinition method) {
-			var originalIl = method.Body.Instructions.ToArray();
-			var bufferIndex =
-				Array.FindIndex(
-					originalIl,
-					code => code.OpCode == OpCodes.Callvirt && code.Operand.ToString()!.Contains("ReadBuffer"));
-			var dynamicLength = originalIl[bufferIndex - 1].OpCode == OpCodes.Conv_I4;
-			var offset = dynamicLength ? -3 : 0;
-			var ilProcessor = method.Body.GetILProcessor();
-			ilProcessor.Replace(bufferIndex, Instruction.Create(OpCodes.Call, marshallCopyBufferReference));
-			ilProcessor.InsertAfter(bufferIndex - 2 + offset, Instruction.Create(OpCodes.Ldc_I4_0));
-			ilProcessor.RemoveAt(bufferIndex - 6 + offset);
-			ilProcessor.RemoveAt(bufferIndex - 6 + offset);
-		}
-
 		var readBufferMethods = new[] {
-			"System.IntPtr FFXIV_ACT_Plugin.Memory.MemoryReader.ReadParty::Read()", "System.IntPtr FFXIV_ACT_Plugin.Memory.MemoryReader.ReadZoneMap::Read()", "System.IntPtr FFXIV_ACT_Plugin.Memory.MemoryReader.ReadCombatant::Read(System.IntPtr)",
-			"System.IntPtr FFXIV_ACT_Plugin.Memory.MemoryReader.ReadPlayer::Read()", "System.IntPtr FFXIV_ACT_Plugin.Memory.MemoryReader.ReadMobArray::Read64()"
+			"System.IntPtr FFXIV_ACT_Plugin.Memory.MemoryReader.ReadParty::Read()",
+			"System.IntPtr FFXIV_ACT_Plugin.Memory.MemoryReader.ReadZoneMap::Read()",
+			"System.IntPtr FFXIV_ACT_Plugin.Memory.MemoryReader.ReadCombatant::Read(System.IntPtr)",
+			"System.IntPtr FFXIV_ACT_Plugin.Memory.MemoryReader.ReadPlayer::Read()",
+			"System.IntPtr FFXIV_ACT_Plugin.Memory.MemoryReader.ReadMobArray::Read64()"
 		};
 
 		foreach (var methodName in readBufferMethods)
@@ -218,5 +186,41 @@ public class Patcher(Version version, string workPath) {
 		}
 
 		memory.WriteOut();
+		return;
+
+		void BeginInvokeFix(MethodDefinition method) {
+			var originalIl = method.Body.Instructions.ToArray();
+			var invokeIndex =
+				Array.FindIndex(
+					originalIl,
+					code => code.OpCode == OpCodes.Callvirt && code.Operand.ToString()!.Contains("BeginInvoke"));
+			if (invokeIndex == -1)
+				throw new DllNotFoundException("Could not find BeginInvoke instruction");
+			var invokeInstruction = originalIl[invokeIndex];
+			var ilProcessor = method.Body.GetILProcessor();
+			ilProcessor.RemoveAt(invokeIndex + 1);
+			ilProcessor.InsertBefore(invokeInstruction, Instruction.Create(OpCodes.Pop));
+			ilProcessor.InsertBefore(invokeInstruction, Instruction.Create(OpCodes.Pop));
+			var beginInvokeMethod = invokeInstruction.Operand as MethodReference;
+			var declaringType = beginInvokeMethod!.DeclaringType.Resolve();
+			var invokeMethod = declaringType.Methods.First(methodDefinition => methodDefinition.Name == "Invoke");
+			var invokeMethodReference = memory.Assembly.MainModule.ImportReference(invokeMethod);
+			ilProcessor.Replace(invokeInstruction, Instruction.Create(OpCodes.Callvirt, invokeMethodReference));
+		}
+
+		void UseMarshallCopyBuffer(MethodDefinition method) {
+			var originalIl = method.Body.Instructions.ToArray();
+			var bufferIndex =
+				Array.FindIndex(
+					originalIl,
+					code => code.OpCode == OpCodes.Callvirt && code.Operand.ToString()!.Contains("ReadBuffer"));
+			var dynamicLength = originalIl[bufferIndex - 1].OpCode == OpCodes.Conv_I4;
+			var offset = dynamicLength ? -3 : 0;
+			var ilProcessor = method.Body.GetILProcessor();
+			ilProcessor.Replace(bufferIndex, Instruction.Create(OpCodes.Call, marshallCopyBufferReference));
+			ilProcessor.InsertAfter(bufferIndex - 2 + offset, Instruction.Create(OpCodes.Ldc_I4_0));
+			ilProcessor.RemoveAt(bufferIndex - 6 + offset);
+			ilProcessor.RemoveAt(bufferIndex - 6 + offset);
+		}
 	}
 }

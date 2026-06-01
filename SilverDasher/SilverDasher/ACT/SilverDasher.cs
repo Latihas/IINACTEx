@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -31,7 +32,7 @@ public class SilverDasher {
 	internal static INotificationManager NotificationManager;
 	private readonly List<Doppelganger> Doppelgangers = [];
 	internal static string Datadir;
-	public static readonly List<string> FileLogs = [];
+	public static readonly ConcurrentQueue<string> FileLogs = [];
 	internal static PluginStatus pluginStatus = default;
 
 	public SilverDasher(string datadir, IClientState clientState, IObjectTable objectTable, IFramework framework, INotificationManager notificationManager) {
@@ -49,11 +50,10 @@ public class SilverDasher {
 
 	private static void WriteLog(IFramework _) {
 		if (!Directory.Exists(DataStorage.LogPath)) Directory.CreateDirectory(DataStorage.LogPath);
-		lock (FileLogs) {
-			if (FileLogs.Count == 0) return;
-			File.AppendAllText(DataStorage.LogFile, $"{string.Join("\n", FileLogs.Where(i => !string.IsNullOrEmpty(i)))}\n");
-			FileLogs.Clear();
-		}
+
+		if (FileLogs.IsEmpty) return;
+		File.AppendAllText(DataStorage.LogFile, $"{string.Join("\n", FileLogs.Where(i => !string.IsNullOrEmpty(i)))}\n");
+		FileLogs.Clear();
 	}
 
 	private void ZI(ZoneInitEventArgs zoneInitEventArgs) {

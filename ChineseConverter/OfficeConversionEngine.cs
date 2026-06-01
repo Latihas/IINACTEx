@@ -7,7 +7,6 @@ namespace ChineseConverter;
 
 internal class OfficeConversionEngine {
 	private static readonly string MsoPath;
-
 	private static readonly string Mstr2TscPath;
 
 	static OfficeConversionEngine() {
@@ -16,7 +15,7 @@ internal class OfficeConversionEngine {
 		if (registryKey != null) text = Convert.ToString(registryKey.GetValue("Path"), null);
 		var registryKey2 = Registry.LocalMachine.OpenSubKey(@"SOFTWARE\Microsoft\Office\12.0\Common\FilesPaths");
 		if (registryKey2 != null) MsoPath = Convert.ToString(registryKey2.GetValue("mso.dll"), null);
-		if (!string.IsNullOrEmpty(text)) Mstr2TscPath = Path.Combine(text, "ADDINS\\MSTR2TSC.DLL");
+		if (!string.IsNullOrEmpty(text)) Mstr2TscPath = Path.Combine(text, @"ADDINS\MSTR2TSC.DLL");
 		if (string.IsNullOrEmpty(Mstr2TscPath) || !File.Exists(Mstr2TscPath)) Mstr2TscPath = null;
 	}
 

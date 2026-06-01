@@ -32,15 +32,12 @@ public partial class FetchDependencies {
 	internal static IPluginLog Log;
 	public static string RemoteDieMoeBuildVersion = "";
 
-	public bool CheckCnUpdate() {
-		if (!IsChinese) return false;
-		return NeedsUpdate(Path.Combine(DependenciesDir, "FFXIV_ACT_Plugin.dll"));
-	}
+	public bool CheckCnUpdate() => IsChinese && NeedsUpdate(Path.Combine(DependenciesDir, "FFXIV_ACT_Plugin.dll"));
 
-	public void GetFfxivPlugin() {
-		var pluginZipPath = Path.Combine(DependenciesDir, "FFXIV_ACT_Plugin.zip");
+	public void GetFfxivPlugin(bool canUpdate) {
 		var pluginPath = Path.Combine(DependenciesDir, "FFXIV_ACT_Plugin.dll");
-
+		if (File.Exists(pluginPath) && !canUpdate) return;
+		var pluginZipPath = Path.Combine(DependenciesDir, "FFXIV_ACT_Plugin.zip");
 		if (!NeedsUpdate(pluginPath)) return;
 		if (!File.Exists(pluginZipPath)) DownloadPlugin(pluginZipPath);
 		if (IsChinese) DownloadFile(PluginUrlChinese, pluginPath);
@@ -61,11 +58,6 @@ public partial class FetchDependencies {
 		patcher.LogFilePlugin();
 		patcher.MemoryPlugin();
 		if (IsChinese && LanguagePreserve != 0 && LanguagePreserve != 1) patcher.ResourcePlugin(LanguagePreserve);
-	}
-
-	public void GetFfxivPluginIfNullOrUpdate(bool canUpdate) {
-		var pluginPath = Path.Combine(DependenciesDir, "FFXIV_ACT_Plugin.dll");
-		if (!File.Exists(pluginPath) || canUpdate) GetFfxivPlugin();
 	}
 
 	[GeneratedRegex(@"build_version\s*=\s*([0-9.]+)", RegexOptions.Multiline)]
@@ -134,8 +126,7 @@ public partial class FetchDependencies {
 	private void DownloadFile(string url, string path) {
 		using var cancelAfterDelay = new CancellationTokenSource(TimeSpan.FromSeconds(30));
 		using var downloadStream = HttpClient
-			.GetStreamAsync(url,
-				cancelAfterDelay.Token).Result;
+			.GetStreamAsync(url, cancelAfterDelay.Token).Result;
 		using var zipFileStream = new FileStream(path, FileMode.Create);
 		downloadStream.CopyTo(zipFileStream);
 		zipFileStream.Close();

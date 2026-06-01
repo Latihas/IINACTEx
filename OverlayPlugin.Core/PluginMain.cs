@@ -25,12 +25,8 @@ using RainbowMage.OverlayPlugin.WebSocket;
 
 namespace RainbowMage.OverlayPlugin;
 
-public class PluginLoader : IActPluginV1 {
-	public readonly PluginMain pluginMain;
-
-	public PluginLoader(PluginMain pluginMain) {
-		this.pluginMain = pluginMain;
-	}
+public class PluginLoader(PluginMain pluginMain) : IActPluginV1 {
+	public readonly PluginMain pluginMain = pluginMain;
 
 	public void InitPlugin(TabPage pluginScreenSpace, Label pluginStatusText) {
 	}

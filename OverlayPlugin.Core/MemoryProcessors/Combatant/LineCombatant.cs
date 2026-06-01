@@ -263,7 +263,7 @@ public class LineCombatant : IDisposable {
 			}
 
 			// If this is a new combatant, always write a line for it
-			if (!combatantStateMap.ContainsKey(combatant.ID)) {
+			if (!combatantStateMap.TryGetValue(combatant.ID, out var value)) {
 				combatantStateMap[combatant.ID] = new CombatantStateInfo {
 					lastUpdated = now,
 					combatant = combatant
@@ -275,7 +275,7 @@ public class LineCombatant : IDisposable {
 				continue;
 			}
 
-			var oldCombatant = combatantStateMap[combatant.ID].combatant;
+			var oldCombatant = value.combatant;
 			var lastUpdatedDiff = (now - combatantStateMap[combatant.ID].lastUpdated).TotalMilliseconds;
 			var changed = new HashSet<FieldInfo>();
 
@@ -303,10 +303,10 @@ public class LineCombatant : IDisposable {
 
 				// If any position data has changed, write all position data
 				if (writePosition) {
-					changed.Add(combatant.GetType().GetField(nameof(Combatant.PosX)));
-					changed.Add(combatant.GetType().GetField(nameof(Combatant.PosY)));
-					changed.Add(combatant.GetType().GetField(nameof(Combatant.PosZ)));
-					changed.Add(combatant.GetType().GetField(nameof(Combatant.Heading)));
+					changed.Add(typeof(Combatant).GetField(nameof(Combatant.PosX)));
+					changed.Add(typeof(Combatant).GetField(nameof(Combatant.PosY)));
+					changed.Add(typeof(Combatant).GetField(nameof(Combatant.PosZ)));
+					changed.Add(typeof(Combatant).GetField(nameof(Combatant.Heading)));
 				}
 			}
 

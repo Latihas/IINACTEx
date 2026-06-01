@@ -9,13 +9,10 @@ namespace FetchDependencies;
 public class TargetAssembly : IDisposable {
 	public TargetAssembly(string assemblyPath) {
 		AssemblyPath = assemblyPath;
-
 		var resolver = new DefaultAssemblyResolver();
 		resolver.AddSearchDirectory(Path.GetDirectoryName(assemblyPath));
 		Assembly = AssemblyDefinition.ReadAssembly(AssemblyPath,
-			new ReaderParameters {
-				AssemblyResolver = resolver
-			});
+			new ReaderParameters { AssemblyResolver = resolver });
 	}
 
 	public AssemblyDefinition Assembly { get; }

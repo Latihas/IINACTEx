@@ -45,9 +45,10 @@ internal class ContentFinderSettingsMemoryManager : IContentFinderSettingsMemory
 	}
 
 	public void ScanPointers() {
-		var candidates = new List<IContentFinderSettingsMemory>();
-		candidates.Add(container.Resolve<IContentFinderSettingsMemory71>());
-		candidates.Add(container.Resolve<IContentFinderSettingsMemory70>());
+		List<IContentFinderSettingsMemory> candidates = [
+			container.Resolve<IContentFinderSettingsMemory71>(),
+			container.Resolve<IContentFinderSettingsMemory70>()
+		];
 		memory = FFXIVMemory.FindCandidate(candidates, repository.GetMachinaRegion());
 	}
 

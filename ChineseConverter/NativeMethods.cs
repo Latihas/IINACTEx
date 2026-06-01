@@ -3,31 +3,31 @@ using System.Runtime.InteropServices;
 
 namespace ChineseConverter;
 
-internal static class NativeMethods {
-	[DllImport("KERNEL32.DLL", CharSet = CharSet.Unicode)]
-	public static extern int LCMapString(int locale, uint dwMapFlags, [MarshalAs(UnmanagedType.LPTStr)] string lpSrcStr, int cchSrc, IntPtr lpDestStr, int cchDest);
+internal static partial class NativeMethods {
+	[LibraryImport("KERNEL32.DLL", StringMarshalling = StringMarshalling.Utf16)]
+	public static partial int LCMapString(int locale, uint dwMapFlags, [MarshalAs(UnmanagedType.LPTStr)] string lpSrcStr, int cchSrc, IntPtr lpDestStr, int cchDest);
 
-	[DllImport("KERNEL32.DLL", CharSet = CharSet.Unicode)]
-	public static extern IntPtr LoadLibrary([MarshalAs(UnmanagedType.LPTStr)] string lpFileName);
+	[LibraryImport("KERNEL32.DLL", StringMarshalling = StringMarshalling.Utf16)]
+	public static partial IntPtr LoadLibrary([MarshalAs(UnmanagedType.LPTStr)] string lpFileName);
 
 	[DllImport("KERNEL32.DLL", SetLastError = true)]
 	[return: MarshalAs(UnmanagedType.Bool)]
 	public static extern bool FreeLibrary(HandleRef hModule);
 
-	[DllImport("MSTR2TSC.DLL")]
+	[LibraryImport("MSTR2TSC.DLL")]
 	[return: MarshalAs(UnmanagedType.Bool)]
-	public static extern bool TCSCInitialize();
+	public static partial bool TCSCInitialize();
 
-	[DllImport("MSTR2TSC.DLL")]
+	[LibraryImport("MSTR2TSC.DLL")]
 	[return: MarshalAs(UnmanagedType.Bool)]
-	public static extern bool TCSCUninitialize();
+	public static partial void TCSCUninitialize();
 
-	[DllImport("MSTR2TSC.DLL")]
+	[LibraryImport("MSTR2TSC.DLL")]
 	[return: MarshalAs(UnmanagedType.Bool)]
-	public static extern bool TCSCFreeConvertedText(IntPtr pv);
+	public static partial void TCSCFreeConvertedText(IntPtr pv);
 
-	[DllImport("MSTR2TSC.DLL", CharSet = CharSet.Unicode)]
+	[LibraryImport("MSTR2TSC.DLL", StringMarshalling = StringMarshalling.Utf16)]
 	[return: MarshalAs(UnmanagedType.Bool)]
-	public static extern bool TCSCConvertText([MarshalAs(UnmanagedType.LPTStr)] string pwszInput, int cchInput, out IntPtr ppwszOutput, out int pcchOutput, ChineseConversionDirection dwDirection, [MarshalAs(UnmanagedType.Bool)] bool fCharBase,
+	public static partial bool TCSCConvertText([MarshalAs(UnmanagedType.LPTStr)] string pwszInput, int cchInput, out IntPtr ppwszOutput, out int pcchOutput, ChineseConversionDirection dwDirection, [MarshalAs(UnmanagedType.Bool)] bool fCharBase,
 		[MarshalAs(UnmanagedType.Bool)] bool fLocalTerm);
 }

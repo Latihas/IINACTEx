@@ -23,7 +23,7 @@ internal class Notifier(SilverDasher self) : Doppelganger(self) {
 	}
 
 	internal void Unpack(string topic, string message) {
-		dynamic val = JsonConvert.DeserializeObject<JObject>(message, unpackSettings);
+		dynamic val = JsonConvert.DeserializeObject<JObject>(message, unpackSettings)!;
 		var array = topic.Split('/');
 		var text = array[1];
 		if (!Keeper.Worlds.TryGetByLabel(text, out var w)) {

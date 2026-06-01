@@ -24,6 +24,7 @@ using IINACT.TextToSpeech;
 using IINACT.Windows;
 using Machina.FFXIV;
 using Machina.FFXIV.Headers.Opcodes;
+using PostNamazu.Common;
 using RainbowMage.OverlayPlugin;
 using RainbowMage.OverlayPlugin.Handlers.Ipc;
 using RainbowMage.OverlayPlugin.WebSocket;
@@ -34,52 +35,49 @@ using TriggernometryProxy;
 using static Advanced_Combat_Tracker.ActGlobals;
 using static IINACT.Latihas.LWindow;
 using static IINACT.Windows.MainWindow;
-using static Utils.Interfaces;
 
 namespace IINACT;
 
 [SuppressMessage("ReSharper", "UnusedAutoPropertyAccessor.Local")]
 [SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
-public sealed class Plugin : I_IINACTEx_Plugin, IDalamudPlugin {
-	public readonly Version Version;
-	[PluginService] protected override IDalamudPluginInterface pluginInterface { get; set; }
-	internal static IDalamudPluginInterface PluginInterface => Instance.pluginInterface;
-	[PluginService] protected override ICommandManager commandManager { get; set; }
-	internal static ICommandManager CommandManager => Instance.commandManager;
-	[PluginService] protected override IClientState clientState { get; set; }
-	internal static IClientState ClientState => Instance.clientState;
-	[PluginService] protected override IDataManager dataManager { get; set; }
-	internal static IDataManager DataManager => Instance.dataManager;
-	[PluginService] protected override IChatGui chatGui { get; set; }
-	internal static IChatGui ChatGui => Instance.chatGui;
-	[PluginService] protected override IFramework framework { get; set; }
-	internal static IFramework Framework => Instance.framework;
-	[PluginService] protected override ICondition condition { get; set; }
-	internal static ICondition Condition => Instance.condition;
-	[PluginService] protected override IGameInteropProvider gameInteropProvider { get; set; }
-	internal static IGameInteropProvider GameInteropProvider => Instance.gameInteropProvider;
-	[PluginService] protected override ISigScanner sigScanner { get; set; }
-	internal static ISigScanner SigScanner => Instance.sigScanner;
-	[PluginService] protected override INotificationManager notificationManager { get; set; }
-	internal static INotificationManager NotificationManager => Instance.notificationManager;
-	[PluginService] protected override IPluginLog log { get; set; }
-	internal static IPluginLog Log => Instance.log;
-	[PluginService] protected override ITargetManager targetManager { get; set; }
-	internal static ITargetManager TargetManager => Instance.targetManager;
-	[PluginService] protected override IObjectTable objectTable { get; set; }
-	internal static IObjectTable ObjectTable => Instance.objectTable;
-	[PluginService] protected override IGameGui gameGui { get; set; }
-	internal static IGameGui GameGui => Instance.gameGui;
-	[PluginService] protected override ITextureProvider textureProvider { get; set; }
-	internal static ITextureProvider TextureProvider => Instance.textureProvider;
-
-	public readonly WindowSystem WindowSystem = new("IINACT");
-
+public sealed class Plugin : IDalamudPlugin {
+	internal readonly Version Version;
+	internal const string WindowPrefix = "IINACTEx ";
+	private const string MainWindowCommandName = "/iinact";
+	private const string EndEncCommandName = "/endenc";
+	internal const string OverlayCommandName = "/iinactoverlay";
+	[PluginService] private IDalamudPluginInterface pluginInterface { get; set; }
+	public static IDalamudPluginInterface PluginInterface => Instance.pluginInterface;
+	[PluginService] private ICommandManager commandManager { get; set; }
+	public static ICommandManager CommandManager => Instance.commandManager;
+	[PluginService] private IClientState clientState { get; set; }
+	public static IClientState ClientState => Instance.clientState;
+	[PluginService] private IDataManager dataManager { get; set; }
+	public static IDataManager DataManager => Instance.dataManager;
+	[PluginService] private IChatGui chatGui { get; set; }
+	public static IChatGui ChatGui => Instance.chatGui;
+	[PluginService] private IFramework framework { get; set; }
+	public static IFramework Framework => Instance.framework;
+	[PluginService] private ICondition condition { get; set; }
+	public static ICondition Condition => Instance.condition;
+	[PluginService] private IGameInteropProvider gameInteropProvider { get; set; }
+	public static IGameInteropProvider GameInteropProvider => Instance.gameInteropProvider;
+	[PluginService] private ISigScanner sigScanner { get; set; }
+	public static ISigScanner SigScanner => Instance.sigScanner;
+	[PluginService] private INotificationManager notificationManager { get; set; }
+	public static INotificationManager NotificationManager => Instance.notificationManager;
+	[PluginService] private IPluginLog log { get; set; }
+	public static IPluginLog Log => Instance.log;
+	[PluginService] private ITargetManager targetManager { get; set; }
+	public static ITargetManager TargetManager => Instance.targetManager;
+	[PluginService] private IObjectTable objectTable { get; set; }
+	public static IObjectTable ObjectTable => Instance.objectTable;
+	[PluginService] private IGameGui gameGui { get; set; }
+	public static IGameGui GameGui => Instance.gameGui;
+	[PluginService] private ITextureProvider textureProvider { get; set; }
+	public static ITextureProvider TextureProvider => Instance.textureProvider;
+	private readonly WindowSystem WindowSystem = new("IINACT");
 	public static Configuration Configuration { get; private set; }
-	[SuppressMessage("Performance", "CA1822")]
-	[SuppressMessage("ReSharper", "UnusedMember.Global")]
-	public Configuration ConfigurationInstance => Configuration;
-
 	internal static TextToSpeechProvider TextToSpeechProvider { get; private set; }
 	internal static MainWindow MainWindow = null!;
 	internal static FileDialogManager FileDialogManager { get; private set; }
@@ -92,9 +90,8 @@ public sealed class Plugin : I_IINACTEx_Plugin, IDalamudPlugin {
 	internal string OverlayPluginStatus => OverlayPlugin.Status;
 	public readonly ProxyPlugin TriggernometryProxyPlugin;
 	public readonly PostNamazu.PostNamazu PostNamazuPlugin;
-
-	// private PluginLogTraceListener PluginLogTraceListener { get; }
 	private HttpClient HttpClient { get; }
+	[SuppressMessage("ReSharper", "NotAccessedField.Global")]
 	public readonly TriggerWindow TriggerWindow;
 	public readonly FolderWindow FolderWindow;
 	public readonly ActionWindow ActionWindow;
@@ -106,7 +103,7 @@ public sealed class Plugin : I_IINACTEx_Plugin, IDalamudPlugin {
 	public readonly OverlayWindow OverlayWindow;
 	private static DateTime lastLogTick = DateTime.Now;
 	private readonly DateTime startLogTick = DateTime.Now;
-	internal static EdgeTTSWindow EdgeTTSWindow = null!;
+	private static EdgeTTSWindow EdgeTTSWindow = null!;
 	public static Plugin Instance;
 	private const int LatestConfigVersion = 3;
 	private readonly FetchDependencies.FetchDependencies _fetchDependencies;
@@ -123,7 +120,7 @@ public sealed class Plugin : I_IINACTEx_Plugin, IDalamudPlugin {
 	public bool opcodesjsoncCanReplace => File.Exists(opcodesjsoncPath);
 	public string opcodesjsoncPath => Path.Combine(PluginAssemblyDirectory, "opcodes.jsonc");
 	public string cactbotDir => Path.Combine(Instance.PluginConfigDirectory, "cactbot");
-
+	public DalamudStartInfo DalamudStartInfo;
 
 	public static void UnzipWithoutPassword(string zipFilePath, string extractDir, bool overwrite = false) {
 		try {
@@ -156,7 +153,7 @@ public sealed class Plugin : I_IINACTEx_Plugin, IDalamudPlugin {
 		if (Configuration.Version != LatestConfigVersion)
 			Directory.GetFiles(PluginAssemblyDirectory, "FFXIV_ACT_Plugin*.dll").ToList().ForEach(File.Delete);
 		_fetchDependencies = new FetchDependencies.FetchDependencies(Version, PluginAssemblyDirectory, DataManager.Language.ToString() == "ChineseSimplified", 5, HttpClient, Log);
-		_fetchDependencies.GetFfxivPluginIfNullOrUpdate(Configuration.FFXIV_ACT_Plugin_CN_Update);
+		_fetchDependencies.GetFfxivPlugin(Configuration.FFXIV_ACT_Plugin_CN_Update);
 		Configuration.FFXIV_ACT_Plugin_CN_Update = false;
 		LogTick("Dependencies Fetched");
 		if (!Directory.Exists(PluginActScriptDirectory)) Directory.CreateDirectory(PluginActScriptDirectory);
@@ -254,7 +251,7 @@ public sealed class Plugin : I_IINACTEx_Plugin, IDalamudPlugin {
 		foreach (var rt in Directory.GetFiles(PluginActScriptDirectory, "*.dll", SearchOption.TopDirectoryOnly).Select(Path.GetFileName).Cast<string>())
 			if (Configuration.ActScriptsEnabled.Contains(rt))
 				LoadIActPluginV1(rt, preserveEnableState: true);
-		PostNamazuPlugin.InitPlugin(PluginInterface, Log, SigScanner);
+		PostNamazuPlugin.InitPlugin(PluginInterface, Log, SigScanner, Framework, new PluginIntegrationManager());
 		LogTick("Waiting Triggernometry");
 		CancellationTokenSource postCts = new();
 		var token = postCts.Token;
@@ -286,6 +283,7 @@ public sealed class Plugin : I_IINACTEx_Plugin, IDalamudPlugin {
 		Log.Info($"[StartTick] IINACTEx Inited. Total {(DateTime.Now - startLogTick).TotalSeconds}s");
 	}
 
+
 	private static void OnLogOut(int type, int code) {
 		if (DisableSilverDasher())
 			Task.Run(async () => {
@@ -303,7 +301,7 @@ public sealed class Plugin : I_IINACTEx_Plugin, IDalamudPlugin {
 		lastCnUpdateCheck = DateTime.Now;
 	}
 
-	public static void InitIActPluginV1(ActPluginData plugin, bool preserveEnableState = false) {
+	private static void InitIActPluginV1(ActPluginData plugin, bool preserveEnableState = false) {
 		try {
 			Log.Info($"正在加载IActPluginV1 {plugin.pluginFileName}");
 			oFormActMain.ActPlugins.Add(plugin);
@@ -369,8 +367,6 @@ public sealed class Plugin : I_IINACTEx_Plugin, IDalamudPlugin {
 
 	public const ImGuiTableFlags ImGuiTableFlag = ImGuiTableFlags.Borders | ImGuiTableFlags.Resizable | ImGuiTableFlags.RowBg;
 
-	public const BindingFlags AllFlags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static;
-
 	public void Dispose() {
 		Configuration.Save();
 		TextToSpeechProvider.Dispose();
@@ -383,7 +379,6 @@ public sealed class Plugin : I_IINACTEx_Plugin, IDalamudPlugin {
 		ClientState.Logout -= OnLogOut;
 		IpcProviders.Dispose();
 		ZoneDownHookManager.Dispose();
-		// Trace.Listeners.Remove(PluginLogTraceListener);
 		WindowSystem.RemoveAllWindows();
 		OverlayWindow.Dispose();
 		SilverDasherPlugin?.DeInitPlugin();
@@ -395,7 +390,6 @@ public sealed class Plugin : I_IINACTEx_Plugin, IDalamudPlugin {
 			DeInitIActPluginV1(oFormActMain.ActPlugins.Last(), true);
 		FfxivActPluginWrapper.Dispose();
 		ActGlobals.Dispose();
-		// MainWindow. TpMain?.Close();
 	}
 
 	internal void RefreshBw() {
@@ -449,22 +443,14 @@ public sealed class Plugin : I_IINACTEx_Plugin, IDalamudPlugin {
 		FileDialogManager.Draw();
 	}
 
-	public void DrawConfigUI() {
-		MainWindow.IsOpen = true;
-	}
+	private static void DrawConfigUI() => MainWindow.IsOpen = true;
 
-	private void EnterPvP() {
-		if (Configuration is not { DisablePvp: true, DisableWritingPvpLogFile: false })
-			return;
-
+	private static void EnterPvP() {
+		if (Configuration is not { DisablePvp: true, DisableWritingPvpLogFile: false }) return;
 		Configuration.DisableWritingPvpLogFile = true;
 	}
 
-	private void LeavePvP() {
-		Configuration.DisableWritingPvpLogFile = false;
-	}
+	private static void LeavePvP() => Configuration.DisableWritingPvpLogFile = false;
 
-	internal static void OpenEdgeTTSWindow() {
-		EdgeTTSWindow.Show();
-	}
+	internal static void OpenEdgeTTSWindow() => EdgeTTSWindow.Show();
 }

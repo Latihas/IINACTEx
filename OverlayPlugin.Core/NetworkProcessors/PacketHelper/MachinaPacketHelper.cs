@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using Machina.FFXIV;
@@ -16,8 +17,7 @@ internal static class MachinaMap {
 	public static readonly ReadOnlyDictionary<GameRegion, ReadOnlyDictionary<string, Type>> packetTypeMap;
 
 	static MachinaMap() {
-		var machina = Assembly.Load("Machina.FFXIV");
-		var allMachinaTypes = machina.GetTypes();
+		var allMachinaTypes = Assembly.Load("Machina.FFXIV").GetTypes();
 		var globalDict = new Dictionary<string, Type>();
 		var chineseDict = new Dictionary<string, Type>();
 		var koreanDict = new Dictionary<string, Type>();
@@ -57,28 +57,23 @@ internal static class MachinaMap {
 			}
 
 			packetTypeMap = new ReadOnlyDictionary<GameRegion, ReadOnlyDictionary<string, Type>>(new Dictionary<GameRegion, ReadOnlyDictionary<string, Type>> {
-				{
-					GameRegion.Global, new ReadOnlyDictionary<string, Type>(globalDict)
-				}, {
-					GameRegion.Chinese, new ReadOnlyDictionary<string, Type>(chineseDict)
-				}, {
-					GameRegion.Korean, new ReadOnlyDictionary<string, Type>(koreanDict)
-				}, {
-					GameRegion.TraditionalChinese, new ReadOnlyDictionary<string, Type>(tcDict)
-				}
+				[GameRegion.Global] = new(globalDict),
+				[GameRegion.Chinese] = new(chineseDict),
+				[GameRegion.Korean] = new(koreanDict),
+				[GameRegion.TraditionalChinese] = new(tcDict)
 			});
 
 			MachinaPacketWrapper.InitTypePropertyMap(mType);
 		}
 
 		// Currently Machina uses the same message header for all regions. Allow for that to change in the future.
-		HeaderType_Global = machina.GetType("Machina.FFXIV.Headers.Server_MessageHeader");
+		HeaderType_Global = typeof(Machina.FFXIV.Headers.Server_MessageHeader);
 		MachinaHeaderWrapper.InitTypePropertyMap(HeaderType_Global);
-		HeaderType_CN = machina.GetType("Machina.FFXIV.Headers.Server_MessageHeader");
+		HeaderType_CN = typeof(Machina.FFXIV.Headers.Server_MessageHeader);
 		MachinaHeaderWrapper.InitTypePropertyMap(HeaderType_CN);
-		HeaderType_KR = machina.GetType("Machina.FFXIV.Headers.Server_MessageHeader");
+		HeaderType_KR = typeof(Machina.FFXIV.Headers.Server_MessageHeader);
 		MachinaHeaderWrapper.InitTypePropertyMap(HeaderType_KR);
-		HeaderType_TC = machina.GetType("Machina.FFXIV.Headers.Server_MessageHeader");
+		HeaderType_TC = typeof(Machina.FFXIV.Headers.Server_MessageHeader);
 		MachinaHeaderWrapper.InitTypePropertyMap(HeaderType_TC);
 	}
 
@@ -171,18 +166,12 @@ public class MachinaRegionalizedPacketHelper<PacketType>
 		return true;
 	}
 
-	public IPacketHelper this[GameRegion gameRegion] {
-		get {
-			switch (gameRegion) {
-				case GameRegion.Global: return global;
-				case GameRegion.Chinese: return cn;
-				case GameRegion.Korean: return kr;
-				case GameRegion.TraditionalChinese: return tc;
-
-				default: return global;
-			}
-		}
-	}
+	public IPacketHelper this[GameRegion gameRegion] => gameRegion switch {
+		GameRegion.Global => global,
+		GameRegion.Chinese => cn,
+		GameRegion.Korean => kr,
+		GameRegion.TraditionalChinese => tc, _ => global
+	};
 }
 
 public class MachinaPacketHelper<PacketType> : IPacketHelper
@@ -282,11 +271,7 @@ public class MachinaHeaderWrapper : IHeaderStruct {
 	public static void InitTypePropertyMap(Type type) {
 		// Account for multiple regions sharing the same header
 		if (typePropertyMap.ContainsKey(type)) return;
-
-		var dict = new Dictionary<string, FieldInfo>();
-		foreach (var fieldInfo in type.GetFields()) {
-			dict.Add(fieldInfo.Name, fieldInfo);
-		}
+		var dict = type.GetFields().ToDictionary(fieldInfo => fieldInfo.Name);
 		typePropertyMap.Add(type, dict);
 	}
 
@@ -305,16 +290,12 @@ public abstract class MachinaPacketWrapper : IPacketStruct {
 	public Type packetType;
 	public object packetValue;
 
-	private static Dictionary<Type, Dictionary<string, FieldInfo>> typePropertyMap = new();
+	private static readonly Dictionary<Type, Dictionary<string, FieldInfo>> typePropertyMap = new();
 
 	private Dictionary<string, FieldInfo> propMap;
 
 	public static void InitTypePropertyMap(Type type) {
-		var dict = new Dictionary<string, FieldInfo>();
-		foreach (var fieldInfo in type.GetFields()) {
-			dict.Add(fieldInfo.Name, fieldInfo);
-		}
-		typePropertyMap.Add(type, dict);
+		typePropertyMap.Add(type, type.GetFields().ToDictionary(fieldInfo => fieldInfo.Name));
 	}
 
 	public abstract string ToString(long epoch, uint ActorID);
