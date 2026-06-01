@@ -39,58 +39,27 @@ public class CombatantMemoryManager : ICombatantMemory {
 	}
 
 	public void ScanPointers() {
-		var candidates = new List<ICombatantMemory>();
-		candidates.Add(container.Resolve<ICombatantMemory70>());
-		candidates.Add(container.Resolve<ICombatantMemory71>());
-		candidates.Add(container.Resolve<ICombatantMemory72>());
-		candidates.Add(container.Resolve<ICombatantMemory73>());
-		candidates.Add(container.Resolve<ICombatantMemory74>());
+		var candidates = new List<ICombatantMemory> {
+			container.Resolve<ICombatantMemory70>(),
+			container.Resolve<ICombatantMemory71>(),
+			container.Resolve<ICombatantMemory72>(),
+			container.Resolve<ICombatantMemory73>(),
+			container.Resolve<ICombatantMemory74>()
+		};
 		memory = FFXIVMemory.FindCandidate(candidates, repository.GetMachinaRegion());
 	}
 
-	public bool IsValid() {
-		if (memory == null || !memory.IsValid()) {
-			return false;
-		}
+	public bool IsValid() => memory != null && memory.IsValid();
 
-		return true;
-	}
+	public Version GetVersion() => IsValid() ? memory.GetVersion() : null;
 
-	public Version GetVersion() {
-		if (!IsValid())
-			return null;
-		return memory.GetVersion();
-	}
+	public Combatant GetCombatantFromAddress(IntPtr address, uint selfCharID) => IsValid() ? memory.GetCombatantFromAddress(address, selfCharID) : null;
 
-	public Combatant GetCombatantFromAddress(IntPtr address, uint selfCharID) {
-		if (!IsValid()) {
-			return null;
-		}
+	public List<Combatant> GetCombatantList() => IsValid() ? memory.GetCombatantList() : [];
 
-		return memory.GetCombatantFromAddress(address, selfCharID);
-	}
-
-	public List<Combatant> GetCombatantList() {
-		if (!IsValid()) {
-			return [];
-		}
-
-		return memory.GetCombatantList();
-	}
-
-	public Combatant GetSelfCombatant() {
-		if (!IsValid()) {
-			return null;
-		}
-
-		return memory.GetSelfCombatant();
-	}
+	public Combatant GetSelfCombatant() => IsValid() ? memory.GetSelfCombatant() : null;
 
 	public void ReturnCombatant(Combatant combatant) {
-		if (!IsValid()) {
-			return;
-		}
-
-		memory.ReturnCombatant(combatant);
+		if (IsValid()) memory.ReturnCombatant(combatant);
 	}
 }

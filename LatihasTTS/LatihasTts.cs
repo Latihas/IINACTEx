@@ -5,7 +5,6 @@ using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
-using System.Threading;
 using System.Threading.Tasks;
 using Dalamud.Plugin.Services;
 using Microsoft.ML.OnnxRuntime;
@@ -91,7 +90,7 @@ public partial class LatihasTts : IDisposable {
 			var ad = new byte[2 * a.Length];
 			var iter = 0;
 			foreach (var da in a) ad[iter++] = ad[iter++] = (byte)(da * 128 * 1.25);
-			new Thread(() => {
+			Task.Run(() => {
 				try {
 					if (!Directory.Exists(Tmpdir)) Directory.CreateDirectory(Tmpdir);
 					using var fostream = new MemoryStream(ad);
@@ -100,7 +99,7 @@ public partial class LatihasTts : IDisposable {
 				} catch (Exception e) {
 					Log.Error(e.ToString());
 				}
-			}).Start();
+			});
 			return new MemoryStream(ad);
 		}
 
@@ -108,31 +107,27 @@ public partial class LatihasTts : IDisposable {
 			private readonly Queue<WavInfo> streams = new();
 
 			internal Player(string[] split) {
-				Task.Run(() => {
+				Task.Run(async () => {
 					foreach (var line in split)
 						streams.Enqueue(new WavInfo(GetWav(line), line is "A" or "a"));
 					while (Alive[0] && streams.Count > 0) {
 						if (streams.Count > 0) {
 							var mStream = streams.Dequeue();
-							PlayWav(mStream.Stream);
+							try {
+								const int sr = 30000;
+								var rawStream = new RawSourceWaveStream(mStream.Stream, new WaveFormat(sr, 16, 1));
+								var waveOut = new WaveOut();
+								waveOut.Init(rawStream);
+								waveOut.Play();
+								while (waveOut.PlaybackState == PlaybackState.Playing) await Task.Delay(250);
+							} catch {
+								// ignored
+							}
 							mStream.Stream.Close();
-							if (mStream.LongDelay) Thread.Sleep(75);
-						} else Thread.Sleep(50);
+							if (mStream.LongDelay) await Task.Delay(75);
+						} else await Task.Delay(50);
 					}
 				});
-			}
-
-			private static void PlayWav(MemoryStream stream) {
-				try {
-					const int sr = 30000;
-					var rawStream = new RawSourceWaveStream(stream, new WaveFormat(sr, 16, 1));
-					var waveOut = new WaveOut();
-					waveOut.Init(rawStream);
-					waveOut.Play();
-					while (waveOut.PlaybackState == PlaybackState.Playing) Thread.Sleep(250);
-				} catch {
-					// ignored
-				}
 			}
 
 			private class WavInfo(MemoryStream memoryStream, bool b) {

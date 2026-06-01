@@ -58,9 +58,9 @@ public class EventDispatcher(TinyIoCContainer container) {
 	}
 
 	public void Unsubscribe(string eventName, IEventReceiver receiver) {
-		if (eventFilter.ContainsKey(eventName)) {
-			lock (eventFilter[eventName]) {
-				eventFilter[eventName].Remove(receiver);
+		if (eventFilter.TryGetValue(eventName, out var value)) {
+			lock (value) {
+				value.Remove(receiver);
 			}
 		}
 	}
@@ -76,10 +76,10 @@ public class EventDispatcher(TinyIoCContainer container) {
 	// Can be used to check that an event will be delivered before building
 	// an expensive JObject that would otherwise be thrown away.
 	public bool HasSubscriber(string eventName) {
-		if (!eventFilter.ContainsKey(eventName))
+		if (!eventFilter.TryGetValue(eventName, out var value))
 			return false;
-		lock (eventFilter[eventName]) {
-			return eventFilter[eventName].Count > 0;
+		lock (value) {
+			return value.Count > 0;
 		}
 	}
 
@@ -113,7 +113,7 @@ public class EventDispatcher(TinyIoCContainer container) {
 		return result;
 	}
 
-	public JToken ProcessHandlerMessage(IEventReceiver receiver, string data) {
+	public JToken? ProcessHandlerMessage(IEventReceiver receiver, string data) {
 		try {
 			var message = JObject.Parse(data);
 			if (!message.TryGetValue("call", out var value)) {

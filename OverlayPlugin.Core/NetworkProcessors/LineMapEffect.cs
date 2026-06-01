@@ -25,35 +25,11 @@ internal class LineMapEffect : LineBaseCustom<
 
 		ushort IMapEffectPacket.count => 1;
 
-		List<ushort> IMapEffectPacket.flags1 {
-			get {
-				var flags = new List<ushort>();
+		List<ushort> IMapEffectPacket.flags1 => [flags1];
 
-				flags.Add(flags1);
+		List<ushort> IMapEffectPacket.flags2 => [flags2];
 
-				return flags;
-			}
-		}
-
-		List<ushort> IMapEffectPacket.flags2 {
-			get {
-				var flags = new List<ushort>();
-
-				flags.Add(flags2);
-
-				return flags;
-			}
-		}
-
-		List<byte> IMapEffectPacket.indexes {
-			get {
-				var indexes = new List<byte>();
-
-				indexes.Add(index);
-
-				return indexes;
-			}
-		}
+		List<byte> IMapEffectPacket.indexes => [index];
 
 		public string ToString(long epoch, uint ActorID) => "";
 	}
@@ -74,11 +50,8 @@ internal class LineMapEffect : LineBaseCustom<
 		List<ushort> IMapEffectPacket.flags1 {
 			get {
 				var flags = new List<ushort>();
-
-				for (var i = 0; i < count && i < MaxCount; ++i) {
+				for (var i = 0; i < count && i < MaxCount; ++i) 
 					flags.Add(flags1[i]);
-				}
-
 				return flags;
 			}
 		}
@@ -86,24 +59,18 @@ internal class LineMapEffect : LineBaseCustom<
 		List<ushort> IMapEffectPacket.flags2 {
 			get {
 				var flags = new List<ushort>();
-
-				for (var i = 0; i < count && i < MaxCount; ++i) {
+				for (var i = 0; i < count && i < MaxCount; ++i) 
 					flags.Add(flags2[i]);
-				}
-
 				return flags;
 			}
 		}
 
 		List<byte> IMapEffectPacket.indexes {
 			get {
-				var indexes = new List<byte>();
-
-				for (var i = 0; i < count && i < MaxCount; ++i) {
-					indexes.Add(this.indexes[i]);
-				}
-
-				return indexes;
+				var x = new List<byte>();
+				for (var i = 0; i < count && i < MaxCount; ++i)
+					x.Add(indexes[i]);
+				return x;
 			}
 		}
 
@@ -126,11 +93,8 @@ internal class LineMapEffect : LineBaseCustom<
 		List<ushort> IMapEffectPacket.flags1 {
 			get {
 				var flags = new List<ushort>();
-
-				for (var i = 0; i < count && i < MaxCount; ++i) {
+				for (var i = 0; i < count && i < MaxCount; ++i) 
 					flags.Add(flags1[i]);
-				}
-
 				return flags;
 			}
 		}
@@ -138,24 +102,18 @@ internal class LineMapEffect : LineBaseCustom<
 		List<ushort> IMapEffectPacket.flags2 {
 			get {
 				var flags = new List<ushort>();
-
-				for (var i = 0; i < count && i < MaxCount; ++i) {
+				for (var i = 0; i < count && i < MaxCount; ++i) 
 					flags.Add(flags2[i]);
-				}
-
 				return flags;
 			}
 		}
 
 		List<byte> IMapEffectPacket.indexes {
 			get {
-				var indexes = new List<byte>();
-
-				for (var i = 0; i < count && i < MaxCount; ++i) {
-					indexes.Add(this.indexes[i]);
-				}
-
-				return indexes;
+				var x = new List<byte>();
+				for (var i = 0; i < count && i < MaxCount; ++i)
+					x.Add(indexes[i]);
+				return x;
 			}
 		}
 
@@ -178,11 +136,8 @@ internal class LineMapEffect : LineBaseCustom<
 		List<ushort> IMapEffectPacket.flags1 {
 			get {
 				var flags = new List<ushort>();
-
-				for (var i = 0; i < count && i < MaxCount; ++i) {
+				for (var i = 0; i < count && i < MaxCount; ++i) 
 					flags.Add(flags1[i]);
-				}
-
 				return flags;
 			}
 		}
@@ -190,24 +145,18 @@ internal class LineMapEffect : LineBaseCustom<
 		List<ushort> IMapEffectPacket.flags2 {
 			get {
 				var flags = new List<ushort>();
-
-				for (var i = 0; i < count && i < MaxCount; ++i) {
+				for (var i = 0; i < count && i < MaxCount; ++i) 
 					flags.Add(flags2[i]);
-				}
-
 				return flags;
 			}
 		}
 
 		List<byte> IMapEffectPacket.indexes {
 			get {
-				var indexes = new List<byte>();
-
-				for (var i = 0; i < count && i < MaxCount; ++i) {
-					indexes.Add(this.indexes[i]);
-				}
-
-				return indexes;
+				var x = new List<byte>();
+				for (var i = 0; i < count && i < MaxCount; ++i)
+					x.Add(indexes[i]);
+				return x;
 			}
 		}
 
@@ -226,19 +175,19 @@ internal class LineMapEffect : LineBaseCustom<
 	public const string logLineName = "MapEffect";
 	public const string MachinaPacketName = "MapEffect";
 	private readonly ILogger logger;
-	private RegionalizedPacketHelper<
+	private readonly RegionalizedPacketHelper<
 		Server_MessageHeader_Global, MapEffect4_v72,
 		Server_MessageHeader_CN, MapEffect4_v72,
 		Server_MessageHeader_KR, MapEffect4_v72,
 		Server_MessageHeader_TC, MapEffect4_v72> packetHelper_4;
 
-	private RegionalizedPacketHelper<
+	private readonly RegionalizedPacketHelper<
 		Server_MessageHeader_Global, MapEffect8_v72,
 		Server_MessageHeader_CN, MapEffect8_v72,
 		Server_MessageHeader_KR, MapEffect8_v72,
 		Server_MessageHeader_TC, MapEffect8_v72> packetHelper_8;
 
-	private RegionalizedPacketHelper<
+	private readonly RegionalizedPacketHelper<
 		Server_MessageHeader_Global, MapEffect12_v72,
 		Server_MessageHeader_CN, MapEffect12_v72,
 		Server_MessageHeader_KR, MapEffect12_v72,

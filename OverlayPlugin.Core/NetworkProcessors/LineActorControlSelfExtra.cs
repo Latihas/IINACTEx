@@ -20,7 +20,7 @@ using RainbowMage.OverlayPlugin.NetworkProcessors.PacketHelper;
 
 namespace RainbowMage.OverlayPlugin.NetworkProcessors;
 
-internal class LineActorControlSelfExtra : LineBaseSubMachina<LineActorControlSelfExtra.ActorControlSelfExtraPacket> {
+internal class LineActorControlSelfExtra(TinyIoCContainer container) : LineBaseSubMachina<LineActorControlSelfExtra.ActorControlSelfExtraPacket>(container, LogFileLineID, LogLineName, MachinaPacketName) {
 	public const uint LogFileLineID = 274;
 	public const string LogLineName = "ActorControlSelfExtra";
 	public const string MachinaPacketName = "ActorControlSelf";
@@ -48,9 +48,5 @@ internal class LineActorControlSelfExtra : LineBaseSubMachina<LineActorControlSe
 
 			return $"{ActorID:X8}|{(ushort)category:X4}|{param1:X}|{param2:X}|{param3:X}|{param4:X}|{param5:X}|{param6:X}";
 		}
-	}
-
-	public LineActorControlSelfExtra(TinyIoCContainer container)
-		: base(container, LogFileLineID, LogLineName, MachinaPacketName) {
 	}
 }

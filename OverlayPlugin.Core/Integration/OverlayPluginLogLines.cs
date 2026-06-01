@@ -20,13 +20,15 @@ using Opcodes = Dictionary<MachinaRegion, Dictionary<OpcodeVersion, Dictionary<O
 
 internal class OverlayPluginLogLines {
 	public OverlayPluginLogLines(TinyIoCContainer container, string? extraOpcodes = null) {
+		container.Register(new LineInCombat(container)); //long time
+		Task[] ls = [
+			Task.Run(() => container.Register(new LineCombatant(container))),
+			Task.Run(() => container.Register(new LineContentFinderSettings(container)))
+		];
 		container.Register(new OverlayPluginLogLineConfig(container, extraOpcodes));
 		container.Register(new LineMapEffect(container));
 		container.Register(new LineFateControl(container));
 		container.Register(new LineCEDirector(container));
-		Task.WaitAll(Task.Run(() => container.Register(new LineInCombat(container))),
-			Task.Run(() => container.Register(new LineCombatant(container))),
-			Task.Run(() => container.Register(new LineContentFinderSettings(container))));
 		container.Register(new LineRSV(container));
 		container.Register(new LineActorCastExtra(container));
 		container.Register(new LineAbilityExtra(container));
@@ -39,14 +41,15 @@ internal class OverlayPluginLogLines {
 		container.Register(new LineSpawnNpcExtra(container));
 		container.Register(new LineActorControlExtra(container));
 		container.Register(new LineActorControlSelfExtra(container));
+		Task.WaitAll(ls);
 	}
 }
 
 internal class OverlayPluginLogLineConfig {
-	private Opcodes config = new();
+	private readonly Opcodes config = new();
 
-	private ILogger logger;
-	private FFXIVRepository repository;
+	private readonly ILogger logger;
+	private readonly FFXIVRepository repository;
 
 	private int exceptionCount;
 	private const int maxExceptionsLogged = 3;
@@ -73,8 +76,7 @@ internal class OverlayPluginLogLineConfig {
 	}
 
 	private void LogException(string message) {
-		if (exceptionCount >= maxExceptionsLogged)
-			return;
+		if (exceptionCount >= maxExceptionsLogged) return;
 		exceptionCount++;
 		logger.Log(LogLevel.Error, message);
 	}

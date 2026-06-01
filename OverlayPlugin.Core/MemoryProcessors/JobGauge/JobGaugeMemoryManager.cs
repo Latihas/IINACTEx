@@ -62,7 +62,7 @@ public interface IJobGauge : IEquatable<IJobGauge> {
 }
 
 public interface IJobGaugeMemory : IVersionedMemory {
-	IJobGauge GetJobGauge();
+	IJobGauge? GetJobGauge();
 }
 
 internal class JobGaugeMemoryManager : IJobGaugeMemory {

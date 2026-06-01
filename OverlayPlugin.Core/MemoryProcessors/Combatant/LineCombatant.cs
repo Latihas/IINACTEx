@@ -18,9 +18,9 @@ public class LineCombatant : IDisposable {
 	public const uint LogFileLineID = 261;
 	private ILogger logger;
 	private readonly FFXIVRepository ffxiv;
-	private ICombatantMemory combatantMemoryManager;
+	private readonly ICombatantMemory combatantMemoryManager;
 	private bool inCombat;
-	private ConcurrentDictionary<uint, CombatantStateInfo> combatantStateMap = new();
+	private readonly ConcurrentDictionary<uint, CombatantStateInfo> combatantStateMap = [];
 
 	// Only emit a log line when this information changes every X milliseconds
 	private class CombatantChangeCriteria {
@@ -42,7 +42,7 @@ public class LineCombatant : IDisposable {
 
 		private const uint InCombatDelayDefault = 1000;
 
-		public static CriteriaData InCombatCriteria = new() {
+		public static readonly CriteriaData InCombatCriteria = new() {
 			DelayDefault = InCombatDelayDefault,
 			DelayPosition = 250,
 			DistancePosition = Math.Pow(5, 2),
@@ -50,48 +50,29 @@ public class LineCombatant : IDisposable {
 
 			CheckFieldDelay = new ReadOnlyDictionary<FieldInfo, uint>(new Dictionary<FieldInfo, uint> {
 				// Default delay threshold
-				{
-					typeof(Combatant).GetField(nameof(Combatant.OwnerID)), InCombatDelayDefault
-				}, {
-					typeof(Combatant).GetField(nameof(Combatant.Type)), InCombatDelayDefault
-				}, {
-					typeof(Combatant).GetField(nameof(Combatant.MonsterType)), InCombatDelayDefault
-				}, {
-					typeof(Combatant).GetField(nameof(Combatant.Status)), InCombatDelayDefault
-				}, {
-					typeof(Combatant).GetField(nameof(Combatant.AggressionStatus)), InCombatDelayDefault
-				}, {
-					typeof(Combatant).GetField(nameof(Combatant.IsTargetable)), InCombatDelayDefault
-				}, {
-					typeof(Combatant).GetField(nameof(Combatant.Name)), InCombatDelayDefault
-				}, {
-					typeof(Combatant).GetField(nameof(Combatant.Radius)), InCombatDelayDefault
-				}, {
-					typeof(Combatant).GetField(nameof(Combatant.BNpcID)), InCombatDelayDefault
-				}, {
-					typeof(Combatant).GetField(nameof(Combatant.CurrentMP)), InCombatDelayDefault
-				}, {
-					typeof(Combatant).GetField(nameof(Combatant.IsCasting1)), InCombatDelayDefault
-				},
-
+				[typeof(Combatant).GetField(nameof(Combatant.OwnerID))] = InCombatDelayDefault,
+				[typeof(Combatant).GetField(nameof(Combatant.Type))] = InCombatDelayDefault,
+				[typeof(Combatant).GetField(nameof(Combatant.MonsterType))] = InCombatDelayDefault,
+				[typeof(Combatant).GetField(nameof(Combatant.Status))] = InCombatDelayDefault,
+				[typeof(Combatant).GetField(nameof(Combatant.AggressionStatus))] = InCombatDelayDefault,
+				[typeof(Combatant).GetField(nameof(Combatant.IsTargetable))] = InCombatDelayDefault,
+				[typeof(Combatant).GetField(nameof(Combatant.Name))] = InCombatDelayDefault,
+				[typeof(Combatant).GetField(nameof(Combatant.Radius))] = InCombatDelayDefault,
+				[typeof(Combatant).GetField(nameof(Combatant.BNpcID))] = InCombatDelayDefault,
+				[typeof(Combatant).GetField(nameof(Combatant.CurrentMP))] = InCombatDelayDefault,
+				[typeof(Combatant).GetField(nameof(Combatant.IsCasting1))] = InCombatDelayDefault,
 				// No delay threshold
-				{
-					typeof(Combatant).GetField(nameof(Combatant.BNpcNameID)), 0
-				}, {
-					typeof(Combatant).GetField(nameof(Combatant.TransformationId)), 0
-				}, {
-					typeof(Combatant).GetField(nameof(Combatant.WeaponId)), 0
-				}, {
-					typeof(Combatant).GetField(nameof(Combatant.TargetID)), 0
-				}, {
-					typeof(Combatant).GetField(nameof(Combatant.ModelStatus)), 0
-				}
+				[typeof(Combatant).GetField(nameof(Combatant.BNpcNameID))] = 0,
+				[typeof(Combatant).GetField(nameof(Combatant.TransformationId))] = 0,
+				[typeof(Combatant).GetField(nameof(Combatant.WeaponId))] = 0,
+				[typeof(Combatant).GetField(nameof(Combatant.TargetID))] = 0,
+				[typeof(Combatant).GetField(nameof(Combatant.ModelStatus))] = 0
 			})
 		};
 
 		private const uint OutOfCombatDelayDefault = 5000;
 
-		public static CriteriaData OutOfCombatCriteria = new() {
+		public static readonly CriteriaData OutOfCombatCriteria = new() {
 			DelayDefault = OutOfCombatDelayDefault,
 			DelayPosition = 1250,
 			DistancePosition = Math.Pow(15, 2),
@@ -99,42 +80,23 @@ public class LineCombatant : IDisposable {
 
 			CheckFieldDelay = new ReadOnlyDictionary<FieldInfo, uint>(new Dictionary<FieldInfo, uint> {
 				// Default delay threshold
-				{
-					typeof(Combatant).GetField(nameof(Combatant.OwnerID)), OutOfCombatDelayDefault
-				}, {
-					typeof(Combatant).GetField(nameof(Combatant.Type)), OutOfCombatDelayDefault
-				}, {
-					typeof(Combatant).GetField(nameof(Combatant.MonsterType)), OutOfCombatDelayDefault
-				}, {
-					typeof(Combatant).GetField(nameof(Combatant.Status)), OutOfCombatDelayDefault
-				}, {
-					typeof(Combatant).GetField(nameof(Combatant.AggressionStatus)), OutOfCombatDelayDefault
-				}, {
-					typeof(Combatant).GetField(nameof(Combatant.IsTargetable)), OutOfCombatDelayDefault
-				}, {
-					typeof(Combatant).GetField(nameof(Combatant.Name)), OutOfCombatDelayDefault
-				}, {
-					typeof(Combatant).GetField(nameof(Combatant.Radius)), OutOfCombatDelayDefault
-				}, {
-					typeof(Combatant).GetField(nameof(Combatant.BNpcID)), OutOfCombatDelayDefault
-				}, {
-					typeof(Combatant).GetField(nameof(Combatant.CurrentMP)), OutOfCombatDelayDefault
-				}, {
-					typeof(Combatant).GetField(nameof(Combatant.IsCasting1)), OutOfCombatDelayDefault
-				},
-
+				[typeof(Combatant).GetField(nameof(Combatant.OwnerID))] = OutOfCombatDelayDefault,
+				[typeof(Combatant).GetField(nameof(Combatant.Type))] = OutOfCombatDelayDefault,
+				[typeof(Combatant).GetField(nameof(Combatant.MonsterType))] = OutOfCombatDelayDefault,
+				[typeof(Combatant).GetField(nameof(Combatant.Status))] = OutOfCombatDelayDefault,
+				[typeof(Combatant).GetField(nameof(Combatant.AggressionStatus))] = OutOfCombatDelayDefault,
+				[typeof(Combatant).GetField(nameof(Combatant.IsTargetable))] = OutOfCombatDelayDefault,
+				[typeof(Combatant).GetField(nameof(Combatant.Name))] = OutOfCombatDelayDefault,
+				[typeof(Combatant).GetField(nameof(Combatant.Radius))] = OutOfCombatDelayDefault,
+				[typeof(Combatant).GetField(nameof(Combatant.BNpcID))] = OutOfCombatDelayDefault,
+				[typeof(Combatant).GetField(nameof(Combatant.CurrentMP))] = OutOfCombatDelayDefault,
+				[typeof(Combatant).GetField(nameof(Combatant.IsCasting1))] = OutOfCombatDelayDefault,
 				// No delay threshold
-				{
-					typeof(Combatant).GetField(nameof(Combatant.BNpcNameID)), 1000
-				}, {
-					typeof(Combatant).GetField(nameof(Combatant.TransformationId)), 1000
-				}, {
-					typeof(Combatant).GetField(nameof(Combatant.WeaponId)), 1000
-				}, {
-					typeof(Combatant).GetField(nameof(Combatant.TargetID)), 1000
-				}, {
-					typeof(Combatant).GetField(nameof(Combatant.ModelStatus)), 1000
-				}
+				[typeof(Combatant).GetField(nameof(Combatant.BNpcNameID))] = 1000,
+				[typeof(Combatant).GetField(nameof(Combatant.TransformationId))] = 1000,
+				[typeof(Combatant).GetField(nameof(Combatant.WeaponId))] = 1000,
+				[typeof(Combatant).GetField(nameof(Combatant.TargetID))] = 1000,
+				[typeof(Combatant).GetField(nameof(Combatant.ModelStatus))] = 1000
 			})
 		};
 
@@ -168,10 +130,7 @@ public class LineCombatant : IDisposable {
 			if (type.IsValueType) {
 				return Activator.CreateInstance(type);
 			}
-			if (type == typeof(string)) {
-				return string.Empty;
-			}
-			return null;
+			return type == typeof(string) ? string.Empty : null;
 		}
 
 		public static readonly ReadOnlyDictionary<Type, object> DefaultValues =
@@ -184,16 +143,15 @@ public class LineCombatant : IDisposable {
 		public Combatant combatant;
 	}
 
-	private Func<string, DateTime, bool> logWriter;
+	private readonly Func<string, DateTime, bool> logWriter;
 
-	private CancellationTokenSource cancellationToken;
+	private readonly CancellationTokenSource cancellationToken;
 	private bool _disposed;
 
 	public LineCombatant(TinyIoCContainer container) {
 		logger = container.Resolve<ILogger>();
 		ffxiv = container.Resolve<FFXIVRepository>();
-		if (!ffxiv.IsFFXIVPluginPresent())
-			return;
+		if (!ffxiv.IsFFXIVPluginPresent()) return;
 		combatantMemoryManager = container.Resolve<ICombatantMemory>();
 		container.Resolve<LineInCombat>().OnInCombatChanged += (sender, args) => {
 			if (args.InGameCombatChanged) {
@@ -225,24 +183,23 @@ public class LineCombatant : IDisposable {
 		Dispose(false);
 	}
 
-	private void PollCombatants() {
-		while (!cancellationToken.IsCancellationRequested) {
-			try {
-				var now = DateTime.Now;
+	private async void PollCombatants() {
+		try {
+			while (!cancellationToken.IsCancellationRequested) {
+				try {
+					var now = DateTime.Now;
 
-				CheckCombatants(now);
+					CheckCombatants(now);
 
-				// Wait for next poll
-				var delay = CombatantChangeCriteria.PollingRate - (int)Math.Ceiling((DateTime.Now - now).TotalMilliseconds);
-				if (delay > 0) {
-					Thread.Sleep(delay);
-				} else {
+					// Wait for next poll
+					var delay = CombatantChangeCriteria.PollingRate - (int)Math.Ceiling((DateTime.Now - now).TotalMilliseconds);
 					// If we're lagging enough to not have a sleep duration, delay by PollingRate to reduce lag
-					Thread.Sleep(CombatantChangeCriteria.PollingRate);
+					await Task.Delay(delay > 0 ? delay : CombatantChangeCriteria.PollingRate);
+				} catch (Exception e) {
+					logger.Log(LogLevel.Debug, $"LineCombatant: Exception: {e}");
 				}
-			} catch (Exception e) {
-				logger.Log(LogLevel.Debug, $"LineCombatant: Exception: {e}");
 			}
+		} catch {
 		}
 	}
 
@@ -256,12 +213,7 @@ public class LineCombatant : IDisposable {
 		var criteria = CombatantChangeCriteria.Criteria(inCombat);
 
 		// Check combatants currently in memory first
-		foreach (var combatant in combatants) {
-			// If we're only checking specific actor IDs, filter to those
-			if (filter.Length > 0 && !filter.Contains(combatant.ID)) {
-				continue;
-			}
-
+		foreach (var combatant in combatants.Where(combatant => filter.Length <= 0 || filter.Contains(combatant.ID))) {
 			// If this is a new combatant, always write a line for it
 			if (!combatantStateMap.TryGetValue(combatant.ID, out var value)) {
 				combatantStateMap[combatant.ID] = new CombatantStateInfo {
@@ -293,7 +245,7 @@ public class LineCombatant : IDisposable {
 						writePosition = true;
 					}
 				} else if (combatant.Heading != oldCombatant.Heading) {
-					var PI2 = Math.PI * 2;
+					const double PI2 = Math.PI * 2;
 					double normalizedAngle = combatant.Heading - oldCombatant.Heading;
 					normalizedAngle += Math.Abs(normalizedAngle > Math.PI ? -PI2 : normalizedAngle < -Math.PI ? PI2 : 0);
 					if (normalizedAngle >= criteria.DistanceHeading) {
@@ -356,13 +308,12 @@ public class LineCombatant : IDisposable {
 			if (filter.Length > 0 && !filter.Contains(ID)) {
 				continue;
 			}
-			if (!combatantIDs.Contains(ID)) {
-				combatantStateMap.TryRemove(ID, out var combatantStateInfo);
-				if (combatantStateInfo != null) {
-					combatantMemoryManager.ReturnCombatant(combatantStateInfo.combatant);
-				}
-				WriteLine(CombatantMemoryChangeType.Remove, ID, "");
+			if (combatantIDs.Contains(ID)) continue;
+			combatantStateMap.TryRemove(ID, out var combatantStateInfo);
+			if (combatantStateInfo != null) {
+				combatantMemoryManager.ReturnCombatant(combatantStateInfo.combatant);
 			}
+			WriteLine(CombatantMemoryChangeType.Remove, ID, "");
 		}
 	}
 
@@ -371,32 +322,23 @@ public class LineCombatant : IDisposable {
 		var newVal = fi.GetValue(combatant);
 		// There's some weird behavior with just using `==` or `.Equals` here, where two UInt32 values that are the same somehow aren't.
 		if (oldVal is IComparable comparable) {
-			if (comparable.CompareTo(newVal) != 0) {
-				return false;
-			}
-			return true;
+			return comparable.CompareTo(newVal) == 0;
 		}
-		if (!oldVal.Equals(newVal)) {
-			return false;
-		}
-		return true;
+		return oldVal.Equals(newVal);
 	}
 
 	private string FormatFieldChange(FieldInfo info, Combatant combatant, bool skipDefaultValues = false) {
 		var value = info.GetValue(combatant);
 
 		if (value == null) {
-			if (skipDefaultValues) {
-				return string.Empty;
-			}
-			return $"|{info.Name}|NULL";
+			return skipDefaultValues ? string.Empty : $"|{info.Name}|NULL";
 		}
 
 		if (skipDefaultValues && value.Equals(CombatantChangeCriteria.DefaultValues[info.FieldType])) {
 			return string.Empty;
 		}
 
-		if (info.Name == "PCTargetID" || info.Name == "NPCTargetID" || info.Name == "BNpcNameID" || info.Name == "BNpcID" || info.Name == "TargetID" || info.Name == "OwnerID" || info.Name == "CastTargetID") {
+		if (info.Name is "PCTargetID" or "NPCTargetID" or "BNpcNameID" or "BNpcID" or "TargetID" or "OwnerID" or "CastTargetID") {
 			return $"|{info.Name}|{value:X}";
 		}
 
@@ -421,14 +363,13 @@ public class LineCombatant : IDisposable {
 		fixed (byte* buffer = message) {
 			var header = Marshal.PtrToStructure<Server_MessageHeader>(new IntPtr(buffer));
 			// Only check if we're not looking at a packet that's for just us
-			if (header.ActorID != header.LoginUserID) {
-				var serverTime = ffxiv.EpochToDateTime(epoch);
-				var delayDefault = CombatantChangeCriteria.Criteria(inCombat).DelayDefault;
-				// Also only check if we're beyond the default delay for this ID, or if this ID doesn't exist yet
-				// This check is in place to avoid reading memory every packet, excessively
-				if (!combatantStateMap.ContainsKey(header.ActorID) || (serverTime - combatantStateMap[header.ActorID].lastUpdated).TotalMilliseconds > delayDefault) {
-					CheckCombatants(serverTime, header.ActorID);
-				}
+			if (header.ActorID == header.LoginUserID) return;
+			var serverTime = ffxiv.EpochToDateTime(epoch);
+			var delayDefault = CombatantChangeCriteria.Criteria(inCombat).DelayDefault;
+			// Also only check if we're beyond the default delay for this ID, or if this ID doesn't exist yet
+			// This check is in place to avoid reading memory every packet, excessively
+			if (!combatantStateMap.TryGetValue(header.ActorID, out var value) || (serverTime - value.lastUpdated).TotalMilliseconds > delayDefault) {
+				CheckCombatants(serverTime, header.ActorID);
 			}
 		}
 	}
@@ -440,13 +381,12 @@ public class LineCombatant : IDisposable {
 	}
 
 	protected virtual void Dispose(bool disposing) {
-		if (!_disposed) {
-			if (disposing) {
-				cancellationToken?.Cancel();
-				cancellationToken?.Dispose();
-			}
-			_disposed = true;
+		if (_disposed) return;
+		if (disposing) {
+			cancellationToken?.Cancel();
+			cancellationToken?.Dispose();
 		}
+		_disposed = true;
 	}
 
 	public void Dispose() {

@@ -4,20 +4,13 @@ using Advanced_Combat_Tracker;
 
 namespace RainbowMage.OverlayPlugin;
 
-internal class OverlayApi {
+internal class OverlayApi(TinyIoCContainer container, IApiBase receiver) {
 	public static event EventHandler<BroadcastMessageEventArgs> BroadcastMessage;
 	public static event EventHandler<SendMessageEventArgs> SendMessage;
 	public static event EventHandler<SendMessageEventArgs> OverlayMessage;
 
-	private readonly EventDispatcher dispatcher;
-	private readonly IApiBase receiver;
-	private readonly ILogger logger;
-
-	public OverlayApi(TinyIoCContainer container, IApiBase receiver) {
-		dispatcher = container.Resolve<EventDispatcher>();
-		this.receiver = receiver;
-		logger = container.Resolve<ILogger>();
-	}
+	private readonly EventDispatcher dispatcher = container.Resolve<EventDispatcher>();
+	private readonly ILogger logger = container.Resolve<ILogger>();
 
 	public void broadcastMessage(string msg) {
 		logger.Log(LogLevel.Error,
@@ -59,22 +52,13 @@ internal class OverlayApi {
 	}
 }
 
-public class BroadcastMessageEventArgs : EventArgs {
-	public string Message { get; private set; }
-
-	public BroadcastMessageEventArgs(string message) {
-		Message = message;
-	}
+public class BroadcastMessageEventArgs(string message) : EventArgs {
+	public string Message { get; private set; } = message;
 }
 
-public class SendMessageEventArgs : EventArgs {
-	public string Target { get; private set; }
-	public string Message { get; private set; }
-
-	public SendMessageEventArgs(string target, string message) {
-		Target = target;
-		Message = message;
-	}
+public class SendMessageEventArgs(string target, string message) : EventArgs {
+	public string Target { get; private set; } = target;
+	public string Message { get; private set; } = message;
 }
 
 public class EndEncounterEventArgs : EventArgs {

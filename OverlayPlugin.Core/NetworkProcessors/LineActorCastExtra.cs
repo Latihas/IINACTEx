@@ -3,7 +3,7 @@ using RainbowMage.OverlayPlugin.NetworkProcessors.PacketHelper;
 
 namespace RainbowMage.OverlayPlugin.NetworkProcessors;
 
-internal class LineActorCastExtra : LineBaseSubMachina<LineActorCastExtra.ActorCastExtraPacket> {
+internal class LineActorCastExtra(TinyIoCContainer container) : LineBaseSubMachina<LineActorCastExtra.ActorCastExtraPacket>(container, LogFileLineID, LogLineName, MachinaPacketName) {
 	public const uint LogFileLineID = 263;
 	public const string LogLineName = "ActorCastExtra";
 	public const string MachinaPacketName = "ActorCast";
@@ -28,9 +28,5 @@ internal class LineActorCastExtra : LineBaseSubMachina<LineActorCastExtra.ActorC
 				"{0:X8}|{1:X4}|{2:F3}|{3:F3}|{4:F3}|{5:F3}",
 				ActorID, abilityId, x, y, z, h);
 		}
-	}
-
-	public LineActorCastExtra(TinyIoCContainer container)
-		: base(container, LogFileLineID, LogLineName, MachinaPacketName) {
 	}
 }

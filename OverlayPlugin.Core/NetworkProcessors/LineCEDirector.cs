@@ -43,8 +43,7 @@ internal class LineCEDirector : LineBaseCustom<
 					return null;
 				}
 			} else {
-				string oldData;
-				if (ces.TryGetValue(ceKey, out oldData)) {
+				if (ces.TryGetValue(ceKey, out var oldData)) {
 					if (oldData == line) {
 						return null;
 					}
@@ -62,7 +61,7 @@ internal class LineCEDirector : LineBaseCustom<
 
 	// Used to reduce spam of these packets to log file
 	// Only emit a line if it doesn't match the last line for this CE ID
-	private static Dictionary<byte, string> ces = new();
+	private static readonly Dictionary<byte, string> ces = [];
 
 	public LineCEDirector(TinyIoCContainer container)
 		: base(container, LogFileLineID, logLineName, MachinaPacketName) {

@@ -63,10 +63,10 @@ internal class LineAbilityExtra : LineBaseSubMachina<LineAbilityExtra.AbilityExt
 	// We don't care if actual packet data is mangled in the struct, it is just to access the header data
 	private static MachinaRegionalizedPacketHelper<AbilityExtraPacket<Server_ActionEffect1_Extra>> aeHelper;
 
-	private MachinaRegionalizedPacketHelper<AbilityExtraPacket<Server_ActionEffect8_Extra>> packetHelper_8;
-	private MachinaRegionalizedPacketHelper<AbilityExtraPacket<Server_ActionEffect16_Extra>> packetHelper_16;
-	private MachinaRegionalizedPacketHelper<AbilityExtraPacket<Server_ActionEffect24_Extra>> packetHelper_24;
-	private MachinaRegionalizedPacketHelper<AbilityExtraPacket<Server_ActionEffect32_Extra>> packetHelper_32;
+	private readonly MachinaRegionalizedPacketHelper<AbilityExtraPacket<Server_ActionEffect8_Extra>> packetHelper_8;
+	private readonly MachinaRegionalizedPacketHelper<AbilityExtraPacket<Server_ActionEffect16_Extra>> packetHelper_16;
+	private readonly MachinaRegionalizedPacketHelper<AbilityExtraPacket<Server_ActionEffect24_Extra>> packetHelper_24;
+	private readonly MachinaRegionalizedPacketHelper<AbilityExtraPacket<Server_ActionEffect32_Extra>> packetHelper_32;
 
 	protected static GameRegion? staticRegion;
 
@@ -196,33 +196,18 @@ internal class LineAbilityExtra : LineBaseSubMachina<LineAbilityExtra.AbilityExt
 		if (packetHelper_32 == null)
 			return;
 
-		if (staticRegion == null)
-			staticRegion = ffxiv.GetMachinaRegion();
+		staticRegion ??= ffxiv.GetMachinaRegion();
 
 		if (staticRegion == null)
 			return;
 
-		var line = packetHelper[staticRegion.Value].ToString(epoch, message);
-
-		if (line == null) {
-			line = packetHelper_8[staticRegion.Value].ToString(epoch, message);
-		}
-
-		if (line == null) {
-			line = packetHelper_16[staticRegion.Value].ToString(epoch, message);
-		}
-
-		if (line == null) {
-			line = packetHelper_24[staticRegion.Value].ToString(epoch, message);
-		}
-
-		if (line == null) {
-			line = packetHelper_32[staticRegion.Value].ToString(epoch, message);
-		}
-
-		if (line != null) {
-			var serverTime = ffxiv.EpochToDateTime(epoch);
-			logWriter(line, serverTime);
-		}
+		var line = packetHelper[staticRegion.Value].ToString(epoch, message)
+		           ?? packetHelper_8[staticRegion.Value].ToString(epoch, message)
+		           ?? packetHelper_16[staticRegion.Value].ToString(epoch, message)
+		           ?? packetHelper_24[staticRegion.Value].ToString(epoch, message)
+		           ?? packetHelper_32[staticRegion.Value].ToString(epoch, message);
+		if (line == null) return;
+		var serverTime = ffxiv.EpochToDateTime(epoch);
+		logWriter(line, serverTime);
 	}
 }

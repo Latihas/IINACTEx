@@ -5,29 +5,22 @@ namespace RainbowMage.OverlayPlugin.MemoryProcessors.InCombat;
 
 public class LineInCombat {
 	public const uint LogFileLineID = 260;
-	private ILogger logger;
 	private readonly FFXIVRepository ffxiv;
-	private IInCombatMemory inCombatMemory;
-	private InCombatArgs lastEventArgs;
+	private readonly IInCombatMemory inCombatMemory;
+	private InCombatArgs? lastEventArgs;
 
-	private Func<string, DateTime, bool> logWriter;
+	private readonly Func<string, DateTime, bool> logWriter;
 
 	public event EventHandler<InCombatArgs> OnInCombatChanged;
 
-	public class InCombatArgs {
-		public bool InACTCombat { get; private set; }
-		public bool InGameCombat { get; private set; }
-		public bool InGameCombatChanged { get; private set; }
-
-		public InCombatArgs(bool inACTCombat, bool inGameCombat, bool inGameCombatChanged) {
-			InACTCombat = inACTCombat;
-			InGameCombat = inGameCombat;
-			InGameCombatChanged = inGameCombatChanged;
-		}
+	public class InCombatArgs(bool inActCombat, bool inGameCombat, bool inGameCombatChanged) {
+		public bool InACTCombat { get; private set; } = inActCombat;
+		public bool InGameCombat { get; private set; } = inGameCombat;
+		public bool InGameCombatChanged { get; private set; } = inGameCombatChanged;
 	}
 
 	public LineInCombat(TinyIoCContainer container) {
-		logger = container.Resolve<ILogger>();
+		container.Resolve<ILogger>();
 		ffxiv = container.Resolve<FFXIVRepository>();
 		inCombatMemory = container.Resolve<IInCombatMemory>();
 		var customLogLines = container.Resolve<FFXIVCustomLogLines>();
@@ -56,8 +49,8 @@ public class LineInCombat {
 		//
 		// Add two boolean variables into the logline to indicate exactly which part was changed.
 		// Useful if a plugin only cares about the change of in-game or ACT combat state to trigger other events.
-		var isACTChanged = lastEventArgs == null ? true : lastEventArgs.InACTCombat != inACTCombat;
-		var isGameChanged = lastEventArgs == null ? true : lastEventArgs.InGameCombat != inGameCombat;
+		var isACTChanged = lastEventArgs == null || lastEventArgs.InACTCombat != inACTCombat;
+		var isGameChanged = lastEventArgs == null || lastEventArgs.InGameCombat != inGameCombat;
 		WriteLine(inACTCombat, inGameCombat, isACTChanged, isGameChanged);
 
 		// TODO: backwards-compatible logic here for the internal OnInCombatChanged event args is to

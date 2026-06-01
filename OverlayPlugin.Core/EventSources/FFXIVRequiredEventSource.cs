@@ -18,7 +18,7 @@ namespace RainbowMage.OverlayPlugin.EventSources;
 internal class FFXIVRequiredEventSource : EventSourceBase {
 	private PartyListsStruct cachedPartyList = new();
 
-	private static Dictionary<uint, string> StatusMap = new() {
+	private static readonly Dictionary<uint, string> StatusMap = new() {
 		[0] = "Online",
 		[12] = "Busy",
 		[15] = "InCutscene",
@@ -32,12 +32,12 @@ internal class FFXIVRequiredEventSource : EventSourceBase {
 	private const string PartyChangedEvent = "PartyChanged";
 	private const string JobGaugeChangedEvent = "JobGaugeChanged";
 
-	private FFXIVRepository repository;
-	private ICombatantMemory combatantMemory;
-	private IPartyMemory partyMemory;
-	private IJobGaugeMemory jobGaugeMemory;
+	private readonly FFXIVRepository repository;
+	private readonly ICombatantMemory combatantMemory;
+	private readonly IPartyMemory partyMemory;
+	private readonly IJobGaugeMemory jobGaugeMemory;
 
-	private CancellationTokenSource cancellationToken;
+	private readonly CancellationTokenSource cancellationToken;
 
 	// In milliseconds
 	private const int PollingRate = 50;
@@ -87,29 +87,11 @@ internal class FFXIVRequiredEventSource : EventSourceBase {
 
 			RegisterEventHandler("getCombatants", msg => {
 				var ids = new List<uint>();
-
-				if (msg["ids"] != null) {
-					foreach (var id in (JArray)msg["ids"]) {
-						ids.Add(id.ToObject<uint>());
-					}
-				}
-
+				if (msg["ids"] != null) ids.AddRange(from id in (JArray)msg["ids"] select id.ToObject<uint>());
 				var names = new List<string>();
-
-				if (msg["names"] != null) {
-					foreach (var name in (JArray)msg["names"]) {
-						names.Add(name.ToString());
-					}
-				}
-
+				if (msg["names"] != null) names.AddRange(from name in (JArray)msg["names"] select name.ToString());
 				var props = new List<string>();
-
-				if (msg["props"] != null) {
-					foreach (var prop in (JArray)msg["props"]) {
-						props.Add(prop.ToString());
-					}
-				}
-
+				if (msg["props"] != null) props.AddRange(from prop in (JArray)msg["props"] select prop.ToString());
 				var combatants = GetCombatants(ids, names, props);
 				return JObject.FromObject(new {
 					combatants
@@ -142,68 +124,43 @@ internal class FFXIVRequiredEventSource : EventSourceBase {
 
 		var memCombatants = combatantMemory.GetCombatantList();
 		foreach (var combatant in memCombatants) {
-			if (combatant.ID == 0) {
-				continue;
-			}
-
+			if (combatant.ID == 0) continue;
 			var include = false;
-
 			var combatantName = combatant.Name;
-
 			if (ids.Count == 0 && names.Count == 0) {
 				include = true;
 			} else {
-				foreach (var id in ids) {
-					if (combatant.ID == id) {
-						include = true;
-						break;
-					}
-				}
-
-				if (!include) {
-					foreach (var name in names) {
-						if (string.Equals(combatantName, name, StringComparison.InvariantCultureIgnoreCase)) {
-							include = true;
-							break;
-						}
-					}
-				}
+				if (ids.Any(id => combatant.ID == id)) include = true;
+				if (!include && names.Any(name => string.Equals(combatantName, name, StringComparison.InvariantCultureIgnoreCase)))
+					include = true;
 			}
 
-			if (include) {
-				var jObjCombatant = JObject.FromObject(combatant).ToObject<Dictionary<string, object>>();
-				var ID = Convert.ToUInt32(jObjCombatant["ID"]);
-
-				var pluginCombatant = pluginCombatants.FirstOrDefault(c => c.ID == ID);
-				if (pluginCombatant != null) {
-					jObjCombatant["PartyType"] = GetPartyType(pluginCombatant);
-				}
-
-				// Handle 0xFFFE (outofrange1) and 0xFFFF (outofrange2) values for WorldID
-				var WorldID = Convert.ToUInt32(jObjCombatant["WorldID"]);
-				string WorldName = null;
-				if (WorldID < 0xFFFE) {
-					WorldName = GetWorldName(WorldID);
-				}
-
-				jObjCombatant["WorldName"] = WorldName;
-
-				// If the request is filtering properties, remove them here
-				if (props.Count > 0) {
-					jObjCombatant.Keys
-						.Where(k => !props.Contains(k))
-						.ToList()
-						.ForEach(k => jObjCombatant.Remove(k));
-				}
-
-				filteredCombatants.Add(jObjCombatant);
+			if (!include) continue;
+			var jObjCombatant = JObject.FromObject(combatant).ToObject<Dictionary<string, object>>();
+			var ID = Convert.ToUInt32(jObjCombatant["ID"]);
+			var pluginCombatant = pluginCombatants.FirstOrDefault(c => c.ID == ID);
+			if (pluginCombatant != null) {
+				jObjCombatant["PartyType"] = GetPartyType(pluginCombatant);
 			}
-		}
 
-		foreach (var combatant in memCombatants) {
-			combatantMemory.ReturnCombatant(combatant);
-		}
+			// Handle 0xFFFE (outofrange1) and 0xFFFF (outofrange2) values for WorldID
+			var WorldID = Convert.ToUInt32(jObjCombatant["WorldID"]);
+			string WorldName = null;
+			if (WorldID < 0xFFFE) WorldName = GetWorldName(WorldID);
 
+			jObjCombatant["WorldName"] = WorldName;
+
+			// If the request is filtering properties, remove them here
+			if (props.Count > 0) {
+				jObjCombatant.Keys
+					.Where(k => !props.Contains(k))
+					.ToList()
+					.ForEach(k => jObjCombatant.Remove(k));
+			}
+
+			filteredCombatants.Add(jObjCombatant);
+		}
+		foreach (var combatant in memCombatants) combatantMemory.ReturnCombatant(combatant);
 		return filteredCombatants;
 	}
 
@@ -320,34 +277,20 @@ internal class FFXIVRequiredEventSource : EventSourceBase {
 		}));
 	}
 
-	private void BuildPartyMemberResults(List<PartyMember> result, PartyListEntry[] members, PartyType partyType, bool inParty) {
-		if (members == null) {
-			return;
-		}
-		foreach (var member in members) {
-			if (member == null || (member.flags & 0x1) != 0x1) {
-				continue;
-			}
-
-			result.Add(new PartyMember {
-				id = $"{member.objectId:X}",
-				name = member.name,
-				worldId = member.homeWorld,
-				job = member.classJob,
-				level = member.level,
-				inParty = inParty,
-				contentId = member.contentId,
-				flags = member.flags,
-				objectId = member.objectId,
-				territoryType = member.territoryType,
-				partyType = partyType.ToString()
-			});
-		}
+	private void BuildPartyMemberResults(List<PartyMember> result, PartyListEntry?[]? members, PartyType partyType, bool inParty) {
+		if (members == null) return;
+		result.AddRange(members
+			.Where(member => member != null)
+			.Cast<PartyListEntry>()
+			.Where(member => (member.flags & 0x1) == 0x1)
+			.Select(member => new PartyMember {
+				id = $"{member.objectId:X}", name = member.name, worldId = member.homeWorld, job = member.classJob, level = member.level, inParty = inParty, contentId = member.contentId, flags = member.flags, objectId = member.objectId,
+				territoryType = member.territoryType, partyType = partyType.ToString()
+			}));
 	}
 
 	public override void LoadConfig(IPluginConfig config) {
 		Config = container.Resolve<BuiltinEventConfig>();
-
 		Config.UpdateIntervalChanged += (_, _) => { Start(); };
 	}
 
@@ -367,33 +310,28 @@ internal class FFXIVRequiredEventSource : EventSourceBase {
 		}
 	}
 
-	private void PollJobGauge() {
-		IJobGauge lastJobGauge = null;
-		while (!cancellationToken.IsCancellationRequested) {
-			var now = DateTime.Now;
-
-			if (HasSubscriber(JobGaugeChangedEvent)) {
-				var jobGauge = jobGaugeMemory.GetJobGauge();
-
-				if (jobGauge != null) {
-					if (!jobGauge.Equals(lastJobGauge)) {
-						lastJobGauge = jobGauge;
-						var obj = JObject.FromObject(jobGauge);
-						obj["type"] = JobGaugeChangedEvent;
-
-						DispatchAndCacheEvent(obj);
+	private async void PollJobGauge() {
+		try {
+			IJobGauge? lastJobGauge = null;
+			while (!cancellationToken.IsCancellationRequested) {
+				var now = DateTime.Now;
+				if (HasSubscriber(JobGaugeChangedEvent)) {
+					var jobGauge = jobGaugeMemory.GetJobGauge();
+					if (jobGauge != null) {
+						if (!jobGauge.Equals(lastJobGauge)) {
+							lastJobGauge = jobGauge;
+							var obj = JObject.FromObject(jobGauge);
+							obj["type"] = JobGaugeChangedEvent;
+							DispatchAndCacheEvent(obj);
+						}
 					}
 				}
-			}
-
-			// Wait for next poll
-			var delay = PollingRate - (int)Math.Ceiling((DateTime.Now - now).TotalMilliseconds);
-			if (delay > 0) {
-				Thread.Sleep(delay);
-			} else {
+				// Wait for next poll
+				var delay = PollingRate - (int)Math.Ceiling((DateTime.Now - now).TotalMilliseconds);
 				// If we're lagging enough to not have a sleep duration, delay by PollingRate to reduce lag
-				Thread.Sleep(PollingRate);
+				await Task.Delay(delay > 0 ? delay : PollingRate);
 			}
+		} catch {
 		}
 	}
 

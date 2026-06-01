@@ -48,10 +48,10 @@ After the first Superchain cast in P12N, 3 orbs and 1 donut are spawned with tet
 
 namespace RainbowMage.OverlayPlugin.NetworkProcessors;
 
-internal class LineSpawnNpcExtra : LineBaseCustomMachina<Server_MessageHeader_Global, LineSpawnNpcExtra.Server_NpcSpawn_Global_6_51,
+internal class LineSpawnNpcExtra(TinyIoCContainer container) : LineBaseCustomMachina<Server_MessageHeader_Global, LineSpawnNpcExtra.Server_NpcSpawn_Global_6_51,
 	Server_MessageHeader_CN, LineSpawnNpcExtra.Server_NpcSpawn_Global_6_51,
 	Server_MessageHeader_KR, LineSpawnNpcExtra.Server_NpcSpawn_Global_6_51,
-	Server_MessageHeader_TC, LineSpawnNpcExtra.Server_NpcSpawn_Global_6_51> {
+	Server_MessageHeader_TC, LineSpawnNpcExtra.Server_NpcSpawn_Global_6_51>(container, LogFileLineID, LogLineName, MachinaPacketName) {
 	public const uint LogFileLineID = 272;
 	public const string LogLineName = "NpcSpawnExtra";
 	public const string MachinaPacketName = "NpcSpawn";
@@ -68,9 +68,5 @@ internal class LineSpawnNpcExtra : LineBaseCustomMachina<Server_MessageHeader_Gl
 			string.Format(CultureInfo.InvariantCulture,
 				"{0:X8}|{1:X8}|{2:X4}|{3:X2}",
 				ActorID, parentActorId, tetherId, animationState);
-	}
-
-	public LineSpawnNpcExtra(TinyIoCContainer container)
-		: base(container, LogFileLineID, LogLineName, MachinaPacketName) {
 	}
 }

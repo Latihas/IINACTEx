@@ -9,7 +9,7 @@ using RainbowMage.OverlayPlugin.NetworkProcessors.PacketHelper;
 
 namespace RainbowMage.OverlayPlugin.NetworkProcessors;
 
-public class LineActorControlExtra : LineBaseSubMachina<LineActorControlExtra.ActorControlExtraPacket> {
+public class LineActorControlExtra(TinyIoCContainer container) : LineBaseSubMachina<LineActorControlExtra.ActorControlExtraPacket>(container, LogFileLineID, LogLineName, MachinaPacketName) {
 	public const uint LogFileLineID = 273;
 	public const string LogLineName = "ActorControlExtra";
 	public const string MachinaPacketName = "ActorControl";
@@ -38,9 +38,5 @@ public class LineActorControlExtra : LineBaseSubMachina<LineActorControlExtra.Ac
 
 			return $"{ActorID:X8}|{(ushort)category:X4}|{param1:X}|{param2:X}|{param3:X}|{param4:X}";
 		}
-	}
-
-	public LineActorControlExtra(TinyIoCContainer container)
-		: base(container, LogFileLineID, LogLineName, MachinaPacketName) {
 	}
 }

@@ -5,11 +5,11 @@ using RainbowMage.OverlayPlugin.NetworkProcessors.PacketHelper;
 
 namespace RainbowMage.OverlayPlugin.NetworkProcessors;
 
-internal class LineRSV : LineBaseCustom<
+internal class LineRSV(TinyIoCContainer container) : LineBaseCustom<
 	Server_MessageHeader_Global, LineRSV.RSV_v62,
 	Server_MessageHeader_CN, LineRSV.RSV_v62,
 	Server_MessageHeader_KR, LineRSV.RSV_v62,
-	Server_MessageHeader_TC, LineRSV.RSV_v62> {
+	Server_MessageHeader_TC, LineRSV.RSV_v62>(container, LogFileLineID, logLineName, MachinaPacketName) {
 	[StructLayout(LayoutKind.Explicit, Size = structSize, Pack = 1)]
 	internal unsafe struct RSV_v62 : IPacketStruct {
 		public const int structSize = 1080;
@@ -35,8 +35,4 @@ internal class LineRSV : LineBaseCustom<
 	public const uint LogFileLineID = 262;
 	public const string logLineName = "RSVData";
 	public const string MachinaPacketName = "RSVData";
-
-	public LineRSV(TinyIoCContainer container)
-		: base(container, LogFileLineID, logLineName, MachinaPacketName) {
-	}
 }
