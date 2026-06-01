@@ -35,6 +35,7 @@
 		<ProjectReference Include="../PostNamazu/PostNamazu/PostNamazu.csproj"/>
 		<ProjectReference Include="../SilverDasher/SilverDasher/SilverDasher.csproj"/>
 		<ProjectReference Include="../Unscrambler/Unscrambler/Unscrambler.csproj"/>
+		<ProjectReference Include="../Utils/Utils.csproj"/>
 		<!--    <PackageReference Include="Unscrambler.XIV.CN" Version="*" />-->
 	</ItemGroup>
 	<ItemGroup>
@@ -74,6 +75,10 @@
 		</Reference>
 		<Reference Include="FFXIV_ACT_Plugin.Resource">
 			<HintPath>../external_dependencies/SDK/FFXIV_ACT_Plugin.Resource.dll</HintPath>
+			<Private>False</Private>
+		</Reference>
+		<Reference Include="Dalamud.Common">
+			<HintPath>$(DalamudLibPath)/Dalamud.Common.dll</HintPath>
 			<Private>False</Private>
 		</Reference>
 	</ItemGroup>

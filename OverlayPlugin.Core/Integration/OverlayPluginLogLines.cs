@@ -18,7 +18,7 @@ namespace RainbowMage.OverlayPlugin.NetworkProcessors;
 using Opcodes = Dictionary<MachinaRegion, Dictionary<OpcodeVersion, Dictionary<OpcodeName, OpcodeConfigEntry>>>;
 
 internal class OverlayPluginLogLines {
-	public OverlayPluginLogLines(TinyIoCContainer container, string extraOpcodes = null) {
+	public OverlayPluginLogLines(TinyIoCContainer container, string? extraOpcodes = null) {
 		container.Register(new OverlayPluginLogLineConfig(container, extraOpcodes));
 		container.Register(new LineMapEffect(container));
 		container.Register(new LineFateControl(container));
@@ -50,7 +50,7 @@ internal class OverlayPluginLogLineConfig {
 	private int exceptionCount;
 	private const int maxExceptionsLogged = 3;
 
-	public OverlayPluginLogLineConfig(TinyIoCContainer container, string extraOpcodes = null) {
+	public OverlayPluginLogLineConfig(TinyIoCContainer container, string? extraOpcodes = null) {
 		logger = container.Resolve<ILogger>();
 		repository = container.Resolve<FFXIVRepository>();
 
@@ -60,10 +60,9 @@ internal class OverlayPluginLogLineConfig {
 			else {
 				var assembly = Assembly.GetExecutingAssembly();
 				var resourceName = assembly.GetManifestResourceNames().Single(str => str.EndsWith("opcodes.jsonc"));
-				using (var stream = assembly.GetManifestResourceStream(resourceName))
-				using (var reader = new StreamReader(stream)) {
-					jsonData = reader.ReadToEnd();
-				}
+				using var stream = assembly.GetManifestResourceStream(resourceName);
+				using var reader = new StreamReader(stream);
+				jsonData = reader.ReadToEnd();
 			}
 
 			config = JsonConvert.DeserializeAnonymousType(jsonData, config);

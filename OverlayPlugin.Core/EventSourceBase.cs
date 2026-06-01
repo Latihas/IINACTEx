@@ -13,7 +13,7 @@ public abstract class EventSourceBase : IEventSource {
 
 	protected Timer timer;
 	protected ILogger logger;
-	protected Dictionary<string, JObject> eventCache = new();
+	protected readonly Dictionary<string, JObject> eventCache = new();
 
 	// Backwards compat
 	public EventSourceBase(ILogger _) {

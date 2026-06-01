@@ -28,7 +28,7 @@ public class LimitedProcess {
 // Exposes the FFXIV game directly. Call FindProcess() regularly to update
 // memory addresses when FFXIV is run or closed.
 public abstract partial class FFXIVProcess {
-	internal ILogger logger_;
+	internal readonly ILogger logger_;
 	private LimitedProcess process_;
 
 	// Filled in by ReadSignatures().

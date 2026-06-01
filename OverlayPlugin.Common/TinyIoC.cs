@@ -2005,7 +2005,7 @@ namespace RainbowMage.OverlayPlugin {
 				resolvedType = Resolve<ResolveType>();
 				return true;
 			} catch (TinyIoCResolutionException) {
-				resolvedType = default;
+				resolvedType = null;
 				return false;
 			}
 		}

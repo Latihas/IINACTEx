@@ -7,18 +7,18 @@ using Microsoft.Extensions.ObjectPool;
 namespace RainbowMage.OverlayPlugin.MemoryProcessors.Combatant;
 
 public abstract class CombatantMemory : ICombatantMemory {
-	public FFXIVMemory memory;
+	public readonly FFXIVMemory memory;
 	private ILogger logger;
 
 	public IntPtr charmapAddress = IntPtr.Zero;
 
 	private string charmapSignature;
 
-	public int numMemoryCombatants;
-	public int combatantSize;
+	public readonly int numMemoryCombatants;
+	public readonly int combatantSize;
 	private int effectSize;
 
-	protected ObjectPool<Combatant> combatantPool;
+	protected readonly ObjectPool<Combatant> combatantPool;
 
 	// Constants.
 	protected const uint emptyID = 0xE0000000;

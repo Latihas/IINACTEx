@@ -4,8 +4,8 @@ using System.Collections.Generic;
 namespace RainbowMage.OverlayPlugin.MemoryProcessors.InCombat;
 
 public abstract class InCombatMemory {
-	protected FFXIVMemory memory;
-	protected ILogger logger;
+	protected readonly FFXIVMemory memory;
+	protected readonly ILogger logger;
 
 	protected IntPtr inCombatAddress = IntPtr.Zero;
 

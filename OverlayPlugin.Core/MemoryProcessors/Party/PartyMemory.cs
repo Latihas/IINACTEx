@@ -41,12 +41,12 @@ public class PartyListsStruct {
 }
 
 public abstract class PartyMemory {
-	protected FFXIVMemory memory;
-	protected ILogger logger;
+	protected readonly FFXIVMemory memory;
+	protected readonly ILogger logger;
 
 	protected IntPtr partyInstanceAddress = IntPtr.Zero;
 
-	protected Func<IntPtr> GetGroupManagerAddress;
+	protected readonly Func<IntPtr> GetGroupManagerAddress;
 
 
 	public PartyMemory(TinyIoCContainer container) {

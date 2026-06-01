@@ -268,7 +268,7 @@ public class MachinaPacketHelper<PacketType> : IPacketHelper
 }
 
 public class MachinaHeaderWrapper : IHeaderStruct {
-	public object header;
+	public readonly object header;
 
 	private static Dictionary<Type, Dictionary<string, FieldInfo>> typePropertyMap = new();
 

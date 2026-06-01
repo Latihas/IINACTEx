@@ -11,6 +11,7 @@ using Unscrambler;
 using Unscrambler.Constants;
 using Unscrambler.Unscramble;
 using Unscrambler.Unscramble.Versions;
+using static IINACT.Plugin;
 
 namespace IINACT.Network;
 
@@ -39,9 +40,9 @@ public unsafe class ZoneDownHookManager : IDisposable {
 			versionConstants = VersionConstants.ForGameVersion(version);
 			unscrambler = UnscramblerFactory.ForGameVersion(version);
 		} else {
-			Plugin.Log.Warning("[ZoneDownHookManager] Creating fallback Unscrambler constants dynamically");
+			Log.Warning("[ZoneDownHookManager] Creating fallback Unscrambler constants dynamically");
 			var onReceivePacketAddress = PacketDispatcher.GetOnReceivePacketAddress();
-			Plugin.Log.Debug($"[ZoneDownHookManager] GetOnReceivePacketAddress: {onReceivePacketAddress:X}");
+			Log.Debug($"[ZoneDownHookManager] GetOnReceivePacketAddress: {onReceivePacketAddress:X}");
 			var opcodeKeyTableIns = MultiSigScanner.Scan(onReceivePacketAddress, 0x1000, OpcodeKeyTableSignature);
 			var bytes = new byte[13];
 			Marshal.Copy(opcodeKeyTableIns, bytes, 0, 13);
@@ -58,10 +59,10 @@ public unsafe class ZoneDownHookManager : IDisposable {
 					throw new Exception("Opcode key table size is too large");
 			}
 			if (memory[opcodeKeyTableSize - 1] == 0 && memory[opcodeKeyTableSize - 2] == 0 && memory[opcodeKeyTableSize - 3] == 0 && memory[opcodeKeyTableSize - 4] == 0) {
-				Plugin.Log.Debug("Uneven padded length for opcode key table");
+				Log.Debug("Uneven padded length for opcode key table");
 				opcodeKeyTableSize -= 4;
 			}
-			Plugin.Log.Debug(
+			Log.Debug(
 				$"[ZoneDownHookManager] opcodeKeyTableOffset {opcodeKeyTableOffset:X}, opcodeKeyTableSize {opcodeKeyTableSize:X}");
 			versionConstants = GetFallbackVersionConstant(opcodeKeyTableOffset, opcodeKeyTableSize);
 			unscrambler = new Unscrambler73();
@@ -71,12 +72,12 @@ public unsafe class ZoneDownHookManager : IDisposable {
 		var rawOpcodeKeyTable = new byte[versionConstants.OpcodeKeyTableSize];
 		opcodeKeyTable = new int[rawOpcodeKeyTable.Length / 4];
 		Marshal.Copy(moduleBase + (nint)versionConstants.OpcodeKeyTableOffset, rawOpcodeKeyTable, 0, rawOpcodeKeyTable.Length);
-		Plugin.Log.Debug("[ZoneDownHookManager] raw opcode key table {@Data} (length: {Length})", rawOpcodeKeyTable, rawOpcodeKeyTable.Length);
+		Log.Debug("[ZoneDownHookManager] raw opcode key table {@Data} (length: {Length})", rawOpcodeKeyTable, rawOpcodeKeyTable.Length);
 		for (var i = 0; i < rawOpcodeKeyTable.Length; i += 4)
 			opcodeKeyTable[i / 4] = BitConverter.ToInt32(rawOpcodeKeyTable, i);
 
 		var rxPtrs = multiScanner.ScanText(GenericDownSignature, 3);
-		zoneDownHook = Plugin.GameInteropProvider.HookFromAddress<DownPrototype>(rxPtrs[2], ZoneDownDetour);
+		zoneDownHook = GameInteropProvider.HookFromAddress<DownPrototype>(rxPtrs[2], ZoneDownDetour);
 
 		Enable();
 	}
@@ -112,11 +113,11 @@ public unsafe class ZoneDownHookManager : IDisposable {
 				keys[0] = key0;
 				keys[1] = key1;
 				keys[2] = key2;
-				Plugin.Log.Debug($"[UpdateKeys] keys {dispatcher->Key0}, {dispatcher->Key1}, {dispatcher->Key2}");
-				Plugin.Log.Debug($"[UpdateKeys] game random {dispatcher->GameRandom}, packet random {dispatcher->LastPacketRandom}");
+				Log.Debug($"[UpdateKeys] keys {dispatcher->Key0}, {dispatcher->Key1}, {dispatcher->Key2}");
+				Log.Debug($"[UpdateKeys] game random {dispatcher->GameRandom}, packet random {dispatcher->LastPacketRandom}");
 			}
 		} else {
-			Plugin.Log.Warning("[UpdateKeys] Dispatcher was null, so not initializing keys");
+			Log.Warning("[UpdateKeys] Dispatcher was null, so not initializing keys");
 		}
 	}
 
@@ -126,11 +127,11 @@ public unsafe class ZoneDownHookManager : IDisposable {
 	}
 
 	private void SendNotification(string content) {
-		Plugin.NotificationManager.AddNotification(new Notification {
+		NotificationManager.AddNotification(new Notification {
 			Content = content,
 			Title = "IINACT"
 		});
-		Plugin.Log.Debug($"[SendNotification] {content}");
+		Log.Debug($"[SendNotification] {content}");
 	}
 
 	private nuint ZoneDownDetour(byte* data, byte* a2, nuint a3, nuint a4, nuint a5) {
@@ -142,7 +143,7 @@ public unsafe class ZoneDownHookManager : IDisposable {
 		try {
 			PacketsFromFrame((byte*)*(nint*)(data + 16));
 		} catch (Exception e) {
-			Plugin.Log.Error(e, "[PacketsFromFrame] Error!");
+			Log.Error(e, "[PacketsFromFrame] Error!");
 		}
 
 		return ret;
@@ -150,7 +151,7 @@ public unsafe class ZoneDownHookManager : IDisposable {
 
 	private void PacketsFromFrame(byte* framePtr) {
 		if ((nuint)framePtr == 0) {
-			Plugin.Log.Error("null ptr");
+			Log.Error("null ptr");
 			return;
 		}
 

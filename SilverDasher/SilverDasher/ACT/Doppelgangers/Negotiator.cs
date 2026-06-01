@@ -10,12 +10,12 @@ using SilverDasher.ACT.Models;
 namespace SilverDasher.ACT.Doppelgangers;
 
 internal class Negotiator : Doppelganger {
-	private readonly dynamic FFXIVACTPlugin;
+	private readonly FFXIV_ACT_Plugin.FFXIV_ACT_Plugin FFXIVACTPlugin;
 	private IDataSubscription ffevents;
 
 	internal Negotiator(SilverDasher self) : base(self) {
 		foreach (var actPlugin in ActGlobals.oFormActMain.ActPlugins.Where(actPlugin => actPlugin is { pluginFile.Name: "FFXIV_ACT_Plugin.dll" })) {
-			FFXIVACTPlugin = actPlugin.pluginObj;
+			FFXIVACTPlugin = (actPlugin.pluginObj as FFXIV_ACT_Plugin.FFXIV_ACT_Plugin)!;
 		}
 		if (FFXIVACTPlugin == null) {
 			throw new NotSupportedException("你还未传送至艾欧泽亚。（未加载FF解析插件，或修改了解析插件的名称导致无法识别，请检查后重新加载插件。）");

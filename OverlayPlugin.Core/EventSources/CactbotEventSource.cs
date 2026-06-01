@@ -417,8 +417,8 @@ public class CactbotEventSource : EventSourceBase {
 			}
 		} catch (WebException e) {
 			if (e.Status == WebExceptionStatus.ProtocolError &&
-			    e.Response is HttpWebResponse &&
-			    ((HttpWebResponse)e.Response).StatusCode == HttpStatusCode.NotFound) {
+			    e.Response is HttpWebResponse response &&
+			    response.StatusCode == HttpStatusCode.NotFound) {
 				// Ignore file not found.
 			} else if (e.InnerException != null &&
 			           (e.InnerException is FileNotFoundException || e.InnerException is DirectoryNotFoundException)) {

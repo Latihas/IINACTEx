@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -178,12 +177,9 @@ public class PluginMain {
 	/// <summary>
 	///     プラグインが有効化されたときに呼び出されます。
 	/// </summary>
-	/// <param name="extraOpcodes"></param>
-	public void InitPlugin(string? extraOpcodes = null) {
+	public void InitPlugin(Action<string> Tick, string? extraOpcodes = null) {
 		try {
-			// ** Init phase 2
 			Status = @"初始化阶段2：集成";
-
 			// Initialize the parser in the second phase since it needs the FFXIV plugin.
 			// If OverlayPlugin is placed above the FFXIV plugin, it won't be available in the first
 			// phase but it'll be loaded by the time we enter the second phase.
@@ -191,11 +187,9 @@ public class PluginMain {
 			_container.Register(new NetworkParser(_container));
 			_container.Register(new TriggIntegration(_container));
 			_container.Register(new FFXIVCustomLogLines(_container));
-
 			// Register FFXIV memory reading subcomponents.
 			// Must be done before loading addons.
 			_container.Register(new FFXIVMemory(_container));
-
 			// These are registered to be lazy-loaded. Use interface to force TinyIoC to use singleton pattern.
 			_container.Register<ICombatantMemory, CombatantMemoryManager>();
 			_container.Register<ITargetMemory, TargetMemoryManager>();
@@ -207,15 +201,16 @@ public class PluginMain {
 			_container.Register<IAtkStageMemory, AtkStageMemoryManager>();
 			_container.Register<IPartyMemory, PartyMemoryManager>();
 			_container.Register<IJobGaugeMemory, JobGaugeMemoryManager>();
-
+			Tick(Status);
 			_container.Register(new OverlayPluginLogLines(_container, extraOpcodes));
-
+			Tick("OverlayPluginLogLines");
 			Status = @"初始化阶段2：附加组件";
-			LoadAddons();
-
+			LoadAddons(Tick);
+			Tick(Status);
 			Status = @"初始化阶段2：UI";
 
 			// Now that addons have been loaded, we can finish the overlay setup.
+
 			Status = @"初始化阶段2：悬浮窗";
 
 			InitializeOverlays();
@@ -230,10 +225,8 @@ public class PluginMain {
 				Status = @"初始化阶段2：WebSocket 服务";
 				_container.Resolve<ServerController>().Start();
 			}
-
 			Status = @"初始化阶段2：保存计时器";
 			configSaveTimer.Start();
-
 			Status = @"就绪";
 			// Make the log small; startup was successful and there shouldn't be any error message to show.
 		} catch (Exception e) {
@@ -336,17 +329,17 @@ public class PluginMain {
 		Status = "Finalized.";
 	}
 
-	private void LoadAddons() {
+	private void LoadAddons(Action<string> Tick) {
 		var registry = _container.Resolve<Registry>();
 		_container.Register(BuiltinEventConfig.LoadConfig(Config));
-
 		// Make sure the event sources are ready before we load any overlays.
 		registry.StartEventSource(new MiniParseEventSource(_container));
 		registry.StartEventSource(new FFXIVOptionalEventSource(_container));
 		registry.StartEventSource(new FFXIVRequiredEventSource(_container));
+		Tick("FFXIVRequiredEventSource");
 		registry.StartEventSource(new EnmityEventSource(_container));
+		Tick("EnmityEventSource");
 		registry.StartEventSource(new FFXIVClientStructsEventSource(_container));
-
 		_logger.Log(LogLevel.Info, "LoadAddons: Enabling builtin Cactbot event source.");
 		registry.StartEventSource(new CactbotEventSource(_container));
 

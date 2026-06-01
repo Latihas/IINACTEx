@@ -11,6 +11,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Advanced_Combat_Tracker;
 using Dalamud.Bindings.ImGui;
+using Dalamud.Common;
 using Dalamud.Game.Command;
 using Dalamud.Interface.ImGuiFileDialog;
 using Dalamud.Interface.Windowing;
@@ -33,34 +34,47 @@ using TriggernometryProxy;
 using static Advanced_Combat_Tracker.ActGlobals;
 using static IINACT.Latihas.LWindow;
 using static IINACT.Windows.MainWindow;
+using static Utils.Interfaces;
 
 namespace IINACT;
 
-// ReSharper disable once ClassNeverInstantiated.Global
 [SuppressMessage("ReSharper", "UnusedAutoPropertyAccessor.Local")]
-public sealed class Plugin : IDalamudPlugin {
-	public string Name => "IINACTEx";
-	public Version Version { get; }
-	internal const string WindowPrefix = "IINACTEx ";
-	private const string MainWindowCommandName = "/iinact";
-	private const string EndEncCommandName = "/endenc";
-	internal const string OverlayCommandName = "/iinactoverlay";
+[SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
+public sealed class Plugin : I_IINACTEx_Plugin, IDalamudPlugin {
+	public readonly Version Version;
+	[PluginService] protected override IDalamudPluginInterface pluginInterface { get; set; }
+	internal static IDalamudPluginInterface PluginInterface => Instance.pluginInterface;
+	[PluginService] protected override ICommandManager commandManager { get; set; }
+	internal static ICommandManager CommandManager => Instance.commandManager;
+	[PluginService] protected override IClientState clientState { get; set; }
+	internal static IClientState ClientState => Instance.clientState;
+	[PluginService] protected override IDataManager dataManager { get; set; }
+	internal static IDataManager DataManager => Instance.dataManager;
+	[PluginService] protected override IChatGui chatGui { get; set; }
+	internal static IChatGui ChatGui => Instance.chatGui;
+	[PluginService] protected override IFramework framework { get; set; }
+	internal static IFramework Framework => Instance.framework;
+	[PluginService] protected override ICondition condition { get; set; }
+	internal static ICondition Condition => Instance.condition;
+	[PluginService] protected override IGameInteropProvider gameInteropProvider { get; set; }
+	internal static IGameInteropProvider GameInteropProvider => Instance.gameInteropProvider;
+	[PluginService] protected override ISigScanner sigScanner { get; set; }
+	internal static ISigScanner SigScanner => Instance.sigScanner;
+	[PluginService] protected override INotificationManager notificationManager { get; set; }
+	internal static INotificationManager NotificationManager => Instance.notificationManager;
+	[PluginService] protected override IPluginLog log { get; set; }
+	internal static IPluginLog Log => Instance.log;
+	[PluginService] protected override ITargetManager targetManager { get; set; }
+	internal static ITargetManager TargetManager => Instance.targetManager;
+	[PluginService] protected override IObjectTable objectTable { get; set; }
+	internal static IObjectTable ObjectTable => Instance.objectTable;
+	[PluginService] protected override IGameGui gameGui { get; set; }
+	internal static IGameGui GameGui => Instance.gameGui;
+	[PluginService] protected override ITextureProvider textureProvider { get; set; }
+	internal static ITextureProvider TextureProvider => Instance.textureProvider;
+
 	public readonly WindowSystem WindowSystem = new("IINACT");
-	[PluginService] public static IDalamudPluginInterface PluginInterface { get; private set; }
-	[PluginService] public static ICommandManager CommandManager { get; private set; }
-	[PluginService] public static IClientState ClientState { get; private set; }
-	[PluginService] public static IDataManager DataManager { get; private set; }
-	[PluginService] public static IChatGui ChatGui { get; private set; }
-	[PluginService] public static IFramework Framework { get; private set; }
-	[PluginService] public static ICondition Condition { get; private set; }
-	[PluginService] public static IGameInteropProvider GameInteropProvider { get; private set; }
-	[PluginService] public static ISigScanner SigScanner { get; private set; }
-	[PluginService] public static INotificationManager NotificationManager { get; private set; }
-	[PluginService] public static IPluginLog Log { get; private set; }
-	[PluginService] public static ITargetManager TargetManager { get; private set; }
-	[PluginService] public static IObjectTable ObjectTable { get; private set; }
-	[PluginService] public static IGameGui GameGui { get; private set; }
-	[PluginService] public static ITextureProvider TextureProvider { get; private set; }
+
 	public static Configuration Configuration { get; private set; }
 	[SuppressMessage("Performance", "CA1822")]
 	[SuppressMessage("ReSharper", "UnusedMember.Global")]
@@ -78,7 +92,7 @@ public sealed class Plugin : IDalamudPlugin {
 	internal string OverlayPluginStatus => OverlayPlugin.Status;
 	public readonly ProxyPlugin TriggernometryProxyPlugin;
 	public readonly PostNamazu.PostNamazu PostNamazuPlugin;
-	public readonly dynamic? DalamudStartInfo;
+
 	// private PluginLogTraceListener PluginLogTraceListener { get; }
 	private HttpClient HttpClient { get; }
 	public readonly TriggerWindow TriggerWindow;
@@ -124,14 +138,17 @@ public sealed class Plugin : IDalamudPlugin {
 	}
 
 	internal static void LogTick(string s) {
-		Log.Info($"[StartTick] {s}({(DateTime.Now - lastLogTick).TotalSeconds}s)");
+		var sec = (DateTime.Now - lastLogTick).TotalSeconds;
+		var str = $"[StartTick] {s}({sec}s)";
+		if (sec < 0.5) Log.Info(str);
+		else Log.Warning(str);
 		lastLogTick = DateTime.Now;
 	}
 
 	public Plugin() {
+		Instance = this;
 		LogTick("Start Initializing");
 		Version = Version.Parse(Assembly.GetExecutingAssembly().GetCustomAttribute<AssemblyInformationalVersionAttribute>()!.InformationalVersion.Split('+')[0]);
-		Instance = this;
 		Init();
 		oFormActMain = new FormActMain(this, Log, Framework, ObjectTable);
 		Configuration = PluginInterface.GetPluginConfig() as Configuration ?? new Configuration();
@@ -166,10 +183,8 @@ public sealed class Plugin : IDalamudPlugin {
 		ActLocalization.AddPrebuild();
 		oFormActMain.LogFilePath = Configuration.LogFilePath;
 		TextToSpeechProvider = new TextToSpeechProvider();
-		var info = PluginInterface.GetType().Assembly.GetType("Dalamud.Service`1", true)!.MakeGenericType(PluginInterface.GetType().Assembly.GetType("Dalamud.Dalamud", true)!).GetMethod("Get")!
-			.Invoke(null, BindingFlags.Default, null, [], null);
-		DalamudStartInfo = info!.GetType().GetField("StartInfo", AllFlags)?.GetValue(info)
-		                   ?? info.GetType().GetProperty("StartInfo", AllFlags)?.GetValue(info);
+		var info = PluginInterface.GetType().Assembly.GetType("Dalamud.Service`1", true)!.MakeGenericType(PluginInterface.GetType().Assembly.GetType("Dalamud.Dalamud", true)!).GetMethod("Get")!.Invoke(null, BindingFlags.Default, null, [], null)!;
+		DalamudStartInfo = (DalamudStartInfo)info.GetType().GetProperty("StartInfo", BindingFlags.NonPublic | BindingFlags.Instance)!.GetValue(info)!;
 		WindowSystem.AddWindow(MainWindow = new MainWindow());
 		WindowSystem.AddWindow(OverlayWindow = new OverlayWindow());
 		WindowSystem.AddWindow(EdgeTTSWindow = new EdgeTTSWindow(TextToSpeechProvider.GetEdgeTTSManager()!));
@@ -200,10 +215,9 @@ public sealed class Plugin : IDalamudPlugin {
 		var extraOpcodes = opcodesjsoncCanReplace ? File.ReadAllText(opcodesjsoncPath) : null;
 		FormActMain.AddDefaultPlugins(FfxivActPluginWrapper = new FfxivActPluginWrapper(), new PluginLoader(OverlayPlugin), TriggernometryProxyPlugin, PostNamazuPlugin);
 		LogTick("FfxivActPlugin Inited");
-		OverlayPlugin.InitPlugin(extraOpcodes);
+		OverlayPlugin.InitPlugin(LogTick, extraOpcodes);
 		LogTick("OverlayPlugin Initialized");
 		var taskTrn = Task.Run(() => {
-			LogTick("Trn Initializing");
 			TriggernometryProxyPlugin.InitPlugin(this, PluginInterface, Log, ClientState, Framework, GameInteropProvider, ObjectTable, GameGui, SigScanner,
 				LatestConfigVersion);
 		});
@@ -254,7 +268,9 @@ public sealed class Plugin : IDalamudPlugin {
 			if (Configuration.ActScriptsEnabled.Contains(rt))
 				LoadPScript(rt, true);
 		var taskPP = Task.Run(() => {
+			LogTick("Asyc Post Start");
 			BridgeNamazu.InitializeModules();
+			LogTick("InitializeModules");
 			BridgeNamazu.RegisterAnnotatedMethods();
 			FormActMain.PluginInitialized = true;
 			LogTick("Asyc Post Process Done");

@@ -3,7 +3,7 @@ using System;
 namespace RainbowMage.OverlayPlugin.MemoryProcessors.AtkStage;
 
 public abstract class AtkStageMemory {
-	protected FFXIVMemory memory;
+	protected readonly FFXIVMemory memory;
 	protected ILogger logger;
 
 	public AtkStageMemory(TinyIoCContainer container) {

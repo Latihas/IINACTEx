@@ -19,6 +19,7 @@ using FFXIV_ACT_Plugin.Parse;
 using FFXIV_ACT_Plugin.Resource;
 using IINACT.Network;
 using Microsoft.MinIoC;
+using static IINACT.Plugin;
 using ACTWrapper = FFXIV_ACT_Plugin.Common.ACTWrapper;
 using Region = FFXIV_ACT_Plugin.Config.Region;
 
@@ -54,12 +55,12 @@ public partial class FfxivActPluginWrapper : IDisposable {
 
 	public unsafe FfxivActPluginWrapper() {
 		ffxivActPlugin = new FFXIV_ACT_Plugin.FFXIV_ACT_Plugin();
-		Plugin.Log.Information($"Initializing FFXIV_ACT_Plugin version {typeof(FFXIV_ACT_Plugin.FFXIV_ACT_Plugin).Assembly.GetName().Version}");
+		Log.Information($"Initializing FFXIV_ACT_Plugin version {typeof(FFXIV_ACT_Plugin.FFXIV_ACT_Plugin).Assembly.GetName().Version}");
 		ffxivActPlugin.ConfigureIOC();
 		var iocContainer1 = ffxivActPlugin._iocContainer;
-		Plugin.LogTick("FFXIV_ACT_Plugin IOC Configured");
+		LogTick("FFXIV_ACT_Plugin IOC Configured");
 		iocContainer1.Resolve<ResourceManager>().LoadResources();
-		Plugin.LogTick("FFXIV_ACT_Plugin Resources Loaded");
+		LogTick("FFXIV_ACT_Plugin Resources Loaded");
 		Subscription = iocContainer1.Resolve<DataSubscription>();
 		ffxivActPlugin.SetProperty("DataSubscription", Subscription);
 		parseMediator = iocContainer1.Resolve<ParseMediator>();
@@ -88,11 +89,11 @@ public partial class FfxivActPluginWrapper : IDisposable {
 
 		ffxivActPlugin._dataCollection.StartMemory();
 
-		Plugin.ChatGui.ChatMessage += OnChatMessage;
+		ChatGui.ChatMessage += OnChatMessage;
 		ActGlobals.oFormActMain.BeforeLogLineRead += OFormActMain_BeforeLogLineRead;
 		serverTimeProcessor.ServerTime = DateTime.Now;
 
-		Plugin.Framework.Update += ScanMemory;
+		Framework.Update += ScanMemory;
 
 		mobArraySize = mobArrayProcessor._internalMmobArray.Length;
 		var combatantProcessor = (CombatantProcessor)combatantManager._combatantProcessor;
@@ -103,23 +104,23 @@ public partial class FfxivActPluginWrapper : IDisposable {
 		for (var i = 0; i < mobArraySize; i++)
 			mobDataOffsets[i] = mobData + i * combatantSize;
 
-		Plugin.Framework.Update += MobDataRefresh;
+		Framework.Update += MobDataRefresh;
 	}
 
 
 	private static Language ClientLanguage =>
-		Plugin.DataManager.Language switch {
+		DataManager.Language switch {
 			Dalamud.Game.ClientLanguage.Japanese => Language.Japanese,
 			Dalamud.Game.ClientLanguage.English => Language.English,
 			Dalamud.Game.ClientLanguage.German => Language.German,
 			Dalamud.Game.ClientLanguage.French => Language.French,
-			_ => Plugin.DataManager.Language.ToString() == "ChineseSimplified" ? Language.Chinese : Language.English //非CN SDK无ChineseSimplified
+			_ => DataManager.Language.ToString() == "ChineseSimplified" ? Language.Chinese : Language.English //非CN SDK无ChineseSimplified
 		};
 
 	public void Dispose() {
-		Plugin.Framework.Update -= ScanMemory;
-		Plugin.Framework.Update -= MobDataRefresh;
-		Plugin.ChatGui.ChatMessage -= OnChatMessage;
+		Framework.Update -= ScanMemory;
+		Framework.Update -= MobDataRefresh;
+		ChatGui.ChatMessage -= OnChatMessage;
 		ActGlobals.oFormActMain.BeforeLogLineRead -= OFormActMain_BeforeLogLineRead;
 		ffxivActPlugin.DeInitPlugin();
 		ffxivActPlugin.Dispose();
@@ -197,7 +198,7 @@ public partial class FfxivActPluginWrapper : IDisposable {
 
 	private static void OnZoneChanged(uint zoneId, string zoneName) => ActGlobals.oFormActMain.ChangeZone(zoneName);
 
-	private static void OnProcessException(DateTime timestamp, string text) => Plugin.Log.Warning($"[FFXIV_ACT_Plugin] {text}");
+	private static void OnProcessException(DateTime timestamp, string text) => Log.Warning($"[FFXIV_ACT_Plugin] {text}");
 
 	[SuppressGCTransition]
 	[LibraryImport("SafeMemoryReader.dll")]
@@ -207,7 +208,7 @@ public partial class FfxivActPluginWrapper : IDisposable {
 		if (settingsMediator.DataCollectionSettings == null)
 			return;
 
-		if (mobDataAge < 3 || !Plugin.Condition[ConditionFlag.BoundByDuty56] && mobDataAge < 10) {
+		if (mobDataAge < 3 || !Condition[ConditionFlag.BoundByDuty56] && mobDataAge < 10) {
 			mobDataAge++;
 			if (mobArrayProcessor.PrimaryPlayerPointer == nint.Zero)
 				return;
@@ -257,7 +258,7 @@ public partial class FfxivActPluginWrapper : IDisposable {
 			playerProcessor.Refresh();
 			partyProcessor.Refresh();
 		} catch (Exception ex) when (ex is ThreadAbortException or OperationCanceledException or ObjectDisposedException) { } catch (Exception ex) {
-			Plugin.Log.Error(ex, "[FFXIV_ACT_Plugin] ScanMemory failure");
+			Log.Error(ex, "[FFXIV_ACT_Plugin] ScanMemory failure");
 		}
 	}
 }

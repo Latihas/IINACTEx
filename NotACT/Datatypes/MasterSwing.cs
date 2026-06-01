@@ -116,10 +116,10 @@ public class MasterSwing(
 		StringDataCallback cellDataCallback, StringDataCallback sqlDataCallback,
 		Comparison<MasterSwing> sortComparer) {
 		public ColorDataCallback GetCellBackColor = _ => Color.Transparent;
-		public StringDataCallback GetCellData = cellDataCallback;
+		public readonly StringDataCallback GetCellData = cellDataCallback;
 		public ColorDataCallback GetCellForeColor = _ => Color.Transparent;
-		public StringDataCallback GetSqlData = sqlDataCallback;
-		public Comparison<MasterSwing> SortComparer = sortComparer;
+		public readonly StringDataCallback GetSqlData = sqlDataCallback;
+		public readonly Comparison<MasterSwing> SortComparer = sortComparer;
 		public string SqlDataType { get; } = sqlDataType;
 		public string SqlDataName { get; } = sqlDataName;
 		public bool DefaultVisible { get; } = defaultVisible;

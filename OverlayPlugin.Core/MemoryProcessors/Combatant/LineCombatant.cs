@@ -370,8 +370,8 @@ public class LineCombatant : IDisposable {
 		var oldVal = fi.GetValue(oldCombatant);
 		var newVal = fi.GetValue(combatant);
 		// There's some weird behavior with just using `==` or `.Equals` here, where two UInt32 values that are the same somehow aren't.
-		if (oldVal is IComparable) {
-			if (((IComparable)oldVal).CompareTo(newVal) != 0) {
+		if (oldVal is IComparable comparable) {
+			if (comparable.CompareTo(newVal) != 0) {
 				return false;
 			}
 			return true;

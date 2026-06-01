@@ -425,7 +425,7 @@ public class CombatantData : IComparable, IEquatable<CombatantData>, IComparable
 	}
 
 	public string GetColumnByName(string name) => ColumnDefs.TryGetValue(name, out var value) ? value.GetCellData(this) : Empty;
-	public AttackType? GetAttackType(string AttackTypeName, string Type) => Items[Type].Items.TryGetValue(AttackTypeName, out var value) ? value : null;
+	public AttackType? GetAttackType(string AttackTypeName, string Type) => Items[Type].Items.GetValueOrDefault(AttackTypeName);
 
 	public long GetThreatDelta(string DamageTypeDataLabel) {
 		if (threatCached) return cachedThreatDelta; // Return the cached value if it's available

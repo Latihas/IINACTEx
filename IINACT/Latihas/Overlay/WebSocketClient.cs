@@ -3,6 +3,7 @@ using System.Net.WebSockets;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using static IINACT.Plugin;
 
 namespace IINACT.Latihas.Overlay;
 
@@ -18,11 +19,11 @@ public class WebSocketClient : IDisposable {
 	public async Task Connect(string url) {
 		try {
 			await _ws.ConnectAsync(new Uri(url), _cts.Token).ConfigureAwait(false);
-			Plugin.Log.Info("WebSocket连接成功");
+			Log.Info("WebSocket连接成功");
 			_ = ReceiveLoop();
 			Ready = true;
 		} catch (Exception ex) {
-			Plugin.Log.Warning($"WebSocket连接失败: {ex.Message}");
+			Log.Warning($"WebSocket连接失败: {ex.Message}");
 			Dispose();
 			throw;
 		}
@@ -55,7 +56,7 @@ public class WebSocketClient : IDisposable {
 				}
 			}
 		} catch (Exception ex) {
-			Plugin.Log.Debug(ex.ToString());
+			Log.Debug(ex.ToString());
 		} finally {
 			_ws.Dispose();
 		}

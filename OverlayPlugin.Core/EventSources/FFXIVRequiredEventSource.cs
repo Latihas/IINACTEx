@@ -121,7 +121,7 @@ internal class FFXIVRequiredEventSource : EventSourceBase {
 				obj["type"] = OnlineStatusChangedEvent;
 				obj["target"] = e.Target;
 				obj["rawStatus"] = e.Status;
-				obj["status"] = StatusMap.TryGetValue(e.Status, out var value) ? value : "Unknown";
+				obj["status"] = StatusMap.GetValueOrDefault(e.Status, "Unknown");
 
 				DispatchAndCacheEvent(obj);
 			};

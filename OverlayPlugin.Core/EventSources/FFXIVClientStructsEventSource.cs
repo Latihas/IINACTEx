@@ -15,7 +15,7 @@ public class SortedPartyList {
 	public int TrustCount;
 	public byte PetCount;
 	public byte ChocoboCount;
-	public List<Entry> Entries = [];
+	public readonly List<Entry> Entries = [];
 
 	public struct Entry {
 		public int Index;

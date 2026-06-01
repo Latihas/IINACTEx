@@ -111,15 +111,14 @@ public class EnmityEventSource : EventSourceBase {
 		base.Dispose();
 	}
 
-	private void OnInCombatChanged(object sender, InCombatArgs args) {
-		var combatData = new InCombatDataObject();
-		combatData.inACTCombat = args.InACTCombat;
-		combatData.inGameCombat = args.InGameCombat;
+	private void OnInCombatChanged(object? sender, InCombatArgs args) {
+		var combatData = new InCombatDataObject {
+			inACTCombat = args.InACTCombat,
+			inGameCombat = args.InGameCombat
+		};
 		DispatchAndCacheEvent(JObject.FromObject(combatData));
 
-		if (!args.InGameCombatChanged) {
-			return;
-		}
+		if (!args.InGameCombatChanged) return;
 
 		// Handle optional "end encounter of combat" logic.
 		var inGameCombat = args.InGameCombat;
@@ -129,7 +128,7 @@ public class EnmityEventSource : EventSourceBase {
 		if (Config.EndEncounterOutOfCombat && !inGameCombat) {
 			endEncounterToken = new CancellationTokenSource();
 			var token = endEncounterToken.Token;
-			Task.Run(async delegate {
+			Task.Run(async () => {
 				try {
 					await Task.Delay(endEncounterOutOfCombatDelayMs, token).ConfigureAwait(false);
 
@@ -152,7 +151,7 @@ public class EnmityEventSource : EventSourceBase {
 				} catch (Exception ex) {
 					logger.Log(LogLevel.Warning, "Delayed EndEncounter task error: {0}", ex);
 				}
-			});
+			}, token);
 		}
 		// If combat starts again, cancel any outstanding tasks to stop the ACT encounter.
 		// If the task has already run, this will not do anything.

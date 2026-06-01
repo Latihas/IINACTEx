@@ -29,15 +29,14 @@ internal class Agent(SilverDasher plugin) : Doppelganger(plugin) {
 		var flag = false;
 		Directory.CreateDirectory(Path.Combine(Utils.GetPluginDirectory(), "data"));
 		if (force) {
-			List<Task> ts = [];
-			ts.AddRange(Keeper.GetStorages().Select(storage => UpdateResource(storage, token)));
-			foreach (var t in ts) await t;
+			await Task.WhenAll(Keeper.GetStorages().Select(storage => UpdateResource(storage, token)));
 			flag = true;
 		} else {
 			try {
 				using var httpClient = new HttpClient();
 				var responseContent = await httpClient.GetStringAsync(requestUriString, token);
 				var jObject = JsonConvert.DeserializeObject<JObject>(responseContent);
+				
 				List<Task> ts = [];
 				foreach (var storage in Keeper.GetStorages()
 					         .Where(s => jObject[s.ResourceFileName.Split('.')[0]]!.ToObject<int>() > s.Version)) {
