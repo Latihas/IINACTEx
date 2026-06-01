@@ -45,9 +45,10 @@ internal partial class MiniParseEventSource : EventSourceBase {
 			if (!Config.OverlayData.ContainsKey(key))
 				return null;
 
-			var ret = new JObject();
-			ret["key"] = key;
-			ret["data"] = Config.OverlayData[key];
+			var ret = new JObject {
+				["key"] = key,
+				["data"] = Config.OverlayData[key]
+			};
 			return ret;
 		});
 
@@ -205,11 +206,11 @@ internal partial class MiniParseEventSource : EventSourceBase {
 
 		if (encounter == null || combatant == null) return new JObject();
 
-		var obj = new JObject();
-
-		obj["type"] = "CombatData";
-		obj["Encounter"] = JObject.FromObject(encounter);
-		obj["Combatant"] = new JObject();
+		var obj = new JObject {
+			["type"] = "CombatData",
+			["Encounter"] = JObject.FromObject(encounter),
+			["Combatant"] = new JObject()
+		};
 
 		if (Config.SortKey != null && Config.SortKey != "") {
 			var factor = Config.SortDesc ? -1 : 1;

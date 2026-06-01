@@ -21,11 +21,11 @@ internal partial class JobGaugeMemory655 : JobGaugeMemory, IJobGaugeMemory655 {
 
 		var jobGaugeManager = GetJobGaugeManager();
 
-		var ret = new JobGaugeImpl();
-
-		ret.baseObject = jobGaugeManager;
-		ret.job = (JobGaugeJob)jobGaugeManager.ClassJobID;
-		ret.rawData = jobGaugeManager.GetRawGaugeData;
+		var ret = new JobGaugeImpl {
+			baseObject = jobGaugeManager,
+			job = (JobGaugeJob)jobGaugeManager.ClassJobID,
+			rawData = jobGaugeManager.GetRawGaugeData
+		};
 
 		switch (ret.job) {
 			case JobGaugeJob.WHM: ret.data = jobGaugeManager.WhiteMage; break;

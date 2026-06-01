@@ -60,6 +60,8 @@ public partial class FetchDependencies {
 		if (IsChinese && LanguagePreserve != 0 && LanguagePreserve != 1) patcher.ResourcePlugin(LanguagePreserve);
 	}
 
+	public string? GetFFXIV_ACT_PluginVersion() => new Patcher(PluginVersion, DependenciesDir).LogFilePluginVersion();
+
 	[GeneratedRegex(@"build_version\s*=\s*([0-9.]+)", RegexOptions.Multiline)]
 	private static partial Regex DieMoeBuildVersionRegex();
 

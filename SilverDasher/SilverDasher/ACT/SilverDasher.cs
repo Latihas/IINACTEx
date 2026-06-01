@@ -30,17 +30,19 @@ public class SilverDasher {
 	internal static IObjectTable ObjectTable;
 	private static IFramework Framework;
 	internal static INotificationManager NotificationManager;
+	internal static IDataManager DataManager;
 	private readonly List<Doppelganger> Doppelgangers = [];
 	internal static string Datadir;
 	public static readonly ConcurrentQueue<string> FileLogs = [];
 	internal static PluginStatus pluginStatus = default;
 
-	public SilverDasher(string datadir, IClientState clientState, IObjectTable objectTable, IFramework framework, INotificationManager notificationManager) {
+	public SilverDasher(string datadir, IClientState clientState, IObjectTable objectTable, IFramework framework, INotificationManager notificationManager, IDataManager dataManager) {
 		Datadir = datadir;
 		ClientState = clientState;
 		ObjectTable = objectTable;
 		Framework = framework;
 		NotificationManager = notificationManager;
+		DataManager = dataManager;
 		Instance = this;
 		SummonDoppelgangers();
 		StartLoop(tokenSource.Token);

@@ -212,8 +212,9 @@ public class EdgeTTSWindow : Window {
 				ImGui.TableNextColumn();
 				ImGui.SetNextItemWidth(-1);
 				if (ImGui.InputText("##To" + i, ref to, 100)) {
-					var newDict = new Dictionary<string, string>(config.TextReplacements);
-					newDict[replacement.Key] = to;
+					var newDict = new Dictionary<string, string>(config.TextReplacements) {
+						[replacement.Key] = to
+					};
 					_manager.UpdateConfig(c => c.TextReplacements = newDict);
 				}
 
@@ -241,8 +242,9 @@ public class EdgeTTSWindow : Window {
 				ImGui.EndDisabled();
 			} else {
 				if (ImGui.Button("添加")) {
-					var newDict = new Dictionary<string, string>(config.TextReplacements);
-					newDict[_newRuleFrom] = _newRuleTo;
+					var newDict = new Dictionary<string, string>(config.TextReplacements) {
+						[_newRuleFrom] = _newRuleTo
+					};
 					_manager.UpdateConfig(c => c.TextReplacements = newDict);
 					_newRuleFrom = "";
 					_newRuleTo = "";

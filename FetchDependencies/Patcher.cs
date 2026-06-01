@@ -65,6 +65,13 @@ public class Patcher(Version version, string workPath) {
 		logfile.WriteOut();
 	}
 
+	public string? LogFilePluginVersion() {
+		var logfile = new TargetAssembly(Path.Combine(WorkPath, "FFXIV_ACT_Plugin.Logfile.dll"));
+		var method = logfile.GetMethod("System.String FFXIV_ACT_Plugin.Logfile.LogFormat::FormatVersion()");
+		var ilProcessor = method.Body.GetILProcessor().Body.Instructions;
+		return ilProcessor.Last(il => il.OpCode == OpCodes.Ldstr).Operand.ToString();
+	}
+
 	public void ResourcePlugin(int LanguagePreserve) {
 		var resource = new TargetAssembly(Path.Combine(WorkPath, "FFXIV_ACT_Plugin.Resource.dll"));
 		var common = new TargetAssembly(Path.Combine(WorkPath, "FFXIV_ACT_Plugin.Common.dll"));

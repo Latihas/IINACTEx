@@ -244,9 +244,10 @@ public class PluginMain {
 		// オーバーレイ初期化
 		Overlays = [];
 		foreach (var overlayConfig in Config.Overlays) {
-			var parameters = new NamedParameterOverloads();
-			parameters["config"] = overlayConfig;
-			parameters["name"] = overlayConfig.Name;
+			var parameters = new NamedParameterOverloads {
+				["config"] = overlayConfig,
+				["name"] = overlayConfig.Name
+			};
 
 			var overlay = (IOverlay)_container.Resolve(overlayConfig.OverlayType, parameters);
 			if (overlay != null) {

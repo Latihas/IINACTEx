@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Net;
 using System.Net.Http;
@@ -76,6 +77,7 @@ internal class TextToSpeechProvider : IDisposable {
 
 	private static readonly Dictionary<string, DateTime> time = new();
 
+	[SuppressMessage("ReSharper", "MemberCanBePrivate.Global")]
 	public void Speak(string message) {
 		if (string.IsNullOrEmpty(message)) return;
 		lock (time) {

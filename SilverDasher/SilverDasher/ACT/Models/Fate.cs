@@ -23,7 +23,7 @@ public class Fate : GameDynamicObject {
 		}
 	}
 
-	private Fate() {
+	internal Fate() {
 		TypeName = "fate";
 	}
 

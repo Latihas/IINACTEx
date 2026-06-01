@@ -1,8 +1,10 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
 using Advanced_Combat_Tracker;
 using PostNamazu.Common.Localization;
 using PostNamazu.TriggerHoster;
 
+// ReSharper disable once CheckNamespace
 namespace PostNamazu.Common;
 
 /// <summary>
@@ -15,6 +17,7 @@ public class PluginIntegrationManager {
 	/// <summary>
 	///     初始化所有插件集成
 	/// </summary>
+	[SuppressMessage("ReSharper", "UnusedMember.Global")]
 	public void InitializeIntegrations() {
 		InitializeTriggerIntegration();
 		InitializeOverlayIntegration();
@@ -23,6 +26,7 @@ public class PluginIntegrationManager {
 	/// <summary>
 	///     反初始化所有插件集成
 	/// </summary>
+	[SuppressMessage("ReSharper", "UnusedMember.Global")]
 	public void DeInitializeIntegrations() {
 		_overlayHoster?.DeInit();
 		_triggerHoster?.DeInit();

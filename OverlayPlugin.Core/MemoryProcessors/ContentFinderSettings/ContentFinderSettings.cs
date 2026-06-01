@@ -102,8 +102,9 @@ public abstract class ContentFinderSettingsMemory : IContentFinderSettingsMemory
 	}
 
 	public ContentFinderSettings GetContentFinderSettings() {
-		var settings = new ContentFinderSettingsImpl();
-		settings.inContentFinderContent = GetInContentFinderContent();
+		var settings = new ContentFinderSettingsImpl {
+			inContentFinderContent = GetInContentFinderContent()
+		};
 
 		// Don't bother fetching other info if we're not in a valid ContentFinder scope
 		if (!settings.inContentFinderContent) {

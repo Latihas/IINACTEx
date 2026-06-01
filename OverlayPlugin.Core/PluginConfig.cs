@@ -266,9 +266,10 @@ public class PluginConfig : IPluginConfig {
 		}
 
 		using (var stream = new StreamWriter(filePath)) {
-			var serializer = new JsonSerializer();
-			serializer.Formatting = Formatting.Indented;
-			serializer.TypeNameHandling = TypeNameHandling.Auto;
+			var serializer = new JsonSerializer {
+				Formatting = Formatting.Indented,
+				TypeNameHandling = TypeNameHandling.Auto
+			};
 			serializer.Serialize(stream, this);
 		}
 
@@ -278,8 +279,9 @@ public class PluginConfig : IPluginConfig {
 	private void LoadJson(string configPath) {
 		using (var stream = new StreamReader(configPath)) {
 			var reader = new JsonTextReader(stream);
-			var serializer = new JsonSerializer();
-			serializer.TypeNameHandling = TypeNameHandling.Auto;
+			var serializer = new JsonSerializer {
+				TypeNameHandling = TypeNameHandling.Auto
+			};
 			serializer.Populate(reader, this);
 		}
 

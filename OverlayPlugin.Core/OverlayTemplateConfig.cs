@@ -47,8 +47,9 @@ public class OverlayPreset : IOverlayPreset {
 		var qs = HttpUtility.ParseQueryString(source.Query);
 		qs.Set(parameter, value);
 
-		var uriBuilder = new UriBuilder(source);
-		uriBuilder.Query = HttpUtility.UrlDecode(qs.ToString());
+		var uriBuilder = new UriBuilder(source) {
+			Query = HttpUtility.UrlDecode(qs.ToString())
+		};
 		return uriBuilder.Uri;
 	}
 }

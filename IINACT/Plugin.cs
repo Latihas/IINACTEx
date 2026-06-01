@@ -106,7 +106,7 @@ public sealed class Plugin : IDalamudPlugin {
 	private static EdgeTTSWindow EdgeTTSWindow = null!;
 	public static Plugin Instance;
 	private const int LatestConfigVersion = 3;
-	private readonly FetchDependencies.FetchDependencies _fetchDependencies;
+	internal readonly FetchDependencies.FetchDependencies fetchDependencies;
 	// ReSharper disable once MemberCanBePrivate.Global
 	public readonly TinyIoCContainer Container;
 	public string PluginAssemblyDirectory => PluginInterface.AssemblyLocation.Directory!.ToString();
@@ -152,8 +152,8 @@ public sealed class Plugin : IDalamudPlugin {
 		HttpClient = new HttpClient();
 		if (Configuration.Version != LatestConfigVersion)
 			Directory.GetFiles(PluginAssemblyDirectory, "FFXIV_ACT_Plugin*.dll").ToList().ForEach(File.Delete);
-		_fetchDependencies = new FetchDependencies.FetchDependencies(Version, PluginAssemblyDirectory, DataManager.Language.ToString() == "ChineseSimplified", 5, HttpClient, Log);
-		_fetchDependencies.GetFfxivPlugin(Configuration.FFXIV_ACT_Plugin_CN_Update);
+		fetchDependencies = new FetchDependencies.FetchDependencies(Version, PluginAssemblyDirectory, DataManager.Language.ToString() == "ChineseSimplified", 5, HttpClient, Log);
+		fetchDependencies.GetFfxivPlugin(Configuration.FFXIV_ACT_Plugin_CN_Update);
 		Configuration.FFXIV_ACT_Plugin_CN_Update = false;
 		LogTick("Dependencies Fetched");
 		if (!Directory.Exists(PluginActScriptDirectory)) Directory.CreateDirectory(PluginActScriptDirectory);
@@ -296,7 +296,7 @@ public sealed class Plugin : IDalamudPlugin {
 
 	private void CheckCnUpdate(IFramework _) {
 		if (!((DateTime.Now - lastCnUpdateCheck).TotalMinutes > 10)) return;
-		Configuration.FFXIV_ACT_Plugin_CN_Update = _fetchDependencies.CheckCnUpdate();
+		Configuration.FFXIV_ACT_Plugin_CN_Update = fetchDependencies.CheckCnUpdate();
 		Configuration.Save();
 		lastCnUpdateCheck = DateTime.Now;
 	}

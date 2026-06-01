@@ -1,6 +1,6 @@
+using System;
 using System.IO;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using SilverDasher.ACT.Doppelgangers;
 
 namespace SilverDasher.ACT.Storages;
@@ -13,14 +13,13 @@ internal abstract class BaseStorage(Keeper keeper) {
 	internal abstract string ResourceFileName { get; }
 
 	internal abstract void Load();
-
 	internal void LoadData<DataType>(string path, out DataType data) where DataType : new() {
 		try {
-			dynamic jObject = JsonConvert.DeserializeObject<JObject>(File.ReadAllText(Path.Combine(Utils.GetPluginDirectory(), "data", path)));
-			Version = jObject.version;
-			data = jObject.data.ToObject<DataType>();
-		} catch {
-			SilverDasher.Instance.Logger.Log($"加载本地数据文件{path}失败，本地数据文件很可能已损坏。读取了空数据，稍后尝试更新。如失败请重装插件，后续无报错可正常使用。");
+			var jObject = JsonConvert.DeserializeObject<DataJson<DataType>>(File.ReadAllText(Path.Combine(Utils.GetPluginDirectory(), "data", path)))!;
+			Version = int.Parse(jObject.version);
+			data = jObject.data;
+		} catch (Exception e) {
+			SilverDasher.Instance.Logger.Log($"加载本地数据文件{path}失败，本地数据文件很可能已损坏。读取了空数据，稍后尝试更新。如失败请重装插件，后续无报错可正常使用。{e}");
 			data = new DataType();
 			Version = 10000000;
 		}
@@ -28,6 +27,11 @@ internal abstract class BaseStorage(Keeper keeper) {
 
 	// internal void Update() {
 	// }
+}
+
+internal class DataJson<DataType> {
+	public string version { get; set; }
+	public DataType data { get; set; }
 }
 
 internal abstract class BaseStorage<T, K>(Keeper kp) : BaseStorage(kp) {

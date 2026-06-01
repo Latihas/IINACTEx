@@ -119,10 +119,16 @@ public class MainWindow() : Window(WindowPrefix) {
 	}
 
 	private string? _windowName;
+	private string? FFXIV_ACT_PluginVersion {
+		get {
+			field ??= Instance.fetchDependencies.GetFFXIV_ACT_PluginVersion();
+			return field;
+		}
+	}
 
 	public override void Draw() {
 		WindowName = _windowName ??=
-			$"IINACTEx [{ApiVersion.NamespaceIdentifier}] [版本{Assembly.GetExecutingAssembly().GetName().Version?.ToString()}] [核心{Instance.Version}] [解析{typeof(FFXIV_ACT_Plugin.FFXIV_ACT_Plugin).Assembly.GetName().Version}({(Instance.Configuration.FFXIV_ACT_Plugin_CN_Update ? "解析插件可更新，请重新加载插件以更新" : "解析插件无更新")})]###IINACTEx";
+			$"IINACTEx [版本{Assembly.GetExecutingAssembly().GetName().Version?.ToString()}] [{ApiVersion.NamespaceIdentifier}] [核心{Instance.Version}] [解析{FFXIV_ACT_PluginVersion}{(Instance.Configuration.FFXIV_ACT_Plugin_CN_Update ? "(解析插件可更新，请重新加载插件以更新)" : "")}]###IINACTEx";
 		foreach (var p in ImGuiColor) ImGui.PushStyleColor(p.Key, p.Value);
 		foreach (var p in ImGuiVar) ImGui.PushStyleVar(p.Key, p.Value);
 		var time = (float)ImGui.GetTime();
@@ -315,7 +321,7 @@ public class MainWindow() : Window(WindowPrefix) {
 			CopyDirectoryContents(sourceDir, targetDir, true);
 		}
 		SilverDasherPlugin = new SilverDasher.ACT.SilverDasher(Instance.PluginActScriptDirectory,
-			ClientState, ObjectTable, Framework, NotificationManager);
+			ClientState, ObjectTable, Framework, NotificationManager, DataManager);
 	}
 
 	internal static bool DisableSilverDasher() {

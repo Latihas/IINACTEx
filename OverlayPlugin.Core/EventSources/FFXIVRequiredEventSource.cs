@@ -99,11 +99,12 @@ internal class FFXIVRequiredEventSource : EventSourceBase {
 			});
 
 			container.Resolve<NetworkParser>().OnOnlineStatusChanged += (_, e) => {
-				var obj = new JObject();
-				obj["type"] = OnlineStatusChangedEvent;
-				obj["target"] = e.Target;
-				obj["rawStatus"] = e.Status;
-				obj["status"] = StatusMap.GetValueOrDefault(e.Status, "Unknown");
+				var obj = new JObject {
+					["type"] = OnlineStatusChangedEvent,
+					["target"] = e.Target,
+					["rawStatus"] = e.Status,
+					["status"] = StatusMap.GetValueOrDefault(e.Status, "Unknown")
+				};
 
 				DispatchAndCacheEvent(obj);
 			};

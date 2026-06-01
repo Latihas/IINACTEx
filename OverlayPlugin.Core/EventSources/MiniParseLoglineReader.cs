@@ -70,14 +70,16 @@ internal partial class MiniParseEventSource : EventSourceBase {
 	}
 
 	private void sendEchoEvent(bool isImported, string type, string text) {
-		var message = new JObject();
-		message["isImported"] = isImported;
-		message["type"] = type;
-		message["message"] = text;
+		var message = new JObject {
+			["isImported"] = isImported,
+			["type"] = type,
+			["message"] = text
+		};
 
-		var e = new JObject();
-		e["type"] = "LogLine";
-		e["detail"] = message;
+		var e = new JObject {
+			["type"] = "LogLine",
+			["detail"] = message
+		};
 
 		DispatchEvent(e);
 	}
