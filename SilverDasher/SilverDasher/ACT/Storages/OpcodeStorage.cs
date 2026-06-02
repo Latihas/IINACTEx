@@ -9,7 +9,7 @@ using SilverDasher.ACT.Models;
 namespace SilverDasher.ACT.Storages;
 
 internal class OpcodeStorage(Keeper kp) : BaseStorage<int, OpcodeType>(kp) {
-	private List<Opcode> Opcodes = [];
+	private readonly List<Opcode> Opcodes = [];
 	private readonly Dictionary<OpcodeType, Opcode> OpcodeBytype = new();
 	private Dictionary<ushort, OpcodeType> TypeByOpcodeGlobal = new();
 	private Dictionary<ushort, OpcodeType> TypeByOpcodeCn = new();
@@ -32,34 +32,35 @@ internal class OpcodeStorage(Keeper kp) : BaseStorage<int, OpcodeType>(kp) {
 	internal override void Load() {
 		var c = SilverDasher.UnscramblerConstants;
 		var inst = OpcodeManager.Instance._opcodes[GameRegion.Chinese]["ActorControlSelf"];
-		Opcodes = [
-			new Opcode {
-				Name = "InitZone",
-				cnRaw = $"0x{c.InitZoneOpcode:X4}",
-				CnLength = c.InitZoneLength,
-				globalRaw = $"0x{c.InitZoneOpcode:X4}",
-				GlobalLength = c.InitZoneLength
-			},
-			new Opcode {
-				Name = "FateInfo",
-				cnRaw = $"0x{c.FateInfoOpcode:X4}",
-				CnLength = c.FateInfoLength,
-				globalRaw = $"0x{c.FateInfoOpcode:X4}",
-				GlobalLength = c.FateInfoLength
-			},
-			new Opcode {
-				Name = "ActorControlSelf",
-				cnRaw = $"0x{inst:X4}",
-				CnLength = c.ActorControlSelfLength,
-				globalRaw = $"0x{inst:X4}",
-				GlobalLength = c.ActorControlSelfLength,
-				PacketSubType = new Dictionary<string, int> {
-					["FateStart"] = c.FateStart,
-					["FateEnd"] = c.FateEnd,
-					["FateProgress"] = c.FateProgress
-				}
+		var a = c.InitZoneOpcode;
+		var bb = c.InitZoneLength;
+
+		Opcodes.Add(new Opcode {
+			Name = "InitZone",
+			cnRaw = $"0x{c.InitZoneOpcode:X4}",
+			CnLength = c.InitZoneLength,
+			globalRaw = $"0x{c.InitZoneOpcode:X4}",
+			GlobalLength = c.InitZoneLength
+		});
+		Opcodes.Add(new Opcode {
+			Name = "FateInfo",
+			cnRaw = $"0x{c.FateInfoOpcode:X4}",
+			CnLength = c.FateInfoLength,
+			globalRaw = $"0x{c.FateInfoOpcode:X4}",
+			GlobalLength = c.FateInfoLength
+		});
+		Opcodes.Add(new Opcode {
+			Name = "ActorControlSelf",
+			cnRaw = $"0x{inst:X4}",
+			CnLength = c.ActorControlSelfLength,
+			globalRaw = $"0x{inst:X4}",
+			GlobalLength = c.ActorControlSelfLength,
+			PacketSubType = new Dictionary<string, int> {
+				["FateStart"] = c.FateStart,
+				["FateEnd"] = c.FateEnd,
+				["FateProgress"] = c.FateProgress
 			}
-		];
+		});
 		TypeByOpcodeGlobal = new Dictionary<ushort, OpcodeType>();
 		TypeByOpcodeCn = new Dictionary<ushort, OpcodeType>();
 		foreach (var opcode in Opcodes) {

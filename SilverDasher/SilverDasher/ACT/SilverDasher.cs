@@ -45,12 +45,12 @@ public class SilverDasher {
 		Framework = framework;
 		NotificationManager = notificationManager;
 		DataManager = dataManager;
+		UnscramblerConstants = constants;
 		Instance = this;
 		SummonDoppelgangers();
 		StartLoop(tokenSource.Token);
 		Framework.Update += WriteLog;
 		ClientState.ZoneInit += ZI;
-		UnscramblerConstants = constants;
 	}
 
 	private static void WriteLog(IFramework _) {
