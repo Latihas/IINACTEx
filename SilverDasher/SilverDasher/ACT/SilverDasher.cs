@@ -11,6 +11,7 @@ using Dalamud.Plugin.Services;
 using SilverDasher.ACT.Doppelgangers;
 using SilverDasher.ACT.Storages;
 using SilverDasher.ACT.Views;
+using Unscrambler.Constants;
 
 namespace SilverDasher.ACT;
 
@@ -35,8 +36,9 @@ public class SilverDasher {
 	internal static string Datadir;
 	public static readonly ConcurrentQueue<string> FileLogs = [];
 	internal static PluginStatus pluginStatus = default;
+	internal static VersionConstants UnscramblerConstants;
 
-	public SilverDasher(string datadir, IClientState clientState, IObjectTable objectTable, IFramework framework, INotificationManager notificationManager, IDataManager dataManager) {
+	public SilverDasher(string datadir, IClientState clientState, IObjectTable objectTable, IFramework framework, INotificationManager notificationManager, IDataManager dataManager, VersionConstants constants) {
 		Datadir = datadir;
 		ClientState = clientState;
 		ObjectTable = objectTable;
@@ -48,6 +50,7 @@ public class SilverDasher {
 		StartLoop(tokenSource.Token);
 		Framework.Update += WriteLog;
 		ClientState.ZoneInit += ZI;
+		UnscramblerConstants = constants;
 	}
 
 	private static void WriteLog(IFramework _) {

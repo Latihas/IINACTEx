@@ -9,7 +9,6 @@ using Machina.FFXIV.Dalamud;
 using Machina.FFXIV.Headers.Opcodes;
 using Unscrambler;
 using Unscrambler.Constants;
-using Unscrambler.Unscramble;
 using Unscrambler.Unscramble.Versions;
 using static IINACT.Plugin;
 
@@ -28,7 +27,7 @@ public unsafe class ZoneDownHookManager : IDisposable {
 	private readonly SimpleBuffer buffer;
 
 	private readonly VersionConstants versionConstants;
-	private readonly IUnscrambler unscrambler;
+	public readonly Unscrambler73 unscrambler;
 
 	public ZoneDownHookManager() {
 		buffer = new SimpleBuffer(1024 * 1024);
@@ -37,37 +36,37 @@ public unsafe class ZoneDownHookManager : IDisposable {
 
 		var version = GetRunningGameVersion();
 		if (VersionConstants.Constants.ContainsKey(version)) {
-			versionConstants = VersionConstants.ForGameVersion(version);
-			unscrambler = UnscramblerFactory.ForGameVersion(version);
-		} else {
-			Log.Warning("[ZoneDownHookManager] Creating fallback Unscrambler constants dynamically");
-			var onReceivePacketAddress = PacketDispatcher.GetOnReceivePacketAddress();
-			Log.Debug($"[ZoneDownHookManager] GetOnReceivePacketAddress: {onReceivePacketAddress:X}");
-			var opcodeKeyTableIns = MultiSigScanner.Scan(onReceivePacketAddress, 0x1000, OpcodeKeyTableSignature);
-			var bytes = new byte[13];
-			Marshal.Copy(opcodeKeyTableIns, bytes, 0, 13);
-			var opcodeKeyTableOffset = BitConverter.ToUInt32(bytes, 9);
-			var opcodeKeyTableAddress = moduleBase + (nint)opcodeKeyTableOffset;
-			var searchRange = 0x1000;
-			var memory = new byte[searchRange];
-			Marshal.Copy(opcodeKeyTableAddress, memory, 0, searchRange);
-			var moduleSize = multiScanner.Module.ModuleMemorySize;
-			var opcodeKeyTableSize = 0;
-			while (!IsModulePointer(memory, opcodeKeyTableSize, moduleBase, moduleSize)) {
-				opcodeKeyTableSize += 4;
-				if (opcodeKeyTableSize > searchRange)
-					throw new Exception("Opcode key table size is too large");
-			}
-			if (memory[opcodeKeyTableSize - 1] == 0 && memory[opcodeKeyTableSize - 2] == 0 && memory[opcodeKeyTableSize - 3] == 0 && memory[opcodeKeyTableSize - 4] == 0) {
-				Log.Debug("Uneven padded length for opcode key table");
-				opcodeKeyTableSize -= 4;
-			}
-			Log.Debug(
-				$"[ZoneDownHookManager] opcodeKeyTableOffset {opcodeKeyTableOffset:X}, opcodeKeyTableSize {opcodeKeyTableSize:X}");
-			versionConstants = GetFallbackVersionConstant(opcodeKeyTableOffset, opcodeKeyTableSize);
-			unscrambler = new Unscrambler73();
-			unscrambler.Initialize(versionConstants);
+			// versionConstants = VersionConstants.ForGameVersion(version);
+			// unscrambler = UnscramblerFactory.ForGameVersion(version);
+			throw new Exception("Unknown RunningGameVersion version: " + version);
 		}
+		Log.Warning("[ZoneDownHookManager] Creating fallback Unscrambler constants dynamically");
+		var onReceivePacketAddress = PacketDispatcher.GetOnReceivePacketAddress();
+		Log.Debug($"[ZoneDownHookManager] GetOnReceivePacketAddress: {onReceivePacketAddress:X}");
+		var opcodeKeyTableIns = MultiSigScanner.Scan(onReceivePacketAddress, 0x1000, OpcodeKeyTableSignature);
+		var bytes = new byte[13];
+		Marshal.Copy(opcodeKeyTableIns, bytes, 0, 13);
+		var opcodeKeyTableOffset = BitConverter.ToUInt32(bytes, 9);
+		var opcodeKeyTableAddress = moduleBase + (nint)opcodeKeyTableOffset;
+		var searchRange = 0x1000;
+		var memory = new byte[searchRange];
+		Marshal.Copy(opcodeKeyTableAddress, memory, 0, searchRange);
+		var moduleSize = multiScanner.Module.ModuleMemorySize;
+		var opcodeKeyTableSize = 0;
+		while (!IsModulePointer(memory, opcodeKeyTableSize, moduleBase, moduleSize)) {
+			opcodeKeyTableSize += 4;
+			if (opcodeKeyTableSize > searchRange)
+				throw new Exception("Opcode key table size is too large");
+		}
+		if (memory[opcodeKeyTableSize - 1] == 0 && memory[opcodeKeyTableSize - 2] == 0 && memory[opcodeKeyTableSize - 3] == 0 && memory[opcodeKeyTableSize - 4] == 0) {
+			Log.Debug("Uneven padded length for opcode key table");
+			opcodeKeyTableSize -= 4;
+		}
+		Log.Debug(
+			$"[ZoneDownHookManager] opcodeKeyTableOffset {opcodeKeyTableOffset:X}, opcodeKeyTableSize {opcodeKeyTableSize:X}");
+		versionConstants = GetFallbackVersionConstant(opcodeKeyTableOffset, opcodeKeyTableSize);
+		unscrambler = new Unscrambler73();
+		unscrambler.Initialize(versionConstants);
 
 		var rawOpcodeKeyTable = new byte[versionConstants.OpcodeKeyTableSize];
 		opcodeKeyTable = new int[rawOpcodeKeyTable.Length / 4];

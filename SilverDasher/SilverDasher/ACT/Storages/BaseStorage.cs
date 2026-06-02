@@ -10,7 +10,7 @@ internal abstract class BaseStorage(Keeper keeper) {
 
 	internal int Version;
 
-	internal abstract string ResourceFileName { get; }
+	internal abstract string? ResourceFileName { get; }
 
 	internal abstract void Load();
 	internal void LoadData<DataType>(string path, out DataType data) where DataType : new() {
@@ -36,9 +36,6 @@ internal class DataJson<DataType> {
 
 internal abstract class BaseStorage<T, K>(Keeper kp) : BaseStorage(kp) {
 	internal abstract T Get(K id);
-
-	// internal abstract IEnumerable<K> Keys();
-
 	internal abstract bool Contains(K id);
 
 	internal bool TryGet(K id, out T item) {

@@ -7,11 +7,9 @@
 	<ItemGroup>
 		<PackageReference Include="MQTTnet" Version="5.1.0.1559"/>
 		<Reference Include="FFXIV_ACT_Plugin">
-			<HintPath>..\..\external_dependencies\FFXIV_ACT_Plugin.dll</HintPath>
+			<HintPath>../../external_dependencies/FFXIV_ACT_Plugin.dll</HintPath>
+			<Private>False</Private>
 		</Reference>
-		<!--		<Reference Include="FFXIV_ACT_Plugin">-->
-		<!--		  <HintPath>..\..\external_dependencies\FFXIV_ACT_Plugin.dll</HintPath>-->
-		<!--		</Reference>-->
 		<Reference Include="FFXIV_ACT_Plugin.Common">
 			<HintPath>../../external_dependencies/SDK/FFXIV_ACT_Plugin.Common.dll</HintPath>
 			<Private>False</Private>
@@ -21,6 +19,7 @@
 		</Content>
 		<ProjectReference Include="../../machina/Machina.FFXIV/Machina.FFXIV.csproj"/>
 		<ProjectReference Include="../../NotACT/NotACT.csproj"/>
+		<ProjectReference Include="../../Unscrambler/Unscrambler/Unscrambler.csproj"/>
 	</ItemGroup>
 	<PropertyGroup Condition="'$(GITHUB_ACTIONS)' == ''">
 		<DalamudLibPath>$(appdata)/XIVLauncherCN/addon/Hooks/dev</DalamudLibPath>

@@ -321,7 +321,8 @@ public class MainWindow() : Window(WindowPrefix) {
 			CopyDirectoryContents(sourceDir, targetDir, true);
 		}
 		SilverDasherPlugin = new SilverDasher.ACT.SilverDasher(Instance.PluginActScriptDirectory,
-			ClientState, ObjectTable, Framework, NotificationManager, DataManager);
+			ClientState, ObjectTable, Framework, NotificationManager, DataManager,
+			Instance.ZoneDownHookManager.unscrambler._constants);
 	}
 
 	internal static bool DisableSilverDasher() {

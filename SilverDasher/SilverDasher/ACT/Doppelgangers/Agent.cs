@@ -24,7 +24,6 @@ internal class Agent(SilverDasher plugin) : Doppelganger(plugin) {
 	}
 
 	public async Task UpdateData(bool force, CancellationToken token) {
-		var requestUriString = $"https://garlandtools.cn/silv/versions.json?t={DateTime.Now.Ticks}";
 		Log($"正在{(force ? "强制" : "检查")}更新资源文件。");
 		var flag = false;
 		Directory.CreateDirectory(Path.Combine(Utils.GetPluginDirectory(), "data"));
@@ -34,16 +33,16 @@ internal class Agent(SilverDasher plugin) : Doppelganger(plugin) {
 		} else {
 			try {
 				using var httpClient = new HttpClient();
-				var responseContent = await httpClient.GetStringAsync(requestUriString, token);
-				var jObject = JsonConvert.DeserializeObject<JObject>(responseContent);
-				
+				var responseContent = await httpClient.GetStringAsync(
+					$"https://garlandtools.cn/silv/versions.json?t={DateTime.Now.Ticks}", token);
+				var jObject = JsonConvert.DeserializeObject<JObject>(responseContent)!;
 				List<Task> ts = [];
 				foreach (var storage in Keeper.GetStorages()
-					         .Where(s => jObject[s.ResourceFileName.Split('.')[0]]!.ToObject<int>() > s.Version)) {
+					         .Where(s => s.ResourceFileName != null && jObject[s.ResourceFileName.Split('.')[0]]!.ToObject<int>() > s.Version)) {
 					ts.Add(UpdateResource(storage, token));
 					if (storage is FateStorage or MobStorage) flag = true;
 				}
-				foreach (var t in ts) await t;
+				await Task.WhenAll(ts);
 				Log("检查更新资源文件完毕。");
 			} catch (Exception ex) {
 				Log(ex.ToString());
@@ -58,6 +57,7 @@ internal class Agent(SilverDasher plugin) : Doppelganger(plugin) {
 	}
 
 	private async Task UpdateResource(BaseStorage storage, CancellationToken token) {
+		if (storage.ResourceFileName == null) return;
 		var url = $"https://garlandtools.cn/silv/{storage.ResourceFileName}?t={DateTime.Now.Ticks}";
 		Log($"正在更新资源文件{storage.ResourceFileName}。");
 		try {

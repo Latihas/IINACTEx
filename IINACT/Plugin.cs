@@ -81,7 +81,7 @@ public sealed class Plugin : IDalamudPlugin {
 	internal static TextToSpeechProvider TextToSpeechProvider { get; private set; }
 	internal static MainWindow MainWindow = null!;
 	internal static FileDialogManager FileDialogManager { get; private set; }
-	private ZoneDownHookManager ZoneDownHookManager { get; set; }
+	internal ZoneDownHookManager ZoneDownHookManager { get; set; }
 	private IpcProviders IpcProviders { get; }
 
 	public FfxivActPluginWrapper FfxivActPluginWrapper { get; set; }
