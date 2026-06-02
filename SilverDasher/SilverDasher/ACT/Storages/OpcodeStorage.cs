@@ -32,9 +32,6 @@ internal class OpcodeStorage(Keeper kp) : BaseStorage<int, OpcodeType>(kp) {
 	internal override void Load() {
 		var c = SilverDasher.UnscramblerConstants;
 		var inst = OpcodeManager.Instance._opcodes[GameRegion.Chinese]["ActorControlSelf"];
-		var a = c.InitZoneOpcode;
-		var bb = c.InitZoneLength;
-
 		Opcodes.Add(new Opcode {
 			Name = "InitZone",
 			cnRaw = $"0x{c.InitZoneOpcode:X4}",

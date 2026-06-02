@@ -24,9 +24,6 @@ internal abstract class BaseStorage(Keeper keeper) {
 			Version = 10000000;
 		}
 	}
-
-	// internal void Update() {
-	// }
 }
 
 internal class DataJson<DataType> {

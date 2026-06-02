@@ -14,27 +14,7 @@ internal class MobStorage(Keeper kp) : BaseStorage<HuntMob>(kp) {
 
 	internal override HuntMob Get(int id) => HuntByBnpcNameID[id];
 
-	// internal IEnumerable<int> Keys() => HuntByBnpcNameID.Keys;
-
-	// internal List<int> GetHuntsByPatchRank(int patch, Rank rank) {
-	//     HuntsByPatchRank.TryGetValue((patch, rank), out var value);
-	//     return value;
-	// }
-
 	internal override bool Contains(int id) => HuntByBnpcNameID.ContainsKey(id);
-
-	internal List<string> Query(int patch = 0, Rank rank = Rank.Unknown, int map = 0) {
-		List<string> list = [];
-		foreach (var key in HuntByBnpcNameID.Keys) {
-			var huntMob = HuntByBnpcNameID[key];
-			var flag = true;
-			if (patch != 0) flag = huntMob.Patch == patch;
-			if (rank != Rank.Unknown) flag = huntMob.Rank == rank;
-			if (map != 0) flag = huntMob.TerritoryID == map;
-			if (flag) list.Add(key.ToString());
-		}
-		return list;
-	}
 
 	internal static HuntState GetState(int health) => health switch {
 		100 => HuntState.Healthy,
@@ -42,7 +22,6 @@ internal class MobStorage(Keeper kp) : BaseStorage<HuntMob>(kp) {
 		> 0 => HuntState.Dying,
 		_ => HuntState.Died
 	};
-
 
 	internal static string GetStateName(HuntState state) => state switch {
 		HuntState.Healthy => "健康",
