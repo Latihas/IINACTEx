@@ -330,7 +330,7 @@ public partial class FormActMain : Form, ISynchronizeInvoke {
 	}
 
 	private void LogReader(IFramework _) {
-		if (!PluginInitialized) return;
+		// if (!PluginInitialized) return;
 		var logOutput = (LogOutput)FfxivPlugin!._dataCollection._logOutput;
 		lock (logOutput._LogQueueLock) {
 			while (logOutput._LogQueue.TryDequeue(out var line))

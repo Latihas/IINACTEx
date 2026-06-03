@@ -7,7 +7,7 @@ public static partial class ActGlobals {
 	public static readonly bool longDuration = false;
 	public static readonly bool blockIsHit = true;
 	public static readonly bool restrictToAll = false;
-	public static readonly string charName = "YOU";
+	public static string charName = "YOU";
 	public static readonly string eDSort = "EncDPS";
 	public static readonly string mDSort = "Damage";
 	public static readonly string aTSort = "Time";

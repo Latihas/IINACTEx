@@ -215,21 +215,21 @@ public class LineCombatant : IDisposable {
 		// Check combatants currently in memory first
 		foreach (var combatant in combatants.Where(combatant => filter.Length <= 0 || filter.Contains(combatant.ID))) {
 			// If this is a new combatant, always write a line for it
-			if (!combatantStateMap.TryGetValue(combatant.ID, out var value)) {
-				combatantStateMap[combatant.ID] = new CombatantStateInfo {
+			if (!combatantStateMap.TryGetValue(combatant.ID, out var oldState)) {
+				var state = new CombatantStateInfo {
 					lastUpdated = now,
-					combatant = combatant
+					combatant = combatant,
 				};
-				WriteLine(
-					CombatantMemoryChangeType.Add,
-					combatant.ID,
-					string.Join("", CombatantChangeCriteria.AllFields.Select(fi => FormatFieldChange(fi, combatant, true))));
+				// It's possible that another thread has already added this combatant since we checked
+				if (combatantStateMap.TryAdd(combatant.ID, state)) 
+					WriteLine(CombatantMemoryChangeType.Add, combatant.ID,
+						string.Join("", CombatantChangeCriteria.AllFields.Select((fi) => FormatFieldChange(fi, combatant, true))));
 				continue;
 			}
-
-			var oldCombatant = value.combatant;
-			var lastUpdatedDiff = (now - combatantStateMap[combatant.ID].lastUpdated).TotalMilliseconds;
+			var oldCombatant = oldState.combatant;
+			var lastUpdatedDiff = (now - oldState.lastUpdated).TotalMilliseconds;
 			var changed = new HashSet<FieldInfo>();
+
 
 			// Check position/heading first since it has a custom delay timing with threshold
 			// and custom behavior (all position data is written)

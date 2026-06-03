@@ -8,6 +8,7 @@ using System.Globalization;
 using System.Linq;
 using System.Numerics;
 using System.Threading;
+using System.Threading.Tasks;
 using Advanced_Combat_Tracker;
 using Dalamud.Bindings.ImGui;
 using Dalamud.Bindings.ImPlot;
@@ -685,14 +686,14 @@ public partial class OverlayWindow {
 	}
 
 	private void DrawGraph() {
-		lock (_textureLock) {
-			if (_currentTexture != null) {
-				var graphSize = ImGui.GetContentRegionAvail();
-				ImGui.Image(_currentTexture.Handle, graphSize);
-			} else {
-				ImGui.Text("No graph data");
+			lock (_textureLock) {
+				if (_currentTexture != null) {
+					var graphSize = ImGui.GetContentRegionAvail();
+					ImGui.Image(_currentTexture.Handle, graphSize);
+				} else {
+					ImGui.Text("No graph data");
+				}
 			}
-		}
 	}
 
 	private void PopulateTreeView(TreeNodeData? parentNode = null) {
@@ -821,10 +822,12 @@ public partial class OverlayWindow {
 	private void LoadNodeData() {
 		if ((DateTime.Now - lastUpdate).TotalSeconds < Instance.Configuration.ACTUpdateInterval) return;
 		if (Instance.Configuration.UseActPic) {
-			lock (_textureLock) {
-				_currentTexture?.Dispose();
-				_currentTexture = null;
-			}
+			Task.Run(() => {
+				lock (_textureLock) {
+					_currentTexture?.Dispose();
+					_currentTexture = null;
+				}
+			});
 			lastUpdate = DateTime.Now;
 		}
 		PopulateTreeView();
@@ -941,10 +944,12 @@ public partial class OverlayWindow {
 	private DateTime lastUpdate = DateTime.MinValue;
 
 	private void UpdateGraphTexture(Bitmap bitmap) {
-		lock (_textureLock) {
-			_currentTexture?.Dispose();
-			_currentTexture = Bitmap2Texture(bitmap);
-		}
+		Task.Run(() => {
+			lock (_textureLock) {
+				_currentTexture?.Dispose();
+				_currentTexture = Bitmap2Texture(bitmap);
+			}
+		});
 	}
 
 	public static unsafe IDalamudTextureWrap Bitmap2Texture(Bitmap bitmap) {

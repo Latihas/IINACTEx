@@ -571,24 +571,19 @@ public class MainWindow() : Window(WindowPrefix) {
 			Instance.Configuration.Save();
 		}
 
-        ImGui.Spacing();
-        ImGui.Separator();
-        ImGui.Spacing();
-
-        var playerCharacterName = Plugin.Configuration.PlayerCharacterName;
-        ImGui.SetNextItemWidth(elementWidth);
-        if (ImGui.InputText("Player name", ref playerCharacterName, 100))
-        {
-            Plugin.Configuration.PlayerCharacterName = playerCharacterName;
-            Plugin.Configuration.Save();
-        }
-
-		if (!showDebug) return;
-
 		ImGui.Spacing();
 		ImGui.Separator();
 		ImGui.Spacing();
-
+		var playerCharacterName = Instance.Configuration.PlayerCharacterName;
+		ImGui.SetNextItemWidth(elementWidth);
+		if (ImGui.InputText("Player name", ref playerCharacterName, 100)) {
+			Instance.Configuration.PlayerCharacterName = playerCharacterName;
+			Instance.Configuration.Save();
+		}
+		if (!showDebug) return;
+		ImGui.Spacing();
+		ImGui.Separator();
+		ImGui.Spacing();
 		var simulateIndividualDoTCrits = Instance.Configuration.SimulateIndividualDoTCrits;
 		if (ImGui.Checkbox("模拟单体 DoT 暴击", ref simulateIndividualDoTCrits)) {
 			Instance.Configuration.SimulateIndividualDoTCrits = simulateIndividualDoTCrits;

@@ -32,7 +32,7 @@ public partial class FetchDependencies {
 	internal static IPluginLog Log;
 	public static string RemoteDieMoeBuildVersion = "";
 
-	public bool CheckCnUpdate() => IsChinese && NeedsUpdate(Path.Combine(DependenciesDir, "FFXIV_ACT_Plugin.dll"));
+	public bool CheckCnUpdate(IPluginLog log) => IsChinese && NeedsUpdate(Path.Combine(DependenciesDir, "FFXIV_ACT_Plugin.dll"));
 
 	public void GetFfxivPlugin(bool canUpdate) {
 		var pluginPath = Path.Combine(DependenciesDir, "FFXIV_ACT_Plugin.dll");
@@ -79,7 +79,8 @@ public partial class FetchDependencies {
 				}
 				RemoteDieMoeBuildVersion = buildVersion;
 				return true;
-			} catch {
+			} catch(Exception e)  {
+				Log.Error(e.ToString());
 				return true;
 			}
 		}
@@ -98,9 +99,9 @@ public partial class FetchDependencies {
 				return false;
 			}
 			RemoteDieMoeBuildVersion = buildVersion;
-			var localVersion = plugin.GetDieMoeBuildVersion();
-			return buildVersion != localVersion;
-		} catch {
+			return buildVersion != plugin.GetDieMoeBuildVersion();
+		} catch (Exception e) {
+			Log.Error(e.ToString());
 			return false;
 		}
 	}

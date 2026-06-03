@@ -64,8 +64,8 @@ public class Configuration : IPluginConfiguration {
 	}
 	public string PlayerCharacterName
 	{
-		get => Advanced_Combat_Tracker.ActGlobals.charName;
-		set => Advanced_Combat_Tracker.ActGlobals.charName = string.IsNullOrEmpty(value) ? "YOU" : value;
+		get => ActGlobals.charName;
+		set => ActGlobals.charName = string.IsNullOrEmpty(value) ? "YOU" : value;
 	}
 	public List<string> ActScriptsEnabled { get; set; } = [];
     public int Version { get; set; } = 1;

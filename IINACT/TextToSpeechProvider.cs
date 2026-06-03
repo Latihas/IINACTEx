@@ -126,7 +126,7 @@ internal class TextToSpeechProvider : IDisposable {
 
 	private void SpeakGoogle(string message) {
 		var query = WebUtility.UrlEncode(message);
-		var lang = Configuration.GoogleTtsLanguage;
+		var lang = Instance.Configuration.GoogleTtsLanguage;
 		if (string.IsNullOrWhiteSpace(lang)) lang = "en";
 		var url = $"https://translate.google.com/translate_tts?ie=UTF-8&client=tw-ob&tl={lang}&q={query}";
 		var mp3Data = client.GetByteArrayAsync(url).Result;

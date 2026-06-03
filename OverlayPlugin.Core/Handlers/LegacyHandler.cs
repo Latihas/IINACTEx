@@ -3,18 +3,12 @@ using Newtonsoft.Json.Linq;
 
 namespace RainbowMage.OverlayPlugin.Handlers;
 
-internal abstract class LegacyHandler : IHandler, IEventReceiver {
-	public string Name { get; }
-	protected ILogger Logger { get; }
-	private EventDispatcher Dispatcher { get; }
-	private FFXIVRepository Repository { get; }
-
-	protected LegacyHandler(string name, ILogger logger, EventDispatcher eventDispatcher, FFXIVRepository repository) {
-		Name = name;
-		Logger = logger;
-		Dispatcher = eventDispatcher;
-		Repository = repository;
-	}
+internal abstract class LegacyHandler(string name, ILogger logger, EventDispatcher eventDispatcher, FFXIVRepository repository)
+	: IHandler, IEventReceiver {
+	public string Name { get; } = name;
+	protected ILogger Logger { get; } = logger;
+	private EventDispatcher Dispatcher { get; } = eventDispatcher;
+	private FFXIVRepository Repository { get; } = repository;
 
 	protected void Start() {
 		Dispatcher.Subscribe("CombatData", this);
@@ -26,7 +20,7 @@ internal abstract class LegacyHandler : IHandler, IEventReceiver {
 			type = "broadcast",
 			msgtype = "SendCharName",
 			msg = new {
-				charName = Repository.GetPlayerName() ?? "YOU",
+				charName = Repository.GetPlayerName() ?? ActGlobals.charName,
 				charID = Repository.GetPlayerID()
 			}
 		}));

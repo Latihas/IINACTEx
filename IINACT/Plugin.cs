@@ -294,10 +294,12 @@ public sealed class Plugin : IDalamudPlugin {
 
 	internal static DateTime lastCnUpdateCheck = DateTime.Now.AddMinutes(-8);
 
-	private void CheckCnUpdate(IFramework _) {
+	public void CheckCnUpdate(IFramework _) {
 		if (!((DateTime.Now - lastCnUpdateCheck).TotalMinutes > 10)) return;
-		Configuration.FFXIV_ACT_Plugin_CN_Update = fetchDependencies.CheckCnUpdate();
-		Configuration.Save();
+		Task.Run(() => {
+			Configuration.FFXIV_ACT_Plugin_CN_Update = fetchDependencies.CheckCnUpdate(Log);
+			Configuration.Save();
+		});
 		lastCnUpdateCheck = DateTime.Now;
 	}
 

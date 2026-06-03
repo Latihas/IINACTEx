@@ -212,6 +212,8 @@ public static partial class LWindow {
 		}
 		ImGui.Separator();
 		ImGui.Text($"解析插件更新检测倒计时:{(lastCnUpdateCheck.AddMinutes(10) - DateTime.Now).TotalSeconds:F1}s");
+		ImGui.SameLine();
+		if (ImGui.Button("立刻检查更新")) lastCnUpdateCheck = DateTime.MinValue;
 	}
 
 	private static void DrawSettingsModuleBase() {
