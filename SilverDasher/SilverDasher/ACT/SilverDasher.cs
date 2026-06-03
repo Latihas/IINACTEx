@@ -111,7 +111,7 @@ public class SilverDasher {
 					Trace.WriteLine(ex.ToString());
 					Logger.Log(ex.StackTrace);
 				} finally {
-					await Task.Delay(TimeSpan.FromSeconds(5.0), token);
+					await Task.Delay(TimeSpan.FromSeconds(5), token);
 				}
 			}
 		}, token);

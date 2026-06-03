@@ -38,7 +38,7 @@ public partial class FetchDependencies {
 		var pluginPath = Path.Combine(DependenciesDir, "FFXIV_ACT_Plugin.dll");
 		if (File.Exists(pluginPath) && !canUpdate) return;
 		var pluginZipPath = Path.Combine(DependenciesDir, "FFXIV_ACT_Plugin.zip");
-		if (!canUpdate && !NeedsUpdate(pluginPath)) return;
+		if (!NeedsUpdate(pluginPath) && !canUpdate) return;
 		Log.Warning(RemoteDieMoeBuildVersion);
 		if (!File.Exists(pluginZipPath)) DownloadPlugin(pluginZipPath);
 		if (IsChinese) DownloadFile(PluginUrlChinese, pluginPath);
@@ -70,7 +70,7 @@ public partial class FetchDependencies {
 		if (!File.Exists(dllPath)) {
 			if (!IsChinese) return true;
 			try {
-				using var cancelAfterDelay = new CancellationTokenSource(TimeSpan.FromSeconds(3));
+				using var cancelAfterDelay = new CancellationTokenSource(TimeSpan.FromSeconds(15));
 				var remoteVersionString = HttpClient.GetStringAsync(VersionUrlChinese, cancelAfterDelay.Token).Result;
 				var match = DieMoeBuildVersionRegex().Match(remoteVersionString);
 				var buildVersion = match.Success ? match.Groups[1].Value : string.Empty;
@@ -88,7 +88,7 @@ public partial class FetchDependencies {
 		try {
 			using var plugin = new TargetAssembly(dllPath);
 			if (!plugin.ApiVersionMatches()) return true;
-			using var cancelAfterDelay = new CancellationTokenSource(TimeSpan.FromSeconds(10));
+			using var cancelAfterDelay = new CancellationTokenSource(TimeSpan.FromSeconds(15));
 			if (!IsChinese)
 				return new Version(HttpClient
 					.GetStringAsync(VersionUrlGlobal, cancelAfterDelay.Token).Result) > plugin.Version;

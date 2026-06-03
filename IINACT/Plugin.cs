@@ -14,6 +14,7 @@ using Dalamud.Bindings.ImGui;
 using Dalamud.Common;
 using Dalamud.Game.Command;
 using Dalamud.Interface.ImGuiFileDialog;
+using Dalamud.Interface.ImGuiNotification;
 using Dalamud.Interface.Windowing;
 using Dalamud.IoC;
 using Dalamud.Plugin;
@@ -151,8 +152,11 @@ public sealed class Plugin : IDalamudPlugin {
 		oFormActMain = new FormActMain(this, Log, Framework, ObjectTable);
 		Configuration = PluginInterface.GetPluginConfig() as Configuration ?? new Configuration();
 		try {
-			if (Configuration.Version != LatestConfigVersion || Configuration.InitFatalError)
-				Directory.GetFiles(PluginAssemblyDirectory, "FFXIV_ACT_Plugin*.dll").ToList().ForEach(File.Delete);
+			if (Configuration.FFXIV_ACT_Plugin_CN_Update || Configuration.Version != LatestConfigVersion || Configuration.InitFatalError)
+				Directory.GetFiles(PluginAssemblyDirectory, "FFXIV_ACT_Plugin.*").ToList().ForEach(i => {
+					Log.Warning($"Deleting {i}");
+					File.Delete(i);
+				});
 			fetchDependencies = new FetchDependencies.FetchDependencies(Version, PluginAssemblyDirectory, DataManager.Language.ToString() == "ChineseSimplified", 5, HttpClient, Log);
 			fetchDependencies.GetFfxivPlugin(Configuration.FFXIV_ACT_Plugin_CN_Update);
 			Configuration.FFXIV_ACT_Plugin_CN_Update = false;
@@ -288,6 +292,12 @@ public sealed class Plugin : IDalamudPlugin {
 			var s = $"IINACTEx Inited Failed. Please Restart Game to Fix. Error: {e}";
 			Log.Fatal(s);
 			Configuration.InitFatalError = true;
+			Configuration.Save();
+			NotificationManager.AddNotification(new Notification {
+				Type = NotificationType.Error,
+				Content = s,
+				Title = "插件启动出现严重错误，请重启游戏以修复。"
+			});
 			throw new Exception(s);
 		}
 	}
