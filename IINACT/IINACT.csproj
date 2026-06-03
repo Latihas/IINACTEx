@@ -2,7 +2,7 @@
 	<PropertyGroup>
 		<Author>Usagi, Latihas</Author>
 		<Company>Dezent</Company>
-		<Version>2.10.1.4</Version>
+		<Version>2.10.2.0</Version>
 		<AssemblyName>IINACTEx</AssemblyName>
 		<OutputPath>../bin</OutputPath>
 		<Copyright></Copyright>

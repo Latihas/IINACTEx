@@ -58,16 +58,20 @@ public class Configuration : IPluginConfiguration {
 		get => ActGlobals.oFormActMain.WriteTrnLogFile;
 		set => ActGlobals.oFormActMain.WriteTrnLogFile = value;
 	}
-
 	public bool DisableWritingPvpLogFile {
 		get => ActGlobals.oFormActMain.DisableWritingPvpLogFile;
 		set => ActGlobals.oFormActMain.DisableWritingPvpLogFile = value;
 	}
+	public string PlayerCharacterName
+	{
+		get => Advanced_Combat_Tracker.ActGlobals.charName;
+		set => Advanced_Combat_Tracker.ActGlobals.charName = string.IsNullOrEmpty(value) ? "YOU" : value;
+	}
 	public List<string> ActScriptsEnabled { get; set; } = [];
-	public int Version { get; set; }
-
+    public int Version { get; set; } = 1;
 	public string? SelectedOverlay { get; set; }
 	public bool FFXIV_ACT_Plugin_CN_Update { get; set; }
-
+    public string GoogleTtsLanguage { get; set; } = "en";
+    public bool ForceGoogleTts { get; set; }
 	public void Save() => Plugin.PluginInterface.SavePluginConfig(this);
 }
