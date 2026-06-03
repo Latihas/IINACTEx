@@ -214,6 +214,13 @@ public static partial class LWindow {
 		ImGui.Text($"解析插件更新检测倒计时:{(lastCnUpdateCheck.AddMinutes(10) - DateTime.Now).TotalSeconds:F1}s");
 		ImGui.SameLine();
 		if (ImGui.Button("立刻检查更新")) lastCnUpdateCheck = DateTime.MinValue;
+		ImGui.Text($"版本更新后，解析插件版本可能更新但是检查更新的服务器可能还没反应过来，可以执行一次强制检查更新来确保是最新版本。点击后重新加载插件即刻");
+		ImGui.SameLine();
+		if (ImGui.Button("强制检查更新")) {
+			Instance.Configuration.FFXIV_ACT_Plugin_CN_Update = true;
+			Instance.Configuration.Save();
+			MainWindow.UpdateWindowTitle();
+		}
 	}
 
 	private static void DrawSettingsModuleBase() {

@@ -69,6 +69,7 @@ public class Configuration : IPluginConfiguration {
 	}
 	public List<string> ActScriptsEnabled { get; set; } = [];
     public int Version { get; set; } = 1;
+    public bool InitFatalError { get; set; } 
 	public string? SelectedOverlay { get; set; }
 	public bool FFXIV_ACT_Plugin_CN_Update { get; set; }
     public string GoogleTtsLanguage { get; set; } = "en";

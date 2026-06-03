@@ -32,13 +32,14 @@ public partial class FetchDependencies {
 	internal static IPluginLog Log;
 	public static string RemoteDieMoeBuildVersion = "";
 
-	public bool CheckCnUpdate(IPluginLog log) => IsChinese && NeedsUpdate(Path.Combine(DependenciesDir, "FFXIV_ACT_Plugin.dll"));
+	public bool CheckCnUpdate() => IsChinese && NeedsUpdate(Path.Combine(DependenciesDir, "FFXIV_ACT_Plugin.dll"));
 
 	public void GetFfxivPlugin(bool canUpdate) {
 		var pluginPath = Path.Combine(DependenciesDir, "FFXIV_ACT_Plugin.dll");
 		if (File.Exists(pluginPath) && !canUpdate) return;
 		var pluginZipPath = Path.Combine(DependenciesDir, "FFXIV_ACT_Plugin.zip");
-		if (!NeedsUpdate(pluginPath)) return;
+		if (!canUpdate && !NeedsUpdate(pluginPath)) return;
+		Log.Warning(RemoteDieMoeBuildVersion);
 		if (!File.Exists(pluginZipPath)) DownloadPlugin(pluginZipPath);
 		if (IsChinese) DownloadFile(PluginUrlChinese, pluginPath);
 		else {
@@ -79,7 +80,7 @@ public partial class FetchDependencies {
 				}
 				RemoteDieMoeBuildVersion = buildVersion;
 				return true;
-			} catch(Exception e)  {
+			} catch (Exception e) {
 				Log.Error(e.ToString());
 				return true;
 			}
@@ -87,7 +88,7 @@ public partial class FetchDependencies {
 		try {
 			using var plugin = new TargetAssembly(dllPath);
 			if (!plugin.ApiVersionMatches()) return true;
-			using var cancelAfterDelay = new CancellationTokenSource(TimeSpan.FromSeconds(3));
+			using var cancelAfterDelay = new CancellationTokenSource(TimeSpan.FromSeconds(10));
 			if (!IsChinese)
 				return new Version(HttpClient
 					.GetStringAsync(VersionUrlGlobal, cancelAfterDelay.Token).Result) > plugin.Version;
@@ -99,7 +100,13 @@ public partial class FetchDependencies {
 				return false;
 			}
 			RemoteDieMoeBuildVersion = buildVersion;
-			return buildVersion != plugin.GetDieMoeBuildVersion();
+			var localv = plugin.GetDieMoeBuildVersion();
+			Log.Warning($"LocalV: {localv}, RemoteV: {buildVersion}");
+			if (localv == null) return true;
+			if (localv == buildVersion) return false;
+			var sp1 = buildVersion.Split('.');
+			var sp2 = localv.Split('.');
+			return int.Parse(sp2[0]) < int.Parse(sp1[0]) || int.Parse(sp2[0]) == int.Parse(sp1[0]) && int.Parse(sp2[1]) < int.Parse(sp1[1]);
 		} catch (Exception e) {
 			Log.Error(e.ToString());
 			return false;

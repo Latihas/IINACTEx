@@ -43,7 +43,7 @@ public class PluginMain {
 	private Timer configSaveTimer;
 
 	internal PluginConfig Config { get; private set; }
-	internal List<IOverlay> Overlays { get; private set; }
+	internal List<IOverlay>? Overlays { get; private set; }
 	internal event EventHandler OverlaysChanged;
 
 	internal string PluginDirectory { get; }
@@ -290,7 +290,6 @@ public class PluginMain {
 			foreach (var overlay in Overlays) {
 				overlay.Dispose();
 			}
-
 			Overlays.Clear();
 		}
 

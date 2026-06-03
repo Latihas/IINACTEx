@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Mono.Cecil;
+using static FetchDependencies.FetchDependencies;
 
 namespace FetchDependencies;
 
@@ -63,15 +64,11 @@ public class TargetAssembly : IDisposable {
 		var name = Assembly.Name;
 		name.HasPublicKey = false;
 		name.PublicKey = [];
-
 		foreach (var module in Assembly.Modules) {
 			module.Attributes &= ~ModuleAttributes.StrongNameSigned;
-			var coreLibs = new[] {
-				"netstandard", "mscorlib", "System"
-			};
-			foreach (var reference in module.AssemblyReferences) {
-				if (coreLibs.Any(coreLib => reference.Name == coreLib))
-					continue;
+			string[] coreLibs = ["netstandard", "mscorlib", "System"];
+			foreach (var reference in module.AssemblyReferences
+				         .Where(reference => coreLibs.All(coreLib => reference.Name != coreLib))) {
 				reference.HasPublicKey = false;
 				reference.PublicKey = [];
 			}
@@ -80,7 +77,6 @@ public class TargetAssembly : IDisposable {
 
 	private IEnumerable<TypeDefinition> GetAllTypes() {
 		var types = new Queue<TypeDefinition>(Assembly.MainModule.Types);
-
 		while (types.Count > 0) {
 			var type = types.Dequeue();
 			yield return type;
@@ -92,29 +88,39 @@ public class TargetAssembly : IDisposable {
 	public bool ApiVersionMatches() => Assembly.MainModule.Types.Any(type => type.Namespace == ApiVersion.NamespaceIdentifier && type.Name == "WasHere");
 
 
-	public string? GetDieMoeBuildVersion() =>
-		(from field in from type in Assembly.MainModule.Types from field in type.Fields where field.Name == "DieMoeBuildVersion" select field select field.Constant.ToString() ?? null).FirstOrDefault();
+	public string? GetDieMoeBuildVersion() => Assembly.MainModule.Types
+		.SelectMany(type => type.Fields, (type, field) => new { type, field })
+		.Where(t => t.field.Name == "DieMoeBuildVersion")
+		.Select(t => t.field)
+		.Select(field => field.Constant.ToString() ?? null)
+		.FirstOrDefault();
 
 	public void WriteOut(string? outp = null) {
 		if (!ApiVersionMatches()) {
-			// Log.WriteLine($"[PatchWasHere] Adding type {ApiVersion.NamespaceIdentifier}.WasHere");
 			var wasHere = new TypeDefinition(ApiVersion.NamespaceIdentifier, "WasHere", TypeAttributes.Public | TypeAttributes.Class) {
 				BaseType = Assembly.MainModule.TypeSystem.Object
 			};
 			Assembly.MainModule.Types.Add(wasHere);
 		}
-		if (!string.IsNullOrEmpty(FetchDependencies.RemoteDieMoeBuildVersion)) {
+		if (!string.IsNullOrEmpty(RemoteDieMoeBuildVersion)) {
 			var field = new FieldDefinition("DieMoeBuildVersion", FieldAttributes.Public | FieldAttributes.Static | FieldAttributes.InitOnly, Assembly.MainModule.TypeSystem.String) {
-				Constant = FetchDependencies.RemoteDieMoeBuildVersion
+				Constant = RemoteDieMoeBuildVersion
 			};
-			FetchDependencies.Log.Info($"WriteOut Version {AssemblyPath}->{FetchDependencies.RemoteDieMoeBuildVersion}");
-			if (string.IsNullOrEmpty(GetDieMoeBuildVersion()))
+			Log.Info($"WriteOut Version {AssemblyPath}->{RemoteDieMoeBuildVersion}");
+			var d = GetDieMoeBuildVersion();
+			if (string.IsNullOrEmpty(GetDieMoeBuildVersion())) {
 				Assembly.MainModule.Types.First().Fields.Add(field);
-		}
+				Log.Info($"Added DieMoeBuildVersion {d}");
+			} else
+				Log.Info($"Detected DieMoeBuildVersion {d}");
+		} else
+			Log.Warning("RemoteDieMoeBuildVersion is Empty");
 		var patchedPath = AssemblyPath + ".patched";
 
 		Assembly.Write(patchedPath);
 		Assembly.Dispose();
-		File.Move(patchedPath, outp ?? AssemblyPath, true);
+		var dst = outp ?? AssemblyPath;
+		Log.Warning($"Moving {patchedPath}->{dst}");
+		File.Move(patchedPath, dst, true);
 	}
 }

@@ -14,7 +14,6 @@ public class Patcher(Version version, string workPath) {
 	public void MainPlugin() {
 		var plugin = new TargetAssembly(Path.Combine(WorkPath, "FFXIV_ACT_Plugin.dll"));
 		var resources = plugin.Assembly.MainModule.Resources.ToArray();
-
 		foreach (var resource in resources) {
 			if (Costura.CheckForPlugin(resource.Name)) {
 				using var stream = (resource as EmbeddedResource)!.GetResourceStream();

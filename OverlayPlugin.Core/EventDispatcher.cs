@@ -10,7 +10,7 @@ public class EventDispatcher(TinyIoCContainer container) {
 	private readonly ILogger _logger = container.Resolve<ILogger>();
 	private readonly ConcurrentDictionary<string, Func<JObject, JToken>> handlers = [];
 	private readonly ConcurrentDictionary<string, List<IEventReceiver>> eventFilter = [];
-	private readonly ConcurrentDictionary<string, Func<JObject>> stateCallbacks = [];
+	private readonly ConcurrentDictionary<string, Func<JObject?>> stateCallbacks = [];
 
 	private void Log(LogLevel level, string message, params object[] args) {
 		_logger.Log(level, string.Format(message, args));
@@ -32,7 +32,7 @@ public class EventDispatcher(TinyIoCContainer container) {
 		RegisterEventType(name, null);
 	}
 
-	public void RegisterEventType(string name, Func<JObject> initCallback) {
+	public void RegisterEventType(string name, Func<JObject>? initCallback) {
 		eventFilter[name] = [];
 
 		if (initCallback != null)
@@ -84,13 +84,16 @@ public class EventDispatcher(TinyIoCContainer container) {
 	}
 
 	public void DispatchEvent(JObject e) {
-		var eventType = e["type"].ToString();
-		if (!eventFilter.TryGetValue(eventType, out var value)) 
+		var eventType = e["type"]!.ToString();
+		if (!eventFilter.TryGetValue(eventType, out var value))
 			throw new Exception(string.Format(Resources.MissingEventDispatchError, eventType));
 
+		List<IEventReceiver> snapshot;
+		lock (value)
+			snapshot = [..value];
 
 		lock (value) {
-			foreach (var receiver in value) {
+			foreach (var receiver in snapshot) {
 				try {
 					receiver.HandleEvent(e);
 				} catch (Exception ex) {
@@ -101,8 +104,8 @@ public class EventDispatcher(TinyIoCContainer container) {
 	}
 
 	public JToken CallHandler(JObject e) {
-		var handlerName = e["call"].ToString();
-		if (!handlers.TryGetValue(handlerName, out var value)) 
+		var handlerName = e["call"]!.ToString();
+		if (!handlers.TryGetValue(handlerName, out var value))
 			throw new Exception(string.Format(Resources.MissingHandlerError, handlerName));
 
 		var result = value(e);
