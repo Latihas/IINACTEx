@@ -89,7 +89,7 @@ public partial class FfxivActPluginWrapper : IDisposable {
 
 		ffxivActPlugin._dataCollection.StartMemory();
 
-        SetChatMessageLoggingEnabled(configuration.LogChatMessages);
+		SetChatMessageLoggingEnabled(Instance.Configuration.LogChatMessages);
 		ActGlobals.oFormActMain.BeforeLogLineRead += OFormActMain_BeforeLogLineRead;
 		serverTimeProcessor.ServerTime = DateTime.Now;
 

@@ -112,7 +112,7 @@ internal class TextToSpeechProvider : IDisposable {
 				}
 			}
 			try {
-				if (speechSynthesizer == null)
+				if (speechSynthesizer == null || Instance.Configuration.ForceGoogleTts)
 					SpeakGoogle(message);
 				else
 					SpeakSapi(message);
@@ -127,14 +127,14 @@ internal class TextToSpeechProvider : IDisposable {
 	private void SpeakGoogle(string message) {
 		var query = WebUtility.UrlEncode(message);
 		var lang = Instance.Configuration.GoogleTtsLanguage;
-		if (string.IsNullOrWhiteSpace(lang)) lang = "en";
+		if (string.IsNullOrWhiteSpace(lang)) lang = "zh_cn";
 		var url = $"https://translate.google.com/translate_tts?ie=UTF-8&client=tw-ob&tl={lang}&q={query}";
 		var mp3Data = client.GetByteArrayAsync(url).Result;
 
 		using var stream = new MemoryStream(mp3Data);
 		using var reader = new Mp3FileReader(stream);
 		using var waveOut = new WaveOutEvent();
-        waveOut.DeviceNumber = configuration.TtsPlaybackDevice;
+		waveOut.DeviceNumber = Instance.Configuration.TtsPlaybackDevice;
 		waveOut.Init(reader);
 		var waitHandle = new ManualResetEventSlim(false);
 

@@ -74,7 +74,7 @@ public class Configuration : IPluginConfiguration {
     public bool InitFatalError { get; set; } 
 	public string? SelectedOverlay { get; set; }
 	public bool FFXIV_ACT_Plugin_CN_Update { get; set; }
-    public string GoogleTtsLanguage { get; set; } = "en";
+	public string GoogleTtsLanguage { get; set; } = "zh_cn";
     public bool ForceGoogleTts { get; set; }
 	public void Save() => Plugin.PluginInterface.SavePluginConfig(this);
 

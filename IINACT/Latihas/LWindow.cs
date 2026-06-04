@@ -13,7 +13,9 @@ using Advanced_Combat_Tracker;
 using Dalamud.Bindings.ImGui;
 using Dalamud.Interface.Colors;
 using Dalamud.Interface.ImGuiNotification;
+using Dalamud.Interface.Utility;
 using Dalamud.Interface.Utility.Raii;
+using NAudio.Wave;
 using Triggernometry;
 using Triggernometry.Core;
 using Triggernometry.Core.Serialization;
@@ -269,7 +271,7 @@ public static partial class LWindow {
 		if (!tab) return;
 		ImGui.Spacing();
 		var useEdgeTTS = Instance.Configuration.UseEdgeTts;
-		if (ImGui.Checkbox("使用EdgeTTS（不勾选则使用本地TTS）", ref useEdgeTTS))
+		if (ImGui.Checkbox("使用EdgeTTS(均不勾选则使用本地TTS/Google TTS)", ref useEdgeTTS))
 			Plugin.TextToSpeechProvider.SetUseEdgeTTS(useEdgeTTS);
 		if (useEdgeTTS) {
 			ImGui.SameLine();
@@ -278,8 +280,53 @@ public static partial class LWindow {
 			}
 		}
 		var useLatihasTTS = Instance.Configuration.UseLatihasTts;
-		if (ImGui.Checkbox("使用LatihasTTS（均不勾选则使用本地TTS）", ref useLatihasTTS))
+		if (ImGui.Checkbox("使用LatihasTTS(均不勾选则使用本地TTS/Google TTS)", ref useLatihasTTS))
 			Plugin.TextToSpeechProvider.SetUseLatihasTTS(useLatihasTTS);
+		if (!useLatihasTTS && !useEdgeTTS) {
+			ImGui.Spacing();
+			ImGui.TextColored(ImGuiColors.DalamudGrey, "Google TTS:");
+			ImGui.Spacing();
+
+			var forceGoogleTts = Instance.Configuration.ForceGoogleTts;
+			if (ImGui.Checkbox("强制使用Google TTS代替SAPI", ref forceGoogleTts)) {
+				Instance.Configuration.ForceGoogleTts = forceGoogleTts;
+				Instance.Configuration.Save();
+			}
+
+			ImGui.Spacing();
+
+			var googleTtsLanguage = Instance.Configuration.GoogleTtsLanguage;
+			ImGui.SetNextItemWidth(100 * ImGuiHelpers.GlobalScale);
+			if (ImGui.InputText("语言", ref googleTtsLanguage, 10)) {
+				Instance.Configuration.GoogleTtsLanguage = googleTtsLanguage;
+				Instance.Configuration.Save();
+			}
+			ImGui.SameLine();
+			ImGui.TextColored(ImGuiColors.DalamudGrey, "(例如 ja, en, de, fr, ko, zh_cn)");
+			ImGui.Spacing();
+
+			var ttsDeviceCount = WaveOut.DeviceCount;
+			var currentDevice = Instance.Configuration.TtsPlaybackDevice;
+			var currentDeviceName = currentDevice == -1 ? "默认" : WaveOut.GetCapabilities(currentDevice).ProductName;
+
+			ImGui.SetNextItemWidth(200 * ImGuiHelpers.GlobalScale);
+
+			if (ImGui.BeginCombo("播放设备", currentDeviceName)) {
+				if (ImGui.Selectable("默认", currentDevice == -1)) {
+					Instance.Configuration.TtsPlaybackDevice = -1;
+					Instance.Configuration.Save();
+				}
+
+				for (var i = 0; i < ttsDeviceCount; i++) {
+					var caps = WaveOut.GetCapabilities(i);
+					if (ImGui.Selectable(caps.ProductName, currentDevice == i)) {
+						Instance.Configuration.TtsPlaybackDevice = i;
+						Instance.Configuration.Save();
+					}
+				}
+				ImGui.EndCombo();
+			}
+		}
 		ImGui.Separator();
 		var TtsInterval = Instance.Configuration.TtsInterval;
 		if (ImGui.InputFloat("同一句话最小间隔(s)", ref TtsInterval)) {

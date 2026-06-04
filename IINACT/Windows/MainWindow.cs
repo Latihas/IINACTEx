@@ -22,17 +22,10 @@ using FetchDependencies;
 using FFXIV_ACT_Plugin.Config;
 using IINACT.Latihas.Overlay;
 using RainbowMage.OverlayPlugin;
+using RainbowMage.OverlayPlugin.EventSources;
 using RainbowMage.OverlayPlugin.WebSocket;
 using static IINACT.Latihas.LWindow;
 using static IINACT.Plugin;
-using System.Net;
-using System.Net.Sockets;
-using System.Numerics;
-using Dalamud.Bindings.ImGui;
-using Dalamud.Interface.Utility;
-using Dalamud.Interface.Utility.Raii;
-using NAudio.Wave;
-using RainbowMage.OverlayPlugin.EventSources;
 
 namespace IINACT.Windows;
 
@@ -126,6 +119,7 @@ public class MainWindow() : Window(WindowPrefix) {
 		}
 		return (r, g, b);
 	}
+
 	private string? FFXIV_ACT_PluginVersion {
 		get {
 			field ??= Instance.fetchDependencies.GetFFXIV_ACT_PluginVersion();
@@ -137,7 +131,7 @@ public class MainWindow() : Window(WindowPrefix) {
 		WindowName =
 			$"IINACTEx [版本{Assembly.GetExecutingAssembly().GetName().Version?.ToString()}] [{ApiVersion.NamespaceIdentifier}] [核心{Instance.Version}] [解析{FFXIV_ACT_PluginVersion}{(Instance.Configuration.FFXIV_ACT_Plugin_CN_Update ? "(解析插件可更新，请重新加载插件以更新)" : "")}]###IINACTEx";
 	}
-	
+
 	public override void Draw() {
 		foreach (var p in ImGuiColor) ImGui.PushStyleColor(p.Key, p.Value);
 		foreach (var p in ImGuiVar) ImGui.PushStyleVar(p.Key, p.Value);
@@ -563,14 +557,12 @@ public class MainWindow() : Window(WindowPrefix) {
 			Instance.Configuration.Save();
 		}
 
-        var logChatMessages = Plugin.Configuration.LogChatMessages;
-        if (ImGui.Checkbox("Include chat and echo messages in log files", ref logChatMessages))
-        {
-            Plugin.Configuration.LogChatMessages = logChatMessages;
-            Plugin.SetChatMessageLoggingEnabled(logChatMessages);
-            Plugin.Configuration.Save();
-        }
-
+		var logChatMessages = Instance.Configuration.LogChatMessages;
+		if (ImGui.Checkbox("记录聊天与默语", ref logChatMessages)) {
+			Instance.Configuration.LogChatMessages = logChatMessages;
+			Instance.SetChatMessageLoggingEnabled(logChatMessages);
+			Instance.Configuration.Save();
+		}
 		var disableDamageShield = Instance.Configuration.DisableDamageShield;
 		if (ImGui.Checkbox("禁用伤害盾估计", ref disableDamageShield)) {
 			Instance.Configuration.DisableDamageShield = disableDamageShield;
@@ -583,13 +575,10 @@ public class MainWindow() : Window(WindowPrefix) {
 			Instance.Configuration.Save();
 		}
 		var endEncounterOutOfCombat = OverlayPluginEventConfig?.EndEncounterOutOfCombat ?? true;
-		if (ImGui.Checkbox("End encounter automatically after leaving combat", ref endEncounterOutOfCombat))
-		{
-			if (OverlayPluginEventConfig is not null)
-			{
+		if (ImGui.Checkbox("脱战时重置战斗记录", ref endEncounterOutOfCombat)) {
+			if (OverlayPluginEventConfig is not null) {
 				OverlayPluginEventConfig.EndEncounterOutOfCombat = endEncounterOutOfCombat;
-				if (OverlayPluginConfig is not null)
-				{
+				if (OverlayPluginConfig is not null) {
 					OverlayPluginEventConfig.SaveConfig(OverlayPluginConfig);
 					OverlayPluginConfig.Save();
 				}

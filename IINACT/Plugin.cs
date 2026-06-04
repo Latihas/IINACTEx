@@ -27,6 +27,7 @@ using Machina.FFXIV;
 using Machina.FFXIV.Headers.Opcodes;
 using PostNamazu.Common;
 using RainbowMage.OverlayPlugin;
+using RainbowMage.OverlayPlugin.EventSources;
 using RainbowMage.OverlayPlugin.Handlers.Ipc;
 using RainbowMage.OverlayPlugin.WebSocket;
 using Triggernometry;
@@ -84,7 +85,6 @@ public sealed class Plugin : IDalamudPlugin {
 	internal static FileDialogManager FileDialogManager { get; private set; }
 	internal ZoneDownHookManager ZoneDownHookManager { get; set; }
 	private IpcProviders IpcProviders { get; }
-
 	public FfxivActPluginWrapper FfxivActPluginWrapper { get; set; }
 	public PluginMain OverlayPlugin { get; set; }
 	private ServerController? WebSocketServer { get; set; }
@@ -227,10 +227,10 @@ public sealed class Plugin : IDalamudPlugin {
 			if (opcodesjsoncReplaced) Log.Warning("opcodesjsonc Replaced");
 			var registry = Container.Resolve<Registry>();
 			MainWindow.OverlayPresets = registry.OverlayPresets;
-			MainWindow.Server = WebSocketServer = Container.Resolve<ServerController>();
-			IpcProviders.Server = WebSocketServer;
+			IpcProviders.Server = MainWindow.Server = WebSocketServer = Container.Resolve<ServerController>();
 			IpcProviders.OverlayIpcHandler = Container.Resolve<IpcHandlerController>();
 			MainWindow.OverlayPluginConfig = Container.Resolve<IPluginConfig>();
+			MainWindow.OverlayPluginEventConfig = Container.Resolve<BuiltinEventConfig>();
 			OverlayWindow.Init(WebSocketServer);
 			CommandManager.AddHandler(MainWindowCommandName, new CommandInfo(OnCommand) {
 				HelpMessage = "显示IINACT主窗口"
@@ -415,7 +415,7 @@ public sealed class Plugin : IDalamudPlugin {
 		FfxivActPluginWrapper.Dispose();
 		ActGlobals.Dispose();
 	}
-
+	
 	internal void RefreshBw() {
 		PostNamazuPlugin.DoAction("command", "/bw overlay 时间轴 reload");
 		PostNamazuPlugin.DoAction("command", "/bw overlay 设置 reload");
