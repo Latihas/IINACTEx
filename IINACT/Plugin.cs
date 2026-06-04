@@ -216,6 +216,7 @@ public sealed class Plugin : IDalamudPlugin {
 
 			var extraOpcodes = opcodesjsoncCanReplace ? File.ReadAllText(opcodesjsoncPath) : null;
 			FormActMain.AddDefaultPlugins(FfxivActPluginWrapper = new FfxivActPluginWrapper(), new PluginLoader(OverlayPlugin), TriggernometryProxyPlugin, PostNamazuPlugin);
+			Task.Run(() => NetworkLogCleanup.Cleanup(Configuration));
 			LogTick("FfxivActPlugin Inited");
 			OverlayPlugin.InitPlugin(LogTick, extraOpcodes);
 			LogTick("OverlayPlugin Initialized");
