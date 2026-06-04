@@ -96,7 +96,7 @@ public partial class FormActMain : Form, ISynchronizeInvoke {
 	[DesignerSerializationVisibility(Hidden)]
 	public List<ZoneData> ZoneList { get; set; } = [];
 	[DesignerSerializationVisibility(Hidden)]
-	public string LogFileFilter { get; set; } = "notact*.txt";
+	public string LogFileFilter { get; set; } = "Network_*.log";
 	[DesignerSerializationVisibility(Hidden)]
 	public string LogFilePath { get; set; }
 	[DesignerSerializationVisibility(Hidden)]

@@ -36,6 +36,7 @@ using Triggernometry.PScript;
 using TriggernometryProxy;
 using static Advanced_Combat_Tracker.ActGlobals;
 using static IINACT.Latihas.LWindow;
+using static IINACT.NetworkLogCleanup;
 using static IINACT.Windows.MainWindow;
 
 namespace IINACT;
@@ -216,7 +217,7 @@ public sealed class Plugin : IDalamudPlugin {
 
 			var extraOpcodes = opcodesjsoncCanReplace ? File.ReadAllText(opcodesjsoncPath) : null;
 			FormActMain.AddDefaultPlugins(FfxivActPluginWrapper = new FfxivActPluginWrapper(), new PluginLoader(OverlayPlugin), TriggernometryProxyPlugin, PostNamazuPlugin);
-			Task.Run(() => NetworkLogCleanup.Cleanup(Configuration));
+			Task.Run(Cleanup);
 			LogTick("FfxivActPlugin Inited");
 			OverlayPlugin.InitPlugin(LogTick, extraOpcodes);
 			LogTick("OverlayPlugin Initialized");

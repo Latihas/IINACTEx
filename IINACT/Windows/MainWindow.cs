@@ -563,24 +563,27 @@ public class MainWindow() : Window(WindowPrefix) {
 			Instance.SetChatMessageLoggingEnabled(logChatMessages);
 			Instance.Configuration.Save();
 		}
-		var autoDeleteNetworkLogs = Plugin.Configuration.AutoDeleteNetworkLogs;
-		if (ImGui.Checkbox("Automatically delete old network log files", ref autoDeleteNetworkLogs))
-		{
-			Plugin.Configuration.AutoDeleteNetworkLogs = autoDeleteNetworkLogs;
-			Plugin.Configuration.Save();
+		var autoDeleteNetworkLogs = Instance.Configuration.AutoDeleteNetworkLogs;
+		if (ImGui.Checkbox("自动删除旧的网络日志文件", ref autoDeleteNetworkLogs)) {
+			Instance.Configuration.AutoDeleteNetworkLogs = autoDeleteNetworkLogs;
+			Instance.Configuration.Save();
 		}
-
-		if (autoDeleteNetworkLogs)
-		{
-			var networkLogRetentionDays = Plugin.Configuration.NetworkLogRetentionDays;
-			ImGui.Text("Delete logs older than");
+		if (autoDeleteNetworkLogs) {
+			var filter = Instance.Configuration.LogFileFilter;
+			if (ImGui.InputText("文件筛选器", ref filter)) {
+				Instance.Configuration.LogFileFilter = filter;
+				Instance.Configuration.Save();
+			}
+			var networkLogRetentionDays = Instance.Configuration.NetworkLogRetentionDays;
+			ImGui.Text("删除");
 			ImGui.SameLine();
 			ImGui.SetNextItemWidth(30 * ImGuiHelpers.GlobalScale);
-			if (ImGui.InputInt("days", ref networkLogRetentionDays))
-			{
-				Plugin.Configuration.NetworkLogRetentionDays = Math.Clamp(networkLogRetentionDays, 1, 3650);
-				Plugin.Configuration.Save();
+			if (ImGui.InputInt("天", ref networkLogRetentionDays)) {
+				Instance.Configuration.NetworkLogRetentionDays = Math.Clamp(networkLogRetentionDays, 1, 3650);
+				Instance.Configuration.Save();
 			}
+			ImGui.SameLine();
+			ImGui.Text("之前的");
 		}
 		var disableDamageShield = Instance.Configuration.DisableDamageShield;
 		if (ImGui.Checkbox("禁用伤害盾估计", ref disableDamageShield)) {

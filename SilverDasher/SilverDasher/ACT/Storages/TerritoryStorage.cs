@@ -24,8 +24,8 @@ internal class TerritoryStorage : BaseStorage<Territory> {
 			.ToDictionary(i => (int)i.RowId, i => {
 				var dcmap = i.TerritoryIntendedUse.RowId is 41 or 48 or 61;
 				return new Territory {
-					Name = i.PlaceNameRegion.Value.Name.ToString(),
-					Region = i.PlaceName.Value.Name.ToString(),
+					Name = i.PlaceName.Value.Name.ToString(),
+					Region = i.PlaceNameRegion.Value.Name.ToString(),
 					Content = dcmap ? 0 : (int)i.ContentFinderCondition.RowId,
 					IsDataCenterMap = dcmap
 				};

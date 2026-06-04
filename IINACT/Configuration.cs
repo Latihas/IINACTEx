@@ -20,12 +20,12 @@ public class Configuration : IPluginConfiguration {
 
 	public bool DisablePvp { get; set; }
 
-    public bool LogChatMessages { get; set; } = true;
+	public bool LogChatMessages { get; set; } = true;
 
-    public bool AutoDeleteNetworkLogs { get; set; }
+	public bool AutoDeleteNetworkLogs { get; set; }
 
-    public int NetworkLogRetentionDays { get; set; } = 30;
-    
+	public int NetworkLogRetentionDays { get; set; } = 30;
+
 	public bool SimulateIndividualDoTCrits { get; set; }
 
 	public bool ShowRealDoTTicks { get; set; }
@@ -68,19 +68,22 @@ public class Configuration : IPluginConfiguration {
 		get => ActGlobals.oFormActMain.DisableWritingPvpLogFile;
 		set => ActGlobals.oFormActMain.DisableWritingPvpLogFile = value;
 	}
-	public string PlayerCharacterName
-	{
+	public string PlayerCharacterName {
 		get => ActGlobals.charName;
 		set => ActGlobals.charName = string.IsNullOrEmpty(value) ? "YOU" : value;
 	}
+	public string LogFileFilter {
+		get => ActGlobals.oFormActMain.LogFileFilter;
+		set => ActGlobals.oFormActMain.LogFileFilter = value;
+	}
 	public List<string> ActScriptsEnabled { get; set; } = [];
-    public int Version { get; set; } = 1;
-    public bool InitFatalError { get; set; } 
+	public int Version { get; set; } = 1;
+	public bool InitFatalError { get; set; }
 	public string? SelectedOverlay { get; set; }
 	public bool FFXIV_ACT_Plugin_CN_Update { get; set; }
 	public string GoogleTtsLanguage { get; set; } = "zh_cn";
-    public bool ForceGoogleTts { get; set; }
+	public bool ForceGoogleTts { get; set; }
 	public void Save() => Plugin.PluginInterface.SavePluginConfig(this);
 
-    public int TtsPlaybackDevice { get; set; } = -1;
+	public int TtsPlaybackDevice { get; set; } = -1;
 }
