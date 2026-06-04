@@ -89,7 +89,7 @@ public partial class FfxivActPluginWrapper : IDisposable {
 
 		ffxivActPlugin._dataCollection.StartMemory();
 
-		ChatGui.ChatMessage += OnChatMessage;
+        SetChatMessageLoggingEnabled(configuration.LogChatMessages);
 		ActGlobals.oFormActMain.BeforeLogLineRead += OFormActMain_BeforeLogLineRead;
 		serverTimeProcessor.ServerTime = DateTime.Now;
 
@@ -120,13 +120,18 @@ public partial class FfxivActPluginWrapper : IDisposable {
 	public void Dispose() {
 		Framework.Update -= ScanMemory;
 		Framework.Update -= MobDataRefresh;
-		ChatGui.ChatMessage -= OnChatMessage;
+		SetChatMessageLoggingEnabled(false);
 		ActGlobals.oFormActMain.BeforeLogLineRead -= OFormActMain_BeforeLogLineRead;
 		ffxivActPlugin.DeInitPlugin();
 		ffxivActPlugin.Dispose();
 		Marshal.FreeHGlobal(mobData);
 	}
-
+	public void SetChatMessageLoggingEnabled(bool enabled)
+	{
+		ChatGui.ChatMessage -= OnChatMessage;
+		if (enabled)
+			ChatGui.ChatMessage += OnChatMessage;
+	}
 	private void SetupSettingsMediator() {
 		settingsMediator = ffxivActPlugin._dataCollection._settingsMediator;
 

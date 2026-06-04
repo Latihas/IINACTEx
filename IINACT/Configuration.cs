@@ -20,6 +20,8 @@ public class Configuration : IPluginConfiguration {
 
 	public bool DisablePvp { get; set; }
 
+    public bool LogChatMessages { get; set; } = true;
+    
 	public bool SimulateIndividualDoTCrits { get; set; }
 
 	public bool ShowRealDoTTicks { get; set; }
@@ -75,4 +77,6 @@ public class Configuration : IPluginConfiguration {
     public string GoogleTtsLanguage { get; set; } = "en";
     public bool ForceGoogleTts { get; set; }
 	public void Save() => Plugin.PluginInterface.SavePluginConfig(this);
+
+    public int TtsPlaybackDevice { get; set; } = -1;
 }

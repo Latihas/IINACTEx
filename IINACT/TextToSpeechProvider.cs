@@ -134,6 +134,7 @@ internal class TextToSpeechProvider : IDisposable {
 		using var stream = new MemoryStream(mp3Data);
 		using var reader = new Mp3FileReader(stream);
 		using var waveOut = new WaveOutEvent();
+        waveOut.DeviceNumber = configuration.TtsPlaybackDevice;
 		waveOut.Init(reader);
 		var waitHandle = new ManualResetEventSlim(false);
 

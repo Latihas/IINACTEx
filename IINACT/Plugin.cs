@@ -473,6 +473,10 @@ public sealed class Plugin : IDalamudPlugin {
 		if (Instance.Configuration is not { DisablePvp: true, DisableWritingPvpLogFile: false }) return;
 		Instance.Configuration.DisableWritingPvpLogFile = true;
 	}
+	internal void SetChatMessageLoggingEnabled(bool enabled)
+	{
+		FfxivActPluginWrapper.SetChatMessageLoggingEnabled(enabled);
+	}
 
 	private static void LeavePvP() => Instance.Configuration.DisableWritingPvpLogFile = false;
 

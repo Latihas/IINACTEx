@@ -25,6 +25,14 @@ using RainbowMage.OverlayPlugin;
 using RainbowMage.OverlayPlugin.WebSocket;
 using static IINACT.Latihas.LWindow;
 using static IINACT.Plugin;
+using System.Net;
+using System.Net.Sockets;
+using System.Numerics;
+using Dalamud.Bindings.ImGui;
+using Dalamud.Interface.Utility;
+using Dalamud.Interface.Utility.Raii;
+using NAudio.Wave;
+using RainbowMage.OverlayPlugin.EventSources;
 
 namespace IINACT.Windows;
 
@@ -32,6 +40,7 @@ public class MainWindow() : Window(WindowPrefix) {
 	private int selectedOverlayIndex;
 
 	public IPluginConfig? OverlayPluginConfig { get; set; }
+	public BuiltinEventConfig? OverlayPluginEventConfig { get; set; }
 	public IReadOnlyList<IOverlayPreset>? OverlayPresets { get; set; }
 	private string[]? OverlayNames => OverlayPresets?.Select(x => x.Name).ToArray();
 	public ServerController? Server { get; set; }
@@ -554,6 +563,14 @@ public class MainWindow() : Window(WindowPrefix) {
 			Instance.Configuration.Save();
 		}
 
+        var logChatMessages = Plugin.Configuration.LogChatMessages;
+        if (ImGui.Checkbox("Include chat and echo messages in log files", ref logChatMessages))
+        {
+            Plugin.Configuration.LogChatMessages = logChatMessages;
+            Plugin.SetChatMessageLoggingEnabled(logChatMessages);
+            Plugin.Configuration.Save();
+        }
+
 		var disableDamageShield = Instance.Configuration.DisableDamageShield;
 		if (ImGui.Checkbox("禁用伤害盾估计", ref disableDamageShield)) {
 			Instance.Configuration.DisableDamageShield = disableDamageShield;
@@ -565,7 +582,19 @@ public class MainWindow() : Window(WindowPrefix) {
 			Instance.Configuration.DisableCombinePets = disableCombinePets;
 			Instance.Configuration.Save();
 		}
-
+		var endEncounterOutOfCombat = OverlayPluginEventConfig?.EndEncounterOutOfCombat ?? true;
+		if (ImGui.Checkbox("End encounter automatically after leaving combat", ref endEncounterOutOfCombat))
+		{
+			if (OverlayPluginEventConfig is not null)
+			{
+				OverlayPluginEventConfig.EndEncounterOutOfCombat = endEncounterOutOfCombat;
+				if (OverlayPluginConfig is not null)
+				{
+					OverlayPluginEventConfig.SaveConfig(OverlayPluginConfig);
+					OverlayPluginConfig.Save();
+				}
+			}
+		}
 		var showDebug = Instance.Configuration.ShowDebug;
 		if (ImGui.Checkbox("显示调试选项", ref showDebug)) {
 			Instance.Configuration.ShowDebug = showDebug;
