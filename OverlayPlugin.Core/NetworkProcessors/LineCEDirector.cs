@@ -5,10 +5,10 @@ using RainbowMage.OverlayPlugin.NetworkProcessors.PacketHelper;
 namespace RainbowMage.OverlayPlugin.NetworkProcessors;
 
 internal class LineCEDirector : LineBaseCustom<
-	Server_MessageHeader_Global, LineCEDirector.CEDirector_v62,
-	Server_MessageHeader_CN, LineCEDirector.CEDirector_v62,
-	Server_MessageHeader_KR, LineCEDirector.CEDirector_v62,
-	Server_MessageHeader_TC, LineCEDirector.CEDirector_v62> {
+	LineCEDirector.CEDirector_v62,
+	LineCEDirector.CEDirector_v62,
+	LineCEDirector.CEDirector_v62,
+	LineCEDirector.CEDirector_v62> {
 	[StructLayout(LayoutKind.Explicit)]
 	internal struct CEDirector_v62 : IPacketStruct {
 		[FieldOffset(0x0)] public uint popTime;

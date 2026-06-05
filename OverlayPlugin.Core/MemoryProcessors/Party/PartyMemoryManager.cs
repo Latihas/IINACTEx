@@ -25,16 +25,14 @@ internal class PartyMemoryManager : IPartyMemory {
 
 	private void FindMemory(object sender, Process p) {
 		memory = null;
-		if (p == null) {
-			return;
-		}
 		ScanPointers();
 	}
 
 	public void ScanPointers() {
-		var candidates = new List<IPartyMemory>();
-		candidates.Add(container.Resolve<IPartyMemory70>());
-		candidates.Add(container.Resolve<IPartyMemory72>());
+		var candidates = new List<IPartyMemory> {
+			container.Resolve<IPartyMemory70>(),
+			container.Resolve<IPartyMemory72>()
+		};
 		memory = FFXIVMemory.FindCandidate(candidates, repository.GetMachinaRegion());
 	}
 

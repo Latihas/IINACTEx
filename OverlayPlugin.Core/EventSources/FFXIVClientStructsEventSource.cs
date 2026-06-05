@@ -30,7 +30,7 @@ public class SortedPartyList {
 }
 
 public class FFXIVClientStructsEventSource : EventSourceBase {
-	private IAtkStageMemory atkStageMemory;
+	private readonly IAtkStageMemory atkStageMemory;
 
 	public BuiltinEventConfig Config { get; set; }
 

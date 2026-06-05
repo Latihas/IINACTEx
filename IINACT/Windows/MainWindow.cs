@@ -165,11 +165,10 @@ public class MainWindow() : Window(WindowPrefix) {
 				var trB = (byte)(0x6E + hueOffset * 0x20);
 				const float rotationSpeed = 2f;
 				var rotationPhase = time * rotationSpeed;
-				var phaseTL = rotationPhase;
 				var phaseTR = rotationPhase + MathF.PI / 2;
 				var phaseBR = rotationPhase + MathF.PI;
 				var phaseBL = rotationPhase + MathF.PI * 3 / 2;
-				var mixTL = (MathF.Sin(phaseTL) + 1f) / 2f;
+				var mixTL = (MathF.Sin(rotationPhase) + 1f) / 2f;
 				var mixTR = (MathF.Sin(phaseTR) + 1f) / 2f;
 				var mixBR = (MathF.Sin(phaseBR) + 1f) / 2f;
 				var mixBL = (MathF.Sin(phaseBL) + 1f) / 2f;

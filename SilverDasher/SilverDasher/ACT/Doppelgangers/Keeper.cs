@@ -156,7 +156,7 @@ internal class Keeper : Doppelganger {
 		CurrentMobs.TryRemove(key, out _);
 	}
 
-	internal void ReceivedMobUpdate(World world, int map, int instance, int mobId, int hp, Coordinate coords) {
+	internal void ReceivedMobUpdate(World world, int map, int instance, int mobId, int hp, Coordinate? coords) {
 		(string, int, int) key = (world.Label, instance, mobId);
 		if (!ReceivedMobs.TryGetValue(key, out var value)) {
 			if (!Mobs.TryGet(mobId, out value)) {

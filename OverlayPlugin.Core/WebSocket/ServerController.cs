@@ -5,19 +5,13 @@ using Advanced_Combat_Tracker;
 
 namespace RainbowMage.OverlayPlugin.WebSocket;
 
-public class ServerController {
+public class ServerController(TinyIoCContainer container) {
 	public EventHandler<StateChangedArgs>? OnStateChanged;
 
-	public ServerController(TinyIoCContainer container) {
-		Container = container;
-		Logger = container.Resolve<ILogger>();
-		Config = container.Resolve<IPluginConfig>();
-	}
-
-	private TinyIoCContainer Container { get; }
-	private ILogger Logger { get; }
+	private TinyIoCContainer Container { get; } = container;
+	private ILogger Logger { get; } = container.Resolve<ILogger>();
 	private OverlayServer? Server { get; set; }
-	private IPluginConfig Config { get; }
+	private IPluginConfig Config { get; } = container.Resolve<IPluginConfig>();
 	public bool Failed { get; private set; }
 	public Exception? LastException { get; private set; }
 	public bool Running => Server?.IsAccepting ?? false;
@@ -119,13 +113,8 @@ public class ServerController {
 		return path;
 	}
 
-	public class StateChangedArgs : EventArgs {
-		public StateChangedArgs(bool running, bool failed) {
-			Running = running;
-			Failed = failed;
-		}
-
-		public bool Running { get; private set; }
-		public bool Failed { get; private set; }
+	public class StateChangedArgs(bool running, bool failed) : EventArgs {
+		public bool Running { get; private set; } = running;
+		public bool Failed { get; private set; } = failed;
 	}
 }

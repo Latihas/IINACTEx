@@ -9,9 +9,9 @@ using Newtonsoft.Json.Serialization;
 namespace RainbowMage.OverlayPlugin;
 
 public class FFXIVCustomLogLines {
-	private ILogger logger;
-	private FFXIVRepository repository;
-	private Dictionary<uint, ILogLineRegistryEntry> registry = new();
+	private readonly ILogger logger;
+	private readonly FFXIVRepository repository;
+	private readonly Dictionary<uint, ILogLineRegistryEntry> registry = new();
 
 	private const uint registeredCustomLogLineID = 256;
 

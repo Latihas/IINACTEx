@@ -33,9 +33,10 @@ public class EnmityHudMemoryManager : IEnmityHudMemory {
 	}
 
 	public void ScanPointers() {
-		var candidates = new List<IEnmityHudMemory>();
-		candidates.Add(container.Resolve<IEnmityHudMemory70>());
-		candidates.Add(container.Resolve<IEnmityHudMemory73>());
+		var candidates = new List<IEnmityHudMemory> {
+			container.Resolve<IEnmityHudMemory70>(),
+			container.Resolve<IEnmityHudMemory73>()
+		};
 		memory = FFXIVMemory.FindCandidate(candidates, repository.GetMachinaRegion());
 	}
 

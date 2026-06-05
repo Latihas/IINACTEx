@@ -4,10 +4,10 @@ using RainbowMage.OverlayPlugin.NetworkProcessors.PacketHelper;
 namespace RainbowMage.OverlayPlugin.NetworkProcessors;
 
 internal class LineNpcYell(TinyIoCContainer container) : LineBaseCustom<
-	Server_MessageHeader_Global, LineNpcYell.NpcYell_v655,
-	Server_MessageHeader_CN, LineNpcYell.NpcYell_v655,
-	Server_MessageHeader_KR, LineNpcYell.NpcYell_v655,
-	Server_MessageHeader_TC, LineNpcYell.NpcYell_v655>(container, LogFileLineID, logLineName, MachinaPacketName) {
+	LineNpcYell.NpcYell_v655,
+	LineNpcYell.NpcYell_v655,
+	LineNpcYell.NpcYell_v655,
+	LineNpcYell.NpcYell_v655>(container, LogFileLineID, logLineName, MachinaPacketName) {
 	[StructLayout(LayoutKind.Explicit, Size = structSize, Pack = 1)]
 	internal struct NpcYell_v655 : IPacketStruct {
 		// 00|2024-02-22T22:35:03.0000000-05:00|0044|Shanoa|Meow!♪|1d173e4a0eacfd95

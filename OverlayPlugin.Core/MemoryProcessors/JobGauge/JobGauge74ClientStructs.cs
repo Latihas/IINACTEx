@@ -4,7 +4,7 @@ using Newtonsoft.Json;
 namespace RainbowMage.OverlayPlugin.MemoryProcessors.JobGauge;
 
 // @TODO: These need updated for 7.0 still, this is just for initial compatibility as a copy/paste from the 6.55 file
-internal partial class JobGaugeMemory74 : JobGaugeMemory, IJobGaugeMemory74 {
+internal partial class JobGaugeMemory74 : IJobGaugeMemory74 {
 	// Due to lack of multi-version support in FFXIVClientStructs, we need to duplicate these structures here per-version
 	// We use FFXIVClientStructs versions of the structs because they have more required details than FFXIV_ACT_Plugin's struct definitions
 

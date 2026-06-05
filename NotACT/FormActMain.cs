@@ -113,7 +113,7 @@ public partial class FormActMain : Form, ISynchronizeInvoke {
 	[DesignerSerializationVisibility(Hidden)]
 	public string CurrentZone { get; set; }
 	[DesignerSerializationVisibility(Hidden)]
-	public FFXIV_ACT_Plugin.FFXIV_ACT_Plugin? FfxivPlugin { get; set; }
+	public FFXIV_ACT_Plugin.FFXIV_ACT_Plugin FfxivPlugin { get; set; }
 	[DesignerSerializationVisibility(Hidden)]
 	public dynamic OverlayPluginContainer { get; set; }
 	[DesignerSerializationVisibility(Hidden)]

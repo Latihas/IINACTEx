@@ -14,7 +14,7 @@ internal class FFXIVOptionalEventSource : EventSourceBase {
 	private const string GameVersionEvent = "GameVersion";
 	private const string ChangePrimaryPlayerEvent = "ChangePrimaryPlayer";
 
-	private FFXIVRepository repository;
+	private readonly FFXIVRepository repository;
 
 	// Event Source
 

@@ -32,8 +32,7 @@ public class AggroMemoryManager : IAggroMemory {
 	}
 
 	public void ScanPointers() {
-		var candidates = new List<IAggroMemory>();
-		candidates.Add(container.Resolve<IAggroMemory60>());
+		var candidates = new List<IAggroMemory> { container.Resolve<IAggroMemory60>() };
 		memory = FFXIVMemory.FindCandidate(candidates, repository.GetMachinaRegion());
 	}
 

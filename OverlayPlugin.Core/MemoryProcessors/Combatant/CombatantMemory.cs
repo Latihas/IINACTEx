@@ -8,11 +8,11 @@ namespace RainbowMage.OverlayPlugin.MemoryProcessors.Combatant;
 
 public abstract class CombatantMemory : ICombatantMemory {
 	public readonly FFXIVMemory memory;
-	private ILogger logger;
+	private readonly ILogger logger;
 
 	public IntPtr charmapAddress = IntPtr.Zero;
 
-	private string charmapSignature;
+	private readonly string charmapSignature;
 
 	public readonly int numMemoryCombatants;
 	public readonly int combatantSize;
@@ -36,25 +36,11 @@ public abstract class CombatantMemory : ICombatantMemory {
 		combatantPool = new DefaultObjectPool<Combatant>(policy, 2 * numMemoryCombatants);
 	}
 
-	private void ResetPointers() {
-		charmapAddress = IntPtr.Zero;
-	}
+	private void ResetPointers() => charmapAddress = IntPtr.Zero;
 
-	private bool HasValidPointers() {
-		if (charmapAddress == IntPtr.Zero)
-			return false;
-		return true;
-	}
+	private bool HasValidPointers() => charmapAddress != IntPtr.Zero;
 
-	public bool IsValid() {
-		if (!memory.IsValid())
-			return false;
-
-		if (!HasValidPointers())
-			return false;
-
-		return true;
-	}
+	public bool IsValid() => memory.IsValid() && HasValidPointers();
 
 	public void ScanPointers() {
 		ResetPointers();
@@ -64,7 +50,7 @@ public abstract class CombatantMemory : ICombatantMemory {
 		var fail = new List<string>();
 
 		var list = memory.SigScan(charmapSignature, 0, true);
-		if (list != null && list.Count > 0) {
+		if (list is { Count: > 0 }) {
 			charmapAddress = list[0];
 		} else {
 			charmapAddress = IntPtr.Zero;

@@ -5,26 +5,22 @@ using Machina.FFXIV;
 namespace RainbowMage.OverlayPlugin.NetworkProcessors.PacketHelper;
 
 internal abstract class LineBaseCustom<
-	HeaderStruct_Global, PacketStruct_Global,
-	HeaderStruct_CN, PacketStruct_CN,
-	HeaderStruct_KR, PacketStruct_KR,
-	HeaderStruct_TC, PacketStruct_TC>
-	where HeaderStruct_Global : struct, IHeaderStruct
+	PacketStruct_Global,
+	PacketStruct_CN,
+	PacketStruct_KR,
+	PacketStruct_TC>
 	where PacketStruct_Global : struct, IPacketStruct
-	where HeaderStruct_CN : struct, IHeaderStruct
 	where PacketStruct_CN : struct, IPacketStruct
-	where HeaderStruct_KR : struct, IHeaderStruct
 	where PacketStruct_KR : struct, IPacketStruct
-	where HeaderStruct_TC : struct, IHeaderStruct
 	where PacketStruct_TC : struct, IPacketStruct {
 	protected static FFXIVRepository ffxiv;
 
 	protected readonly Func<string, DateTime, bool> logWriter;
 	protected readonly RegionalizedPacketHelper<
-		HeaderStruct_Global, PacketStruct_Global,
-		HeaderStruct_CN, PacketStruct_CN,
-		HeaderStruct_KR, PacketStruct_KR,
-		HeaderStruct_TC, PacketStruct_TC> packetHelper;
+		PacketStruct_Global,
+		PacketStruct_CN,
+		PacketStruct_KR,
+		PacketStruct_TC> packetHelper;
 	protected GameRegion? currentRegion;
 
 	protected LineBaseCustom(TinyIoCContainer container, uint logFileLineID, string logLineName, string opcodeName) {
@@ -35,10 +31,10 @@ internal abstract class LineBaseCustom<
 		var opcodeConfig = container.Resolve<OverlayPluginLogLineConfig>();
 
 		packetHelper = RegionalizedPacketHelper<
-			HeaderStruct_Global, PacketStruct_Global,
-			HeaderStruct_CN, PacketStruct_CN,
-			HeaderStruct_KR, PacketStruct_KR,
-			HeaderStruct_TC, PacketStruct_TC>.CreateFromOpcodeConfig(opcodeConfig, opcodeName);
+			PacketStruct_Global,
+			PacketStruct_CN,
+			PacketStruct_KR,
+			PacketStruct_TC>.CreateFromOpcodeConfig(opcodeConfig, opcodeName);
 
 		if (packetHelper == null) {
 			var logger = container.Resolve<ILogger>();

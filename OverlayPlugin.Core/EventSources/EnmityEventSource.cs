@@ -19,12 +19,12 @@ using static RainbowMage.OverlayPlugin.MemoryProcessors.InCombat.LineInCombat;
 namespace RainbowMage.OverlayPlugin.EventSources;
 
 public class EnmityEventSource : EventSourceBase {
-	private ICombatantMemory combatantMemory;
+	private readonly ICombatantMemory combatantMemory;
 	private ITargetMemory targetMemory;
 	private IEnmityMemory enmityMemory;
 	private IAggroMemory aggroMemory;
 	private IEnmityHudMemory enmityHudMemory;
-	private LineInCombat lineInCombat;
+	private readonly LineInCombat lineInCombat;
 
 	// General information about the target, focus target, hover target.  Also, enmity entries for main target.
 	private const string EnmityTargetDataEvent = "EnmityTargetData";

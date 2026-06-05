@@ -9,14 +9,14 @@ using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
+using Machina.FFXIV.Headers;
 using RainbowMage.OverlayPlugin.MemoryProcessors.InCombat;
-using RainbowMage.OverlayPlugin.NetworkProcessors.PacketHelper;
 
 namespace RainbowMage.OverlayPlugin.MemoryProcessors.Combatant;
 
 public class LineCombatant : IDisposable {
 	public const uint LogFileLineID = 261;
-	private ILogger logger;
+	private readonly ILogger logger;
 	private readonly FFXIVRepository ffxiv;
 	private readonly ICombatantMemory combatantMemoryManager;
 	private bool inCombat;

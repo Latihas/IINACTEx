@@ -3,7 +3,8 @@ using System.Collections.Generic;
 
 namespace RainbowMage.OverlayPlugin.MemoryProcessors.ContentFinderSettings;
 
-public abstract class ContentFinderSettingsMemory : IContentFinderSettingsMemory {
+public abstract class ContentFinderSettingsMemory(TinyIoCContainer container, string settingsSignature, string inContentFinderSignature, int inContentSettingsOffset)
+	: IContentFinderSettingsMemory {
 	private struct ContentFinderSettingsImpl : ContentFinderSettings {
 		public bool inContentFinderContent { get; set; }
 
@@ -18,23 +19,11 @@ public abstract class ContentFinderSettingsMemory : IContentFinderSettingsMemory
 		public byte levelSync { get; set; }
 	}
 
-	protected FFXIVMemory memory;
-	protected ILogger logger;
+	protected FFXIVMemory memory = container.Resolve<FFXIVMemory>();
+	protected ILogger logger = container.Resolve<ILogger>();
 
 	protected IntPtr settingsAddress = IntPtr.Zero;
 	protected IntPtr inContentFinderAddress = IntPtr.Zero;
-
-	private string settingsSignature;
-	private string inContentFinderSignature;
-	private int inContentSettingsOffset;
-
-	public ContentFinderSettingsMemory(TinyIoCContainer container, string settingsSignature, string inContentFinderSignature, int inContentSettingsOffset) {
-		this.settingsSignature = settingsSignature;
-		this.inContentFinderSignature = inContentFinderSignature;
-		this.inContentSettingsOffset = inContentSettingsOffset;
-		logger = container.Resolve<ILogger>();
-		memory = container.Resolve<FFXIVMemory>();
-	}
 
 	protected void ResetPointers() {
 		settingsAddress = IntPtr.Zero;
@@ -67,7 +56,7 @@ public abstract class ContentFinderSettingsMemory : IContentFinderSettingsMemory
 		var fail = new List<string>();
 
 		var list = memory.SigScan(settingsSignature, -35, true);
-		if (list != null && list.Count > 0) {
+		if (list is { Count: > 0 }) {
 			settingsAddress = list[0] + inContentSettingsOffset;
 		} else {
 			settingsAddress = IntPtr.Zero;

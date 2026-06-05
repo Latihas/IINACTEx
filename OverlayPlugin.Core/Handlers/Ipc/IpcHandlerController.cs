@@ -4,20 +4,12 @@ using System.Collections.Generic;
 
 namespace RainbowMage.OverlayPlugin.Handlers.Ipc;
 
-public class IpcHandlerController : IDisposable {
-	public IpcHandlerController(TinyIoCContainer container) {
-		Container = container;
-		Logger = container.Resolve<ILogger>();
-		Handlers = new ConcurrentDictionary<string, IHandler>();
-		HandlerFactory = new HandlerFactory();
-		LegacyHandlerFactory = new LegacyHandlerFactory();
-	}
-
-	private TinyIoCContainer Container { get; }
-	private ILogger Logger { get; }
-	private ConcurrentDictionary<string, IHandler> Handlers { get; }
-	private IHandlerFactory HandlerFactory { get; }
-	private IHandlerFactory LegacyHandlerFactory { get; }
+public class IpcHandlerController(TinyIoCContainer container) : IDisposable {
+	private TinyIoCContainer Container { get; } = container;
+	private ILogger Logger { get; } = container.Resolve<ILogger>();
+	private ConcurrentDictionary<string, IHandler> Handlers { get; } = new();
+	private IHandlerFactory HandlerFactory { get; } = new HandlerFactory();
+	private IHandlerFactory LegacyHandlerFactory { get; } = new LegacyHandlerFactory();
 
 	public bool CreateSubscriber(string name) => CreateSubscriber(name, HandlerFactory);
 	public bool CreateLegacySubscriber(string name) => CreateSubscriber(name, LegacyHandlerFactory);

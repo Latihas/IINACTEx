@@ -12,7 +12,7 @@ internal class NetworkParser {
 		public override string ToString(long epoch, uint ActorID) => "";
 	}
 
-	private MachinaRegionalizedPacketHelper<ActorControlPacket> actorControlPacketHelper;
+	private readonly MachinaRegionalizedPacketHelper<ActorControlPacket> actorControlPacketHelper;
 
 	private static FFXIVRepository ffxiv;
 	private GameRegion? currentRegion;
@@ -62,12 +62,7 @@ internal class NetworkParser {
 	}
 }
 
-public class OnlineStatusChangedArgs : EventArgs {
-	public uint Target { get; private set; }
-	public uint Status { get; private set; }
-
-	public OnlineStatusChangedArgs(uint target, uint status) {
-		Target = target;
-		Status = status;
-	}
+public class OnlineStatusChangedArgs(uint target, uint status) : EventArgs {
+	public uint Target { get; private set; } = target;
+	public uint Status { get; private set; } = status;
 }

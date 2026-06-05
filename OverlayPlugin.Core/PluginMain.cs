@@ -36,11 +36,11 @@ public class PluginLoader(PluginMain pluginMain) : IActPluginV1 {
 
 public class PluginMain {
 	public readonly TinyIoCContainer _container;
-	private ILogger _logger;
+	private readonly ILogger _logger;
 	public string Status { get; private set; }
 
 	internal string ConfigPath { get; private set; }
-	private Timer configSaveTimer;
+	private readonly Timer configSaveTimer;
 
 	internal PluginConfig Config { get; private set; }
 	internal List<IOverlay>? Overlays { get; private set; }
@@ -179,7 +179,7 @@ public class PluginMain {
 			// Initialize the parser in the second phase since it needs the FFXIV plugin.
 			// If OverlayPlugin is placed above the FFXIV plugin, it won't be available in the first
 			// phase but it'll be loaded by the time we enter the second phase.
-			_container.Register(new FFXIVRepository(_container));
+			_container.Register(new FFXIVRepository());
 			_container.Register(new NetworkParser(_container));
 			_container.Register(new TriggIntegration(_container));
 			_container.Register(new FFXIVCustomLogLines(_container));

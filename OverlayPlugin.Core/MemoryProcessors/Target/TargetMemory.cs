@@ -4,31 +4,17 @@ using RainbowMage.OverlayPlugin.MemoryProcessors.Combatant;
 
 namespace RainbowMage.OverlayPlugin.MemoryProcessors.Target;
 
-public abstract class TargetMemory : ITargetMemory {
-	private FFXIVMemory memory;
-	private ILogger logger;
-	private ICombatantMemory combatantMemory;
+public abstract class TargetMemory(
+	TinyIoCContainer container, string targetSignature, int targetTargetOffset, int focusTargetOffset,
+	int hoverTargetOffset)
+	: ITargetMemory {
+	private readonly FFXIVMemory memory = container.Resolve<FFXIVMemory>();
+	private readonly ILogger logger = container.Resolve<ILogger>();
+	private readonly ICombatantMemory combatantMemory = container.Resolve<ICombatantMemory>();
 
 	private IntPtr targetAddress = IntPtr.Zero;
 
-	private string targetSignature;
-
 	// Offsets from the targetAddress to find the correct target type.
-	private int targetTargetOffset;
-	private int focusTargetOffset;
-	private int hoverTargetOffset;
-
-	public TargetMemory(
-		TinyIoCContainer container, string targetSignature, int targetTargetOffset, int focusTargetOffset,
-		int hoverTargetOffset) {
-		this.targetSignature = targetSignature;
-		this.targetTargetOffset = targetTargetOffset;
-		this.focusTargetOffset = focusTargetOffset;
-		this.hoverTargetOffset = hoverTargetOffset;
-		logger = container.Resolve<ILogger>();
-		memory = container.Resolve<FFXIVMemory>();
-		combatantMemory = container.Resolve<ICombatantMemory>();
-	}
 
 	private void ResetPointers() {
 		targetAddress = IntPtr.Zero;

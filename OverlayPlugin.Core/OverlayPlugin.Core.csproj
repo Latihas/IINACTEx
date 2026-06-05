@@ -32,6 +32,10 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.ObjectPool" Version="10.0.8"/>
     <PackageReference Include="NetCoreServer" Version="8.0.7"/>
+	  <PackageReference Include="TinyIoC" Version="1.3.0">
+		  <PrivateAssets>all</PrivateAssets>
+		  <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+	  </PackageReference>
   </ItemGroup>
   <ItemGroup>
     <Reference Include="FFXIV_ACT_Plugin">

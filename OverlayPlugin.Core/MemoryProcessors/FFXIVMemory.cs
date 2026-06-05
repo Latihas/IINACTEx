@@ -16,24 +16,23 @@ public interface IVersionedMemory {
 }
 
 public partial class FFXIVMemory {
-	private event EventHandler<Process> OnProcessChange;
+	private event EventHandler<Process>? OnProcessChange;
 
-	private ILogger logger;
-	private Process process => Process.GetCurrentProcess();
-	private IntPtr processHandle => process.Handle;
-	private FFXIVRepository repository;
+	private readonly ILogger logger;
+	private static Process process => Process.GetCurrentProcess();
+	private static IntPtr processHandle => process.Handle;
 
 	// The "international" version always uses the most recent.
-	private static Version globalVersion = new(99, 0);
-	private static Version cnVersion = new(99, 0);
-	private static Version koVersion = new(7, 3, 5);
-	private static Version tcVersion = new(7, 2);
+	private static readonly Version globalVersion = new(99, 0);
+	private static readonly Version cnVersion = new(99, 0);
+	private static readonly Version koVersion = new(7, 3, 5);
+	private static readonly Version tcVersion = new(7, 2);
 
 	public FFXIVMemory(TinyIoCContainer container) {
 		logger = container.Resolve<ILogger>();
-		repository = container.Resolve<FFXIVRepository>();
+		var repository1 = container.Resolve<FFXIVRepository>();
 
-		repository.RegisterProcessChangedHandler(UpdateProcess);
+		repository1.RegisterProcessChangedHandler(UpdateProcess);
 	}
 
 	[SuppressGCTransition]
@@ -60,7 +59,7 @@ public partial class FFXIVMemory {
 		OnProcessChange?.Invoke(this, process);
 	}
 
-	public IntPtr GetBaseAddress() => process.MainModule.BaseAddress;
+	public IntPtr GetBaseAddress() => process.MainModule!.BaseAddress;
 
 	private void CloseProcessHandle() {
 	}

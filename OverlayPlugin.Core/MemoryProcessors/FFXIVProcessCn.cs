@@ -7,12 +7,12 @@ using Newtonsoft.Json.Linq;
 
 namespace RainbowMage.OverlayPlugin.MemoryProcessors;
 
-public class FFXIVProcessCn : FFXIVProcess {
+public class FFXIVProcessCn(TinyIoCContainer container) : FFXIVProcess(container) {
 	// Last updated for FFXIV 7.4 from ShadyWhite
 
 	[StructLayout(LayoutKind.Explicit)]
 	public unsafe struct EntityMemory {
-		public static int Size => Marshal.SizeOf(typeof(EntityMemory));
+		public static int Size => Marshal.SizeOf<EntityMemory>();
 
 		// 64 bytes per both OverlayPlugin & aers/FFXIVClientStructs
 		public const int nameBytes = 64;
@@ -59,41 +59,38 @@ public class FFXIVProcessCn : FFXIVProcess {
 		[FieldOffset(0x2E)] public byte shieldPercentage;
 	}
 
-	public FFXIVProcessCn(TinyIoCContainer container) : base(container) {
-	}
-
 	// TODO: all of this could be refactored into structures of some sort
 	// instead of just being loose variables everywhere.
 
 	// A piece of code that reads the pointer to the list of all entities, that we
 	// refer to as the charmap.
-	private static string kCharmapSignature = "488b5720b8000000e0483Bd00f84????????488d0d";
-	private static int kCharmapSignatureOffset = 0;
+	private static readonly string kCharmapSignature = "488b5720b8000000e0483Bd00f84????????488d0d";
+	private static readonly int kCharmapSignatureOffset = 0;
 	// The signature finds a pointer in the executable code which uses RIP addressing.
-	private static bool kCharmapSignatureRIP = true;
+	private static readonly bool kCharmapSignatureRIP = true;
 	// The pointer is to a structure as:
 	//
 	// CharmapStruct* outer;  // The pointer found from the signature.
 	// CharmapStruct {
 	//   EntityStruct* player;
 	// }
-	private static int kCharmapStructOffsetPlayer = 0;
+	private static readonly int kCharmapStructOffsetPlayer = 0;
 
 	// In combat boolean.
 	// This address is written to by "mov [rax+rcx],bl" and has three readers.
 	// This reader is "cmp byte ptr [ffxiv_dx11.exe+????????],00 { (0),0 }"
-	private static string kInCombatSignature = "74??803D??????????74??488B03488BCBFF50";
-	private static int kInCombatSignatureOffset = -15;
-	private static bool kInCombatSignatureRIP = true;
+	private static readonly string kInCombatSignature = "74??803D??????????74??488B03488BCBFF50";
+	private static readonly int kInCombatSignatureOffset = -15;
+	private static readonly bool kInCombatSignatureRIP = true;
 	// Because this line is a cmp byte line, the signature is not at the end of the line.
-	private static int kInCombatRipOffset = 1;
+	private static readonly int kInCombatRipOffset = 1;
 
 	// A piece of code that reads the job data.
 	// The pointer of interest is the first ???????? in the signature.
-	private static string kJobDataSignature = "488D0D????????0F95C2E8????????488B8D";
-	private static int kJobDataSignatureOffset = -15;
+	private static readonly string kJobDataSignature = "488D0D????????0F95C2E8????????488B8D";
+	private static readonly int kJobDataSignatureOffset = -15;
 	// The signature finds a pointer in the executable code which uses RIP addressing.
-	private static bool kJobDataSignatureRIP = true;
+	private static readonly bool kJobDataSignatureRIP = true;
 
 	internal override void ReadSignatures() {
 		var p =
@@ -173,10 +170,9 @@ public class FFXIVProcessCn : FFXIVProcess {
 
 				var job_bytes = GetRawJobSpecificDataBytes();
 				if (job_bytes != null) {
-					for (var i = 0; i < job_bytes.Length; ++i) {
-						if (entity.debug_job != "")
-							entity.debug_job += " ";
-						entity.debug_job += string.Format("{0:x2}", job_bytes[i]);
+					foreach (var t in job_bytes) {
+						if (entity.debug_job != "") entity.debug_job += " ";
+						entity.debug_job += $"{t:x2}";
 					}
 				}
 			}
@@ -201,7 +197,7 @@ public class FFXIVProcessCn : FFXIVProcess {
 		return GetEntityData(entity_ptr);
 	}
 
-	public override unsafe JObject GetJobSpecificData(EntityJob job) {
+	public override unsafe JObject? GetJobSpecificData(EntityJob job) {
 		if (!HasProcess() || job_data_outer_addr_ == IntPtr.Zero)
 			return null;
 
@@ -213,58 +209,32 @@ public class FFXIVProcessCn : FFXIVProcess {
 		job_inner_ptr = IntPtr.Add(job_inner_ptr, kJobDataInnerStructOffset);
 
 		fixed (byte* p = Read8(job_inner_ptr, kJobDataInnerStructSize)) {
-			if (p == null) {
-				return null;
-			}
-			switch (job) {
-				case EntityJob.RDM:
-					return JObject.FromObject(*(RedMageJobMemory*)&p[0]);
-				case EntityJob.WAR:
-					return JObject.FromObject(*(WarriorJobMemory*)&p[0]);
-				case EntityJob.DRK:
-					return JObject.FromObject(*(DarkKnightJobMemory*)&p[0]);
-				case EntityJob.PLD:
-					return JObject.FromObject(*(PaladinJobMemory*)&p[0]);
-				case EntityJob.GNB:
-					return JObject.FromObject(*(GunbreakerJobMemory*)&p[0]);
-				case EntityJob.BRD:
-					return JObject.FromObject(*(BardJobMemory*)&p[0]);
-				case EntityJob.DNC:
-					return JObject.FromObject(*(DancerJobMemory*)&p[0]);
-				case EntityJob.DRG:
-					return JObject.FromObject(*(DragoonJobMemory*)&p[0]);
-				case EntityJob.NIN:
-					return JObject.FromObject(*(NinjaJobMemory*)&p[0]);
-				case EntityJob.THM:
-					return JObject.FromObject(*(ThaumaturgeJobMemory*)&p[0]);
-				case EntityJob.BLM:
-					return JObject.FromObject(*(BlackMageJobMemory*)&p[0]);
-				case EntityJob.WHM:
-					return JObject.FromObject(*(WhiteMageJobMemory*)&p[0]);
-				case EntityJob.ACN:
-					return JObject.FromObject(*(ArcanistJobMemory*)&p[0]);
-				case EntityJob.SMN:
-					return JObject.FromObject(*(SummonerJobMemory*)&p[0]);
-				case EntityJob.SCH:
-					return JObject.FromObject(*(ScholarJobMemory*)&p[0]);
-				case EntityJob.MNK:
-					return JObject.FromObject(*(MonkJobMemory*)&p[0]);
-				case EntityJob.MCH:
-					return JObject.FromObject(*(MachinistJobMemory*)&p[0]);
-				case EntityJob.AST:
-					return JObject.FromObject(*(AstrologianJobMemory*)&p[0]);
-				case EntityJob.SAM:
-					return JObject.FromObject(*(SamuraiJobMemory*)&p[0]);
-				case EntityJob.SGE:
-					return JObject.FromObject(*(SageJobMemory*)&p[0]);
-				case EntityJob.RPR:
-					return JObject.FromObject(*(ReaperJobMemory*)&p[0]);
-				case EntityJob.VPR:
-					return JObject.FromObject(*(ViperJobMemory*)&p[0]);
-				case EntityJob.PCT:
-					return JObject.FromObject(*(PictomancerJobMemory*)&p[0]);
-			}
-			return null;
+			if (p == null) return null;
+			return job switch {
+				EntityJob.RDM => JObject.FromObject(*(RedMageJobMemory*)&p[0]),
+				EntityJob.WAR => JObject.FromObject(*(WarriorJobMemory*)&p[0]),
+				EntityJob.DRK => JObject.FromObject(*(DarkKnightJobMemory*)&p[0]),
+				EntityJob.PLD => JObject.FromObject(*(PaladinJobMemory*)&p[0]),
+				EntityJob.GNB => JObject.FromObject(*(GunbreakerJobMemory*)&p[0]),
+				EntityJob.BRD => JObject.FromObject(*(BardJobMemory*)&p[0]),
+				EntityJob.DNC => JObject.FromObject(*(DancerJobMemory*)&p[0]),
+				EntityJob.DRG => JObject.FromObject(*(DragoonJobMemory*)&p[0]),
+				EntityJob.NIN => JObject.FromObject(*(NinjaJobMemory*)&p[0]),
+				EntityJob.THM => JObject.FromObject(*(ThaumaturgeJobMemory*)&p[0]),
+				EntityJob.BLM => JObject.FromObject(*(BlackMageJobMemory*)&p[0]),
+				EntityJob.WHM => JObject.FromObject(*(WhiteMageJobMemory*)&p[0]),
+				EntityJob.ACN => JObject.FromObject(*(ArcanistJobMemory*)&p[0]),
+				EntityJob.SMN => JObject.FromObject(*(SummonerJobMemory*)&p[0]),
+				EntityJob.SCH => JObject.FromObject(*(ScholarJobMemory*)&p[0]),
+				EntityJob.MNK => JObject.FromObject(*(MonkJobMemory*)&p[0]),
+				EntityJob.MCH => JObject.FromObject(*(MachinistJobMemory*)&p[0]),
+				EntityJob.AST => JObject.FromObject(*(AstrologianJobMemory*)&p[0]),
+				EntityJob.SAM => JObject.FromObject(*(SamuraiJobMemory*)&p[0]),
+				EntityJob.SGE => JObject.FromObject(*(SageJobMemory*)&p[0]),
+				EntityJob.RPR => JObject.FromObject(*(ReaperJobMemory*)&p[0]),
+				EntityJob.VPR => JObject.FromObject(*(ViperJobMemory*)&p[0]),
+				EntityJob.PCT => JObject.FromObject(*(PictomancerJobMemory*)&p[0]), _ => null
+			};
 		}
 	}
 

@@ -5,53 +5,27 @@ using RainbowMage.OverlayPlugin.MemoryProcessors.Combatant;
 
 namespace RainbowMage.OverlayPlugin.MemoryProcessors.Enmity;
 
-public abstract class EnmityMemory : IEnmityMemory {
-	private FFXIVMemory memory;
-	private ILogger logger;
-	private ICombatantMemory combatantMemory;
+public abstract class EnmityMemory(TinyIoCContainer container, string enmitySignature, int enmitySignatureOffset) : IEnmityMemory {
+	private readonly FFXIVMemory memory = container.Resolve<FFXIVMemory>();
+	private readonly ILogger logger = container.Resolve<ILogger>();
+	private readonly ICombatantMemory combatantMemory = container.Resolve<ICombatantMemory>();
 
 	private IntPtr enmityAddress = IntPtr.Zero;
 
-	private string enmitySignature;
-	private int enmitySignatureOffset;
+	private void ResetPointers() => enmityAddress = IntPtr.Zero;
 
-	public EnmityMemory(TinyIoCContainer container, string enmitySignature, int enmitySignatureOffset) {
-		this.enmitySignature = enmitySignature;
-		this.enmitySignatureOffset = enmitySignatureOffset;
-		logger = container.Resolve<ILogger>();
-		memory = container.Resolve<FFXIVMemory>();
-		combatantMemory = container.Resolve<ICombatantMemory>();
-	}
+	private bool HasValidPointers() => enmityAddress != IntPtr.Zero;
 
-	private void ResetPointers() {
-		enmityAddress = IntPtr.Zero;
-	}
-
-	private bool HasValidPointers() {
-		if (enmityAddress == IntPtr.Zero)
-			return false;
-		return true;
-	}
-
-	public bool IsValid() {
-		if (!memory.IsValid())
-			return false;
-
-		if (!HasValidPointers())
-			return false;
-
-		return true;
-	}
+	public bool IsValid() => memory.IsValid() && HasValidPointers();
 
 	public void ScanPointers() {
 		ResetPointers();
-		if (!memory.IsValid())
-			return;
+		if (!memory.IsValid()) return;
 
 		var fail = new List<string>();
 
 		var list = memory.SigScan(enmitySignature, 0, true);
-		if (list != null && list.Count > 0) {
+		if (list is { Count: > 0 }) {
 			enmityAddress = IntPtr.Add(list[0], enmitySignatureOffset);
 		} else {
 			enmityAddress = IntPtr.Zero;
@@ -83,7 +57,7 @@ public abstract class EnmityMemory : IEnmityMemory {
 	[StructLayout(LayoutKind.Explicit)]
 	private unsafe struct MemoryEnmityList {
 		public const int MaxEntries = 32;
-		public static int Size => Marshal.SizeOf(typeof(MemoryEnmityList));
+		public static int Size => Marshal.SizeOf<MemoryEnmityList>();
 
 		[FieldOffset(0x00)] public fixed byte EntryBuffer[MaxEntries];
 
@@ -124,7 +98,7 @@ public abstract class EnmityMemory : IEnmityMemory {
 			var e = list[i];
 			topEnmity = Math.Max(topEnmity, e.Enmity);
 
-			Combatant.Combatant c = null;
+			Combatant.Combatant? c = null;
 			if (e.ID > 0) {
 				c = combatantList.Find(x => x.ID == e.ID);
 			}
@@ -134,9 +108,9 @@ public abstract class EnmityMemory : IEnmityMemory {
 				Enmity = e.Enmity,
 				isMe = e.ID == mychar.ID,
 				Name = c == null ? "Unknown" : c.Name,
-				OwnerID = c == null ? 0 : c.OwnerID,
+				OwnerID = c?.OwnerID ?? 0,
 				HateRate = (int)(e.Enmity / (double)topEnmity * 100),
-				Job = c == null ? (byte)0 : c.Job
+				Job = c?.Job ?? 0
 			};
 
 			result.Add(entry);

@@ -24,34 +24,21 @@ internal class AtkStageMemoryManager : IAtkStageMemory {
 		memory.RegisterOnProcessChangeHandler(FindMemory);
 	}
 
-	private void FindMemory(object sender, Process p) {
+	private void FindMemory(object? sender, Process p) {
 		memory = null;
-		if (p == null) {
-			return;
-		}
+		if (p == null) return;
 
 		ScanPointers();
 	}
 
 	public void ScanPointers() {
-		var candidates = new List<IAtkStageMemory>();
-		candidates.Add(container.Resolve<IAtkStageMemory62>());
+		var candidates = new List<IAtkStageMemory> { container.Resolve<IAtkStageMemory62>() };
 		memory = FFXIVMemory.FindCandidate(candidates, repository.GetMachinaRegion());
 	}
 
-	public bool IsValid() {
-		if (memory == null || !memory.IsValid()) {
-			return false;
-		}
+	public bool IsValid() => memory != null && memory.IsValid();
 
-		return true;
-	}
-
-	public Version GetVersion() {
-		if (!IsValid())
-			return null;
-		return memory.GetVersion();
-	}
+	public Version GetVersion() => !IsValid() ? null : memory.GetVersion();
 
 	public IntPtr GetAddonAddress(string name) {
 		if (!IsValid()) {
@@ -61,17 +48,7 @@ internal class AtkStageMemoryManager : IAtkStageMemory {
 		return memory.GetAddonAddress(name);
 	}
 
-	public T? GetAddon<T>() where T : struct {
-		if (!IsValid())
-			return null;
+	public T? GetAddon<T>() where T : struct => !IsValid() ? null : memory.GetAddon<T>();
 
-		return memory.GetAddon<T>();
-	}
-
-	public object GetAddon(string name) {
-		if (!IsValid())
-			return null;
-
-		return memory.GetAddon(name);
-	}
+	public object GetAddon(string name) => !IsValid() ? null : memory.GetAddon(name);
 }

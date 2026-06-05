@@ -3,15 +3,10 @@ using System.Runtime.InteropServices;
 
 namespace RainbowMage.OverlayPlugin.MemoryProcessors.Combatant;
 
-internal interface ICombatantMemory70 : ICombatantMemory {
-}
+internal interface ICombatantMemory70 : ICombatantMemory;
 
-internal class CombatantMemory70 : CombatantMemory, ICombatantMemory70 {
+internal class CombatantMemory70(TinyIoCContainer container) : CombatantMemory(container, charmapSignature, CombatantMemory.Size, EffectMemory.Size, 629), ICombatantMemory70 {
 	private const string charmapSignature = "488B5720B8000000E0483BD00F84????????488D0D";
-
-	public CombatantMemory70(TinyIoCContainer container)
-		: base(container, charmapSignature, CombatantMemory.Size, EffectMemory.Size, 629) {
-	}
 
 	public override Version GetVersion() => new(7, 0);
 
@@ -20,7 +15,7 @@ internal class CombatantMemory70 : CombatantMemory, ICombatantMemory70 {
 		fixed (byte* p = source) {
 			var mem = *(CombatantMemory*)&p[0];
 			var type = (ObjectType)mem.Type;
-			if (mem.ID == 0 || mem.ID == emptyID)
+			if (mem.ID is 0 or emptyID)
 				return null;
 		}
 		return GetCombatantFromByteArray(source, mycharID, false);
@@ -104,7 +99,7 @@ internal class CombatantMemory70 : CombatantMemory, ICombatantMemory70 {
 
 	[StructLayout(LayoutKind.Explicit)]
 	private unsafe struct CombatantMemory {
-		public static int Size => Marshal.SizeOf(typeof(CombatantMemory));
+		public static int Size => Marshal.SizeOf<CombatantMemory>();
 
 		// 64 bytes per both FFXIV_ACT_Plugin and aers/FFXIVClientStructs
 		public const int NameBytes = 64;

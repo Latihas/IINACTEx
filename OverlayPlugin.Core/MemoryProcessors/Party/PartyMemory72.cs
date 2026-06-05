@@ -1,68 +1,16 @@
 ﻿using System;
 using System.Runtime.InteropServices;
+using FFXIVClientStructs.FFXIV.Client.Game.Group;
 
 namespace RainbowMage.OverlayPlugin.MemoryProcessors.Party;
 
-internal interface IPartyMemory72 : IPartyMemory {
-}
+internal interface IPartyMemory72 : IPartyMemory;
 
-public class PartyMemory72 : PartyMemory, IPartyMemory72 {
+public class PartyMemory72(TinyIoCContainer container) : PartyMemory(container), IPartyMemory72 {
 	// Due to lack of multi-version support in FFXIVClientStructs, we need to duplicate these structures here per-version
 	// We use FFXIVClientStructs versions of the structs because they have more required details than FFXIV_ACT_Plugin's struct definitions
 
 	#region FFXIVClientStructs structs
-
-	[StructLayout(LayoutKind.Explicit, Size = 0x3E0)]
-	public unsafe struct StatusManager {
-		[FieldOffset(0x0)] public void* Owner;
-		[FieldOffset(0x8)] public fixed byte Status[0xC * 60]; // Client::Game::Status array
-		[FieldOffset(0x3C8)] public fixed byte Flags[7];
-		[FieldOffset(0x3D0)] public long Unk_3D0;
-		[FieldOffset(0x3D8)] public byte NumValidStatuses;
-		[FieldOffset(0x3D9)] public byte ExtraFlags;
-	}
-
-	[StructLayout(LayoutKind.Explicit, Size = 8)]
-	public struct ExtraProperty {
-		[FieldOffset(0)] public byte Key;
-		[FieldOffset(4)] public int Value;
-	}
-
-	[StructLayout(LayoutKind.Explicit, Size = 0x490)]
-	public unsafe struct PartyMember {
-		[FieldOffset(0x0)] public StatusManager StatusManager;
-		[FieldOffset(0x3E0)] public float X;
-		[FieldOffset(0x3E4)] public float Y;
-		[FieldOffset(0x3E8)] public float Z;
-
-		[FieldOffset(0x3F0)] public ulong Unk300;
-		[FieldOffset(0x3F0)] public ulong AccountId;
-
-		[FieldOffset(0x3F8)] public ulong ContentId;
-		[FieldOffset(0x400)] public uint EntityId;
-		[FieldOffset(0x404)] public uint PetEntityId;
-		[FieldOffset(0x408)] public uint CompanionEntityId;
-		[FieldOffset(0x40C)] public uint CurrentHP;
-		[FieldOffset(0x410)] public uint MaxHP;
-		[FieldOffset(0x414)] public ushort CurrentMP;
-		[FieldOffset(0x416)] public ushort MaxMP;
-		[FieldOffset(0x418)] public ushort TerritoryType;
-		[FieldOffset(0x41A)] public ushort HomeWorld;
-		[FieldOffset(0x41C)] public fixed byte Name[0x40];
-
-		[FieldOffset(0x460)] public void* UnkName;
-		[FieldOffset(0x460)] public void* NameOverride; // if non-null, replaces real name in ui (eg for blacklisted players)
-
-		[FieldOffset(0x468)] public byte Sex;
-		[FieldOffset(0x469)] public byte ClassJob;
-		[FieldOffset(0x46A)] public byte Level;
-		[FieldOffset(0x46B)] public byte DamageShield;
-		[FieldOffset(0x46C)] public ExtraProperty ExtraProperty1;
-		[FieldOffset(0x474)] public ExtraProperty ExtraProperty2;
-		[FieldOffset(0x47C)] public ExtraProperty ExtraProperty3;
-		[FieldOffset(0x484)] public byte Flags;
-	}
-
 	[StructLayout(LayoutKind.Explicit, Size = 0x10000)]
 	public unsafe struct GroupManager {
 		[FieldOffset(0x0000)] public fixed byte vtbls[0x20];
@@ -86,9 +34,6 @@ public class PartyMemory72 : PartyMemory, IPartyMemory72 {
 	}
 
 	#endregion
-
-	public PartyMemory72(TinyIoCContainer container) : base(container) {
-	}
 
 	public override Version GetVersion() => new(7, 2);
 
@@ -155,9 +100,9 @@ public class PartyMemory72 : PartyMemory, IPartyMemory72 {
 		for (var i = 0; i < count; ++i) {
 			var member = Marshal.PtrToStructure<PartyMember>(new IntPtr(ptr + i * sizeof(PartyMember)));
 			ret[i] = new PartyListEntry {
-				x = member.X,
-				y = member.Y,
-				z = member.Z,
+				x = member.Position.X,
+				y = member.Position.Y,
+				z = member.Position.Z,
 				contentId = (long)member.ContentId,
 				objectId = member.EntityId,
 				currentHP = member.CurrentHP,
@@ -166,7 +111,7 @@ public class PartyMemory72 : PartyMemory, IPartyMemory72 {
 				maxMP = member.MaxMP,
 				territoryType = member.TerritoryType,
 				homeWorld = member.HomeWorld,
-				name = FFXIVMemory.GetStringFromBytes(member.Name, 0x40),
+				name = member.NameString,
 				sex = member.Sex,
 				classJob = member.ClassJob,
 				level = member.Level,

@@ -3,20 +3,15 @@ using System.Collections.Generic;
 
 namespace RainbowMage.OverlayPlugin.MemoryProcessors.ContentFinderSettings;
 
-internal interface IContentFinderSettingsMemory71 : IContentFinderSettingsMemory {
-}
+internal interface IContentFinderSettingsMemory71 : IContentFinderSettingsMemory;
 
-internal class ContentFinderSettingsMemory71 : ContentFinderSettingsMemory, IContentFinderSettingsMemory71 {
+internal class ContentFinderSettingsMemory71(TinyIoCContainer container) : ContentFinderSettingsMemory(container, settingsSignature, inContentFinderSignature, -1), IContentFinderSettingsMemory71 {
 	// FUN_14184cea0:14184ceaa, DAT_142780dd0
 	private const string settingsSignature = "488D0D????????E8????????488BF84885C00F84????????488B4B??4889AC24";
 
 	// FUN_1400aa840:1400aa862
 	// IsLocalPlayerInParty:1400aa862 (after rename)
 	private const string inContentFinderSignature = "803D??????????74??E8????????488BC8";
-
-	public ContentFinderSettingsMemory71(TinyIoCContainer container)
-		: base(container, settingsSignature, inContentFinderSignature, -1) {
-	}
 
 	// For 7.0 and onwards, handle this properly.
 	// TODO: Once CN and KR are on 7.0, move this logic up to `ContentFinderSettings` for common use

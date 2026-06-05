@@ -5,17 +5,11 @@ using RainbowMage.OverlayPlugin.Handlers.WebSocket;
 
 namespace RainbowMage.OverlayPlugin.WebSocket;
 
-internal class OverlaySession : WsSession {
-	private EventDispatcher Dispatcher { get; }
-	private FFXIVRepository Repository { get; }
-	private ILogger Logger { get; }
+internal class OverlaySession(WsServer server, TinyIoCContainer container) : WsSession(server) {
+	private EventDispatcher Dispatcher { get; } = container.Resolve<EventDispatcher>();
+	private FFXIVRepository Repository { get; } = container.Resolve<FFXIVRepository>();
+	private ILogger Logger { get; } = container.Resolve<ILogger>();
 	private ISocketHandler? Handler { get; set; }
-
-	public OverlaySession(WsServer server, TinyIoCContainer container) : base(server) {
-		Dispatcher = container.Resolve<EventDispatcher>();
-		Repository = container.Resolve<FFXIVRepository>();
-		Logger = container.Resolve<ILogger>();
-	}
 
 	public override void OnWsConnected(HttpRequest request) {
 		Logger.Log(LogLevel.Debug, $"Overlay WebSocket session with Id {Id} connected!");

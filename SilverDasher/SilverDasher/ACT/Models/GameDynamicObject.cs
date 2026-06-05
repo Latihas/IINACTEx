@@ -23,7 +23,7 @@ public abstract class GameDynamicObject {
 
 	[JsonProperty("territory")] public uint TerritoryID;
 
-	[JsonProperty("coords")] internal Coordinate Coordinate;
+	[JsonProperty("coords")] internal Coordinate? Coordinate;
 
 	[JsonIgnore] public int Progress;
 

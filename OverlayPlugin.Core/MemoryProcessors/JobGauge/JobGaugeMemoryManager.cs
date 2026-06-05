@@ -68,7 +68,6 @@ public interface IJobGaugeMemory : IVersionedMemory {
 internal class JobGaugeMemoryManager : IJobGaugeMemory {
 	private readonly TinyIoCContainer container;
 	private readonly FFXIVRepository repository;
-	protected readonly ILogger logger;
 	private IJobGaugeMemory memory;
 
 	public JobGaugeMemoryManager(TinyIoCContainer container) {
@@ -76,7 +75,7 @@ internal class JobGaugeMemoryManager : IJobGaugeMemory {
 		container.Register<IJobGaugeMemory655, JobGaugeMemory655>();
 		container.Register<IJobGaugeMemory74, JobGaugeMemory74>();
 		repository = container.Resolve<FFXIVRepository>();
-		logger = container.Resolve<ILogger>();
+		container.Resolve<ILogger>();
 
 		var memory = container.Resolve<FFXIVMemory>();
 		memory.RegisterOnProcessChangeHandler(FindMemory);
@@ -91,9 +90,10 @@ internal class JobGaugeMemoryManager : IJobGaugeMemory {
 	}
 
 	public void ScanPointers() {
-		var candidates = new List<IJobGaugeMemory>();
-		candidates.Add(container.Resolve<IJobGaugeMemory655>());
-		candidates.Add(container.Resolve<IJobGaugeMemory74>());
+		var candidates = new List<IJobGaugeMemory> {
+			container.Resolve<IJobGaugeMemory655>(),
+			container.Resolve<IJobGaugeMemory74>()
+		};
 		memory = FFXIVMemory.FindCandidate(candidates, repository.GetMachinaRegion());
 	}
 
@@ -117,8 +117,7 @@ internal class JobGaugeMemoryManager : IJobGaugeMemory {
 	}
 }
 
-public interface IBaseJobGauge {
-}
+public interface IBaseJobGauge;
 
 #region Healer
 

@@ -14,10 +14,10 @@ public sealed class KeyboardHook : NativeWindow, IDisposable {
 	[DllImport("user32.dll")]
 	private static extern bool UnregisterHotKey(IntPtr hWnd, int id);
 
-	private static int WM_HOTKEY = 0x0312;
+	private static readonly int WM_HOTKEY = 0x0312;
 
-	private Dictionary<int, HotKeyInfo> _hotkeys = new();
-	private ILogger _logger;
+	private readonly Dictionary<int, HotKeyInfo> _hotkeys = new();
+	private readonly ILogger _logger;
 
 	/// <summary>
 	///     Overridden to get the notifications.

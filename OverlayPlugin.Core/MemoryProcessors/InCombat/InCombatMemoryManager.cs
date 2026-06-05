@@ -33,31 +33,16 @@ internal class InCombatMemoryManager : IInCombatMemory {
 	}
 
 	public void ScanPointers() {
-		var candidates = new List<IInCombatMemory>();
-		candidates.Add(container.Resolve<IInCombatMemory70>());
-		candidates.Add(container.Resolve<IInCombatMemory73>());
+		var candidates = new List<IInCombatMemory> {
+			container.Resolve<IInCombatMemory70>(),
+			container.Resolve<IInCombatMemory73>()
+		};
 		memory = FFXIVMemory.FindCandidate(candidates, repository.GetMachinaRegion());
 	}
 
-	public bool IsValid() {
-		if (memory == null || !memory.IsValid()) {
-			return false;
-		}
+	public bool IsValid() => memory != null && memory.IsValid();
 
-		return true;
-	}
+	public Version GetVersion() => !IsValid() ? null : memory.GetVersion();
 
-	public Version GetVersion() {
-		if (!IsValid())
-			return null;
-		return memory.GetVersion();
-	}
-
-	public bool GetInCombat() {
-		if (!IsValid()) {
-			return false;
-		}
-
-		return memory.GetInCombat();
-	}
+	public bool GetInCombat() => IsValid() && memory.GetInCombat();
 }

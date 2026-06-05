@@ -61,5 +61,4 @@ public class SendMessageEventArgs(string target, string message) : EventArgs {
 	public string Message { get; private set; } = message;
 }
 
-public class EndEncounterEventArgs : EventArgs {
-}
+public class EndEncounterEventArgs : EventArgs;

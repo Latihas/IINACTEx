@@ -9,7 +9,7 @@ namespace RainbowMage.OverlayPlugin;
 ///     ネイティブ関数を提供します。
 /// </summary>
 internal class NativeMethods {
-	private WinEventDelegate dele;
+	private readonly WinEventDelegate dele;
 
 	public NativeMethods(TinyIoCContainer container) {
 		ActiveWindowHandle = GetForegroundWindow();

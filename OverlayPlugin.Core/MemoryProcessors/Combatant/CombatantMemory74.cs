@@ -4,17 +4,13 @@ using System.Runtime.InteropServices;
 
 namespace RainbowMage.OverlayPlugin.MemoryProcessors.Combatant;
 
-internal interface ICombatantMemory74 : ICombatantMemory {
-}
+internal interface ICombatantMemory74 : ICombatantMemory;
 
-internal class CombatantMemory74 : CombatantMemory, ICombatantMemory74 {
+internal class CombatantMemory74(TinyIoCContainer container) : CombatantMemory(container, charmapSignature, CombatantMemory.Size, EffectMemory74.Size, 629), ICombatantMemory74 {
 	private const string charmapSignature = "488B5720B8000000E0483BD00F84????????488D0D";
 
 	// TODO: Once all regions are on 7.2, remove the new methods for `GetEffectEntries` and `GetEffectEntryFromByteArray`
 	// Remove the struct for `EffectMemory74`, and adjust the parent struct to have the correct size of 16 bytes.
-	public CombatantMemory74(TinyIoCContainer container)
-		: base(container, charmapSignature, CombatantMemory.Size, EffectMemory74.Size, 629) {
-	}
 
 	public override Version GetVersion() => new(7, 4);
 
@@ -107,7 +103,7 @@ internal class CombatantMemory74 : CombatantMemory, ICombatantMemory74 {
 
 	[StructLayout(LayoutKind.Explicit)]
 	private unsafe struct CombatantMemory {
-		public static int Size => Marshal.SizeOf(typeof(CombatantMemory));
+		public static int Size => Marshal.SizeOf<CombatantMemory>();
 
 		// 64 bytes per both FFXIV_ACT_Plugin and aers/FFXIVClientStructs
 		public const int NameBytes = 64;

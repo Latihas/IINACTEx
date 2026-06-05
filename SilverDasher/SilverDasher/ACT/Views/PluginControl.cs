@@ -239,7 +239,7 @@ public class PluginControl {
 
 	private static void ButtonTestTTSClicked() => Notifier.TestTTS();
 
-	private void ButtonTestToastClicked() => Painter.Notifier.TestToast();
+	private void ButtonTestToastClicked() => Notifier.TestToast();
 
 	private void ButtonRestartClicked() => Painter.Self.Painter.Self.RestartLoop(true);
 }

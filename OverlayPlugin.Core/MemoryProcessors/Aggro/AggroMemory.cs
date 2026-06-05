@@ -7,45 +7,21 @@ using RainbowMage.OverlayPlugin.MemoryProcessors.Target;
 
 namespace RainbowMage.OverlayPlugin.MemoryProcessors.Aggro;
 
-public abstract class AggroMemory : IAggroMemory {
-	private FFXIVMemory memory;
-	private ILogger logger;
-	private ICombatantMemory combatantMemory;
-	private ITargetMemory targetMemory;
+public abstract class AggroMemory(TinyIoCContainer container, string aggroSignature, int aggroSignatureOffset) : IAggroMemory {
+	private readonly FFXIVMemory memory = container.Resolve<FFXIVMemory>();
+	private readonly ILogger logger = container.Resolve<ILogger>();
+	private readonly ICombatantMemory combatantMemory = container.Resolve<ICombatantMemory>();
+	private readonly ITargetMemory targetMemory = container.Resolve<ITargetMemory>();
 
 	private IntPtr aggroAddress = IntPtr.Zero;
-
-	private string aggroSignature;
-	private int aggroSignatureOffset;
-
-	public AggroMemory(TinyIoCContainer container, string aggroSignature, int aggroSignatureOffset) {
-		this.aggroSignature = aggroSignature;
-		this.aggroSignatureOffset = aggroSignatureOffset;
-		logger = container.Resolve<ILogger>();
-		memory = container.Resolve<FFXIVMemory>();
-		combatantMemory = container.Resolve<ICombatantMemory>();
-		targetMemory = container.Resolve<ITargetMemory>();
-	}
 
 	private void ResetPointers() {
 		aggroAddress = IntPtr.Zero;
 	}
 
-	private bool HasValidPointers() {
-		if (aggroAddress == IntPtr.Zero)
-			return false;
-		return true;
-	}
+	private bool HasValidPointers() => aggroAddress != IntPtr.Zero;
 
-	public bool IsValid() {
-		if (!memory.IsValid())
-			return false;
-
-		if (!HasValidPointers())
-			return false;
-
-		return true;
-	}
+	public bool IsValid() => memory.IsValid() && HasValidPointers();
 
 	public void ScanPointers() {
 		ResetPointers();
@@ -55,7 +31,7 @@ public abstract class AggroMemory : IAggroMemory {
 		var fail = new List<string>();
 
 		var list = memory.SigScan(aggroSignature, 0, true);
-		if (list != null && list.Count > 0) {
+		if (list is { Count: > 0 }) {
 			aggroAddress = IntPtr.Add(list[0], aggroSignatureOffset);
 		} else {
 			aggroAddress = IntPtr.Zero;
@@ -90,7 +66,7 @@ public abstract class AggroMemory : IAggroMemory {
 	[StructLayout(LayoutKind.Explicit, Size = 0x900)]
 	private unsafe struct MemoryAggroList {
 		public const int MaxEntries = 31;
-		public static int Size => Marshal.SizeOf(typeof(MemoryAggroList));
+		public static int Size => Marshal.SizeOf<MemoryAggroList>();
 
 		[FieldOffset(0x00)] public fixed byte EntryBuffer[MaxEntries];
 

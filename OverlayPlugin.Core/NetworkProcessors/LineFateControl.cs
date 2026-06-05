@@ -58,7 +58,7 @@ internal class LineFateControl : LineBaseSubMachina<LineFateControl.FateControlP
 		}
 	}
 
-	private static Dictionary<uint, uint> fates = new();
+	private static readonly Dictionary<uint, uint> fates = new();
 
 	public const uint LogFileLineID = 258;
 

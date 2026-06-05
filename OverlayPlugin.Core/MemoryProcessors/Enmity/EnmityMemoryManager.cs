@@ -32,8 +32,7 @@ public class EnmityMemoryManager : IEnmityMemory {
 	}
 
 	public void ScanPointers() {
-		var candidates = new List<IEnmityMemory>();
-		candidates.Add(container.Resolve<IEnmityMemory60>());
+		var candidates = new List<IEnmityMemory> { container.Resolve<IEnmityMemory60>() };
 		memory = FFXIVMemory.FindCandidate(candidates, repository.GetMachinaRegion());
 	}
 

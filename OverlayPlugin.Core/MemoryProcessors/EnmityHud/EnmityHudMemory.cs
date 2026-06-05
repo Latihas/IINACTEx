@@ -3,32 +3,17 @@ using System.Collections.Generic;
 
 namespace RainbowMage.OverlayPlugin.MemoryProcessors.EnmityHud;
 
-public abstract class EnmityHudMemory : IEnmityHudMemory {
-	private FFXIVMemory memory;
-	private ILogger logger;
+public abstract class EnmityHudMemory(
+	TinyIoCContainer container, string enmityHudSignature, int[] enmityHudPointerPath, int enmityHudCountOffset,
+	int enmityHudEntryOffset, int enmityHudEntrySize)
+	: IEnmityHudMemory {
+	private readonly FFXIVMemory memory = container.Resolve<FFXIVMemory>();
+	private readonly ILogger logger = container.Resolve<ILogger>();
 
 	private IntPtr enmityHudAddress = IntPtr.Zero;
 	private IntPtr enmityHudDynamicAddress = IntPtr.Zero;
 
-	private string enmityHudSignature;
-	private int[] enmityHudPointerPath;
-	private int enmityHudCountOffset;
-	private int enmityHudEntryOffset;
-	private int enmityHudEntrySize;
-
 	private DateTimeOffset lastDateTimeDynamicAddressChecked = DateTimeOffset.UtcNow;
-
-	public EnmityHudMemory(
-		TinyIoCContainer container, string enmityHudSignature, int[] enmityHudPointerPath, int enmityHudCountOffset,
-		int enmityHudEntryOffset, int enmityHudEntrySize) {
-		this.enmityHudSignature = enmityHudSignature;
-		this.enmityHudPointerPath = enmityHudPointerPath;
-		this.enmityHudCountOffset = enmityHudCountOffset;
-		this.enmityHudEntryOffset = enmityHudEntryOffset;
-		this.enmityHudEntrySize = enmityHudEntrySize;
-		logger = container.Resolve<ILogger>();
-		memory = container.Resolve<FFXIVMemory>();
-	}
 
 	private void ResetPointers() {
 		enmityHudAddress = IntPtr.Zero;

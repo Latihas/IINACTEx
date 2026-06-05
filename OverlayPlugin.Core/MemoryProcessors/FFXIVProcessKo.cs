@@ -5,7 +5,7 @@ using Newtonsoft.Json.Linq;
 
 namespace RainbowMage.OverlayPlugin.MemoryProcessors;
 
-public class FFXIVProcessKo : FFXIVProcess {
+public class FFXIVProcessKo(TinyIoCContainer container) : FFXIVProcess(container) {
 	//
 	// for FFXIV KO version: 5.2
 	//
@@ -14,7 +14,7 @@ public class FFXIVProcessKo : FFXIVProcess {
 	//
 	[StructLayout(LayoutKind.Explicit)]
 	public unsafe struct EntityMemory {
-		public static int Size => Marshal.SizeOf(typeof(EntityMemory));
+		public static int Size => Marshal.SizeOf<EntityMemory>();
 
 		// Unknown size, but this is the bytes up to the next field.
 		public const int nameBytes = 68;
@@ -61,20 +61,17 @@ public class FFXIVProcessKo : FFXIVProcess {
 		[FieldOffset(0x61)] public short shieldPercentage;
 	}
 
-	public FFXIVProcessKo(TinyIoCContainer container) : base(container) {
-	}
-
 	// TODO: all of this could be refactored into structures of some sort
 	// instead of just being loose variables everywhere.
 
 	// A piece of code that reads the pointer to the list of all entities, that we
 	// refer to as the charmap. The pointer is the 4 byte ?????????.
-	private static string kCharmapSignature = "574883EC??488B1D????????488BF233D2";
+	private static readonly string kCharmapSignature = "574883EC??488B1D????????488BF233D2";
 
-	private static int kCharmapSignatureOffset = -9;
+	private static readonly int kCharmapSignatureOffset = -9;
 
 	// The signature finds a pointer in the executable code which uses RIP addressing.
-	private static bool kCharmapSignatureRIP = true;
+	private static readonly bool kCharmapSignatureRIP = true;
 
 	// The pointer is to a structure as:
 	//
@@ -82,26 +79,26 @@ public class FFXIVProcessKo : FFXIVProcess {
 	// CharmapStruct {
 	//   EntityStruct* player;
 	// }
-	private static int kCharmapStructOffsetPlayer = 0;
+	private static readonly int kCharmapStructOffsetPlayer = 0;
 
 	// In combat boolean.
 	// Variable is set at 83FA587D70534883EC204863C2410FB6D8381C08744E (offset=0)
 	// via a mov [rax+rcx],bl line.
 	// This sig below finds the calling function that sets rax(offset) and rcx(base address).
-	private static string kInCombatSignature = "84C07425450FB6C7488D0D";
-	private static int kInCombatBaseOffset = 0;
-	private static bool kInCombatBaseRIP = true;
-	private static int kInCombatOffsetOffset = 5;
-	private static bool kInCombatOffsetRIP = false;
+	private static readonly string kInCombatSignature = "84C07425450FB6C7488D0D";
+	private static readonly int kInCombatBaseOffset = 0;
+	private static readonly bool kInCombatBaseRIP = true;
+	private static readonly int kInCombatOffsetOffset = 5;
+	private static readonly bool kInCombatOffsetRIP = false;
 
 	// A piece of code that reads the job data.
 	// The pointer of interest is the first ???????? in the signature.
-	private static string kJobDataSignature = "488B0D????????4885C90F84????????488B05????????3C03";
+	private static readonly string kJobDataSignature = "488B0D????????4885C90F84????????488B05????????3C03";
 
-	private static int kJobDataSignatureOffset = -22;
+	private static readonly int kJobDataSignatureOffset = -22;
 
 	// The signature finds a pointer in the executable code which uses RIP addressing.
-	private static bool kJobDataSignatureRIP = true;
+	private static readonly bool kJobDataSignatureRIP = true;
 
 	internal override void ReadSignatures() {
 		var p = SigScan(kCharmapSignature, kCharmapSignatureOffset, kCharmapSignatureRIP);
@@ -328,7 +325,7 @@ public class FFXIVProcessKo : FFXIVProcess {
 
 		[NonSerialized] [FieldOffset(0x04)] private Song song_type;
 
-		public string songName => !Enum.IsDefined(typeof(Song), song_type) ? "None" : song_type.ToString();
+		public string songName => !Enum.IsDefined(song_type) ? "None" : song_type.ToString();
 	}
 
 	[StructLayout(LayoutKind.Explicit)]

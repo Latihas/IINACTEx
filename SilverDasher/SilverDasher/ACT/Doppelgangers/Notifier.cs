@@ -1,5 +1,4 @@
 using System;
-using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
 using Advanced_Combat_Tracker;
 using Dalamud.Interface.ImGuiNotification;
@@ -10,7 +9,7 @@ using SilverDasher.ACT.Storages;
 
 namespace SilverDasher.ACT.Doppelgangers;
 
-internal class Notifier(SilverDasher self) : Doppelganger(self) {
+internal partial class Notifier(SilverDasher self) : Doppelganger(self) {
 	private readonly JsonSerializerSettings unpackSettings = new() {
 		NullValueHandling = NullValueHandling.Ignore,
 		ContractResolver = StrNullToEmptyContractResolver.DefaultInstance
@@ -38,7 +37,7 @@ internal class Notifier(SilverDasher self) : Doppelganger(self) {
 				var map = (int)val.m.Value;
 				var num2 = 0;
 				var hp = 100;
-				Coordinate coords = null;
+				Coordinate? coords = null;
 				try {
 					num2 = (int)val.i.Value;
 					if (val.c != null) {
@@ -65,7 +64,7 @@ internal class Notifier(SilverDasher self) : Doppelganger(self) {
 				// var map2 = (int)val.m.Value;
 				var num4 = 0;
 				var hp2 = 0;
-				Coordinate coords2 = null;
+				Coordinate? coords2 = null;
 				try {
 					num4 = (int)val.i.Value;
 					if (val.c != null) {
@@ -93,13 +92,11 @@ internal class Notifier(SilverDasher self) : Doppelganger(self) {
 		}
 	}
 
-	public void NotifyMobStatusChanged(string worldId, int instance, HuntMob mob) {
+	public void NotifyMobStatusChanged(string worldId, int instance, HuntMob mob) =>
 		Notify(worldId, instance, mob, mob.State);
-	}
 
-	public void NotifyFateStatusChanged(string worldId, int instance, Fate fate) {
+	public void NotifyFateStatusChanged(string worldId, int instance, Fate fate) =>
 		Notify(worldId, instance, fate, fate.State);
-	}
 
 	private void Notify(string worldId, int instance, GameDynamicObject gobj, HuntState status) {
 		if (Keeper.InDuty() && Keeper.Config.PauseInDuty) {
@@ -143,27 +140,23 @@ internal class Notifier(SilverDasher self) : Doppelganger(self) {
 		ActGlobals.oFormActMain.TTS(message + MobStorage.GetStateName(status));
 	}
 
-	[SuppressMessage("Performance", "SYSLIB1054")]
-	[SuppressMessage("Performance", "CA2101")]
-	[DllImport("winmm.dll")]
-	private static extern bool PlaySound(string pszSound, IntPtr hmod, uint fdwSound);
+	[LibraryImport("winmm.dll", StringMarshalling = StringMarshalling.Utf16)]
+	[return: MarshalAs(UnmanagedType.Bool)]
+	private static partial void PlaySound(string pszSound, IntPtr hmod, uint fdwSound);
 
-
-	private void SendToast(string message, HuntState status, string coord = "", bool checkPermit = true) {
-		lock (this) {
-			if (checkPermit && (!Keeper.Config.SystemToast || !Keeper.Config.StatusPushable("Toast", status))) return;
-			SilverDasher.NotificationManager.AddNotification(new Notification {
-				Content = message,
-				Title = coord + MobStorage.GetStateName(status)
-			});
-			try {
-				PlaySound("Notification.Default", IntPtr.Zero, 0x10000 | 0x0001 | 0x0002);
-			} catch {
-				//
-			}
+	private static void SendToast(string message, HuntState status, string coord = "", bool checkPermit = true) {
+		if (checkPermit && (!Keeper.Config.SystemToast || !Keeper.Config.StatusPushable("Toast", status))) return;
+		SilverDasher.NotificationManager.AddNotification(new Notification {
+			Content = message,
+			Title = coord + MobStorage.GetStateName(status)
+		});
+		try {
+			PlaySound("Notification.Default", IntPtr.Zero, 0x10000 | 0x0001 | 0x0002);
+		} catch {
+			//
 		}
 	}
 
 	public static void TestTTS() => ActGlobals.oFormActMain.TTS("亚以太利斯 - 艾欧泽亚 - 光之战士 (1.0，1.0) 健康");
-	public void TestToast() => SendToast("亚以太利斯 - 艾欧泽亚 - 光之战士", HuntState.Healthy, "(1.0，1.0)", false);
+	public static void TestToast() => SendToast("亚以太利斯 - 艾欧泽亚 - 光之战士", HuntState.Healthy, "(1.0，1.0)", false);
 }

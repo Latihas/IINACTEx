@@ -8,14 +8,9 @@ namespace RainbowMage.OverlayPlugin.MemoryProcessors.AtkStage;
 
 using AtkStage = FFXIVClientStructs.FFXIV.Component.GUI.AtkStage;
 
-internal interface IAtkStageMemory62 : IAtkStageMemory {
-}
+internal interface IAtkStageMemory62 : IAtkStageMemory;
 
-internal class AtkStageMemory62 : AtkStageMemory, IAtkStageMemory62 {
-	public AtkStageMemory62(TinyIoCContainer container) :
-		base(container) {
-	}
-
+internal class AtkStageMemory62(TinyIoCContainer container) : AtkStageMemory(container), IAtkStageMemory62 {
 	public override Version GetVersion() => new(6, 2);
 
 	public unsafe IntPtr GetAddonAddress(string name) {
@@ -351,14 +346,12 @@ internal class AtkStageMemory62 : AtkStageMemory, IAtkStageMemory62 {
 		return (T?)GetAddon(name);
 	}
 
-	public object GetAddon(string name) {
-		if (!AddonMap.ContainsKey(name) || !IsValid())
+	public object? GetAddon(string name) {
+		if (!AddonMap.TryGetValue(name, out var addonType) || !IsValid())
 			return null;
 
 		var ptr = GetAddonAddress(name);
 		if (ptr == nint.Zero) return null;
-		var addonType = AddonMap[name];
-
 		var addon = Marshal.PtrToStructure(ptr, addonType);
 		return addon;
 	}

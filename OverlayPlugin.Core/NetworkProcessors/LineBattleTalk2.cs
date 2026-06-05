@@ -4,10 +4,10 @@ using RainbowMage.OverlayPlugin.NetworkProcessors.PacketHelper;
 namespace RainbowMage.OverlayPlugin.NetworkProcessors;
 
 internal class LineBattleTalk2(TinyIoCContainer container) : LineBaseCustom<
-	Server_MessageHeader_Global, LineBattleTalk2.BattleTalk2_v655,
-	Server_MessageHeader_CN, LineBattleTalk2.BattleTalk2_v655,
-	Server_MessageHeader_KR, LineBattleTalk2.BattleTalk2_v655,
-	Server_MessageHeader_TC, LineBattleTalk2.BattleTalk2_v655>(container, LogFileLineID, logLineName, MachinaPacketName) {
+	LineBattleTalk2.BattleTalk2_v655,
+	LineBattleTalk2.BattleTalk2_v655,
+	LineBattleTalk2.BattleTalk2_v655,
+	LineBattleTalk2.BattleTalk2_v655>(container, LogFileLineID, logLineName, MachinaPacketName) {
 	[StructLayout(LayoutKind.Explicit, Size = structSize, Pack = 1)]
 	internal struct BattleTalk2_v655 : IPacketStruct {
 		// 00|2024-02-25T15:13:29.0000000-05:00|0044|Whiskerwall Kupdi Koop|Mogglesguard, assemble! We must drive them out together, kupo!|e9f836e9767bed2e

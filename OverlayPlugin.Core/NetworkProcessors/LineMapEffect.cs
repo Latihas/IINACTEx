@@ -6,10 +6,10 @@ using RainbowMage.OverlayPlugin.NetworkProcessors.PacketHelper;
 namespace RainbowMage.OverlayPlugin.NetworkProcessors;
 
 internal class LineMapEffect : LineBaseCustom<
-	Server_MessageHeader_Global, LineMapEffect.MapEffect_v62,
-	Server_MessageHeader_CN, LineMapEffect.MapEffect_v62,
-	Server_MessageHeader_KR, LineMapEffect.MapEffect_v62,
-	Server_MessageHeader_TC, LineMapEffect.MapEffect_v62> {
+	LineMapEffect.MapEffect_v62,
+	LineMapEffect.MapEffect_v62,
+	LineMapEffect.MapEffect_v62,
+	LineMapEffect.MapEffect_v62> {
 	// `MapEffect` and some of the `MapEffect#` packets can be verified in Zelenia Normal, when blooms appear and despawn
 	[StructLayout(LayoutKind.Sequential, Pack = 1)]
 	internal struct MapEffect_v62 : IPacketStruct, IMapEffectPacket {
@@ -176,22 +176,22 @@ internal class LineMapEffect : LineBaseCustom<
 	public const string MachinaPacketName = "MapEffect";
 	private readonly ILogger logger;
 	private readonly RegionalizedPacketHelper<
-		Server_MessageHeader_Global, MapEffect4_v72,
-		Server_MessageHeader_CN, MapEffect4_v72,
-		Server_MessageHeader_KR, MapEffect4_v72,
-		Server_MessageHeader_TC, MapEffect4_v72> packetHelper_4;
+		MapEffect4_v72,
+		MapEffect4_v72,
+		MapEffect4_v72,
+		MapEffect4_v72> packetHelper_4;
 
 	private readonly RegionalizedPacketHelper<
-		Server_MessageHeader_Global, MapEffect8_v72,
-		Server_MessageHeader_CN, MapEffect8_v72,
-		Server_MessageHeader_KR, MapEffect8_v72,
-		Server_MessageHeader_TC, MapEffect8_v72> packetHelper_8;
+		MapEffect8_v72,
+		MapEffect8_v72,
+		MapEffect8_v72,
+		MapEffect8_v72> packetHelper_8;
 
 	private readonly RegionalizedPacketHelper<
-		Server_MessageHeader_Global, MapEffect12_v72,
-		Server_MessageHeader_CN, MapEffect12_v72,
-		Server_MessageHeader_KR, MapEffect12_v72,
-		Server_MessageHeader_TC, MapEffect12_v72> packetHelper_12;
+		MapEffect12_v72,
+		MapEffect12_v72,
+		MapEffect12_v72,
+		MapEffect12_v72> packetHelper_12;
 
 	public LineMapEffect(TinyIoCContainer container)
 		: base(container, LogFileLineID, logLineName, MachinaPacketName) {
@@ -200,22 +200,22 @@ internal class LineMapEffect : LineBaseCustom<
 		var opcodeConfig = container.Resolve<OverlayPluginLogLineConfig>();
 
 		packetHelper_4 = RegionalizedPacketHelper<
-			Server_MessageHeader_Global, MapEffect4_v72,
-			Server_MessageHeader_CN, MapEffect4_v72,
-			Server_MessageHeader_KR, MapEffect4_v72,
-			Server_MessageHeader_TC, MapEffect4_v72>.CreateFromOpcodeConfig(opcodeConfig, $"{MachinaPacketName}4");
+			MapEffect4_v72,
+			MapEffect4_v72,
+			MapEffect4_v72,
+			MapEffect4_v72>.CreateFromOpcodeConfig(opcodeConfig, $"{MachinaPacketName}4");
 
 		packetHelper_8 = RegionalizedPacketHelper<
-			Server_MessageHeader_Global, MapEffect8_v72,
-			Server_MessageHeader_CN, MapEffect8_v72,
-			Server_MessageHeader_KR, MapEffect8_v72,
-			Server_MessageHeader_TC, MapEffect8_v72>.CreateFromOpcodeConfig(opcodeConfig, $"{MachinaPacketName}8");
+			MapEffect8_v72,
+			MapEffect8_v72,
+			MapEffect8_v72,
+			MapEffect8_v72>.CreateFromOpcodeConfig(opcodeConfig, $"{MachinaPacketName}8");
 
 		packetHelper_12 = RegionalizedPacketHelper<
-			Server_MessageHeader_Global, MapEffect12_v72,
-			Server_MessageHeader_CN, MapEffect12_v72,
-			Server_MessageHeader_KR, MapEffect12_v72,
-			Server_MessageHeader_TC, MapEffect12_v72>.CreateFromOpcodeConfig(opcodeConfig, $"{MachinaPacketName}12");
+			MapEffect12_v72,
+			MapEffect12_v72,
+			MapEffect12_v72,
+			MapEffect12_v72>.CreateFromOpcodeConfig(opcodeConfig, $"{MachinaPacketName}12");
 	}
 
 	protected override void MessageReceived(string id, long epoch, byte[] message) {
@@ -230,10 +230,10 @@ internal class LineMapEffect : LineBaseCustom<
 	}
 
 	protected bool MessageReceivedSubHandler<T>(RegionalizedPacketHelper<
-		Server_MessageHeader_Global, T,
-		Server_MessageHeader_CN, T,
-		Server_MessageHeader_KR, T,
-		Server_MessageHeader_TC, T> helper, long epoch, byte[] message) where T : unmanaged, IMapEffectPacket, IPacketStruct {
+		T,
+		T,
+		T,
+		T> helper, long epoch, byte[] message) where T : unmanaged, IMapEffectPacket, IPacketStruct {
 		if (packetHelper == null)
 			return true;
 

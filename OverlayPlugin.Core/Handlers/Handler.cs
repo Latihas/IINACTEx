@@ -5,16 +5,10 @@ using Newtonsoft.Json.Linq;
 
 namespace RainbowMage.OverlayPlugin.Handlers;
 
-internal abstract class Handler : IHandler, IEventReceiver {
-	public string Name { get; }
-	protected ILogger Logger { get; }
-	private EventDispatcher Dispatcher { get; }
-
-	protected Handler(string name, ILogger logger, EventDispatcher eventDispatcher) {
-		Name = name;
-		Logger = logger;
-		Dispatcher = eventDispatcher;
-	}
+internal abstract class Handler(string name, ILogger logger, EventDispatcher eventDispatcher) : IHandler, IEventReceiver {
+	public string Name { get; } = name;
+	protected ILogger Logger { get; } = logger;
+	private EventDispatcher Dispatcher { get; } = eventDispatcher;
 
 	protected abstract void Send(JObject data);
 	public void HandleEvent(JObject e) => Send(e);

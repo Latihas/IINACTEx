@@ -20,13 +20,11 @@ public static partial class ActGlobals {
 
 	public static void Init() {
 		Trans = new ActLocalization.LocalizationStringsHelper();
-		// selectiveList = new SortedDictionary<string, bool>();
 		ActionDataLock = new object();
 	}
 
 	public static void Dispose() {
 		oFormActMain.RemoveFrameworkUpdates();
 		oFormActMain.Dispose();
-		// selectiveList.Clear();
 	}
 }

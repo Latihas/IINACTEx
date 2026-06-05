@@ -52,22 +52,15 @@ public abstract class PartyMemory {
 	public PartyMemory(TinyIoCContainer container) {
 		logger = container.Resolve<ILogger>();
 		memory = container.Resolve<FFXIVMemory>();
-
 		var plugin = FFXIVRepository.GetPluginData();
 		var readParty = (ISignatureManager)plugin._iocContainer.GetService(typeof(ISignatureManager));
-		var sigType = (SignatureType)0x50;
-
-		GetGroupManagerAddress = () => readParty!.Read(sigType);
+		GetGroupManagerAddress = () => readParty.Read(SignatureType.PartyList);
 	}
 
-	public bool IsValid() {
+	public bool IsValid() =>
 		// The GroupManager addresses are static and never change
 		// So we don't need to reset pointers or check for valid pointers
-		if (!memory.IsValid())
-			return false;
-
-		return true;
-	}
+		memory.IsValid();
 
 	public void ScanPointers() {
 		if (!memory.IsValid())
@@ -101,9 +94,5 @@ public abstract class PartyMemory {
 
 	public abstract Version GetVersion();
 
-	public IntPtr GetPointer() {
-		if (!IsValid())
-			return IntPtr.Zero;
-		return partyInstanceAddress;
-	}
+	public IntPtr GetPointer() => !IsValid() ? IntPtr.Zero : partyInstanceAddress;
 }

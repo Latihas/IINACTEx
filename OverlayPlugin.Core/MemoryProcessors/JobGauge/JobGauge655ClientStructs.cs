@@ -3,7 +3,7 @@ using Newtonsoft.Json;
 
 namespace RainbowMage.OverlayPlugin.MemoryProcessors.JobGauge;
 
-internal partial class JobGaugeMemory655 : JobGaugeMemory, IJobGaugeMemory655 {
+internal partial class JobGaugeMemory655 : IJobGaugeMemory655 {
 	// Due to lack of multi-version support in FFXIVClientStructs, we need to duplicate these structures here per-version
 	// We use FFXIVClientStructs versions of the structs because they have more required details than FFXIV_ACT_Plugin's struct definitions
 
@@ -389,11 +389,11 @@ internal partial class JobGaugeMemory655 : JobGaugeMemory, IJobGaugeMemory655 {
 		[FieldOffset(0x08)] public byte Ammo;
 		[FieldOffset(0x0A)] public short MaxTimerDuration;
 		[FieldOffset(0x0C)] public byte AmmoComboStep;
-
+	
 		byte IBaseGunbreakerGauge.Ammo => Ammo;
-
+	
 		short IBaseGunbreakerGauge.MaxTimerDuration => MaxTimerDuration;
-
+	
 		byte IBaseGunbreakerGauge.AmmoComboStep => AmmoComboStep;
 	}
 

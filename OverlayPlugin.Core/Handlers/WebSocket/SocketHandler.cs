@@ -6,14 +6,8 @@ using RainbowMage.OverlayPlugin.WebSocket;
 
 namespace RainbowMage.OverlayPlugin.Handlers.WebSocket;
 
-internal class SocketHandler : Handler, ISocketHandler {
-	private OverlaySession Session { get; }
-
-	public SocketHandler(
-		ILogger logger, EventDispatcher eventDispatcher, OverlaySession session) : base(
-		"WSHandler", logger, eventDispatcher) {
-		Session = session;
-	}
+internal class SocketHandler(ILogger logger, EventDispatcher eventDispatcher, OverlaySession session) : Handler("WSHandler", logger, eventDispatcher), ISocketHandler {
+	private OverlaySession Session { get; } = session;
 
 	protected override void Send(JObject e) => Session.SendTextAsync(e.ToString());
 

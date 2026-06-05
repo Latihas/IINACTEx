@@ -3,45 +3,17 @@ using System.Collections.Generic;
 
 namespace RainbowMage.OverlayPlugin.MemoryProcessors.InCombat;
 
-public abstract class InCombatMemory {
-	protected readonly FFXIVMemory memory;
-	protected readonly ILogger logger;
+public abstract class InCombatMemory(TinyIoCContainer container, string inCombatSignature, int inCombatSignatureOffset, int inCombatRipOffset) {
+	protected readonly FFXIVMemory memory = container.Resolve<FFXIVMemory>();
+	protected readonly ILogger logger = container.Resolve<ILogger>();
 
 	protected IntPtr inCombatAddress = IntPtr.Zero;
 
-	private string inCombatSignature;
+	private void ResetPointers() => inCombatAddress = IntPtr.Zero;
 
-	private int inCombatSignatureOffset;
-	private int inCombatRIPOffset;
+	private bool HasValidPointers() => inCombatAddress != IntPtr.Zero;
 
-	public InCombatMemory(
-		TinyIoCContainer container, string inCombatSignature, int inCombatSignatureOffset, int inCombatRIPOffset) {
-		this.inCombatSignature = inCombatSignature;
-		this.inCombatSignatureOffset = inCombatSignatureOffset;
-		this.inCombatRIPOffset = inCombatRIPOffset;
-		logger = container.Resolve<ILogger>();
-		memory = container.Resolve<FFXIVMemory>();
-	}
-
-	private void ResetPointers() {
-		inCombatAddress = IntPtr.Zero;
-	}
-
-	private bool HasValidPointers() {
-		if (inCombatAddress == IntPtr.Zero)
-			return false;
-		return true;
-	}
-
-	public bool IsValid() {
-		if (!memory.IsValid())
-			return false;
-
-		if (!HasValidPointers())
-			return false;
-
-		return true;
-	}
+	public bool IsValid() => memory.IsValid() && HasValidPointers();
 
 	public void ScanPointers() {
 		ResetPointers();
@@ -50,9 +22,9 @@ public abstract class InCombatMemory {
 
 		var fail = new List<string>();
 
-		var list = memory.SigScan(inCombatSignature, inCombatSignatureOffset, true, inCombatRIPOffset);
+		var list = memory.SigScan(inCombatSignature, inCombatSignatureOffset, true, inCombatRipOffset);
 
-		if (list != null && list.Count > 0) {
+		if (list is { Count: > 0 }) {
 			inCombatAddress = list[0];
 		} else {
 			inCombatAddress = IntPtr.Zero;

@@ -6,12 +6,8 @@ namespace RainbowMage.OverlayPlugin;
 /// <summary>
 ///     ログを記録する機能を提供するクラス。
 /// </summary>
-public class Logger : ILogger {
-	public Logger(IPluginLog pluginLog) {
-		PluginLog = pluginLog;
-	}
-
-	private IPluginLog PluginLog { get; }
+public class Logger(IPluginLog pluginLog) : ILogger {
+	private IPluginLog PluginLog { get; } = pluginLog;
 
 	/// <summary>
 	///     メッセージを指定してログを記録します。

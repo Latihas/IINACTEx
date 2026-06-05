@@ -5,6 +5,7 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using Machina.FFXIV;
+using Machina.FFXIV.Headers;
 
 namespace RainbowMage.OverlayPlugin.NetworkProcessors.PacketHelper;
 
@@ -67,13 +68,13 @@ internal static class MachinaMap {
 		}
 
 		// Currently Machina uses the same message header for all regions. Allow for that to change in the future.
-		HeaderType_Global = typeof(Machina.FFXIV.Headers.Server_MessageHeader);
+		HeaderType_Global = typeof(Server_MessageHeader);
 		MachinaHeaderWrapper.InitTypePropertyMap(HeaderType_Global);
-		HeaderType_CN = typeof(Machina.FFXIV.Headers.Server_MessageHeader);
+		HeaderType_CN = typeof(Server_MessageHeader);
 		MachinaHeaderWrapper.InitTypePropertyMap(HeaderType_CN);
-		HeaderType_KR = typeof(Machina.FFXIV.Headers.Server_MessageHeader);
+		HeaderType_KR = typeof(Server_MessageHeader);
 		MachinaHeaderWrapper.InitTypePropertyMap(HeaderType_KR);
-		HeaderType_TC = typeof(Machina.FFXIV.Headers.Server_MessageHeader);
+		HeaderType_TC = typeof(Server_MessageHeader);
 		MachinaHeaderWrapper.InitTypePropertyMap(HeaderType_TC);
 	}
 
@@ -256,17 +257,12 @@ public class MachinaPacketHelper<PacketType> : IPacketHelper
 	}
 }
 
-public class MachinaHeaderWrapper : IHeaderStruct {
-	public readonly object header;
+public class MachinaHeaderWrapper(object header, Type headerType = null) : IHeaderStruct {
+	public readonly object header = header;
 
-	private static Dictionary<Type, Dictionary<string, FieldInfo>> typePropertyMap = new();
+	private static readonly Dictionary<Type, Dictionary<string, FieldInfo>> typePropertyMap = new();
 
-	private Dictionary<string, FieldInfo> propMap;
-
-	public MachinaHeaderWrapper(object header, Type headerType = null) {
-		propMap = typePropertyMap[headerType ?? header.GetType()];
-		this.header = header;
-	}
+	private readonly Dictionary<string, FieldInfo> propMap = typePropertyMap[headerType ?? header.GetType()];
 
 	public static void InitTypePropertyMap(Type type) {
 		// Account for multiple regions sharing the same header

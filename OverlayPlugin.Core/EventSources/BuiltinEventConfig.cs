@@ -15,7 +15,7 @@ public class BuiltinEventConfig {
 	public event EventHandler EndEncounterOutOfCombatChanged;
 	public event EventHandler LogLinesChanged;
 
-	private int updateInterval;
+	private int updateInterval = 1;
 
 	public int UpdateInterval {
 		get => updateInterval;
@@ -26,7 +26,7 @@ public class BuiltinEventConfig {
 		}
 	}
 
-	private int enmityIntervalMs;
+	private int enmityIntervalMs = 100;
 
 	public int EnmityIntervalMs {
 		get => enmityIntervalMs;
@@ -37,7 +37,7 @@ public class BuiltinEventConfig {
 		}
 	}
 
-	private string sortKey;
+	private string sortKey = "encdps";
 
 	public string SortKey {
 		get => sortKey;
@@ -48,7 +48,7 @@ public class BuiltinEventConfig {
 		}
 	}
 
-	private bool sortDesc;
+	private bool sortDesc = true;
 
 	public bool SortDesc {
 		get => sortDesc;
@@ -70,7 +70,7 @@ public class BuiltinEventConfig {
 		}
 	}
 
-	private bool endEncounterAfterWipe;
+	private bool endEncounterAfterWipe = true;
 
 	public bool EndEncounterAfterWipe {
 		get => endEncounterAfterWipe;
@@ -81,7 +81,7 @@ public class BuiltinEventConfig {
 		}
 	}
 
-	private bool endEncounterOutOfCombat;
+	private bool endEncounterOutOfCombat = true;
 
 	public bool EndEncounterOutOfCombat {
 		get => endEncounterOutOfCombat;
@@ -105,17 +105,6 @@ public class BuiltinEventConfig {
 
 	// Data that overlays can save/load via event handlers.
 	public Dictionary<string, JToken> OverlayData = new();
-
-	public BuiltinEventConfig() {
-		updateInterval = 1;
-		enmityIntervalMs = 100;
-		sortKey = "encdps";
-		sortDesc = true;
-		updateDpsDuringImport = false;
-		endEncounterAfterWipe = true;
-		endEncounterOutOfCombat = true;
-		_logLines = false;
-	}
 
 	public static BuiltinEventConfig LoadConfig(IPluginConfig config) {
 		var result = new BuiltinEventConfig();

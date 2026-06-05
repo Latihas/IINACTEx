@@ -1,9 +1,10 @@
-﻿using Newtonsoft.Json.Linq;
+﻿using System.Linq;
+using Newtonsoft.Json.Linq;
 
 namespace RainbowMage.OverlayPlugin;
 
 internal class TriggIntegration {
-	private PluginMain _plugin;
+	private readonly PluginMain _plugin;
 
 	public delegate void CustomCallbackDelegate(object o, string param);
 
@@ -21,32 +22,26 @@ internal class TriggIntegration {
 		var overlayName = msg[..pos];
 		msg = msg[(pos + 1)..];
 
-		foreach (var overlay in _plugin.Overlays) {
-			if (overlay.Name == overlayName) {
-				((IEventReceiver)overlay).HandleEvent(JObject.FromObject(new {
-					type = "Triggernometry",
-					message = msg
-				}));
-				break;
-			}
+		foreach (var overlay in _plugin.Overlays.Where(overlay => overlay.Name == overlayName)) {
+			((IEventReceiver)overlay).HandleEvent(JObject.FromObject(new {
+				type = "Triggernometry",
+				message = msg
+			}));
+			break;
 		}
 	}
 
 	public void HideOverlay(object _, string msg) {
-		foreach (var overlay in _plugin.Overlays) {
-			if (overlay.Name == msg) {
-				overlay.Config.IsVisible = false;
-				break;
-			}
+		foreach (var overlay in _plugin.Overlays.Where(overlay => overlay.Name == msg)) {
+			overlay.Config.IsVisible = false;
+			break;
 		}
 	}
 
 	public void ShowOverlay(object _, string msg) {
-		foreach (var overlay in _plugin.Overlays) {
-			if (overlay.Name == msg) {
-				overlay.Config.IsVisible = true;
-				break;
-			}
+		foreach (var overlay in _plugin.Overlays.Where(overlay => overlay.Name == msg)) {
+			overlay.Config.IsVisible = true;
+			break;
 		}
 	}
 }

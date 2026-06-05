@@ -5,10 +5,10 @@ using RainbowMage.OverlayPlugin.NetworkProcessors.PacketHelper;
 namespace RainbowMage.OverlayPlugin.NetworkProcessors;
 
 internal class LineActorMove(TinyIoCContainer container) : LineBaseCustom<
-	Server_MessageHeader_Global, LineActorMove.ActorMove_v655,
-	Server_MessageHeader_CN, LineActorMove.ActorMove_v655,
-	Server_MessageHeader_KR, LineActorMove.ActorMove_v655,
-	Server_MessageHeader_TC, LineActorMove.ActorMove_v655>(container, LogFileLineID, logLineName, MachinaPacketName) {
+	LineActorMove.ActorMove_v655,
+	LineActorMove.ActorMove_v655,
+	LineActorMove.ActorMove_v655,
+	LineActorMove.ActorMove_v655>(container, LogFileLineID, logLineName, MachinaPacketName) {
 	[StructLayout(LayoutKind.Explicit, Size = structSize, Pack = 1)]
 	internal struct ActorMove_v655 : IPacketStruct {
 		// 6.5.5 packet data (minus header):

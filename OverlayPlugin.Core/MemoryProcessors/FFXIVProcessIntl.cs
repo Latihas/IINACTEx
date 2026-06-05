@@ -7,7 +7,7 @@ using Newtonsoft.Json.Linq;
 
 namespace RainbowMage.OverlayPlugin.MemoryProcessors;
 
-public class FFXIVProcessIntl : FFXIVProcess {
+public class FFXIVProcessIntl(TinyIoCContainer container) : FFXIVProcess(container) {
 	// Last updated for FFXIV 7.4
 	// Per aers/FFXIVClientStructs, what we call EntityMemory is actually:
 	// Client::Game::Character::Character (0x22E0)
@@ -17,7 +17,7 @@ public class FFXIVProcessIntl : FFXIVProcess {
 
 	[StructLayout(LayoutKind.Explicit)]
 	public unsafe struct EntityMemory {
-		public static int Size => Marshal.SizeOf(typeof(EntityMemory));
+		public static int Size => Marshal.SizeOf<EntityMemory>();
 
 		// 64 bytes per both OverlayPlugin & aers/FFXIVClientStructs
 		public const int nameBytes = 64;
@@ -64,20 +64,17 @@ public class FFXIVProcessIntl : FFXIVProcess {
 		[FieldOffset(0x2E)] public byte shieldPercentage;
 	}
 
-	public FFXIVProcessIntl(TinyIoCContainer container) : base(container) {
-	}
-
 	// TODO: all of this could be refactored into structures of some sort
 	// instead of just being loose variables everywhere.
 
 	// A piece of code that reads the pointer to the list of all entities, that we
 	// refer to as the charmap.
-	private static string kCharmapSignature = "488b5720b8000000e0483Bd00f84????????488d0d";
+	private static readonly string kCharmapSignature = "488b5720b8000000e0483Bd00f84????????488d0d";
 
-	private static int kCharmapSignatureOffset = 0;
+	private static readonly int kCharmapSignatureOffset = 0;
 
 	// The signature finds a pointer in the executable code which uses RIP addressing.
-	private static bool kCharmapSignatureRIP = true;
+	private static readonly bool kCharmapSignatureRIP = true;
 
 	// The pointer is to a structure as:
 	//
@@ -85,27 +82,27 @@ public class FFXIVProcessIntl : FFXIVProcess {
 	// CharmapStruct {
 	//   EntityStruct* player;
 	// }
-	private static int kCharmapStructOffsetPlayer = 0;
+	private static readonly int kCharmapStructOffsetPlayer = 0;
 
 	// In combat boolean.
 	// This address is written to by "mov [rax+rcx],bl" and has three readers.
 	// This reader is "cmp byte ptr [ffxiv_dx11.exe+????????],00 { (0),0 }"
 	// Updated in 7.3, signature was no longer unique, include the preceeding "jz LAB_?????????"
-	private static string kInCombatSignature = "74??803D??????????74??488B03488BCBFF50";
-	private static int kInCombatSignatureOffset = -15;
+	private static readonly string kInCombatSignature = "74??803D??????????74??488B03488BCBFF50";
+	private static readonly int kInCombatSignatureOffset = -15;
 
-	private static bool kInCombatSignatureRIP = true;
+	private static readonly bool kInCombatSignatureRIP = true;
 
 	// Because this line is a cmp byte line, the signature is not at the end of the line.
-	private static int kInCombatRipOffset = 1;
+	private static readonly int kInCombatRipOffset = 1;
 
 	// A piece of code that reads the job data.
 	// The pointer of interest is the first ???????? in the signature.
-	private static string kJobDataSignature = "488D0D????????0F95C2E8????????488B8D";
-	private static int kJobDataSignatureOffset = -15;
+	private static readonly string kJobDataSignature = "488D0D????????0F95C2E8????????488B8D";
+	private static readonly int kJobDataSignatureOffset = -15;
 
 	// The signature finds a pointer in the executable code which uses RIP addressing.
-	private static bool kJobDataSignatureRIP = true;
+	private static readonly bool kJobDataSignatureRIP = true;
 
 	internal override void ReadSignatures() {
 		var p =

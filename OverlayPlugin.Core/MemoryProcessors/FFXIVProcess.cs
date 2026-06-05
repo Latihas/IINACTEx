@@ -27,8 +27,8 @@ public class LimitedProcess {
 
 // Exposes the FFXIV game directly. Call FindProcess() regularly to update
 // memory addresses when FFXIV is run or closed.
-public abstract partial class FFXIVProcess {
-	internal readonly ILogger logger_;
+public abstract partial class FFXIVProcess(TinyIoCContainer container) {
+	internal readonly ILogger logger_ = container.Resolve<ILogger>();
 	private LimitedProcess process_;
 
 	// Filled in by ReadSignatures().
@@ -191,10 +191,6 @@ public abstract partial class FFXIVProcess {
 	internal static int kJobDataInnerStructSize = 16 - kJobDataInnerStructOffset;
 
 	internal abstract void ReadSignatures();
-
-	public FFXIVProcess(TinyIoCContainer container) {
-		logger_ = container.Resolve<ILogger>();
-	}
 
 	public bool HasProcess() =>
 		// If FindProcess failed, return false. But also return false if
