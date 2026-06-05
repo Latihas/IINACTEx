@@ -72,7 +72,6 @@ internal class JobGaugeMemoryManager : IJobGaugeMemory {
 
 	public JobGaugeMemoryManager(TinyIoCContainer container) {
 		this.container = container;
-		container.Register<IJobGaugeMemory655, JobGaugeMemory655>();
 		container.Register<IJobGaugeMemory74, JobGaugeMemory74>();
 		repository = container.Resolve<FFXIVRepository>();
 		container.Resolve<ILogger>();
@@ -91,7 +90,6 @@ internal class JobGaugeMemoryManager : IJobGaugeMemory {
 
 	public void ScanPointers() {
 		var candidates = new List<IJobGaugeMemory> {
-			container.Resolve<IJobGaugeMemory655>(),
 			container.Resolve<IJobGaugeMemory74>()
 		};
 		memory = FFXIVMemory.FindCandidate(candidates, repository.GetMachinaRegion());

@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using FFXIV_ACT_Plugin.Memory;
-
-namespace RainbowMage.OverlayPlugin.MemoryProcessors.Party;
+﻿namespace RainbowMage.OverlayPlugin.MemoryProcessors.Party;
 
 public class PartyListEntry {
 	public float x;
@@ -40,59 +36,11 @@ public class PartyListsStruct {
 	public PartyListEntry[] alliance5Members;
 }
 
-public abstract class PartyMemory {
-	protected readonly FFXIVMemory memory;
-	protected readonly ILogger logger;
+public abstract class PartyMemory(TinyIoCContainer container) {
+	protected readonly FFXIVMemory memory = container.Resolve<FFXIVMemory>();
 
-	protected IntPtr partyInstanceAddress = IntPtr.Zero;
-
-	protected readonly Func<IntPtr> GetGroupManagerAddress;
-
-
-	public PartyMemory(TinyIoCContainer container) {
-		logger = container.Resolve<ILogger>();
-		memory = container.Resolve<FFXIVMemory>();
-		var plugin = FFXIVRepository.GetPluginData();
-		var readParty = (ISignatureManager)plugin._iocContainer.GetService(typeof(ISignatureManager));
-		GetGroupManagerAddress = () => readParty.Read(SignatureType.PartyList);
-	}
-
-	public bool IsValid() =>
-		// The GroupManager addresses are static and never change
-		// So we don't need to reset pointers or check for valid pointers
-		memory.IsValid();
+	public bool IsValid() => memory.IsValid();
 
 	public void ScanPointers() {
-		if (!memory.IsValid())
-			return;
-
-		var fail = new List<string>();
-
-		// These addresses aren't pointers, they're static memory structures. Therefore we don't need to resolve nested pointers.
-		long instanceAddress = GetGroupManagerAddress();
-
-		if (instanceAddress != 0) {
-			if (instanceAddress == partyInstanceAddress.ToInt64())
-				return;
-
-			partyInstanceAddress = new IntPtr(instanceAddress);
-		} else {
-			partyInstanceAddress = IntPtr.Zero;
-			fail.Add(nameof(partyInstanceAddress));
-		}
-
-		logger.Log(LogLevel.Debug, "partyInstanceAddress: 0x{0:X}", partyInstanceAddress.ToInt64());
-
-		if (fail.Count == 0) {
-			logger.Log(LogLevel.Info, $"Found party memory via {GetType().Name}.");
-			return;
-		}
-
-		// @TODO: Change this from Debug to Error once we're actually using party
-		logger.Log(LogLevel.Debug, $"Failed to find party memory via {GetType().Name}: {string.Join(", ", fail)}.");
 	}
-
-	public abstract Version GetVersion();
-
-	public IntPtr GetPointer() => !IsValid() ? IntPtr.Zero : partyInstanceAddress;
 }

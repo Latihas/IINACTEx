@@ -5,8 +5,7 @@ namespace RainbowMage.OverlayPlugin.MemoryProcessors.EnmityHud;
 
 public abstract class EnmityHudMemory(
 	TinyIoCContainer container, string enmityHudSignature, int[] enmityHudPointerPath, int enmityHudCountOffset,
-	int enmityHudEntryOffset, int enmityHudEntrySize)
-	: IEnmityHudMemory {
+	int enmityHudEntryOffset, int enmityHudEntrySize) : IEnmityHudMemory {
 	private readonly FFXIVMemory memory = container.Resolve<FFXIVMemory>();
 	private readonly ILogger logger = container.Resolve<ILogger>();
 
@@ -37,13 +36,12 @@ public abstract class EnmityHudMemory(
 
 	public void ScanPointers() {
 		ResetPointers();
-		if (!memory.IsValid())
-			return;
+		if (!memory.IsValid()) return;
 
 		var fail = new List<string>();
 
 		var list = memory.SigScan(enmityHudSignature, 0, true);
-		if (list != null && list.Count == 1) {
+		if (list is { Count: 1 }) {
 			enmityHudAddress = list[0];
 
 			if (enmityHudAddress == IntPtr.Zero) {
@@ -95,7 +93,6 @@ public abstract class EnmityHudMemory(
 
 	public List<EnmityHudEntry> GetEnmityHudEntries() {
 		var entries = new List<EnmityHudEntry>();
-		;
 
 		if (!GetDynamicPointerAddress()) {
 			return entries;

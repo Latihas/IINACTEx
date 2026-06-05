@@ -3,6 +3,8 @@ using System.Buffers;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
+using Dalamud;
+using FFXIVClientStructs.FFXIV.Client.Game;
 using Newtonsoft.Json.Linq;
 
 namespace RainbowMage.OverlayPlugin.MemoryProcessors;
@@ -33,7 +35,7 @@ public abstract partial class FFXIVProcess(TinyIoCContainer container) {
 
 	// Filled in by ReadSignatures().
 	internal IntPtr player_ptr_addr_ = IntPtr.Zero;
-	internal IntPtr job_data_outer_addr_ = IntPtr.Zero;
+	// internal IntPtr job_data_outer_addr_ = IntPtr.Zero;
 	internal IntPtr in_combat_addr_ = IntPtr.Zero;
 
 	// Values found in the EntityStruct's type field.
@@ -187,8 +189,6 @@ public abstract partial class FFXIVProcess(TinyIoCContainer container) {
 	//   JobDataInnerStruct* inner;  // This points to the address after it currently.
 	//   JobDataInnerStruct {
 	internal static int kJobDataOuterStructOffset = 0;
-	internal static int kJobDataInnerStructOffset = 8;
-	internal static int kJobDataInnerStructSize = 16 - kJobDataInnerStructOffset;
 
 	internal abstract void ReadSignatures();
 
@@ -207,7 +207,6 @@ public abstract partial class FFXIVProcess(TinyIoCContainer container) {
 		var changed_pid = process_ != null && process_.Id != found_process.Id;
 		if (changed_existance || changed_pid) {
 			player_ptr_addr_ = IntPtr.Zero;
-			job_data_outer_addr_ = IntPtr.Zero;
 			process_ = new LimitedProcess(found_process);
 
 			if (process_ != null) {
@@ -238,18 +237,11 @@ public abstract partial class FFXIVProcess(TinyIoCContainer container) {
 		return ret;
 	}
 
-	internal byte[] GetRawJobSpecificDataBytes() {
-		if (!HasProcess() || job_data_outer_addr_ == IntPtr.Zero)
-			return null;
-
-		var job_inner_ptr = ReadIntPtr(job_data_outer_addr_);
-		if (job_inner_ptr == IntPtr.Zero) {
-			// The pointer can be null when not logged in.
-			return null;
-		}
-
-		job_inner_ptr = IntPtr.Add(job_inner_ptr, kJobDataInnerStructOffset);
-		return Read8(job_inner_ptr, kJobDataInnerStructSize);
+	internal unsafe byte[]? GetRawJobSpecificDataBytes() {
+		var jg = JobGaugeManager.Instance();
+		if (jg == null) return null;
+		var c = jg->CurrentGauge;
+		return c == null ? null : SafeMemory.Read<byte>((IntPtr)jg->CurrentGauge, sizeof(IntPtr));
 	}
 
 	public abstract JObject GetJobSpecificData(EntityJob job);

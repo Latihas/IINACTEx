@@ -151,7 +151,6 @@ public class LineCombatant : IDisposable {
 	public LineCombatant(TinyIoCContainer container) {
 		logger = container.Resolve<ILogger>();
 		ffxiv = container.Resolve<FFXIVRepository>();
-		if (!ffxiv.IsFFXIVPluginPresent()) return;
 		combatantMemoryManager = container.Resolve<ICombatantMemory>();
 		container.Resolve<LineInCombat>().OnInCombatChanged += (sender, args) => {
 			if (args.InGameCombatChanged) {

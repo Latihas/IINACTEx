@@ -2,21 +2,20 @@
 using System.Buffers;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
+using FFXIVClientStructs.FFXIV.Client.Game.Character;
 using Microsoft.Extensions.ObjectPool;
 
 namespace RainbowMage.OverlayPlugin.MemoryProcessors.Combatant;
 
 public abstract class CombatantMemory : ICombatantMemory {
 	public readonly FFXIVMemory memory;
-	private readonly ILogger logger;
+	private protected readonly ILogger logger;
 
 	public IntPtr charmapAddress = IntPtr.Zero;
 
-	private readonly string charmapSignature;
 
 	public readonly int numMemoryCombatants;
 	public readonly int combatantSize;
-	private int effectSize;
 
 	protected readonly ObjectPool<Combatant> combatantPool;
 
@@ -24,11 +23,9 @@ public abstract class CombatantMemory : ICombatantMemory {
 	protected const uint emptyID = 0xE0000000;
 
 	public CombatantMemory(
-		TinyIoCContainer container, string charmapSignature, int combatantSize, int effectSize,
+		TinyIoCContainer container, int combatantSize, int effectSize,
 		int numMemoryCombatants = 421) {
-		this.charmapSignature = charmapSignature;
 		this.combatantSize = combatantSize;
-		this.effectSize = effectSize;
 		this.numMemoryCombatants = numMemoryCombatants;
 		logger = container.Resolve<ILogger>();
 		memory = container.Resolve<FFXIVMemory>();
@@ -43,80 +40,25 @@ public abstract class CombatantMemory : ICombatantMemory {
 	public bool IsValid() => memory.IsValid() && HasValidPointers();
 
 	public void ScanPointers() {
-		ResetPointers();
-		if (!memory.IsValid())
-			return;
-
-		var fail = new List<string>();
-
-		var list = memory.SigScan(charmapSignature, 0, true);
-		if (list is { Count: > 0 }) {
-			charmapAddress = list[0];
-		} else {
-			charmapAddress = IntPtr.Zero;
-			fail.Add(nameof(charmapAddress));
-		}
-
-		logger.Log(LogLevel.Debug, "charmapAddress: 0x{0:X}", charmapAddress.ToInt64());
-
-		var c = GetSelfCombatant();
-		if (c != null) {
-			logger.Log(LogLevel.Debug, "MyCharacter: '{0}' (0x{1:X})", c.Name, c.ID);
-		}
-
-		if (fail.Count == 0) {
-			logger.Log(LogLevel.Info, $"Found combatant memory via {GetType().Name}.");
-			return;
-		}
-
-		logger.Log(LogLevel.Error,
-			$"Failed to find combatant memory via {GetType().Name}: {string.Join(",", fail)}.");
 	}
 
 	public abstract Version GetVersion();
 
-	public Combatant GetSelfCombatant() {
-		var address = memory.ReadIntPtr(charmapAddress);
-		if (address == IntPtr.Zero)
-			return null;
-		var source = memory.GetByteArrayPooled(address, combatantSize);
-		var ret = GetCombatantFromByteArray(source, 0, true, true);
-		ArrayPool<byte>.Shared.Return(source);
-		return ret;
+	public unsafe Combatant? GetSelfCombatant() {
+		var gobs = CharacterManager.Instance()->BattleCharas;
+		return gobs.Length == 0 ? null : GetCombatantFromByteArray(gobs[0].Value, 0, true, true);
 	}
 
-	public Combatant GetCombatantFromAddress(IntPtr address, uint selfCharID = 0) {
-		var c = memory.GetByteArrayPooled(address, combatantSize);
-		var ret = GetCombatantFromByteArray(c, selfCharID, false);
-		ArrayPool<byte>.Shared.Return(c);
-		return ret;
-	}
+	public unsafe Combatant GetCombatantFromAddress(BattleChara* address, uint selfCharID = 0) => GetCombatantFromByteArray(address, selfCharID, false);
 
 	public unsafe List<Combatant> GetCombatantList() {
 		var result = new List<Combatant>();
 		var seen = new HashSet<uint>();
 		var mychar = GetSelfCombatant();
 
-		// Int64 pointer size
-		const int sz = 8;
-		var source = memory.GetByteArrayPooled(charmapAddress, sz * numMemoryCombatants);
-		if (source == null || source.Length == 0)
-			return result;
-
-		for (var i = 0; i < numMemoryCombatants; i++) {
-			IntPtr p;
-			fixed (byte* bp = source) {
-				p = new IntPtr(*(long*)&bp[i * sz]);
-			}
-
-			if (p == IntPtr.Zero)
-				continue;
-
-			var c = memory.GetByteArrayPooled(p, combatantSize);
-			var combatant = GetMobFromByteArray(c, mychar?.ID ?? 0);
-			ArrayPool<byte>.Shared.Return(c);
-			if (combatant == null)
-				continue;
+		foreach (var p in CharacterManager.Instance()->BattleCharas) {
+			var combatant = GetMobFromByteArray(p.Value, mychar?.ID ?? 0);
+			if (combatant == null) continue;
 			if (seen.Contains(combatant.ID)) {
 				ReturnCombatant(combatant);
 				continue;
@@ -127,7 +69,6 @@ public abstract class CombatantMemory : ICombatantMemory {
 			seen.Add(combatant.ID);
 		}
 
-		ArrayPool<byte>.Shared.Return(source);
 		ReturnCombatant(mychar);
 		return result;
 	}
@@ -141,12 +82,12 @@ public abstract class CombatantMemory : ICombatantMemory {
 	}
 
 	// Returns a combatant if the combatant is a mob or a PC.
-	public abstract Combatant GetMobFromByteArray(byte[] source, uint mycharID);
+	public abstract unsafe Combatant? GetMobFromByteArray(BattleChara* gameObject, uint mycharID);
 
 	// Will return any kind of combatant, even if not a mob.
 	// This function always returns a combatant object, even if empty.
-	protected abstract Combatant GetCombatantFromByteArray(
-		byte[] source, uint mycharID, bool isPlayer, bool exceptEffects = false);
+	protected abstract unsafe Combatant GetCombatantFromByteArray(
+		BattleChara* character, uint mycharID, bool isPlayer, bool exceptEffects = false);
 
 	protected unsafe List<EffectEntry> GetEffectEntries(byte* source, ObjectType type, uint mycharID) {
 		var result = new List<EffectEntry>();

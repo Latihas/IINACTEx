@@ -1,9 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
+using FFXIVClientStructs.FFXIV.Client.Game.UI;
+using FFXIVClientStructs.FFXIV.Client.UI.Info;
 
 namespace RainbowMage.OverlayPlugin.MemoryProcessors.ContentFinderSettings;
 
-public abstract class ContentFinderSettingsMemory(TinyIoCContainer container, string settingsSignature, string inContentFinderSignature, int inContentSettingsOffset)
+public abstract class ContentFinderSettingsMemory(TinyIoCContainer container)
 	: IContentFinderSettingsMemory {
 	private struct ContentFinderSettingsImpl : ContentFinderSettings {
 		public bool inContentFinderContent { get; set; }
@@ -22,91 +23,34 @@ public abstract class ContentFinderSettingsMemory(TinyIoCContainer container, st
 	protected FFXIVMemory memory = container.Resolve<FFXIVMemory>();
 	protected ILogger logger = container.Resolve<ILogger>();
 
-	protected IntPtr settingsAddress = IntPtr.Zero;
-	protected IntPtr inContentFinderAddress = IntPtr.Zero;
+	// protected IntPtr settingsAddress = IntPtr.Zero;
+	// protected IntPtr inContentFinderAddress = IntPtr.Zero;
 
 	protected void ResetPointers() {
-		settingsAddress = IntPtr.Zero;
-		inContentFinderAddress = IntPtr.Zero;
+		// settingsAddress = IntPtr.Zero;
+		// inContentFinderAddress = IntPtr.Zero;
 	}
 
-	private bool HasValidPointers() {
-		if (settingsAddress == IntPtr.Zero)
-			return false;
-		if (inContentFinderAddress == IntPtr.Zero)
-			return false;
-		return true;
-	}
+	private bool HasValidPointers() => true;
 
-	public bool IsValid() {
-		if (!memory.IsValid())
-			return false;
+	public bool IsValid() => true;
 
-		if (!HasValidPointers())
-			return false;
-
-		return true;
-	}
-
-	public virtual void ScanPointers() {
-		ResetPointers();
-		if (!memory.IsValid())
-			return;
-
-		var fail = new List<string>();
-
-		var list = memory.SigScan(settingsSignature, -35, true);
-		if (list is { Count: > 0 }) {
-			settingsAddress = list[0] + inContentSettingsOffset;
-		} else {
-			settingsAddress = IntPtr.Zero;
-			fail.Add(nameof(settingsAddress));
-		}
-
-		logger.Log(LogLevel.Debug, "settingsAddress: 0x{0:X}", settingsAddress.ToInt64());
-
-		list = memory.SigScan(inContentFinderSignature, -34, true, 1);
-		if (list != null && list.Count > 0) {
-			inContentFinderAddress = list[0];
-		} else {
-			inContentFinderAddress = IntPtr.Zero;
-			fail.Add(nameof(inContentFinderAddress));
-		}
-
-		logger.Log(LogLevel.Debug, "inContentFinderAddress: 0x{0:X}", inContentFinderAddress.ToInt64());
-
-		if (fail.Count == 0) {
-			logger.Log(LogLevel.Info, $"Found content finder settings memory via {GetType().Name}.");
-			return;
-		}
-
-		logger.Log(LogLevel.Error, $"Failed to find content finder settings memory via {GetType().Name}: {string.Join(", ", fail)}.");
-	}
+	public virtual void ScanPointers() { }
 
 	public abstract Version GetVersion();
 
-	private bool GetInContentFinderContent() {
-		var bytes = memory.GetByteArray(inContentFinderAddress, 1);
-		return bytes[0] != 0;
-	}
-
 	public ContentFinderSettings GetContentFinderSettings() {
-		var settings = new ContentFinderSettingsImpl {
-			inContentFinderContent = GetInContentFinderContent()
-		};
-
-		// Don't bother fetching other info if we're not in a valid ContentFinder scope
-		if (!settings.inContentFinderContent) {
+		unsafe {
+			var settings = new ContentFinderSettingsImpl {
+				inContentFinderContent = InfoProxyCrossRealm.IsLocalPlayerInParty()
+			};
+			var cf = ContentsFinder.Instance();
+			settings.unrestrictedParty = Convert.ToByte(cf->IsUnrestrictedParty);
+			settings.minimalItemLevel = Convert.ToByte(cf->IsMinimalIL);
+			settings.levelSync = Convert.ToByte(cf->IsLevelSync);
+			settings.silenceEcho = Convert.ToByte(cf->IsSilenceEcho);
+			settings.explorerMode = Convert.ToByte(cf->IsExplorerMode);
 			return settings;
 		}
-
-		var bytes = memory.GetByteArray(settingsAddress, 5);
-		settings.unrestrictedParty = bytes[0];
-		settings.minimalItemLevel = bytes[1];
-		settings.levelSync = bytes[2];
-		settings.silenceEcho = bytes[3];
-		settings.explorerMode = bytes[4];
-
-		return settings;
 	}
 }

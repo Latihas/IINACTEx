@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Runtime.InteropServices;
 using FFXIVClientStructs.FFXIV.Client.Game.Group;
 
 namespace RainbowMage.OverlayPlugin.MemoryProcessors.Party;
@@ -11,67 +10,58 @@ public class PartyMemory72(TinyIoCContainer container) : PartyMemory(container),
 	// We use FFXIVClientStructs versions of the structs because they have more required details than FFXIV_ACT_Plugin's struct definitions
 
 	#region FFXIVClientStructs structs
-	[StructLayout(LayoutKind.Explicit, Size = 0x10000)]
-	public unsafe struct GroupManager {
-		[FieldOffset(0x0000)] public fixed byte vtbls[0x20];
-		[FieldOffset(0x0020)] public Group MainGroup;
-		[FieldOffset(0x8010)] public Group ReplayGroup;
 
-		[StructLayout(LayoutKind.Explicit, Size = 0x7FF0)]
-		public struct Group {
-			[FieldOffset(0x0)] public fixed byte PartyMembers[0x490 * 8]; // PartyMember type
-			[FieldOffset(0x2480)] public fixed byte AllianceMembers[0x490 * 20]; // PartyMember type
-
-			// Immediately after `AllianceMembers`, e.g. ((0x490 * 20)+0x2480) = 0x6580
-			[FieldOffset(0x7FC0)] public uint CurrentPartyFlags; // FFXIVClientStructs doesn't map this, but it contains flags that indicate the alliance the player is in, as well as other flags.
-			[FieldOffset(0x7FC8)] public long PartyId; // both seem to be unique per party and replicated to every member
-			[FieldOffset(0x7FD0)] public long PartyId_2;
-			[FieldOffset(0x7FD8)] public uint PartyLeaderIndex; // index of party leader in array
-			[FieldOffset(0x7FDC)] public byte MemberCount;
-
-			[FieldOffset(0x7FE1)] public byte AllianceFlags; // 0x01 == is alliance; 0x02 == alliance with 5 4-man groups rather than 2 8-man
-		}
-	}
+	// [StructLayout(LayoutKind.Explicit, Size = 0x10000)]
+	// public unsafe struct GroupManager {
+	// 	[FieldOffset(0x0000)] public fixed byte vtbls[0x20];
+	// 	[FieldOffset(0x0020)] public Group MainGroup;
+	// 	[FieldOffset(0x8010)] public Group ReplayGroup;
+	//
+	// 	[StructLayout(LayoutKind.Explicit, Size = 0x7FF0)]
+	// 	public struct Group {
+	// 		[FieldOffset(0x0)] public fixed byte PartyMembers[0x490 * 8]; // PartyMember type
+	// 		[FieldOffset(0x2480)] public fixed byte AllianceMembers[0x490 * 20]; // PartyMember type
+	//
+	// 		// Immediately after `AllianceMembers`, e.g. ((0x490 * 20)+0x2480) = 0x6580
+	// 		[FieldOffset(0x7FC0)] public uint CurrentPartyFlags; // FFXIVClientStructs doesn't map this, but it contains flags that indicate the alliance the player is in, as well as other flags.
+	// 		[FieldOffset(0x7FC8)] public long PartyId; // both seem to be unique per party and replicated to every member
+	// 		[FieldOffset(0x7FD0)] public long PartyId_2;
+	// 		[FieldOffset(0x7FD8)] public uint PartyLeaderIndex; // index of party leader in array
+	// 		[FieldOffset(0x7FDC)] public byte MemberCount;
+	//
+	// 		[FieldOffset(0x7FE1)] public byte AllianceFlags; // 0x01 == is alliance; 0x02 == alliance with 5 4-man groups rather than 2 8-man
+	// 	}
+	// }
 
 	#endregion
 
-	public override Version GetVersion() => new(7, 2);
+	public Version GetVersion() => new(7, 2);
 
 
 	public unsafe PartyListsStruct GetPartyLists() {
-		if (!IsValid()) {
-			return new PartyListsStruct();
-		}
-
-		ScanPointers();
-
-		if (partyInstanceAddress.ToInt64() == 0) {
-			return new PartyListsStruct();
-		}
-		var groupManager = Marshal.PtrToStructure<GroupManager>(partyInstanceAddress);
+		if (GroupManager.Instance() == null) return new PartyListsStruct();
+		var groupManager = GroupManager.Instance();
 
 		// `PartyMembers` is a standard array, members are moved up/down as they're added/removed.
 		// As such, limit extracting members to the current count to avoid "ghost" members
-		var partyMembers = extractPartyMembers(groupManager.MainGroup.PartyMembers, Math.Min((int)groupManager.MainGroup.MemberCount, 8));
+		var partyMembers = extractPartyMembers(groupManager->MainGroup.PartyMembers);
 
 		// `AllianceMembers` is a fixed-position array, with removed elements being mostly zero'd out
 		// Easiest way to check if an entry is still active is to check for `Flags != 0`
-		var alliance1Members = extractAllianceMembers(groupManager.MainGroup.AllianceMembers, 20, 0, 8);
-		var alliance2Members = extractAllianceMembers(groupManager.MainGroup.AllianceMembers, 20, 8, 8);
+		var alliance1Members = extractAllianceMembers(groupManager->MainGroup.AllianceMembers, 0, 8);
+		var alliance2Members = extractAllianceMembers(groupManager->MainGroup.AllianceMembers, 8, 8);
 		// @TODO: Actually verify D/E/F alliance info? FFXIVClientStructs renamed this to ReplayGroup but pretty sure D/E/F are still stored here for 48 man content.
-		var alliance3Members = extractAllianceMembers(groupManager.ReplayGroup.PartyMembers, 8, 0, 8);
-		var alliance4Members = extractAllianceMembers(groupManager.ReplayGroup.AllianceMembers, 20, 0, 8);
-		var alliance5Members = extractAllianceMembers(groupManager.ReplayGroup.AllianceMembers, 20, 8, 8);
+		var alliance3Members = extractAllianceMembers(groupManager->ReplayGroup.PartyMembers, 0, 8);
+		var alliance4Members = extractAllianceMembers(groupManager->ReplayGroup.AllianceMembers, 0, 8);
+		var alliance5Members = extractAllianceMembers(groupManager->ReplayGroup.AllianceMembers, 8, 8);
 
 		return new PartyListsStruct {
-			partyId = groupManager.MainGroup.PartyId,
-			partyId_2 = groupManager.MainGroup.PartyId_2,
-			partyLeaderIndex = groupManager.MainGroup.PartyLeaderIndex,
-			memberCount = groupManager.MainGroup.MemberCount,
-			allianceFlags = groupManager.MainGroup.AllianceFlags,
-
-			currentPartyFlags = groupManager.MainGroup.CurrentPartyFlags,
-
+			partyId = groupManager->MainGroup.PartyId,
+			partyId_2 = groupManager->MainGroup.PartyId_2,
+			partyLeaderIndex = groupManager->MainGroup.PartyLeaderIndex,
+			memberCount = groupManager->MainGroup.MemberCount,
+			allianceFlags = groupManager->MainGroup.AllianceFlags,
+			currentPartyFlags = *(uint*)((byte*)&groupManager->MainGroup.PartyId - 8),
 			partyMembers = partyMembers,
 			alliance1Members = alliance1Members,
 			alliance2Members = alliance2Members,
@@ -81,8 +71,8 @@ public class PartyMemory72(TinyIoCContainer container) : PartyMemory(container),
 		};
 	}
 
-	private unsafe PartyListEntry[] extractAllianceMembers(byte* allianceMembers, int elementCount, int start, int count) {
-		var allMembers = extractPartyMembers(allianceMembers, elementCount);
+	private PartyListEntry[] extractAllianceMembers(Span<PartyMember> allianceMembers, int start, int count) {
+		var allMembers = extractPartyMembers(allianceMembers);
 		var retMembers = new PartyListEntry[count];
 		for (var i = start; i < start + count && i < allMembers.Length; ++i) {
 			var member = allMembers[i];
@@ -95,10 +85,10 @@ public class PartyMemory72(TinyIoCContainer container) : PartyMemory(container),
 		return retMembers;
 	}
 
-	private unsafe PartyListEntry[] extractPartyMembers(byte* ptr, int count) {
-		var ret = new PartyListEntry[count];
-		for (var i = 0; i < count; ++i) {
-			var member = Marshal.PtrToStructure<PartyMember>(new IntPtr(ptr + i * sizeof(PartyMember)));
+	private static PartyListEntry[] extractPartyMembers(Span<PartyMember> ptr) {
+		var ret = new PartyListEntry[ptr.Length];
+		for (var i = 0; i < ptr.Length; ++i) {
+			var member = ptr[i];
 			ret[i] = new PartyListEntry {
 				x = member.Position.X,
 				y = member.Position.Y,

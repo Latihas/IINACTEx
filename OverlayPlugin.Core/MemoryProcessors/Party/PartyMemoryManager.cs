@@ -15,7 +15,6 @@ internal class PartyMemoryManager : IPartyMemory {
 
 	public PartyMemoryManager(TinyIoCContainer container) {
 		this.container = container;
-		container.Register<IPartyMemory70, PartyMemory70>();
 		container.Register<IPartyMemory72, PartyMemory72>();
 		repository = container.Resolve<FFXIVRepository>();
 
@@ -30,22 +29,14 @@ internal class PartyMemoryManager : IPartyMemory {
 
 	public void ScanPointers() {
 		var candidates = new List<IPartyMemory> {
-			container.Resolve<IPartyMemory70>(),
 			container.Resolve<IPartyMemory72>()
 		};
 		memory = FFXIVMemory.FindCandidate(candidates, repository.GetMachinaRegion());
 	}
 
-	public bool IsValid() {
-		if (memory == null || !memory.IsValid()) {
-			return false;
-		}
-		return true;
-	}
+	public bool IsValid() => true;
 
 	public Version GetVersion() {
-		if (!IsValid())
-			return null;
 		return memory.GetVersion();
 	}
 

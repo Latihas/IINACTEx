@@ -15,7 +15,6 @@ public class EnmityHudMemoryManager : IEnmityHudMemory {
 
 	public EnmityHudMemoryManager(TinyIoCContainer container) {
 		this.container = container;
-		container.Register<IEnmityHudMemory70, EnmityHudMemory70>();
 		container.Register<IEnmityHudMemory73, EnmityHudMemory73>();
 		repository = container.Resolve<FFXIVRepository>();
 
@@ -34,7 +33,6 @@ public class EnmityHudMemoryManager : IEnmityHudMemory {
 
 	public void ScanPointers() {
 		var candidates = new List<IEnmityHudMemory> {
-			container.Resolve<IEnmityHudMemory70>(),
 			container.Resolve<IEnmityHudMemory73>()
 		};
 		memory = FFXIVMemory.FindCandidate(candidates, repository.GetMachinaRegion());

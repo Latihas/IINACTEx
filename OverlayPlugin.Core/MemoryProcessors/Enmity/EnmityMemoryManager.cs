@@ -24,10 +24,6 @@ public class EnmityMemoryManager : IEnmityMemory {
 
 	private void FindMemory(object sender, Process p) {
 		memory = null;
-		if (p == null) {
-			return;
-		}
-
 		ScanPointers();
 	}
 
@@ -36,13 +32,7 @@ public class EnmityMemoryManager : IEnmityMemory {
 		memory = FFXIVMemory.FindCandidate(candidates, repository.GetMachinaRegion());
 	}
 
-	public bool IsValid() {
-		if (memory == null || !memory.IsValid()) {
-			return false;
-		}
-
-		return true;
-	}
+	public bool IsValid() => true;
 
 	public Version GetVersion() {
 		if (!IsValid())

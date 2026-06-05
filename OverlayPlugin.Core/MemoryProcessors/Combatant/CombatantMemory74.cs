@@ -1,104 +1,93 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
+using FFXIVClientStructs.FFXIV.Client.Game.Character;
 
 namespace RainbowMage.OverlayPlugin.MemoryProcessors.Combatant;
 
 internal interface ICombatantMemory74 : ICombatantMemory;
 
-internal class CombatantMemory74(TinyIoCContainer container) : CombatantMemory(container, charmapSignature, CombatantMemory.Size, EffectMemory74.Size, 629), ICombatantMemory74 {
-	private const string charmapSignature = "488B5720B8000000E0483BD00F84????????488D0D";
-
-	// TODO: Once all regions are on 7.2, remove the new methods for `GetEffectEntries` and `GetEffectEntryFromByteArray`
-	// Remove the struct for `EffectMemory74`, and adjust the parent struct to have the correct size of 16 bytes.
+internal class CombatantMemory74(TinyIoCContainer container) : CombatantMemory(container, CombatantMemory.Size, EffectMemory74.Size, 629), ICombatantMemory74 {
 
 	public override Version GetVersion() => new(7, 4);
 
 	// Returns a combatant if the combatant is a mob or a PC.
-	public override unsafe Combatant GetMobFromByteArray(byte[] source, uint mycharID) {
-		fixed (byte* p = source) {
-			var mem = *(CombatantMemory*)&p[0];
-			var type = (ObjectType)mem.Type;
-			if (mem.ID == 0 || mem.ID == emptyID)
-				return null;
-		}
-		return GetCombatantFromByteArray(source, mycharID, false);
+	public override unsafe Combatant? GetMobFromByteArray(BattleChara* gameObject, uint mycharID) {
+		if (gameObject == null) return null;
+		var mem = Marshal.PtrToStructure<Character>((IntPtr)gameObject);
+		return mem.EntityId is 0 or emptyID ? null : GetCombatantFromByteArray(gameObject, mycharID, false);
 	}
 
 	// Will return any kind of combatant, even if not a mob.
 	// This function always returns a combatant object, even if empty.
-	protected override unsafe Combatant GetCombatantFromByteArray(byte[] source, uint mycharID, bool isPlayer, bool exceptEffects = false) {
-		fixed (byte* p = source) {
-			var mem = *(CombatantMemory*)&p[0];
+	protected override unsafe Combatant GetCombatantFromByteArray(BattleChara* gameObject, uint mycharID, bool isPlayer, bool exceptEffects = false) {
+		// fixed (byte* p = source) {
+		var mem = Marshal.PtrToStructure<CombatantMemory>((IntPtr)gameObject);
+		if (isPlayer) mycharID = mem.ID;
+		var combatant = new Combatant {
+			Name = FFXIVMemory.GetStringFromBytes(mem.Name, CombatantMemory.NameBytes),
+			Job = mem.Job,
+			ID = mem.ID,
+			OwnerID = mem.OwnerID == emptyID ? 0 : mem.OwnerID,
+			Type = (ObjectType)mem.Type,
+			MonsterType = 0,
+			Status = (ObjectStatus)mem.Status,
+			ModelStatus = (ModelStatus)mem.ModelStatus,
+			// Normalize all possible aggression statuses into the basic 4 ones.
+			AggressionStatus = 0,
+			NPCTargetID = mem.NPCTargetID,
+			RawEffectiveDistance = mem.EffectiveDistance,
+			PosX = mem.PosX,
+			// Y and Z are deliberately swapped to match FFXIV_ACT_Plugin's data model
+			PosY = mem.PosZ,
+			PosZ = mem.PosY,
+			Heading = mem.Heading,
+			Radius = mem.Radius,
+			// In-memory there are separate values for PC's current target and NPC's current target
+			TargetID = (ObjectType)mem.Type == ObjectType.PC ? mem.PCTargetID : mem.NPCTargetID,
+			CurrentHP = mem.CurrentHP,
+			MaxHP = mem.MaxHP,
+			Effects = exceptEffects ? [] : GetEffectEntries(mem.Effects, (ObjectType)mem.Type, mycharID),
 
-			if (isPlayer) {
-				mycharID = mem.ID;
-			}
+			BNpcID = mem.BNpcID,
+			CurrentMP = mem.CurrentMP,
+			MaxMP = mem.MaxMP,
+			CurrentGP = mem.CurrentGP,
+			MaxGP = mem.MaxGP,
+			CurrentCP = mem.CurrentCP,
+			MaxCP = mem.MaxCP,
+			Level = mem.Level,
+			PCTargetID = mem.PCTargetID,
 
-			var combatant = new Combatant {
-				Name = FFXIVMemory.GetStringFromBytes(mem.Name, CombatantMemory.NameBytes),
-				Job = mem.Job,
-				ID = mem.ID,
-				OwnerID = mem.OwnerID == emptyID ? 0 : mem.OwnerID,
-				Type = (ObjectType)mem.Type,
-				MonsterType = 0,
-				Status = (ObjectStatus)mem.Status,
-				ModelStatus = (ModelStatus)mem.ModelStatus,
-				// Normalize all possible aggression statuses into the basic 4 ones.
-				AggressionStatus = 0,
-				NPCTargetID = mem.NPCTargetID,
-				RawEffectiveDistance = mem.EffectiveDistance,
-				PosX = mem.PosX,
-				// Y and Z are deliberately swapped to match FFXIV_ACT_Plugin's data model
-				PosY = mem.PosZ,
-				PosZ = mem.PosY,
-				Heading = mem.Heading,
-				Radius = mem.Radius,
-				// In-memory there are separate values for PC's current target and NPC's current target
-				TargetID = (ObjectType)mem.Type == ObjectType.PC ? mem.PCTargetID : mem.NPCTargetID,
-				CurrentHP = mem.CurrentHP,
-				MaxHP = mem.MaxHP,
-				Effects = exceptEffects ? [] : GetEffectEntries(mem.Effects, (ObjectType)mem.Type, mycharID),
+			BNpcNameID = mem.BNpcNameID,
 
-				BNpcID = mem.BNpcID,
-				CurrentMP = mem.CurrentMP,
-				MaxMP = mem.MaxMP,
-				CurrentGP = mem.CurrentGP,
-				MaxGP = mem.MaxGP,
-				CurrentCP = mem.CurrentCP,
-				MaxCP = mem.MaxCP,
-				Level = mem.Level,
-				PCTargetID = mem.PCTargetID,
+			WorldID = mem.WorldID,
+			CurrentWorldID = mem.CurrentWorldID,
 
-				BNpcNameID = mem.BNpcNameID,
+			IsCasting1 = mem.IsCasting1,
+			IsCasting2 = mem.IsCasting2,
+			CastBuffID = mem.CastBuffID,
+			CastTargetID = mem.CastTargetID,
+			// Y and Z are deliberately swapped to match FFXIV_ACT_Plugin's data model
+			CastGroundTargetX = mem.CastGroundTargetX,
+			CastGroundTargetY = mem.CastGroundTargetZ,
+			CastGroundTargetZ = mem.CastGroundTargetY,
+			CastDurationCurrent = mem.CastDurationCurrent,
+			CastDurationMax = mem.CastDurationMax,
 
-				WorldID = mem.WorldID,
-				CurrentWorldID = mem.CurrentWorldID,
-
-				IsCasting1 = mem.IsCasting1,
-				IsCasting2 = mem.IsCasting2,
-				CastBuffID = mem.CastBuffID,
-				CastTargetID = mem.CastTargetID,
-				// Y and Z are deliberately swapped to match FFXIV_ACT_Plugin's data model
-				CastGroundTargetX = mem.CastGroundTargetX,
-				CastGroundTargetY = mem.CastGroundTargetZ,
-				CastGroundTargetZ = mem.CastGroundTargetY,
-				CastDurationCurrent = mem.CastDurationCurrent,
-				CastDurationMax = mem.CastDurationMax,
-
-				TransformationId = mem.TransformationId,
-				WeaponId = mem.WeaponId
-			};
-			combatant.IsTargetable =
-				combatant.ModelStatus == ModelStatus.Visible
-				&& (combatant.Status == ObjectStatus.NormalActorStatus || combatant.Status == ObjectStatus.NormalSubActorStatus);
-			if (combatant.Type != ObjectType.PC && combatant.Type != ObjectType.Monster) {
-				// Other types have garbage memory for hp.
-				combatant.CurrentHP = 0;
-				combatant.MaxHP = 0;
-			}
-			return combatant;
+			TransformationId = mem.TransformationId,
+			WeaponId = mem.WeaponId
+		};
+		combatant.IsTargetable =
+			combatant.ModelStatus == ModelStatus.Visible
+			&& (combatant.Status == ObjectStatus.NormalActorStatus || combatant.Status == ObjectStatus.NormalSubActorStatus);
+		if (combatant.Type != ObjectType.PC && combatant.Type != ObjectType.Monster) {
+			// Other types have garbage memory for hp.
+			combatant.CurrentHP = 0;
+			combatant.MaxHP = 0;
 		}
+		return combatant;
+		// }
 	}
 
 	[StructLayout(LayoutKind.Explicit)]
@@ -205,10 +194,7 @@ internal class CombatantMemory74(TinyIoCContainer container) : CombatantMemory(c
 		for (var i = 0; i < maxEffects; i++) {
 			var effect = GetEffectEntryFromByteArray(bytes, i);
 
-			if (effect.BuffID > 0 &&
-			    effect.Stack >= 0 &&
-			    effect.Timer >= 0.0f &&
-			    effect.ActorID > 0) {
+			if (effect is { BuffID: > 0, Stack: >= 0, Timer: >= 0.0f, ActorID: > 0 }) {
 				effect.isOwner = effect.ActorID == mycharID;
 
 				result.Add(effect);

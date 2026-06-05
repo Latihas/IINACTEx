@@ -1,123 +1,46 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Runtime.InteropServices;
+using FFXIVClientStructs.FFXIV.Client.Game.UI;
 using RainbowMage.OverlayPlugin.MemoryProcessors.Combatant;
 
 namespace RainbowMage.OverlayPlugin.MemoryProcessors.Enmity;
 
-public abstract class EnmityMemory(TinyIoCContainer container, string enmitySignature, int enmitySignatureOffset) : IEnmityMemory {
-	private readonly FFXIVMemory memory = container.Resolve<FFXIVMemory>();
-	private readonly ILogger logger = container.Resolve<ILogger>();
+public abstract class EnmityMemory(TinyIoCContainer container) : IEnmityMemory {
 	private readonly ICombatantMemory combatantMemory = container.Resolve<ICombatantMemory>();
 
-	private IntPtr enmityAddress = IntPtr.Zero;
-
-	private void ResetPointers() => enmityAddress = IntPtr.Zero;
-
-	private bool HasValidPointers() => enmityAddress != IntPtr.Zero;
-
-	public bool IsValid() => memory.IsValid() && HasValidPointers();
+	public bool IsValid() => true;
 
 	public void ScanPointers() {
-		ResetPointers();
-		if (!memory.IsValid()) return;
-
-		var fail = new List<string>();
-
-		var list = memory.SigScan(enmitySignature, 0, true);
-		if (list is { Count: > 0 }) {
-			enmityAddress = IntPtr.Add(list[0], enmitySignatureOffset);
-		} else {
-			enmityAddress = IntPtr.Zero;
-			fail.Add(nameof(enmityAddress));
-		}
-
-		logger.Log(LogLevel.Debug, "enmityAddress: 0x{0:X}", enmityAddress.ToInt64());
-
-		if (fail.Count == 0) {
-			logger.Log(LogLevel.Info, $"Found enmity memory via {GetType().Name}.");
-			return;
-		}
-
-		logger.Log(LogLevel.Error,
-			$"Failed to find enmity memory via {GetType().Name}: {string.Join(", ", fail)}.");
 	}
 
 	public abstract Version GetVersion();
 
-	[StructLayout(LayoutKind.Explicit, Size = Size)]
-	private struct MemoryEnmityListEntry {
-		public const int Size = 8;
-
-		[FieldOffset(0x00)] public uint ID;
-
-		[FieldOffset(0x04)] public uint Enmity;
-	}
-
-	[StructLayout(LayoutKind.Explicit)]
-	private unsafe struct MemoryEnmityList {
-		public const int MaxEntries = 32;
-		public static int Size => Marshal.SizeOf<MemoryEnmityList>();
-
-		[FieldOffset(0x00)] public fixed byte EntryBuffer[MaxEntries];
-
-		[FieldOffset(0x100)] public short Count;
-
-		public MemoryEnmityListEntry this[int index] {
-			get {
-				if (index >= Count) {
-					return new MemoryEnmityListEntry();
-				}
-				// ReSharper disable once RedundantFixedPointerDeclaration
-				fixed (byte* p = EntryBuffer) {
-					return *(MemoryEnmityListEntry*)&p[index * MemoryEnmityListEntry.Size];
-				}
-			}
-		}
-	}
-
-	private unsafe MemoryEnmityList ReadEnmityList() {
-		var source = memory.GetByteArray(enmityAddress, MemoryEnmityList.Size);
-		fixed (byte* p = source) {
-			return *(MemoryEnmityList*)&p[0];
-		}
-	}
+	private static unsafe Hate ReadEnmityList() => UIState.Instance()->Hate;
 
 	public List<EnmityEntry> GetEnmityEntryList(List<Combatant.Combatant> combatantList) {
-		if (!IsValid() || !combatantMemory.IsValid()) {
-			return [];
-		}
-
 		var mychar = combatantMemory.GetSelfCombatant();
-
-		uint topEnmity = 0;
+		var topEnmity = 0;
 		var result = new List<EnmityEntry>();
-
-		var list = ReadEnmityList();
-		for (var i = 0; i < list.Count; i++) {
-			var e = list[i];
+		foreach (var e in ReadEnmityList().HateInfo) {
 			topEnmity = Math.Max(topEnmity, e.Enmity);
 
 			Combatant.Combatant? c = null;
-			if (e.ID > 0) {
-				c = combatantList.Find(x => x.ID == e.ID);
+			if (e.EntityId > 0) {
+				var e1 = e;
+				c = combatantList.Find(x => x.ID == e1.EntityId);
 			}
-
 			var entry = new EnmityEntry {
-				ID = e.ID,
-				Enmity = e.Enmity,
-				isMe = e.ID == mychar.ID,
+				ID = e.EntityId,
+				Enmity = (uint)e.Enmity,
+				isMe = e.EntityId == mychar.ID,
 				Name = c == null ? "Unknown" : c.Name,
 				OwnerID = c?.OwnerID ?? 0,
 				HateRate = (int)(e.Enmity / (double)topEnmity * 100),
 				Job = c?.Job ?? 0
 			};
-
 			result.Add(entry);
 		}
-
 		combatantMemory.ReturnCombatant(mychar);
-
 		return result;
 	}
 }

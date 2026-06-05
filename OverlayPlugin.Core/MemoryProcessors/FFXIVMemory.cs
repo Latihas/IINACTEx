@@ -136,11 +136,11 @@ public partial class FFXIVMemory {
 	/// <param name="address">読み取る開始アドレス</param>
 	/// <param name="length">読み取る長さ</param>
 	/// <returns></returns>
-	public byte[] GetByteArrayPooled(IntPtr address, int length) {
-		var data = ArrayPool<byte>.Shared.Rent(length);
-		Peek(address, data);
-		return data;
-	}
+	// public byte[] GetByteArrayPooled(IntPtr address, int length) {
+	// 	var data = ArrayPool<byte>.Shared.Rent(length);
+	// 	Peek(address, data);
+	// 	return data;
+	// }
 
 	/// <summary>
 	///     メモリから4バイト読み取り32ビットIntegerとして返す

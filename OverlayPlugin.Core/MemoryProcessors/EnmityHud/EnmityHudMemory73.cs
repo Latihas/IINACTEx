@@ -36,8 +36,7 @@ internal class EnmityHudMemory73(TinyIoCContainer container) : EnmityHudMemory(c
 
 
 	protected override unsafe EnmityHudEntry GetEnmityHudEntryFromBytes(byte[] source, int num = 0) {
-		if (num < 0) throw new ArgumentException();
-		if (num > 8) throw new ArgumentException();
+		if (num is < 0 or > 8) throw new ArgumentException();
 
 		fixed (byte* p = source) {
 			var mem = *(EnmityHudEntryMemory*)&p[num * EnmityHudEntryMemory.Size];

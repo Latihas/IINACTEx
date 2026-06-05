@@ -1,102 +1,24 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Runtime.InteropServices;
+using FFXIVClientStructs.FFXIV.Client.Game.UI;
 using RainbowMage.OverlayPlugin.MemoryProcessors.Combatant;
 using RainbowMage.OverlayPlugin.MemoryProcessors.Enmity;
 using RainbowMage.OverlayPlugin.MemoryProcessors.Target;
 
 namespace RainbowMage.OverlayPlugin.MemoryProcessors.Aggro;
 
-public abstract class AggroMemory(TinyIoCContainer container, string aggroSignature, int aggroSignatureOffset) : IAggroMemory {
-	private readonly FFXIVMemory memory = container.Resolve<FFXIVMemory>();
-	private readonly ILogger logger = container.Resolve<ILogger>();
+public abstract class AggroMemory(TinyIoCContainer container) : IAggroMemory {
 	private readonly ICombatantMemory combatantMemory = container.Resolve<ICombatantMemory>();
 	private readonly ITargetMemory targetMemory = container.Resolve<ITargetMemory>();
 
-	private IntPtr aggroAddress = IntPtr.Zero;
-
-	private void ResetPointers() {
-		aggroAddress = IntPtr.Zero;
-	}
-
-	private bool HasValidPointers() => aggroAddress != IntPtr.Zero;
-
-	public bool IsValid() => memory.IsValid() && HasValidPointers();
+	public bool IsValid() => true;
 
 	public void ScanPointers() {
-		ResetPointers();
-		if (!memory.IsValid())
-			return;
-
-		var fail = new List<string>();
-
-		var list = memory.SigScan(aggroSignature, 0, true);
-		if (list is { Count: > 0 }) {
-			aggroAddress = IntPtr.Add(list[0], aggroSignatureOffset);
-		} else {
-			aggroAddress = IntPtr.Zero;
-			fail.Add(nameof(aggroAddress));
-		}
-
-		logger.Log(LogLevel.Debug, "aggroAddress: 0x{0:X}", aggroAddress.ToInt64());
-
-		if (fail.Count == 0) {
-			logger.Log(LogLevel.Info, $"Found aggro memory via {GetType().Name}.");
-			return;
-		}
-
-		logger.Log(LogLevel.Error, $"Failed to find aggro memory via {GetType().Name}: {string.Join(",", fail)}.");
 	}
 
 	public abstract Version GetVersion();
 
-	[StructLayout(LayoutKind.Explicit, Size = Size)]
-	private struct MemoryAggroListEntry {
-		public const int Size = 72;
-
-		[FieldOffset(0x38)] public uint ID;
-
-		[FieldOffset(0x3C)] public uint Enmity;
-	}
-
-	// @TODO: This seems a bit off.
-	// 72*31 = 0x8B8
-	// 72*32 = 0x900
-	// Seems like this should be MaxEntries = 32, Size = 0x902, Count FieldOffset = 0x900?
-	[StructLayout(LayoutKind.Explicit, Size = 0x900)]
-	private unsafe struct MemoryAggroList {
-		public const int MaxEntries = 31;
-		public static int Size => Marshal.SizeOf<MemoryAggroList>();
-
-		[FieldOffset(0x00)] public fixed byte EntryBuffer[MaxEntries];
-
-		[FieldOffset(0x8F8)] public short Count;
-
-		public MemoryAggroListEntry this[int index] {
-			get {
-				if (index >= Count) {
-					return new MemoryAggroListEntry();
-				}
-				// ReSharper disable once RedundantFixedPointerDeclaration
-				fixed (byte* p = EntryBuffer) {
-					return *(MemoryAggroListEntry*)&p[index * MemoryAggroListEntry.Size];
-				}
-			}
-		}
-	}
-
-	private unsafe MemoryAggroList ReadAggroList() {
-		var source = memory.GetByteArray(aggroAddress, MemoryAggroList.Size);
-		fixed (byte* p = source) {
-			return *(MemoryAggroList*)&p[0];
-		}
-	}
-
-	public List<AggroEntry> GetAggroList(List<Combatant.Combatant> combatantList) {
-		if (!IsValid() || !combatantMemory.IsValid()) {
-			return [];
-		}
-
+	public unsafe List<AggroEntry> GetAggroList(List<Combatant.Combatant> combatantList) {
 		var mychar = combatantMemory.GetSelfCombatant();
 
 		uint currentTargetID = 0;
@@ -108,21 +30,21 @@ public abstract class AggroMemory(TinyIoCContainer container, string aggroSignat
 
 		var result = new List<AggroEntry>();
 
-		var list = ReadAggroList();
-		for (var i = 0; i < list.Count; i++) {
-			var e = list[i];
-			if (e.ID <= 0)
+		var list = UIState.Instance()->Hater.Haters;
+		foreach (var e in list) {
+			if (e.EntityId <= 0)
 				continue;
-			var c = combatantList.Find(x => x.ID == e.ID);
+			var e1 = e;
+			var c = combatantList.Find(x => x.ID == e1.EntityId);
 			if (c == null)
 				continue;
 
 			var entry = new AggroEntry {
-				ID = e.ID,
+				ID = e.EntityId,
 				// Rather than storing enmity, this is hate rate for the aggro list.
 				// This is likely because we're reading the memory for the aggro sidebar.
-				HateRate = (int)e.Enmity,
-				isCurrentTarget = e.ID == currentTargetID,
+				HateRate = e.Enmity,
+				isCurrentTarget = e.EntityId == currentTargetID,
 				IsTargetable = c.IsTargetable,
 				Name = c.Name,
 				MaxHP = c.MaxHP,

@@ -15,26 +15,19 @@ internal class InCombatMemoryManager : IInCombatMemory {
 
 	public InCombatMemoryManager(TinyIoCContainer container) {
 		this.container = container;
-		container.Register<IInCombatMemory70, InCombatMemory70>();
 		container.Register<IInCombatMemory73, InCombatMemory73>();
 		repository = container.Resolve<FFXIVRepository>();
-
 		var memory = container.Resolve<FFXIVMemory>();
 		memory.RegisterOnProcessChangeHandler(FindMemory);
 	}
 
 	private void FindMemory(object sender, Process p) {
 		memory = null;
-		if (p == null) {
-			return;
-		}
-
 		ScanPointers();
 	}
 
 	public void ScanPointers() {
 		var candidates = new List<IInCombatMemory> {
-			container.Resolve<IInCombatMemory70>(),
 			container.Resolve<IInCombatMemory73>()
 		};
 		memory = FFXIVMemory.FindCandidate(candidates, repository.GetMachinaRegion());
