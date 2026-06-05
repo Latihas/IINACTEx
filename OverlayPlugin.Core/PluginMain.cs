@@ -197,12 +197,10 @@ public class PluginMain {
 			_container.Register<IAtkStageMemory, AtkStageMemoryManager>();
 			_container.Register<IPartyMemory, PartyMemoryManager>();
 			_container.Register<IJobGaugeMemory, JobGaugeMemoryManager>();
-			Tick(Status);
 			_container.Register(new OverlayPluginLogLines(_container, extraOpcodes));
 			Tick("OverlayPluginLogLines");
 			Status = @"初始化阶段2：附加组件";
 			LoadAddons(Tick);
-			Tick(Status);
 			Status = @"初始化阶段2：UI";
 
 			// Now that addons have been loaded, we can finish the overlay setup.
@@ -332,13 +330,10 @@ public class PluginMain {
 		registry.StartEventSource(new MiniParseEventSource(_container));
 		registry.StartEventSource(new FFXIVOptionalEventSource(_container));
 		registry.StartEventSource(new FFXIVRequiredEventSource(_container));
-		Tick("FFXIVRequiredEventSource");
 		registry.StartEventSource(new EnmityEventSource(_container));
-		Tick("EnmityEventSource");
 		registry.StartEventSource(new FFXIVClientStructsEventSource(_container));
 		_logger.Log(LogLevel.Info, "LoadAddons: Enabling builtin Cactbot event source.");
 		registry.StartEventSource(new CactbotEventSource(_container));
-
 		registry.StartEventSources();
 	}
 

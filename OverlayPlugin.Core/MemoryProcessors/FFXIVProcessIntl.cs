@@ -2,6 +2,7 @@
 using System.Runtime.InteropServices;
 using System.Text;
 using FFXIVClientStructs.FFXIV.Client.Game;
+using FFXIVClientStructs.FFXIV.Client.Game.Character;
 using Newtonsoft.Json.Linq;
 
 namespace RainbowMage.OverlayPlugin.MemoryProcessors;
@@ -63,147 +64,64 @@ public class FFXIVProcessIntl(TinyIoCContainer container) : FFXIVProcess(contain
 		[FieldOffset(0x2E)] public byte shieldPercentage;
 	}
 
-	// TODO: all of this could be refactored into structures of some sort
-	// instead of just being loose variables everywhere.
-
-	// A piece of code that reads the pointer to the list of all entities, that we
-	// refer to as the charmap.
-	private static readonly string kCharmapSignature = "488b5720b8000000e0483Bd00f84????????488d0d";
-
-	private static readonly int kCharmapSignatureOffset = 0;
-
-	// The signature finds a pointer in the executable code which uses RIP addressing.
-	private static readonly bool kCharmapSignatureRIP = true;
-
-	// The pointer is to a structure as:
-	//
-	// CharmapStruct* outer;  // The pointer found from the signature.
-	// CharmapStruct {
-	//   EntityStruct* player;
-	// }
-	private static readonly int kCharmapStructOffsetPlayer = 0;
-
-	// In combat boolean.
-	// This address is written to by "mov [rax+rcx],bl" and has three readers.
-	// This reader is "cmp byte ptr [ffxiv_dx11.exe+????????],00 { (0),0 }"
-	// Updated in 7.3, signature was no longer unique, include the preceeding "jz LAB_?????????"
-	private static readonly string kInCombatSignature = "74??803D??????????74??488B03488BCBFF50";
-	private static readonly int kInCombatSignatureOffset = -15;
-
-	private static readonly bool kInCombatSignatureRIP = true;
-
-	// Because this line is a cmp byte line, the signature is not at the end of the line.
-	private static readonly int kInCombatRipOffset = 1;
-
-	// A piece of code that reads the job data.
-	// The pointer of interest is the first ???????? in the signature.
-	private static readonly string kJobDataSignature = "488D0D????????0F95C2E8????????488B8D";
-	private static readonly int kJobDataSignatureOffset = -15;
-
-	// The signature finds a pointer in the executable code which uses RIP addressing.
-	private static readonly bool kJobDataSignatureRIP = true;
-
 	internal override void ReadSignatures() {
-		var p =
-			// TODO: for now, support multiple matches on charmap signature.
-			// This sig returns two matches that are identical for many, many characters.
-			// They both point to the same spot, so verify these have the same value.
-			SigScan(kCharmapSignature, kCharmapSignatureOffset, kCharmapSignatureRIP);
-		if (p.Count == 0) {
-			logger_.Log(LogLevel.Error, "Charmap signature found " + p.Count + " matches");
-		} else {
-			var player_ptr_value = IntPtr.Zero;
-			foreach (var ptr in p) {
-				var addr = IntPtr.Add(ptr, kCharmapStructOffsetPlayer);
-				var value = ReadIntPtr(addr);
-				if (player_ptr_value == IntPtr.Zero || player_ptr_value == value) {
-					player_ptr_value = value;
-					player_ptr_addr_ = addr;
-				} else {
-					logger_.Log(LogLevel.Error, "Charmap signature found, but conflicting match");
+	}
+
+	public override unsafe EntityData GetEntityDataFromByteArray(BattleChara* source) {
+		var mem = Marshal.PtrToStructure<EntityMemory>((IntPtr)source);
+
+		// dump '\0' string terminators
+		var memoryName = Encoding.UTF8.GetString(mem.Name, EntityMemory.nameBytes).Split(['\0'], 2)[0];
+
+		var entity = new EntityData {
+			name = memoryName,
+			id = mem.id,
+			type = mem.type,
+			distance = mem.distance,
+			pos_x = mem.pos_x,
+			pos_y = mem.pos_y,
+			pos_z = mem.pos_z,
+			rotation = mem.rotation
+		};
+		if (entity.type is EntityType.PC or EntityType.Monster) {
+			entity.job = mem.charDetails.job;
+
+			entity.hp = mem.charDetails.hp;
+			entity.max_hp = mem.charDetails.max_hp;
+			entity.mp = mem.charDetails.mp;
+			// This doesn't exist in memory, so just send the right value.
+			// As there are other versions that still have it, don't change the event.
+			entity.max_mp = 10000;
+			entity.shield_value = mem.charDetails.shieldPercentage * entity.max_hp / 100;
+
+			if (IsGatherer(entity.job)) {
+				entity.gp = mem.charDetails.gp;
+				entity.max_gp = mem.charDetails.max_gp;
+			}
+			if (IsCrafter(entity.job)) {
+				entity.cp = mem.charDetails.cp;
+				entity.max_cp = mem.charDetails.max_cp;
+			}
+
+			entity.level = mem.charDetails.level;
+
+			var job_bytes = GetRawJobSpecificDataBytes();
+			if (job_bytes != null) {
+				foreach (var t in job_bytes) {
+					if (entity.debug_job != "") entity.debug_job += " ";
+					entity.debug_job += $"{t:x2}";
 				}
 			}
 		}
-
-
-		p = SigScan(kInCombatSignature, kInCombatSignatureOffset, kInCombatSignatureRIP, kInCombatRipOffset);
-		if (p.Count != 1) {
-			logger_.Log(LogLevel.Error, "In combat signature found " + p.Count + " matches");
-		} else {
-			in_combat_addr_ = p[0];
-		}
+		return entity;
 	}
 
-	public override unsafe EntityData GetEntityDataFromByteArray(byte[] source) {
-		fixed (byte* p = source) {
-			var mem = *(EntityMemory*)&p[0];
+	internal override unsafe EntityData? GetEntityData(BattleChara* entity_ptr) =>
+		entity_ptr == null ? null : GetEntityDataFromByteArray(entity_ptr);
 
-			// dump '\0' string terminators
-			var memoryName = Encoding.UTF8.GetString(mem.Name, EntityMemory.nameBytes)
-				.Split(['\0'], 2)[0];
-
-			var entity = new EntityData {
-				name = memoryName,
-				id = mem.id,
-				type = mem.type,
-				distance = mem.distance,
-				pos_x = mem.pos_x,
-				pos_y = mem.pos_y,
-				pos_z = mem.pos_z,
-				rotation = mem.rotation
-			};
-			if (entity.type == EntityType.PC || entity.type == EntityType.Monster) {
-				entity.job = mem.charDetails.job;
-
-				entity.hp = mem.charDetails.hp;
-				entity.max_hp = mem.charDetails.max_hp;
-				entity.mp = mem.charDetails.mp;
-				// This doesn't exist in memory, so just send the right value.
-				// As there are other versions that still have it, don't change the event.
-				entity.max_mp = 10000;
-				entity.shield_value = mem.charDetails.shieldPercentage * entity.max_hp / 100;
-
-				if (IsGatherer(entity.job)) {
-					entity.gp = mem.charDetails.gp;
-					entity.max_gp = mem.charDetails.max_gp;
-				}
-
-				if (IsCrafter(entity.job)) {
-					entity.cp = mem.charDetails.cp;
-					entity.max_cp = mem.charDetails.max_cp;
-				}
-
-				entity.level = mem.charDetails.level;
-
-				var job_bytes = GetRawJobSpecificDataBytes();
-				if (job_bytes != null) {
-					for (var i = 0; i < job_bytes.Length; ++i) {
-						if (entity.debug_job != "")
-							entity.debug_job += " ";
-						entity.debug_job += string.Format("{0:x2}", job_bytes[i]);
-					}
-				}
-			}
-
-			return entity;
-		}
-	}
-
-	internal override EntityData GetEntityData(IntPtr entity_ptr) {
-		if (entity_ptr == IntPtr.Zero)
-			return null;
-		var source = Read8(entity_ptr, EntityMemory.Size);
-		return GetEntityDataFromByteArray(source);
-	}
-
-	public override EntityData GetSelfData() {
-		if (!HasProcess() || player_ptr_addr_ == IntPtr.Zero)
-			return null;
-
-		var entity_ptr = ReadIntPtr(player_ptr_addr_);
-		if (entity_ptr == IntPtr.Zero)
-			return null;
-		return GetEntityData(entity_ptr);
+	public override unsafe EntityData? GetSelfData() {
+		var gobs = CharacterManager.Instance()->BattleCharas;
+		return gobs.Length == 0 ? null : GetEntityData(gobs[0].Value);
 	}
 
 	public override unsafe JObject? GetJobSpecificData(EntityJob job) {

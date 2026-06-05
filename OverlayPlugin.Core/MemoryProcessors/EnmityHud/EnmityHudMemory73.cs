@@ -3,12 +3,11 @@ using System.Runtime.InteropServices;
 
 namespace RainbowMage.OverlayPlugin.MemoryProcessors.EnmityHud;
 
-internal interface IEnmityHudMemory73 : IEnmityHudMemory;
+public interface IEnmityHudMemory73 : IEnmityHudMemory;
 
-internal class EnmityHudMemory73(TinyIoCContainer container) : EnmityHudMemory(container, enmityHudSignature, enmityHudPointerPath, enmityHudCountOffset, enmityHudEntryOffset, EnmityHudEntryMemory.Size), IEnmityHudMemory73 {
+public class EnmityHudMemory73(TinyIoCContainer container) : EnmityHudMemory(container, enmityHudPointerPath, enmityHudCountOffset, enmityHudEntryOffset, EnmityHudEntryMemory.Size), IEnmityHudMemory73 {
 	// This signature might not be stable - If broken, this is looking for the location of `g_Component::GUI::AtkStage_Instance`
 	// The current version looks at `Component::GUI::AtkComponentDropDownList.SetEnabledState` for its location
-	private const string enmityHudSignature = "488B8F????????48895C24??48896C24??488B2D";
 	private static readonly int[] enmityHudPointerPath = [0x30, 0x58, 0xA8, 0x20];
 
 	// Offsets from the enmityHudAddress to find various enmity HUD data structures.

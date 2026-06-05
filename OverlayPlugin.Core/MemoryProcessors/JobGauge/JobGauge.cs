@@ -20,7 +20,6 @@ public abstract class JobGaugeMemory : IJobGaugeMemory {
 			if (obj == null || GetType() != obj.GetType()) {
 				return false;
 			}
-
 			if (obj.Job != Job) return false;
 			var objRawData = obj.RawData;
 			var rawData = RawData;

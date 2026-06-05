@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
 #if !DEBUG
 using Newtonsoft.Json;
 #endif
@@ -66,53 +64,22 @@ public interface IJobGaugeMemory : IVersionedMemory {
 }
 
 internal class JobGaugeMemoryManager : IJobGaugeMemory {
-	private readonly TinyIoCContainer container;
-	private readonly FFXIVRepository repository;
-	private IJobGaugeMemory memory;
+	private readonly IJobGaugeMemory memory;
 
 	public JobGaugeMemoryManager(TinyIoCContainer container) {
-		this.container = container;
 		container.Register<IJobGaugeMemory74, JobGaugeMemory74>();
-		repository = container.Resolve<FFXIVRepository>();
-		container.Resolve<ILogger>();
-
-		var memory = container.Resolve<FFXIVMemory>();
-		memory.RegisterOnProcessChangeHandler(FindMemory);
-	}
-
-	private void FindMemory(object sender, Process p) {
-		memory = null;
-		if (p == null) {
-			return;
-		}
-		ScanPointers();
+		memory = container.Resolve<IJobGaugeMemory74>();
+		memory.ScanPointers();
 	}
 
 	public void ScanPointers() {
-		var candidates = new List<IJobGaugeMemory> {
-			container.Resolve<IJobGaugeMemory74>()
-		};
-		memory = FFXIVMemory.FindCandidate(candidates, repository.GetMachinaRegion());
 	}
 
-	public bool IsValid() {
-		if (memory == null || !memory.IsValid()) {
-			return false;
-		}
-		return true;
-	}
+	public bool IsValid() => true;
 
-	Version IVersionedMemory.GetVersion() {
-		if (!IsValid())
-			return null;
-		return memory.GetVersion();
-	}
+	Version IVersionedMemory.GetVersion() => memory.GetVersion();
 
-	public IJobGauge GetJobGauge() {
-		if (!IsValid())
-			return null;
-		return memory.GetJobGauge();
-	}
+	public IJobGauge GetJobGauge() => memory.GetJobGauge();
 }
 
 public interface IBaseJobGauge;

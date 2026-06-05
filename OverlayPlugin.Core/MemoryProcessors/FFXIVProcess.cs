@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.Runtime.InteropServices;
 using Dalamud;
 using FFXIVClientStructs.FFXIV.Client.Game;
+using FFXIVClientStructs.FFXIV.Client.Game.Character;
 using Newtonsoft.Json.Linq;
 
 namespace RainbowMage.OverlayPlugin.MemoryProcessors;
@@ -32,11 +33,6 @@ public class LimitedProcess {
 public abstract partial class FFXIVProcess(TinyIoCContainer container) {
 	internal readonly ILogger logger_ = container.Resolve<ILogger>();
 	private LimitedProcess process_;
-
-	// Filled in by ReadSignatures().
-	internal IntPtr player_ptr_addr_ = IntPtr.Zero;
-	// internal IntPtr job_data_outer_addr_ = IntPtr.Zero;
-	internal IntPtr in_combat_addr_ = IntPtr.Zero;
 
 	// Values found in the EntityStruct's type field.
 	public enum EntityType : byte {
@@ -206,7 +202,7 @@ public abstract partial class FFXIVProcess(TinyIoCContainer container) {
 		var changed_existance = process_ == null;
 		var changed_pid = process_ != null && process_.Id != found_process.Id;
 		if (changed_existance || changed_pid) {
-			player_ptr_addr_ = IntPtr.Zero;
+			// player_ptr_addr_ = IntPtr.Zero;
 			process_ = new LimitedProcess(found_process);
 
 			if (process_ != null) {
@@ -226,16 +222,9 @@ public abstract partial class FFXIVProcess(TinyIoCContainer container) {
 		return active_process_id == process_.Id;
 	}
 
-	public abstract EntityData GetEntityDataFromByteArray(byte[] source);
+	public abstract unsafe EntityData GetEntityDataFromByteArray(BattleChara* battleChara);
 
-	public bool GetInGameCombat() {
-		if (!HasProcess() || in_combat_addr_ == IntPtr.Zero)
-			return false;
-		var bytes = Read8Pooled(in_combat_addr_, 1);
-		var ret = bytes[0] != 0;
-		ArrayPool<byte>.Shared.Return(bytes);
-		return ret;
-	}
+	public unsafe bool GetInGameCombat() => Conditions.Instance()->InCombat;
 
 	internal unsafe byte[]? GetRawJobSpecificDataBytes() {
 		var jg = JobGaugeManager.Instance();
@@ -245,7 +234,7 @@ public abstract partial class FFXIVProcess(TinyIoCContainer container) {
 	}
 
 	public abstract JObject GetJobSpecificData(EntityJob job);
-	internal abstract EntityData GetEntityData(IntPtr entity_ptr);
+	internal abstract unsafe EntityData GetEntityData(BattleChara* entityPtr);
 	public abstract EntityData GetSelfData();
 
 	[SuppressGCTransition]

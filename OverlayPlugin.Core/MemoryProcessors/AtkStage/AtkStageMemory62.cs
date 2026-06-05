@@ -10,8 +10,8 @@ using AtkStage = FFXIVClientStructs.FFXIV.Component.GUI.AtkStage;
 
 internal interface IAtkStageMemory62 : IAtkStageMemory;
 
-internal class AtkStageMemory62(TinyIoCContainer container) : AtkStageMemory(container), IAtkStageMemory62 {
-	public override Version GetVersion() => new(6, 2);
+internal class AtkStageMemory62(TinyIoCContainer container) : AtkStageMemory, IAtkStageMemory62 {
+	public virtual Version GetVersion() => new(6, 2);
 
 	public unsafe IntPtr GetAddonAddress(string name) {
 		var atkStage = AtkStage.Instance();

@@ -2,6 +2,7 @@
 using System.Runtime.InteropServices;
 using System.Text;
 using FFXIVClientStructs.FFXIV.Client.Game;
+using FFXIVClientStructs.FFXIV.Client.Game.Character;
 using Newtonsoft.Json.Linq;
 
 namespace RainbowMage.OverlayPlugin.MemoryProcessors;
@@ -62,142 +63,66 @@ public class FFXIVProcessKo(TinyIoCContainer container) : FFXIVProcess(container
 		[FieldOffset(0x61)] public short shieldPercentage;
 	}
 
-	// TODO: all of this could be refactored into structures of some sort
-	// instead of just being loose variables everywhere.
-
-	// A piece of code that reads the pointer to the list of all entities, that we
-	// refer to as the charmap. The pointer is the 4 byte ?????????.
-	private static readonly string kCharmapSignature = "574883EC??488B1D????????488BF233D2";
-
-	private static readonly int kCharmapSignatureOffset = -9;
-
-	// The signature finds a pointer in the executable code which uses RIP addressing.
-	private static readonly bool kCharmapSignatureRIP = true;
-
-	// The pointer is to a structure as:
-	//
-	// CharmapStruct* outer;  // The pointer found from the signature.
-	// CharmapStruct {
-	//   EntityStruct* player;
-	// }
-	private static readonly int kCharmapStructOffsetPlayer = 0;
-
-	// In combat boolean.
-	// Variable is set at 83FA587D70534883EC204863C2410FB6D8381C08744E (offset=0)
-	// via a mov [rax+rcx],bl line.
-	// This sig below finds the calling function that sets rax(offset) and rcx(base address).
-	private static readonly string kInCombatSignature = "84C07425450FB6C7488D0D";
-	private static readonly int kInCombatBaseOffset = 0;
-	private static readonly bool kInCombatBaseRIP = true;
-	private static readonly int kInCombatOffsetOffset = 5;
-	private static readonly bool kInCombatOffsetRIP = false;
-
-	// A piece of code that reads the job data.
-	// The pointer of interest is the first ???????? in the signature.
-	private static readonly string kJobDataSignature = "488B0D????????4885C90F84????????488B05????????3C03";
-
-	private static readonly int kJobDataSignatureOffset = -22;
-
-	// The signature finds a pointer in the executable code which uses RIP addressing.
-	private static readonly bool kJobDataSignatureRIP = true;
-
 	internal override void ReadSignatures() {
-		var p = SigScan(kCharmapSignature, kCharmapSignatureOffset, kCharmapSignatureRIP);
-		if (p.Count != 1) {
-			logger_.Log(LogLevel.Error, "Charmap signature found " + p.Count + " matches");
-		} else {
-			player_ptr_addr_ = IntPtr.Add(p[0], kCharmapStructOffsetPlayer);
-		}
-
-		p = SigScan(kInCombatSignature, kInCombatBaseOffset, kInCombatBaseRIP);
-		if (p.Count != 1) {
-			logger_.Log(LogLevel.Error, "In combat signature found " + p.Count + " matches");
-		} else {
-			var baseAddress = p[0];
-			p = SigScan(kInCombatSignature, kInCombatOffsetOffset, kInCombatOffsetRIP);
-			if (p.Count != 1) {
-				logger_.Log(LogLevel.Error, "In combat offset signature found " + p.Count + " matches");
-			} else {
-				// Abuse sigscan here to return 64-bit "pointer" which we will mask into the 32-bit immediate integer we need.
-				// TODO: maybe sigscan should be able to return different types?
-				var offset = (int)((ulong)p[0] & 0xFFFFFFFF);
-				in_combat_addr_ = IntPtr.Add(baseAddress, offset);
-			}
-		}
 	}
 
-	public override unsafe EntityData GetEntityDataFromByteArray(byte[] source) {
-		fixed (byte* p = source) {
-			var mem = *(EntityMemory*)&p[0];
+	public override unsafe EntityData GetEntityDataFromByteArray(BattleChara* source) {
+		var mem = Marshal.PtrToStructure<EntityMemory>((IntPtr)source);
 
-			// dump '\0' string terminators
-			var memoryName = Encoding.UTF8.GetString(mem.Name, EntityMemory.nameBytes)
-				.Split(['\0'], 2)[0];
 
-			var entity = new EntityData {
-				name = memoryName,
-				id = mem.id,
-				type = mem.type,
-				distance = mem.distance,
-				pos_x = mem.pos_x,
-				pos_y = mem.pos_y,
-				pos_z = mem.pos_z,
-				rotation = mem.rotation
-			};
-			if (entity.type == EntityType.PC || entity.type == EntityType.Monster) {
-				entity.job = mem.charDetails.job;
+		// dump '\0' string terminators
+		var memoryName = Encoding.UTF8.GetString(mem.Name, EntityMemory.nameBytes).Split(['\0'], 2)[0];
 
-				entity.hp = mem.charDetails.hp;
-				entity.max_hp = mem.charDetails.max_hp;
-				entity.mp = mem.charDetails.mp;
+		var entity = new EntityData {
+			name = memoryName,
+			id = mem.id,
+			type = mem.type,
+			distance = mem.distance,
+			pos_x = mem.pos_x,
+			pos_y = mem.pos_y,
+			pos_z = mem.pos_z,
+			rotation = mem.rotation
+		};
+		if (entity.type is EntityType.PC or EntityType.Monster) {
+			entity.job = mem.charDetails.job;
 
-				// This doesn't exist in memory, so just send the right value.
-				// As there are other versions that still have it, don't change the event.
-				entity.max_mp = 10000;
-				entity.shield_value = mem.charDetails.shieldPercentage * entity.max_hp / 100;
+			entity.hp = mem.charDetails.hp;
+			entity.max_hp = mem.charDetails.max_hp;
+			entity.mp = mem.charDetails.mp;
+			// This doesn't exist in memory, so just send the right value.
+			// As there are other versions that still have it, don't change the event.
+			entity.max_mp = 10000;
+			entity.shield_value = mem.charDetails.shieldPercentage * entity.max_hp / 100;
 
-				if (IsGatherer(entity.job)) {
-					entity.gp = mem.charDetails.gp;
-					entity.max_gp = mem.charDetails.max_gp;
-				}
-
-				if (IsCrafter(entity.job)) {
-					entity.cp = mem.charDetails.cp;
-					entity.max_cp = mem.charDetails.max_cp;
-				}
-
-				entity.level = mem.charDetails.level;
-
-				var job_bytes = GetRawJobSpecificDataBytes();
-				if (job_bytes != null) {
-					for (var i = 0; i < job_bytes.Length; ++i) {
-						if (entity.debug_job != "")
-							entity.debug_job += " ";
-						entity.debug_job += string.Format("{0:x2}", job_bytes[i]);
-					}
-				}
+			if (IsGatherer(entity.job)) {
+				entity.gp = mem.charDetails.gp;
+				entity.max_gp = mem.charDetails.max_gp;
+			}
+			if (IsCrafter(entity.job)) {
+				entity.cp = mem.charDetails.cp;
+				entity.max_cp = mem.charDetails.max_cp;
 			}
 
-			return entity;
+			entity.level = mem.charDetails.level;
+
+			var job_bytes = GetRawJobSpecificDataBytes();
+			if (job_bytes != null) {
+				foreach (var t in job_bytes) {
+					if (entity.debug_job != "") entity.debug_job += " ";
+					entity.debug_job += $"{t:x2}";
+				}
+			}
 		}
+		return entity;
 	}
 
-	internal override EntityData GetEntityData(IntPtr entity_ptr) {
-		if (entity_ptr == IntPtr.Zero)
-			return null;
-		var source = Read8(entity_ptr, EntityMemory.Size);
-		return GetEntityDataFromByteArray(source);
-	}
 
-	public override EntityData GetSelfData() {
-		if (!HasProcess() || player_ptr_addr_ == IntPtr.Zero)
-			return null;
+	internal override unsafe EntityData? GetEntityData(BattleChara* entity_ptr) =>
+		entity_ptr == null ? null : GetEntityDataFromByteArray(entity_ptr);
 
-		var entity_ptr = ReadIntPtr(player_ptr_addr_);
-		if (entity_ptr == IntPtr.Zero)
-			return null;
-		return GetEntityData(entity_ptr);
-		;
+	public override unsafe EntityData? GetSelfData() {
+		var gobs = CharacterManager.Instance()->BattleCharas;
+		return gobs.Length == 0 ? null : GetEntityData(gobs[0].Value);
 	}
 
 	public override unsafe JObject? GetJobSpecificData(EntityJob job) {

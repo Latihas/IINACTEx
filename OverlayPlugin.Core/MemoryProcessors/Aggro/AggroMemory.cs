@@ -13,7 +13,10 @@ public abstract class AggroMemory(TinyIoCContainer container) : IAggroMemory {
 
 	public bool IsValid() => true;
 
-	public void ScanPointers() {
+
+	public unsafe void ScanPointers() {
+		var logger = container.Resolve<ILogger>();
+		logger.Log(LogLevel.Debug, "aggroAddress: 0x{0:X}", (IntPtr)(&UIState.Instance()->Hater));
 	}
 
 	public abstract Version GetVersion();

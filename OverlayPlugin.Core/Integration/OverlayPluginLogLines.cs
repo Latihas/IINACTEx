@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Threading.Tasks;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 using RainbowMage.OverlayPlugin.MemoryProcessors.Combatant;
@@ -20,11 +19,9 @@ using Opcodes = Dictionary<MachinaRegion, Dictionary<OpcodeVersion, Dictionary<O
 
 internal class OverlayPluginLogLines {
 	public OverlayPluginLogLines(TinyIoCContainer container, string? extraOpcodes = null) {
-		container.Register(new LineInCombat(container)); //long time
-		Task[] ls = [
-			Task.Run(() => container.Register(new LineCombatant(container))),
-			Task.Run(() => container.Register(new LineContentFinderSettings(container)))
-		];
+		container.Register(new LineInCombat(container));
+		container.Register(new LineCombatant(container));
+		container.Register(new LineContentFinderSettings(container));
 		container.Register(new OverlayPluginLogLineConfig(container, extraOpcodes));
 		container.Register(new LineMapEffect(container));
 		container.Register(new LineFateControl(container));
@@ -41,7 +38,6 @@ internal class OverlayPluginLogLines {
 		container.Register(new LineSpawnNpcExtra(container));
 		container.Register(new LineActorControlExtra(container));
 		container.Register(new LineActorControlSelfExtra(container));
-		Task.WaitAll(ls);
 	}
 }
 

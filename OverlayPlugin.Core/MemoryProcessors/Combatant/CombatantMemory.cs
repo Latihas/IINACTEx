@@ -9,11 +9,12 @@ namespace RainbowMage.OverlayPlugin.MemoryProcessors.Combatant;
 
 public abstract class CombatantMemory : ICombatantMemory {
 	public readonly FFXIVMemory memory;
-	private protected readonly ILogger logger;
-
-	public IntPtr charmapAddress = IntPtr.Zero;
-
-
+	public unsafe IntPtr charmapAddress {
+		get {
+			var gobs = CharacterManager.Instance()->BattleCharas;
+			return gobs.Length == 0 ? IntPtr.Zero : (IntPtr)gobs[0].Value;
+		}
+	}
 	public readonly int numMemoryCombatants;
 	public readonly int combatantSize;
 
@@ -27,17 +28,13 @@ public abstract class CombatantMemory : ICombatantMemory {
 		int numMemoryCombatants = 421) {
 		this.combatantSize = combatantSize;
 		this.numMemoryCombatants = numMemoryCombatants;
-		logger = container.Resolve<ILogger>();
+		container.Resolve<ILogger>();
 		memory = container.Resolve<FFXIVMemory>();
 		var policy = new DefaultPooledObjectPolicy<Combatant>();
 		combatantPool = new DefaultObjectPool<Combatant>(policy, 2 * numMemoryCombatants);
 	}
 
-	private void ResetPointers() => charmapAddress = IntPtr.Zero;
-
-	private bool HasValidPointers() => charmapAddress != IntPtr.Zero;
-
-	public bool IsValid() => memory.IsValid() && HasValidPointers();
+	public bool IsValid() => true;
 
 	public void ScanPointers() {
 	}
@@ -73,11 +70,8 @@ public abstract class CombatantMemory : ICombatantMemory {
 		return result;
 	}
 
-	public void ReturnCombatant(Combatant combatant) {
-		if (combatant == null) {
-			return;
-		}
-
+	public void ReturnCombatant(Combatant? combatant) {
+		if (combatant == null) return;
 		combatantPool.Return(combatant);
 	}
 

@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
 
 namespace RainbowMage.OverlayPlugin.MemoryProcessors.ContentFinderSettings;
 
@@ -22,40 +20,20 @@ public interface IContentFinderSettingsMemory : IVersionedMemory {
 }
 
 internal class ContentFinderSettingsMemoryManager : IContentFinderSettingsMemory {
-	private readonly TinyIoCContainer container;
-	private readonly FFXIVRepository repository;
-	private IContentFinderSettingsMemory memory;
+	private readonly IContentFinderSettingsMemory memory;
 
 	public ContentFinderSettingsMemoryManager(TinyIoCContainer container) {
-		this.container = container;
 		container.Register<IContentFinderSettingsMemory71, ContentFinderSettingsMemory71>();
-		repository = container.Resolve<FFXIVRepository>();
-
-		var memory = container.Resolve<FFXIVMemory>();
-		memory.RegisterOnProcessChangeHandler(FindMemory);
-	}
-
-	private void FindMemory(object sender, Process p) {
-		memory = null;
-		ScanPointers();
+		memory = container.Resolve<IContentFinderSettingsMemory71>();
+		memory.ScanPointers();
 	}
 
 	public void ScanPointers() {
-		List<IContentFinderSettingsMemory> candidates = [
-			container.Resolve<IContentFinderSettingsMemory71>(),
-		];
-		memory = FFXIVMemory.FindCandidate(candidates, repository.GetMachinaRegion());
 	}
 
 	public bool IsValid() => true;
 
-	Version IVersionedMemory.GetVersion() {
-		return memory.GetVersion();
-	}
+	Version IVersionedMemory.GetVersion() => memory.GetVersion();
 
-	public ContentFinderSettings GetContentFinderSettings() {
-		if (!IsValid())
-			return null;
-		return memory.GetContentFinderSettings();
-	}
+	public ContentFinderSettings GetContentFinderSettings() => memory.GetContentFinderSettings();
 }

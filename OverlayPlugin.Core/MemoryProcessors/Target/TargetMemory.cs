@@ -10,13 +10,7 @@ public abstract class TargetMemory(
 	TinyIoCContainer container, int targetTargetOffset, int focusTargetOffset,
 	int hoverTargetOffset) : ITargetMemory {
 	private readonly ICombatantMemory combatantMemory = container.Resolve<ICombatantMemory>();
-
-
-	private void ResetPointers() {
-	}
-
-	private bool HasValidPointers() => true;
-
+	
 	public bool IsValid() => true;
 
 	public void ScanPointers() {

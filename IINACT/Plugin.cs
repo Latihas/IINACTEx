@@ -223,7 +223,7 @@ public sealed class Plugin : IDalamudPlugin {
 			LogTick("OverlayPlugin Initialized");
 			var taskTrn = Task.Run(() => {
 				TriggernometryProxyPlugin.InitPlugin(this, PluginInterface, Log, ClientState, Framework, GameInteropProvider, ObjectTable, GameGui, SigScanner,
-					LatestConfigVersion);
+					LatestConfigVersion, LogTick);
 			});
 			if (!Configuration.AsyncOnInit) taskTrn.Wait();
 			if (opcodesjsoncReplaced) Log.Warning("opcodesjsonc Replaced");
@@ -417,7 +417,7 @@ public sealed class Plugin : IDalamudPlugin {
 		FfxivActPluginWrapper.Dispose();
 		ActGlobals.Dispose();
 	}
-	
+
 	internal void RefreshBw() {
 		PostNamazuPlugin.DoAction("command", "/bw overlay 时间轴 reload");
 		PostNamazuPlugin.DoAction("command", "/bw overlay 设置 reload");
@@ -475,8 +475,8 @@ public sealed class Plugin : IDalamudPlugin {
 		if (Instance.Configuration is not { DisablePvp: true, DisableWritingPvpLogFile: false }) return;
 		Instance.Configuration.DisableWritingPvpLogFile = true;
 	}
-	internal void SetChatMessageLoggingEnabled(bool enabled)
-	{
+
+	internal void SetChatMessageLoggingEnabled(bool enabled) {
 		FfxivActPluginWrapper.SetChatMessageLoggingEnabled(enabled);
 	}
 

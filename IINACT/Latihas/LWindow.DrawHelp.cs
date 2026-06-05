@@ -74,8 +74,11 @@ public static partial class LWindow {
 		ImGui.PushStyleColor(ImGuiCol.Text, ImGuiColors.DalamudRed);
 		ImGui.Text("如果频繁炸游戏，可能是VfxModule的问题，在 触发器-ModuleBase-启用ModuleBase-取消VfxModule勾选 即可禁用");
 		ImGui.PopStyleColor(1);
-		if (ImGui.CollapsingHeader("更新日志##CH更新日志"))
+		if (ImGui.CollapsingHeader("更新日志##CH更新日志", ImGuiTreeNodeFlags.DefaultOpen)) {
 			ImGui.Text("原版ACT统计和银山雀儿已迁移至卫月API。如果有任何bug或是修改建议请提Issue。");
+			ImGui.Text("Overlay Plugin几乎完全使用卫月API重写，可能会有bug，请及时反馈。");
+			ImGui.Text("大幅缩短启动时间。除了刚开卫月时和其他插件一起加载时间较长，正常游戏内重启插件速度极快。");
+		}
 		if (ImGui.CollapsingHeader("项目介绍##CH项目介绍")) {
 			ImGui.Text("修改IINACT的初衷旨在尽可能满足日常对ACT的基本需求，替代ACT，假装自己是西瓜玩。");
 			ImGui.Text("本项目仍然处于野蛮开发期，代码管理极其混乱，暗藏神秘bug，仅作开发测试使用。");

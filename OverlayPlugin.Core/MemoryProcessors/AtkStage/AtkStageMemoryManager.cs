@@ -1,6 +1,4 @@
 using System;
-using System.Collections.Generic;
-using System.Diagnostics;
 
 namespace RainbowMage.OverlayPlugin.MemoryProcessors.AtkStage;
 
@@ -11,44 +9,24 @@ public interface IAtkStageMemory : IVersionedMemory {
 }
 
 internal class AtkStageMemoryManager : IAtkStageMemory {
-	private readonly TinyIoCContainer container;
-	private readonly FFXIVRepository repository;
-	private IAtkStageMemory memory;
+	private readonly IAtkStageMemory memory;
 
 	public AtkStageMemoryManager(TinyIoCContainer container) {
-		this.container = container;
 		container.Register<IAtkStageMemory62, AtkStageMemory62>();
-		repository = container.Resolve<FFXIVRepository>();
-
-		var memory = container.Resolve<FFXIVMemory>();
-		memory.RegisterOnProcessChangeHandler(FindMemory);
-	}
-
-	private void FindMemory(object? sender, Process p) {
-		memory = null;
-		if (p == null) return;
-
-		ScanPointers();
+		memory = container.Resolve<IAtkStageMemory62>();
+		memory.ScanPointers();
 	}
 
 	public void ScanPointers() {
-		var candidates = new List<IAtkStageMemory> { container.Resolve<IAtkStageMemory62>() };
-		memory = FFXIVMemory.FindCandidate(candidates, repository.GetMachinaRegion());
 	}
 
-	public bool IsValid() => memory != null && memory.IsValid();
+	public bool IsValid() => true;
 
-	public Version GetVersion() => !IsValid() ? null : memory.GetVersion();
+	public Version GetVersion() => memory.GetVersion();
 
-	public IntPtr GetAddonAddress(string name) {
-		if (!IsValid()) {
-			return IntPtr.Zero;
-		}
+	public IntPtr GetAddonAddress(string name) => memory.GetAddonAddress(name);
 
-		return memory.GetAddonAddress(name);
-	}
+	public T? GetAddon<T>() where T : struct => memory.GetAddon<T>();
 
-	public T? GetAddon<T>() where T : struct => !IsValid() ? null : memory.GetAddon<T>();
-
-	public object GetAddon(string name) => !IsValid() ? null : memory.GetAddon(name);
+	public object GetAddon(string name) => memory.GetAddon(name);
 }

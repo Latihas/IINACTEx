@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using FFXIVClientStructs.FFXIV.Client.Game.Character;
 
 namespace RainbowMage.OverlayPlugin.MemoryProcessors.Combatant;
@@ -13,29 +12,16 @@ public interface ICombatantMemory : IVersionedMemory {
 }
 
 public class CombatantMemoryManager : ICombatantMemory {
-	private readonly TinyIoCContainer container;
-	private readonly FFXIVRepository repository;
-	public ICombatantMemory? memory;
+	public readonly ICombatantMemory memory;
 
 	public CombatantMemoryManager(TinyIoCContainer container) {
-		this.container = container;
 		container.Register<ICombatantMemory74, CombatantMemory74>();
-		repository = container.Resolve<FFXIVRepository>();
-
-		var memory = container.Resolve<FFXIVMemory>();
-		memory.RegisterOnProcessChangeHandler(FindMemory);
-	}
-
-	private void FindMemory(object? sender, Process p) {
-		memory = null;
-		ScanPointers();
+		container.Resolve<FFXIVRepository>();
+		memory = container.Resolve<ICombatantMemory74>();
+		memory.ScanPointers();
 	}
 
 	public void ScanPointers() {
-		var candidates = new List<ICombatantMemory> {
-			container.Resolve<ICombatantMemory74>()
-		};
-		memory = FFXIVMemory.FindCandidate(candidates, repository.GetMachinaRegion());
 	}
 
 	public bool IsValid() => memory != null && memory.IsValid();

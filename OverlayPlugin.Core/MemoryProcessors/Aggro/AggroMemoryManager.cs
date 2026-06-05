@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 
 namespace RainbowMage.OverlayPlugin.MemoryProcessors.Aggro;
 
@@ -9,52 +8,21 @@ public interface IAggroMemory : IVersionedMemory {
 }
 
 public class AggroMemoryManager : IAggroMemory {
-	private readonly TinyIoCContainer container;
-	private readonly FFXIVRepository repository;
-	private IAggroMemory memory;
+	private readonly IAggroMemory memory;
 
 	public AggroMemoryManager(TinyIoCContainer container) {
-		this.container = container;
 		container.Register<IAggroMemory60, AggroMemory60>();
-		repository = container.Resolve<FFXIVRepository>();
-
-		var memory = container.Resolve<FFXIVMemory>();
-		memory.RegisterOnProcessChangeHandler(FindMemory);
-	}
-
-	private void FindMemory(object sender, Process p) {
-		memory = null;
-		if (p == null) {
-			return;
-		}
-
-		ScanPointers();
+		container.Resolve<FFXIVRepository>();
+		memory = container.Resolve<IAggroMemory60>();
+		memory.ScanPointers();
 	}
 
 	public void ScanPointers() {
-		var candidates = new List<IAggroMemory> { container.Resolve<IAggroMemory60>() };
-		memory = FFXIVMemory.FindCandidate(candidates, repository.GetMachinaRegion());
 	}
 
-	public bool IsValid() {
-		if (memory == null || !memory.IsValid()) {
-			return false;
-		}
+	public bool IsValid() => true;
 
-		return true;
-	}
+	public Version GetVersion() => memory.GetVersion();
 
-	public Version GetVersion() {
-		if (!IsValid())
-			return null;
-		return memory.GetVersion();
-	}
-
-	public List<AggroEntry> GetAggroList(List<Combatant.Combatant> combatantList) {
-		if (!IsValid()) {
-			return null;
-		}
-
-		return memory.GetAggroList(combatantList);
-	}
+	public List<AggroEntry> GetAggroList(List<Combatant.Combatant> combatantList) => memory.GetAggroList(combatantList);
 }

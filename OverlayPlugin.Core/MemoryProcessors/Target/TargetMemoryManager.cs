@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
 
 namespace RainbowMage.OverlayPlugin.MemoryProcessors.Target;
 
@@ -13,36 +11,24 @@ public interface ITargetMemory : IVersionedMemory {
 }
 
 internal class TargetMemoryManager : ITargetMemory {
-	private readonly TinyIoCContainer container;
-	private readonly FFXIVRepository repository;
-	private ITargetMemory? memory;
+	private readonly ITargetMemory memory;
 
 	public TargetMemoryManager(TinyIoCContainer container) {
-		this.container = container;
 		container.Register<ITargetMemory70, TargetMemory70>();
-		repository = container.Resolve<FFXIVRepository>();
-		container.Resolve<FFXIVMemory>().RegisterOnProcessChangeHandler(FindMemory);
-	}
-
-	private void FindMemory(object? sender, Process p) {
-		memory = null;
-		ScanPointers();
+		memory = container.Resolve<ITargetMemory70>();
+		memory.ScanPointers();
 	}
 
 	public void ScanPointers() {
-		List<ITargetMemory> candidates = [
-			container.Resolve<ITargetMemory70>()
-		];
-		memory = FFXIVMemory.FindCandidate(candidates, repository.GetMachinaRegion());
 	}
 
-	public bool IsValid() => memory != null && memory.IsValid();
+	public bool IsValid() => true;
 
-	public Version? GetVersion() => !IsValid() ? null : memory?.GetVersion();
+	public Version GetVersion() => memory.GetVersion();
 
-	public Combatant.Combatant? GetTargetCombatant() => !IsValid() ? null : memory?.GetTargetCombatant();
+	public Combatant.Combatant GetTargetCombatant() => memory.GetTargetCombatant();
 
-	public Combatant.Combatant? GetFocusCombatant() => !IsValid() ? null : memory?.GetFocusCombatant();
+	public Combatant.Combatant GetFocusCombatant() => memory.GetFocusCombatant();
 
-	public Combatant.Combatant? GetHoverCombatant() => !IsValid() ? null : memory?.GetHoverCombatant();
+	public Combatant.Combatant GetHoverCombatant() => memory.GetHoverCombatant();
 }

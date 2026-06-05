@@ -8,7 +8,6 @@ namespace RainbowMage.OverlayPlugin.MemoryProcessors.Combatant;
 internal interface ICombatantMemory74 : ICombatantMemory;
 
 internal class CombatantMemory74(TinyIoCContainer container) : CombatantMemory(container, CombatantMemory.Size, EffectMemory74.Size, 629), ICombatantMemory74 {
-
 	public override Version GetVersion() => new(7, 4);
 
 	// Returns a combatant if the combatant is a mob or a PC.
@@ -20,8 +19,9 @@ internal class CombatantMemory74(TinyIoCContainer container) : CombatantMemory(c
 
 	// Will return any kind of combatant, even if not a mob.
 	// This function always returns a combatant object, even if empty.
-	protected override unsafe Combatant GetCombatantFromByteArray(BattleChara* gameObject, uint mycharID, bool isPlayer, bool exceptEffects = false) {
+	protected override unsafe Combatant? GetCombatantFromByteArray(BattleChara* gameObject, uint mycharID, bool isPlayer, bool exceptEffects = false) {
 		// fixed (byte* p = source) {
+		if (gameObject == null) return null;
 		var mem = Marshal.PtrToStructure<CombatantMemory>((IntPtr)gameObject);
 		if (isPlayer) mycharID = mem.ID;
 		var combatant = new Combatant {
