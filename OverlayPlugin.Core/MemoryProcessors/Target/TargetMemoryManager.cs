@@ -3,11 +3,11 @@
 namespace RainbowMage.OverlayPlugin.MemoryProcessors.Target;
 
 public interface ITargetMemory : IVersionedMemory {
-	Combatant.Combatant GetTargetCombatant();
+	Combatant.Combatant? GetTargetCombatant();
 
-	Combatant.Combatant GetFocusCombatant();
+	Combatant.Combatant? GetFocusCombatant();
 
-	Combatant.Combatant GetHoverCombatant();
+	Combatant.Combatant? GetHoverCombatant();
 }
 
 internal class TargetMemoryManager : ITargetMemory {
@@ -26,9 +26,9 @@ internal class TargetMemoryManager : ITargetMemory {
 
 	public Version GetVersion() => memory.GetVersion();
 
-	public Combatant.Combatant GetTargetCombatant() => memory.GetTargetCombatant();
+	public Combatant.Combatant? GetTargetCombatant() => memory.GetTargetCombatant();
 
-	public Combatant.Combatant GetFocusCombatant() => memory.GetFocusCombatant();
+	public Combatant.Combatant? GetFocusCombatant() => memory.GetFocusCombatant();
 
-	public Combatant.Combatant GetHoverCombatant() => memory.GetHoverCombatant();
+	public Combatant.Combatant? GetHoverCombatant() => memory.GetHoverCombatant();
 }

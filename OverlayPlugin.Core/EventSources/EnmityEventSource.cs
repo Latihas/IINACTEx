@@ -205,9 +205,9 @@ public class EnmityEventSource : EventSourceBase {
 	[Serializable]
 	internal class EnmityTargetDataObject {
 		public string type = EnmityTargetDataEvent;
-		public Combatant Target;
-		public Combatant Focus;
-		public Combatant Hover;
+		public Combatant? Target;
+		public Combatant? Focus;
+		public Combatant? Hover;
 		public Combatant TargetOfTarget;
 		public List<EnmityEntry> Entries;
 	}
