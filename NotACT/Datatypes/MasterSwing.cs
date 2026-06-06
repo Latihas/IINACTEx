@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
+using static Advanced_Combat_Tracker.ActGlobals;
 
 namespace Advanced_Combat_Tracker;
 
@@ -9,7 +10,9 @@ public class MasterSwing(
 	string theAttackType, string attacker, string theDamageType, string victim)
 	: IComparable, IComparable<MasterSwing> {
 	public delegate Color ColorDataCallback(MasterSwing Data);
+
 	public delegate string StringDataCallback(MasterSwing Data);
+
 	public static Dictionary<string, ColumnDef> ColumnDefs = new();
 	internal string attacker = attacker;
 	internal string attackType = theAttackType;
@@ -21,6 +24,7 @@ public class MasterSwing(
 	internal DateTime time = time;
 	internal int timeSorter = timeSorter;
 	internal string victim = victim;
+
 	public MasterSwing(
 		int SwingType, bool Critical, Dnum damage, DateTime Time, int TimeSorter, string theAttackType,
 		string Attacker, string theDamageType, string Victim) : this(SwingType, Critical, "specialAttackTerm-none", damage, Time, TimeSorter, theAttackType, Attacker, theDamageType, Victim) {
@@ -32,8 +36,8 @@ public class MasterSwing(
 	public int TimeSorter => timeSorter;
 	public int SwingType => swingType;
 	public Dnum Damage => damage;
-	public string Attacker => attacker == ActGlobals.oFormActMain.ObjectTable.LocalPlayer?.Name.ToString() ? ActGlobals.charName : attacker;
-	public string Victim => victim == ActGlobals.oFormActMain.ObjectTable.LocalPlayer?.Name.ToString() ? ActGlobals.charName : victim;
+	public string Attacker => oFormActMain.LocalPlayerName != null && attacker == oFormActMain.LocalPlayerName ? charName : attacker;
+	public string Victim => oFormActMain.LocalPlayerName != null && victim == oFormActMain.LocalPlayerName ? charName : victim;
 	public string AttackType => attackType;
 	public string DamageType => damageType;
 	public bool Critical {
@@ -76,14 +80,15 @@ public class MasterSwing(
 	}
 	public Dictionary<string, object> Tags { get; set; } = new();
 	public int CompareTo(object? obj) => CompareTo((MasterSwing?)obj);
+
 	public int CompareTo(MasterSwing? other) {
 		// Compare based on the sort column defined in ActGlobals.aTSort.
-		if (ColumnDefs.TryGetValue(ActGlobals.aTSort, out var sortColumn)) {
+		if (ColumnDefs.TryGetValue(aTSort, out var sortColumn)) {
 			var result = sortColumn.SortComparer(this, other);
 			if (result != 0) return result;
 		}
 		// Compare based on the secondary sort column defined in ActGlobals.aTSort2.
-		if (ColumnDefs.TryGetValue(ActGlobals.aTSort2, out var secondarySortColumn)) {
+		if (ColumnDefs.TryGetValue(aTSort2, out var secondarySortColumn)) {
 			var result = secondarySortColumn.SortComparer(this, other);
 			if (result != 0) return result;
 		}
@@ -96,16 +101,20 @@ public class MasterSwing(
 
 	public string GetColumnByName(string name) =>
 		ColumnDefs.TryGetValue(name, out var value) ? value.GetCellData(this) : string.Empty;
+
 	public override string ToString() =>
 		$"{Time:s}|{Damage}|{Attacker}|{Special}|{AttackType}|{DamageType}|{Victim}";
+
 	public override bool Equals(object? obj) {
 		var masterSwing = (MasterSwing)obj!;
 		var text = ToString();
 		var value = masterSwing.ToString();
 		return text.Equals(value);
 	}
+
 	public override int GetHashCode() =>
 		ToString().GetHashCode();
+
 	internal static int CompareTime(MasterSwing Left, MasterSwing Right) {
 		var timeSorterComparison = Left.TimeSorter.CompareTo(Right.TimeSorter);
 		return timeSorterComparison != 0 ? timeSorterComparison : Left.Time.CompareTo(Right.Time);

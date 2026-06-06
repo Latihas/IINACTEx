@@ -150,9 +150,10 @@ public sealed class Plugin : IDalamudPlugin {
 		Version = Version.Parse(Assembly.GetExecutingAssembly().GetCustomAttribute<AssemblyInformationalVersionAttribute>()!.InformationalVersion.Split('+')[0]);
 		HttpClient = new HttpClient();
 		Init();
-		oFormActMain = new FormActMain(this, Log, Framework, ObjectTable);
+		oFormActMain = new FormActMain(this, Log, Framework);
 		Configuration = PluginInterface.GetPluginConfig() as Configuration ?? new Configuration();
 		try {
+			if (ObjectTable.LocalPlayer != null) oFormActMain.LocalPlayerName = ObjectTable.LocalPlayer.Name.ToString();
 			if (Configuration.FFXIV_ACT_Plugin_CN_Update || Configuration.Version != LatestConfigVersion || Configuration.InitFatalError)
 				Directory.GetFiles(PluginAssemblyDirectory, "FFXIV_ACT_Plugin.*").ToList().ForEach(i => {
 					Log.Warning($"Deleting {i}");
@@ -254,6 +255,7 @@ public sealed class Plugin : IDalamudPlugin {
 			ClientState.LeavePvP += LeavePvP;
 			Framework.Update += CheckCnUpdate;
 			ClientState.Logout += OnLogOut;
+			ClientState.Login += OnLogIn;
 			ZoneDownHookManager = new ZoneDownHookManager();
 			foreach (var rt in Directory.GetFiles(PluginActScriptDirectory, "*.dll", SearchOption.TopDirectoryOnly).Select(Path.GetFileName).Cast<string>())
 				if (Configuration.ActScriptsEnabled.Contains(rt))
@@ -304,8 +306,10 @@ public sealed class Plugin : IDalamudPlugin {
 		}
 	}
 
+	private static void OnLogIn() => oFormActMain.LocalPlayerName = ObjectTable.LocalPlayer!.Name.ToString();
 
 	private static void OnLogOut(int type, int code) {
+		oFormActMain.LocalPlayerName = null;
 		if (DisableSilverDasher())
 			Task.Run(async () => {
 				await Task.Delay(5000);
@@ -402,6 +406,7 @@ public sealed class Plugin : IDalamudPlugin {
 		ClientState.LeavePvP -= LeavePvP;
 		Framework.Update -= CheckCnUpdate;
 		ClientState.Logout -= OnLogOut;
+		ClientState.Login -= OnLogIn;
 		IpcProviders.Dispose();
 		ZoneDownHookManager.Dispose();
 		WindowSystem.RemoveAllWindows();

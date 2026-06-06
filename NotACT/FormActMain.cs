@@ -27,7 +27,7 @@ public partial class FormActMain : Form, ISynchronizeInvoke {
 	public IPluginLog PluginLog { get; }
 	public dynamic DalamudPlugin;
 	public IFramework PluginFramework;
-	public IObjectTable ObjectTable;
+	public string? LocalPlayerName;
 	private readonly ConcurrentQueue<MasterSwing> afterActionsQueue = new();
 	public DateTimeLogParser? GetDateTimeFromLog;
 	private volatile bool inCombat;
@@ -67,11 +67,10 @@ public partial class FormActMain : Form, ISynchronizeInvoke {
 	public void OpenLog(bool GetCurrentZone, bool GetCharNameFromFile) {
 	}
 
-	public FormActMain(IDalamudPlugin plugin, IPluginLog pluginLog, IFramework framework, IObjectTable objectTable) {
+	public FormActMain(IDalamudPlugin plugin, IPluginLog pluginLog, IFramework framework) {
 		PluginLog = pluginLog;
 		DalamudPlugin = plugin;
 		PluginFramework = framework;
-		ObjectTable = objectTable;
 		// InitializeComponent();
 		AppDataFolder = new DirectoryInfo(DalamudPlugin.PluginConfigDirectory);
 		// ActGlobals.ActLocalization.Init();
@@ -330,7 +329,6 @@ public partial class FormActMain : Form, ISynchronizeInvoke {
 	}
 
 	private void LogReader(IFramework _) {
-		// if (!PluginInitialized) return;
 		var logOutput = (LogOutput)FfxivPlugin!._dataCollection._logOutput;
 		lock (logOutput._LogQueueLock) {
 			while (logOutput._LogQueue.TryDequeue(out var line))
