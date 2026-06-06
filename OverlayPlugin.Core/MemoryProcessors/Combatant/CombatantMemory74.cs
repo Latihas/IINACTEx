@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using FFXIVClientStructs.FFXIV.Client.Game.Character;
+using FFXIVClientStructs.FFXIV.Client.Game.Object;
 
 namespace RainbowMage.OverlayPlugin.MemoryProcessors.Combatant;
 
@@ -11,7 +12,7 @@ internal class CombatantMemory74(TinyIoCContainer container) : CombatantMemory(c
 	public override Version GetVersion() => new(7, 4);
 
 	// Returns a combatant if the combatant is a mob or a PC.
-	public override unsafe Combatant? GetMobFromByteArray(BattleChara* gameObject, uint mycharID) {
+	public override unsafe Combatant? GetMobFromByteArray(GameObject* gameObject, uint mycharID) {
 		if (gameObject == null) return null;
 		var mem = Marshal.PtrToStructure<Character>((IntPtr)gameObject);
 		return mem.EntityId is 0 or emptyID ? null : GetCombatantFromByteArray(gameObject, mycharID, false);
@@ -19,7 +20,7 @@ internal class CombatantMemory74(TinyIoCContainer container) : CombatantMemory(c
 
 	// Will return any kind of combatant, even if not a mob.
 	// This function always returns a combatant object, even if empty.
-	protected override unsafe Combatant? GetCombatantFromByteArray(BattleChara* gameObject, uint mycharID, bool isPlayer, bool exceptEffects = false) {
+	protected override unsafe Combatant? GetCombatantFromByteArray(GameObject* gameObject, uint mycharID, bool isPlayer, bool exceptEffects = false) {
 		// fixed (byte* p = source) {
 		if (gameObject == null) return null;
 		var mem = Marshal.PtrToStructure<CombatantMemory>((IntPtr)gameObject);

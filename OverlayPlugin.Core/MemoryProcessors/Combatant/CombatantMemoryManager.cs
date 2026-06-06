@@ -1,12 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
-using FFXIVClientStructs.FFXIV.Client.Game.Character;
+using FFXIVClientStructs.FFXIV.Client.Game.Object;
 
 namespace RainbowMage.OverlayPlugin.MemoryProcessors.Combatant;
 
 public interface ICombatantMemory : IVersionedMemory {
 	Combatant? GetSelfCombatant();
-	unsafe Combatant GetCombatantFromAddress(BattleChara* address, uint selfCharID);
+	unsafe Combatant GetCombatantFromAddress(GameObject* address, uint selfCharID);
 	List<Combatant> GetCombatantList();
 	void ReturnCombatant(Combatant combatant);
 }
@@ -28,7 +28,7 @@ public class CombatantMemoryManager : ICombatantMemory {
 
 	public Version GetVersion() => IsValid() ? memory.GetVersion() : null;
 
-	public unsafe Combatant GetCombatantFromAddress(BattleChara* address, uint selfCharID) => IsValid() ? memory.GetCombatantFromAddress(address, selfCharID) : null;
+	public unsafe Combatant GetCombatantFromAddress(GameObject* address, uint selfCharID) => IsValid() ? memory.GetCombatantFromAddress(address, selfCharID) : null;
 
 	public List<Combatant> GetCombatantList() => IsValid() ? memory.GetCombatantList() : [];
 

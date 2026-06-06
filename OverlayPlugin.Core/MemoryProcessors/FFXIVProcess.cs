@@ -5,7 +5,7 @@ using System.Diagnostics;
 using System.Runtime.InteropServices;
 using Dalamud;
 using FFXIVClientStructs.FFXIV.Client.Game;
-using FFXIVClientStructs.FFXIV.Client.Game.Character;
+using FFXIVClientStructs.FFXIV.Client.Game.Object;
 using Newtonsoft.Json.Linq;
 
 namespace RainbowMage.OverlayPlugin.MemoryProcessors;
@@ -222,7 +222,7 @@ public abstract partial class FFXIVProcess(TinyIoCContainer container) {
 		return active_process_id == process_.Id;
 	}
 
-	public abstract unsafe EntityData GetEntityDataFromByteArray(BattleChara* battleChara);
+	public abstract unsafe EntityData GetEntityDataFromByteArray(GameObject* GameObject);
 
 	public unsafe bool GetInGameCombat() => Conditions.Instance()->InCombat;
 
@@ -234,7 +234,7 @@ public abstract partial class FFXIVProcess(TinyIoCContainer container) {
 	}
 
 	public abstract JObject GetJobSpecificData(EntityJob job);
-	internal abstract unsafe EntityData GetEntityData(BattleChara* entityPtr);
+	internal abstract unsafe EntityData GetEntityData(GameObject* entityPtr);
 	public abstract EntityData GetSelfData();
 
 	[SuppressGCTransition]

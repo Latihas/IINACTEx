@@ -1,8 +1,11 @@
 ﻿using System;
+using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 using FFXIVClientStructs.FFXIV.Client.Game;
 using FFXIVClientStructs.FFXIV.Client.Game.Character;
+using FFXIVClientStructs.FFXIV.Client.Game.Object;
+using FFXIVClientStructs.Interop;
 using Newtonsoft.Json.Linq;
 
 namespace RainbowMage.OverlayPlugin.MemoryProcessors;
@@ -44,7 +47,7 @@ public class FFXIVProcessCn(TinyIoCContainer container) : FFXIVProcess(container
 	internal override void ReadSignatures() {
 	}
 
-	public override unsafe EntityData GetEntityDataFromByteArray(BattleChara* source) {
+	public override unsafe EntityData GetEntityDataFromByteArray(GameObject* source) {
 		var mem = Marshal.PtrToStructure<EntityMemory>((IntPtr)source);
 
 
@@ -95,11 +98,13 @@ public class FFXIVProcessCn(TinyIoCContainer container) : FFXIVProcess(container
 	}
 
 
-	internal override unsafe EntityData? GetEntityData(BattleChara* entity_ptr) =>
+	internal override unsafe EntityData? GetEntityData(GameObject* entity_ptr) =>
 		entity_ptr == null ? null : GetEntityDataFromByteArray(entity_ptr);
 
 	public override unsafe EntityData? GetSelfData() {
-		var gobs = CharacterManager.Instance()->BattleCharas;
+		var gobs = CharacterManager.Instance()->BattleCharas.ToArray()
+			.Select(entry => (Pointer<GameObject>)(GameObject*)entry.Value)
+			.Where(entry => entry.Value != null).ToArray();
 		return gobs.Length == 0 ? null : GetEntityData(gobs[0].Value);
 	}
 	public override unsafe JObject? GetJobSpecificData(EntityJob job) {

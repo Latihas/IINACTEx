@@ -1,8 +1,11 @@
 ﻿using System;
 using System.Buffers;
 using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.InteropServices;
 using FFXIVClientStructs.FFXIV.Client.Game.Character;
+using FFXIVClientStructs.FFXIV.Client.Game.Object;
+using FFXIVClientStructs.Interop;
 using Microsoft.Extensions.ObjectPool;
 
 namespace RainbowMage.OverlayPlugin.MemoryProcessors.Combatant;
@@ -11,7 +14,9 @@ public abstract class CombatantMemory : ICombatantMemory {
 	public readonly FFXIVMemory memory;
 	public unsafe IntPtr charmapAddress {
 		get {
-			var gobs = CharacterManager.Instance()->BattleCharas;
+			var gobs = CharacterManager.Instance()->BattleCharas.ToArray()
+				.Select(entry => (Pointer<GameObject>)(GameObject*)entry.Value)
+				.Where(entry => entry.Value != null).ToArray();
 			return gobs.Length == 0 ? IntPtr.Zero : (IntPtr)gobs[0].Value;
 		}
 	}
@@ -42,18 +47,22 @@ public abstract class CombatantMemory : ICombatantMemory {
 	public abstract Version GetVersion();
 
 	public unsafe Combatant? GetSelfCombatant() {
-		var gobs = CharacterManager.Instance()->BattleCharas;
+		var gobs = CharacterManager.Instance()->BattleCharas.ToArray()
+			.Select(entry => (Pointer<GameObject>)(GameObject*)entry.Value)
+			.Where(entry => entry.Value != null).ToArray();
 		return gobs.Length == 0 ? null : GetCombatantFromByteArray(gobs[0].Value, 0, true, true);
 	}
 
-	public unsafe Combatant GetCombatantFromAddress(BattleChara* address, uint selfCharID = 0) => GetCombatantFromByteArray(address, selfCharID, false);
+	public unsafe Combatant GetCombatantFromAddress(GameObject* address, uint selfCharID = 0) => GetCombatantFromByteArray(address, selfCharID, false);
 
 	public unsafe List<Combatant> GetCombatantList() {
 		var result = new List<Combatant>();
 		var seen = new HashSet<uint>();
 		var mychar = GetSelfCombatant();
 
-		foreach (var p in CharacterManager.Instance()->BattleCharas) {
+		foreach (var p in CharacterManager.Instance()->BattleCharas.ToArray()
+			         .Select(entry => (Pointer<GameObject>)(GameObject*)entry.Value)
+			         .Where(entry => entry.Value != null)) {
 			var combatant = GetMobFromByteArray(p.Value, mychar?.ID ?? 0);
 			if (combatant == null) continue;
 			if (seen.Contains(combatant.ID)) {
@@ -76,12 +85,12 @@ public abstract class CombatantMemory : ICombatantMemory {
 	}
 
 	// Returns a combatant if the combatant is a mob or a PC.
-	public abstract unsafe Combatant? GetMobFromByteArray(BattleChara* gameObject, uint mycharID);
+	public abstract unsafe Combatant? GetMobFromByteArray(GameObject* gameObject, uint mycharID);
 
 	// Will return any kind of combatant, even if not a mob.
 	// This function always returns a combatant object, even if empty.
 	protected abstract unsafe Combatant GetCombatantFromByteArray(
-		BattleChara* character, uint mycharID, bool isPlayer, bool exceptEffects = false);
+		GameObject* character, uint mycharID, bool isPlayer, bool exceptEffects = false);
 
 	protected unsafe List<EffectEntry> GetEffectEntries(byte* source, ObjectType type, uint mycharID) {
 		var result = new List<EffectEntry>();
