@@ -152,8 +152,8 @@ public class BuiltinEventConfig {
 
 	public void SaveConfig(IPluginConfig Config) {
 		var newObj = JObject.FromObject(this);
-		if (Config.EventSourceConfigs.ContainsKey("MiniParse") &&
-		    JToken.DeepEquals(Config.EventSourceConfigs["MiniParse"], newObj)) return;
+		if (Config.EventSourceConfigs.TryGetValue("MiniParse", out var value) &&
+		    JToken.DeepEquals(value, newObj)) return;
 		Config.EventSourceConfigs["MiniParse"] = newObj;
 		Config.MarkDirty();
 	}

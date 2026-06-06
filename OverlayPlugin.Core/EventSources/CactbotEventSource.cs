@@ -416,14 +416,12 @@ public class CactbotEventSource : EventSourceBase {
 					dataFilePaths.Add(line);
 			}
 		} catch (WebException e) {
-			if (e.Status == WebExceptionStatus.ProtocolError &&
-			    e.Response is HttpWebResponse response &&
-			    response.StatusCode == HttpStatusCode.NotFound) {
+			if (e is { Status: WebExceptionStatus.ProtocolError, Response: HttpWebResponse { StatusCode: HttpStatusCode.NotFound } }) {
 				// Ignore file not found.
 			} else if (e.InnerException != null &&
 			           (e.InnerException is FileNotFoundException || e.InnerException is DirectoryNotFoundException)) {
 				// Ignore file not found.
-			} else if (e.InnerException != null && e.InnerException.InnerException != null &&
+			} else if (e.InnerException is { InnerException: not null } &&
 			           (e.InnerException.InnerException is FileNotFoundException ||
 			            e.InnerException.InnerException is DirectoryNotFoundException)) {
 				// Ignore file not found.

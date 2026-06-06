@@ -2928,7 +2928,7 @@ namespace RainbowMage.OverlayPlugin {
 			}
 
 #if RESOLVE_OPEN_GENERICS
-			if (checkType.IsInterface && checkType.IsGenericType) {
+			if (checkType is { IsInterface: true, IsGenericType: true }) {
 				// if the type is registered as an open generic, then see if the open generic is registered
 				if (_RegisteredTypes.TryGetValue(new TypeRegistration(checkType.GetGenericTypeDefinition(), name),
 					    out factory)) {

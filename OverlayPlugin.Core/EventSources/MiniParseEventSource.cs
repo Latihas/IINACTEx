@@ -42,12 +42,12 @@ internal partial class MiniParseEventSource : EventSourceBase {
 			if (key == null)
 				return null;
 
-			if (!Config.OverlayData.ContainsKey(key))
+			if (!Config.OverlayData.TryGetValue(key, out var value))
 				return null;
 
 			var ret = new JObject {
 				["key"] = key,
-				["data"] = Config.OverlayData[key]
+				["data"] = value
 			};
 			return ret;
 		});

@@ -95,7 +95,7 @@ public class MasterSwing(
 	}
 
 	public string GetColumnByName(string name) =>
-		ColumnDefs.ContainsKey(name) ? ColumnDefs[name].GetCellData(this) : string.Empty;
+		ColumnDefs.TryGetValue(name, out var value) ? value.GetCellData(this) : string.Empty;
 	public override string ToString() =>
 		$"{Time:s}|{Damage}|{Attacker}|{Special}|{AttackType}|{DamageType}|{Victim}";
 	public override bool Equals(object? obj) {

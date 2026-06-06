@@ -133,8 +133,8 @@ public class DamageTypeData : IEquatable<DamageTypeData>, IComparable<DamageType
 	public string DurationS => Duration.Hours == 0
 		? $"{Duration.Minutes:00}:{Duration.Seconds:00}"
 		: $"{Duration.Hours:00}:{Duration.Minutes:00}:{Duration.Seconds:00}";
-	public float AverageDelay => Items.ContainsKey(ActGlobals.Trans["attackTypeTerm-all"])
-		? Items[ActGlobals.Trans["attackTypeTerm-all"]].AverageDelay
+	public float AverageDelay => Items.TryGetValue(ActGlobals.Trans["attackTypeTerm-all"], out var value)
+		? value.AverageDelay
 		: float.NaN;
 	public long Damage =>
 		Items.TryGetValue(ActGlobals.Trans["attackTypeTerm-all"], out var value) ? value.Damage : 0L;

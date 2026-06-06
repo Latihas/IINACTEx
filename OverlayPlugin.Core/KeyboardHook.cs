@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
 
@@ -14,7 +15,7 @@ public sealed class KeyboardHook : NativeWindow, IDisposable {
 	[DllImport("user32.dll")]
 	private static extern bool UnregisterHotKey(IntPtr hWnd, int id);
 
-	private static readonly int WM_HOTKEY = 0x0312;
+	private const int WM_HOTKEY = 0x0312;
 
 	private readonly Dictionary<int, HotKeyInfo> _hotkeys = new();
 	private readonly ILogger _logger;
@@ -25,13 +26,9 @@ public sealed class KeyboardHook : NativeWindow, IDisposable {
 	/// <param name="m"></param>
 	protected override void WndProc(ref Message m) {
 		base.WndProc(ref m);
-
 		// check if we got a hot key pressed.
-		if (m.Msg == WM_HOTKEY && _hotkeys.TryGetValue((int)m.LParam, out var info)) {
-			foreach (var cb in info.Callbacks) {
-				cb();
-			}
-		}
+		if (m.Msg != WM_HOTKEY || !_hotkeys.TryGetValue((int)m.LParam, out var info)) return;
+		foreach (var cb in info.Callbacks) cb();
 	}
 
 	public KeyboardHook(TinyIoCContainer container) {
@@ -48,8 +45,9 @@ public sealed class KeyboardHook : NativeWindow, IDisposable {
 	/// <param name="key">The key itself that is associated with the hot key.</param>
 	public void RegisterHotKey(ModifierKeys modifier, Keys key, Action callback) {
 		var lookupKey = (int)modifier | (int)key << 16;
-		if (!_hotkeys.ContainsKey(lookupKey)) {
-			_hotkeys[lookupKey] = new HotKeyInfo();
+		if (!_hotkeys.TryGetValue(lookupKey, out var value)) {
+			value = new HotKeyInfo();
+			_hotkeys[lookupKey] = value;
 
 			// register the hot key.
 			if (!RegisterHotKey(Handle, _hotkeys[lookupKey].Id, (uint)modifier, (uint)key)) {
@@ -58,47 +56,34 @@ public sealed class KeyboardHook : NativeWindow, IDisposable {
 			}
 		}
 
-		_hotkeys[lookupKey].Callbacks.Add(callback);
+		value.Callbacks.Add(callback);
 	}
 
 	public void UnregisterHotKey(ModifierKeys modifier, Keys key, Action callback) {
 		var lookupKey = (int)modifier | (int)key << 16;
-		if (_hotkeys.TryGetValue(lookupKey, out var info)) {
-			info.Callbacks.Remove(callback);
+		if (!_hotkeys.TryGetValue(lookupKey, out var info)) return;
+		info.Callbacks.Remove(callback);
 
-			if (info.Callbacks.Count < 1) {
-				if (UnregisterHotKey(Handle, info.Id)) {
-					_hotkeys.Remove(lookupKey);
-				}
-			}
-		}
+		if (info.Callbacks.Count != 0) return;
+		if (UnregisterHotKey(Handle, info.Id)) _hotkeys.Remove(lookupKey);
 	}
 
 	public void UnregisterHotKey(Action callback) {
 		var toRemove = new List<int>();
 
-		foreach (var pair in _hotkeys) {
-			if (pair.Value.Callbacks.Contains(callback)) {
-				pair.Value.Callbacks.Remove(callback);
-				if (pair.Value.Callbacks.Count < 1) {
-					if (UnregisterHotKey(Handle, pair.Value.Id)) {
-						toRemove.Add(pair.Key);
-					}
-				}
-			}
+		foreach (var pair in _hotkeys.Where(pair => pair.Value.Callbacks.Contains(callback))) {
+			pair.Value.Callbacks.Remove(callback);
+			if (pair.Value.Callbacks.Count != 0) continue;
+			if (UnregisterHotKey(Handle, pair.Value.Id))
+				toRemove.Add(pair.Key);
 		}
 
-		foreach (var key in toRemove) {
-			_hotkeys.Remove(key);
-		}
+		foreach (var key in toRemove) _hotkeys.Remove(key);
 	}
 
 	public void DisableHotKeys() {
-		foreach (var pair in _hotkeys) {
-			if (!UnregisterHotKey(Handle, pair.Value.Id)) {
-				_logger.Log(LogLevel.Error, Resources.UnregisterHotkeyError, pair.Key);
-			}
-		}
+		foreach (var pair in _hotkeys.Where(pair => !UnregisterHotKey(Handle, pair.Value.Id)))
+			_logger.Log(LogLevel.Error, Resources.UnregisterHotkeyError, pair.Key);
 	}
 
 	public void EnableHotKeys() {

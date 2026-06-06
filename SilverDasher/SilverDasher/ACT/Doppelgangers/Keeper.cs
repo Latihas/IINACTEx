@@ -142,7 +142,7 @@ internal class Keeper : Doppelganger {
 			}
 			value.Coordinate = coords;
 			value.Instance = instance;
-			if (value.TerritoryID == 0 && value.Rank is Rank.SS or Rank.SSMinion) {
+			if (value is { TerritoryID: 0, Rank: Rank.SS or Rank.SSMinion }) {
 				if (NetworkMapID == 0 || NetworkMapID != CurrentMapID) return;
 				value.TerritoryID = territory;
 			}

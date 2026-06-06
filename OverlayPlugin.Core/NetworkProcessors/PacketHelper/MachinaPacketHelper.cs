@@ -37,7 +37,7 @@ internal static class MachinaMap {
 			if (mType.IsPrimitive) continue;
 
 			// Only allow structs that are fixed layout of some sort, this avoids potential exceptions when marshaling
-			if (!mType.IsExplicitLayout && !mType.IsLayoutSequential) continue;
+			if (mType is { IsExplicitLayout: false, IsLayoutSequential: false }) continue;
 
 			// Don't allow inner/nested types.
 			if (mType.IsNested) continue;

@@ -616,7 +616,7 @@ public class MainWindow() : Window(WindowPrefix) {
 		ImGui.Spacing();
 		var playerCharacterName = Instance.Configuration.PlayerCharacterName;
 		ImGui.SetNextItemWidth(elementWidth);
-		if (ImGui.InputText("Player name", ref playerCharacterName, 100)) {
+		if (ImGui.InputText("玩家名称", ref playerCharacterName, 100)) {
 			Instance.Configuration.PlayerCharacterName = playerCharacterName;
 			Instance.Configuration.Save();
 		}

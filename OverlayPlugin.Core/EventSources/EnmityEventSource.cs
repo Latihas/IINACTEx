@@ -297,7 +297,7 @@ public class EnmityEventSource : EventSourceBase {
 		var enemyList = new List<TargetableEnemyEntry>();
 		for (var i = 0; i != combatantList.Count; ++i) {
 			var combatant = combatantList[i];
-			var isHostile = combatant.Type == ObjectType.Monster && combatant.MonsterType == MonsterType.Hostile;
+			var isHostile = combatant is { Type: ObjectType.Monster, MonsterType: MonsterType.Hostile };
 			if (!isHostile || !combatant.IsTargetable) continue;
 			var entry = new TargetableEnemyEntry {
 				ID = combatant.ID,

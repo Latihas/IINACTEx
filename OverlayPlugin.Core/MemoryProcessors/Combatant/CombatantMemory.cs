@@ -103,10 +103,7 @@ public abstract class CombatantMemory : ICombatantMemory {
 		for (var i = 0; i < maxEffects; i++) {
 			var effect = GetEffectEntryFromByteArray(bytes, i);
 
-			if (effect.BuffID > 0 &&
-			    effect.Stack >= 0 &&
-			    effect.Timer >= 0.0f &&
-			    effect.ActorID > 0) {
+			if (effect is { BuffID: > 0, Stack: >= 0, Timer: >= 0.0f, ActorID: > 0 }) {
 				effect.isOwner = effect.ActorID == mycharID;
 
 				result.Add(effect);
