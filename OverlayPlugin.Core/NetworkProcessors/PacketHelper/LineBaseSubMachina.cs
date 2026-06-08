@@ -9,11 +9,11 @@ public abstract class LineBaseSubMachina<PacketType>
 	protected static FFXIVRepository ffxiv;
 
 	protected readonly Func<string, DateTime, bool> logWriter;
-	protected MachinaRegionalizedPacketHelper<PacketType> packetHelper;
+	protected MachinaRegionalizedPacketHelper<PacketType>? packetHelper;
 	protected GameRegion? currentRegion;
 
 	public LineBaseSubMachina(TinyIoCContainer container, uint logFileLineID, string logLineName, string machinaPacketName) {
-		ffxiv = ffxiv ?? container.Resolve<FFXIVRepository>();
+		ffxiv ??= container.Resolve<FFXIVRepository>();
 		ffxiv.RegisterNetworkParser(MessageReceived);
 		ffxiv.RegisterProcessChangedHandler(ProcessChanged);
 
@@ -42,11 +42,9 @@ public abstract class LineBaseSubMachina<PacketType>
 		if (packetHelper == null)
 			return;
 
-		if (currentRegion == null)
-			currentRegion = ffxiv.GetMachinaRegion();
+		currentRegion ??= ffxiv.GetMachinaRegion();
 
-		if (currentRegion == null)
-			return;
+		if (currentRegion == null) return;
 
 		var line = packetHelper[currentRegion.Value].ToString(epoch, message);
 

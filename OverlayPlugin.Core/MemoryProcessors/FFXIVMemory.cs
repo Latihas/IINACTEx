@@ -31,7 +31,6 @@ public partial class FFXIVMemory {
 	public FFXIVMemory(TinyIoCContainer container) {
 		logger = container.Resolve<ILogger>();
 		var repository1 = container.Resolve<FFXIVRepository>();
-
 		repository1.RegisterProcessChangedHandler(UpdateProcess);
 	}
 

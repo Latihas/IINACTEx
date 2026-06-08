@@ -288,7 +288,7 @@ public abstract class MachinaPacketWrapper : IPacketStruct {
 
 	private static readonly Dictionary<Type, Dictionary<string, FieldInfo>> typePropertyMap = new();
 
-	private Dictionary<string, FieldInfo> propMap;
+	private Dictionary<string, FieldInfo>? propMap;
 
 	public static void InitTypePropertyMap(Type type) {
 		typePropertyMap.Add(type, type.GetFields().ToDictionary(fieldInfo => fieldInfo.Name));
@@ -302,7 +302,7 @@ public abstract class MachinaPacketWrapper : IPacketStruct {
 		// which would require an OverlayPlugin version bump anyways
 
 		// Cache the map locally for subsequent calls
-		if (propMap == null) propMap = typePropertyMap[packetType];
+		propMap ??= typePropertyMap[packetType];
 		return (T)propMap[name].GetValue(packetValue);
 	}
 }
