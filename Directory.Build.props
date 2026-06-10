@@ -16,9 +16,9 @@
 		<!--测试-->
 		<!--    <NoWarn>$(NoWarn);IL2026;IL2075;CA2022;CS0168;CS0169;CS0414;CS0649;CS8524;CS8714;CS8767;SYSLIB0014;SYSLIB0051</NoWarn>-->
 		<!--    <NoWarn>$(NoWarn);CS8073;CS8600;CS8601;CS8602;CS8603;CS8604;CS8605;CS8612;CS8619;CS8620;CS8622;CS8629</NoWarn>-->
-		<DebugType>full</DebugType>
-		<DebugSymbols>true</DebugSymbols>
-		<Optimize>false</Optimize>
+		<!--		<DebugType>full</DebugType>-->
+		<!--		<DebugSymbols>true</DebugSymbols>-->
+		<!--		<Optimize>false</Optimize>-->
 	</PropertyGroup>
 </Project>
 
