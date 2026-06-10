@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Dalamud.Plugin.Services;
 using EdgeTTS;
@@ -29,7 +30,7 @@ public class EdgeTTSManager {
 	private string _cachePath = string.Empty;
 	private readonly EdgeTTSConfig _config;
 	private EdgeTTSEngine _engine = null!;
-	private readonly object _lock = new();
+	private readonly Lock _lock = new();
 	private readonly IPluginLog _log;
 
 	public string CurrentCachePath => _cachePath;
@@ -37,7 +38,7 @@ public class EdgeTTSManager {
 	private void ExtractVoicesJson() {
 		try {
 			var assembly = typeof(EdgeTTSManager).Assembly;
-			using var stream = assembly.GetManifestResourceStream("IINACT.Resources.voices.json");
+			using var stream = assembly.GetManifestResourceStream("IINACTEx.Resources.voices.json");
 			if (stream == null) {
 				_log.Error("EdgeTTSManager: voices.json embedded resource not found");
 				return;
@@ -56,7 +57,7 @@ public class EdgeTTSManager {
 
 	public EdgeTTSManager(IPluginLog log, string configPath) {
 		_log = log;
-		_configPath = Path.Combine(Path.GetDirectoryName(configPath)!, "IINACT", "Notification", "TextToSpeech.json");
+		_configPath = Path.Combine(Path.GetDirectoryName(configPath)!, "IINACTEx", "Notification", "TextToSpeech.json");
 		_config = EdgeTTSConfig.Load(_configPath);
 
 		UpdateCachePath(_config.CustomCachePath);

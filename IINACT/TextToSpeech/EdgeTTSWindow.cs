@@ -30,9 +30,11 @@ public class EdgeTTSWindow : Window {
 		IsOpen = true;
 	}
 
+	private VoiceEntry[]? voiceEntries;
+
 	public override void Draw() {
 		var config = _manager.GetConfig();
-		var voiceEntries = _manager.GetAvailableVoiceEntries();
+		voiceEntries ??= _manager.GetAvailableVoiceEntries();
 		var devices = _manager.GetAvailableDevices();
 
 		ImGui.Columns(2, "EdgeTTSSettingsColumns");
