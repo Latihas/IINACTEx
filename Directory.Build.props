@@ -18,7 +18,7 @@
 		<!--    <NoWarn>$(NoWarn);CS8073;CS8600;CS8601;CS8602;CS8603;CS8604;CS8605;CS8612;CS8619;CS8620;CS8622;CS8629</NoWarn>-->
 		<DebugType>full</DebugType>
 		<DebugSymbols>true</DebugSymbols>
-		<Optimize>true</Optimize>
+		<Optimize>false</Optimize>
 	</PropertyGroup>
 </Project>
 

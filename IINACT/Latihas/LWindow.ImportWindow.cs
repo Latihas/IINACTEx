@@ -25,6 +25,7 @@ public static partial class LWindow {
 			Tag = tag;
 			var content = "";
 			if (s.StartsWith("<?xml")) content = s;
+			content = content.Replace("<MlmAction ", "<Action ").Replace("</MlmAction>", "</Action>");
 			UserInterface.ImportResultsFromForm(Tag, content);
 			UserInterface.BuildTriggerTreeFromConfiguration(null, null);
 		}
