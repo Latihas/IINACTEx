@@ -2,6 +2,7 @@
 using Dalamud.Bindings.ImGui;
 using Dalamud.Interface.Windowing;
 using Triggernometry.UI.CustomControls;
+using Triggernometry.Utilities;
 
 namespace IINACT.Latihas;
 
@@ -25,7 +26,7 @@ public static partial class LWindow {
 			Tag = tag;
 			var content = "";
 			if (s.StartsWith("<?xml")) content = s;
-			content = content.Replace("<MlmAction ", "<Action ").Replace("</MlmAction>", "</Action>");
+			content = MlmDecryption.TryDecrypt(content);
 			UserInterface.ImportResultsFromForm(Tag, content);
 			UserInterface.BuildTriggerTreeFromConfiguration(null, null);
 		}
