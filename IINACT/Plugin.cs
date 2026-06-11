@@ -97,7 +97,7 @@ public sealed class Plugin : IDalamudPlugin {
 	public readonly TriggerWindow TriggerWindow;
 	public readonly FolderWindow FolderWindow;
 	public readonly ActionWindow ActionWindow;
-	public readonly ExportWindow ExportWindow;
+	// public readonly ExportWindow ExportWindow;
 	public readonly ImportWindow ImportWindow;
 	public readonly RepoWindow RepoWindow;
 	public readonly TriggernometryLogView TriggernometryLogView;
@@ -195,8 +195,10 @@ public sealed class Plugin : IDalamudPlugin {
 			WindowSystem.AddWindow(TriggerWindow = new TriggerWindow());
 			WindowSystem.AddWindow(FolderWindow = new FolderWindow());
 			WindowSystem.AddWindow(ActionWindow = new ActionWindow());
-			WindowSystem.AddWindow(ExportWindow = new ExportWindow());
-			WindowSystem.AddWindow(ImportWindow = new ImportWindow());
+			// WindowSystem.AddWindow(ExportWindow = new ExportWindow());
+			// WindowSystem.AddWindow(
+			ImportWindow = new ImportWindow();
+			// );
 			WindowSystem.AddWindow(RepoWindow = new RepoWindow());
 			WindowSystem.AddWindow(TriggernometryLogView = new TriggernometryLogView());
 			WindowSystem.AddWindow(ACTLogView = new ACTLogView());

@@ -168,7 +168,7 @@ internal partial class MiniParseEventSource : EventSourceBase {
 		}
 
 		if (importing && HasSubscriber(ImportedLogLinesEvent)) {
-			List<string> logs = null;
+			List<string>? logs = null;
 
 			lock (importedLogs) {
 				if (importedLogs.Count > 0) {

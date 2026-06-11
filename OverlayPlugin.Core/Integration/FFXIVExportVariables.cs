@@ -26,7 +26,6 @@ internal class FFXIVExportVariables {
 								sum += Convert.ToInt64(value);
 							}
 						}
-
 						return sum.ToString();
 					}
 				)
