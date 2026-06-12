@@ -39,7 +39,7 @@ public static partial class LWindow {
 		if (ImGui.CollapsingHeader("悬浮窗##CH悬浮窗", ImGuiTreeNodeFlags.DefaultOpen)) {
 			ImGui.Text("cactbot: ");
 			ImGui.SameLine();
-			const string cactboturl = "https://raw.githubusercontent.com/Latihas/dalamud-plugins/main/cactbot.zip";
+			const string cactboturl = "https://github.com/Latihas/cactbot/releases/latest/download/cactbot.zip";
 			if (ImGui.Button("一键下载解压")) {
 				if (FileDownloaderCactbot != null) {
 					NotificationManager.AddNotification(new Notification {
