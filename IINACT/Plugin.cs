@@ -432,6 +432,7 @@ public sealed class Plugin : IDalamudPlugin {
 	}
 
 	internal void RefreshBw() {
+		PostNamazuPlugin.DoAction("command", "/bw overlay 伤害统计 reload");
 		PostNamazuPlugin.DoAction("command", "/bw overlay 时间轴 reload");
 		PostNamazuPlugin.DoAction("command", "/bw overlay 设置 reload");
 	}

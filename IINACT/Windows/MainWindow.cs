@@ -357,10 +357,12 @@ public class MainWindow() : Window(WindowPrefix) {
 	}
 
 	internal void DrawOverlayLink() {
-		ImGui.Text("以下是开发者喜欢用的网址，点击复制，贴进bw即可:");
+		ImGui.Text("以下是开发者喜欢用的网址，点击复制，贴进bw即可。");
+		ImGui.TextWrapped("时间轴本地或者在线保留一个即可。如果要使用bw的自动刷新并且不想看到报错信息，请将悬浮窗名称改名为'时间轴'。");
 		foreach (var url in new[] {
 			         ("伤害统计", $"http://overlay.diemoe.net/kagerou/overlay/?HOST_PORT=ws://{Server?.Address}:{Server?.Port}"),
-			         ("时间轴", $"file:///{Instance.cactbotDir}/ui/raidboss/raidboss.html?timeline=1&alerts=1&OVERLAY_WS=ws://{Server?.Address}:{Server?.Port}/ws".Replace('\\', '/')),
+			         ("时间轴本地", $"file:///{Instance.cactbotDir}/ui/raidboss/raidboss.html?timeline=1&alerts=1&OVERLAY_WS=ws://{Server?.Address}:{Server?.Port}/ws".Replace('\\', '/')),
+			         ("时间轴在线", $"https://cactbot.diemoe.net/ui/raidboss/raidboss.html?timeline=1&alerts=1&OVERLAY_WS=ws://{Server?.Address}:{Server?.Port}/ws".Replace('\\', '/')),
 			         ("设置", $"http://cactbot.diemoe.net/ui/config/config.html?OVERLAY_WS=ws://{Server?.Address}:{Server?.Port}/ws")
 		         }) {
 			if (ImGui.Button(url.Item1)) ImGui.SetClipboardText(url.Item1);

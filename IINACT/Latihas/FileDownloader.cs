@@ -19,7 +19,6 @@ public class FileDownloader {
 	public async Task DownloadFileAsync() {
 		if (File.Exists(savePath)) File.Delete(savePath);
 		var httpClient = Plugin.Instance.HttpClient;
-		httpClient.Timeout = TimeSpan.FromMinutes(10);
 		using (var headResponse = await httpClient.SendAsync(new HttpRequestMessage(HttpMethod.Head, url))) {
 			headResponse.EnsureSuccessStatusCode();
 		}

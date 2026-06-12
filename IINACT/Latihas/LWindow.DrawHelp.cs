@@ -25,48 +25,50 @@ public static partial class LWindow {
 	internal static void DrawInitSettings() {
 		if (ImGui.CollapsingHeader("首次安装配置##CH首次安装配置", ImGuiTreeNodeFlags.DefaultOpen)) {
 			ImGui.Text("IINACTEx下载下来不动也可以正常使用。以下的配置为增加使用体验的配置。");
-			ImGui.Text("1. 点击下方`悬浮窗`板块一键下载解压cactbot。");
-			ImGui.Text("2. 安装插件Browsingway(卫月主库就有)，并打开Browsingway的设置界面");
-			ImGui.Text("3. 点击左下角的加号，`悬浮窗`板块中开发者喜欢使用的网址填写相关数据。");
-			ImGui.Text("4. 在发者喜欢使用的网址中有一个设置页面，在里面可以设置cactbot的表现方式。(默认不开启TTS只会有蜂鸣器音)");
-			ImGui.Text("5. 点击调试-IINACT-打开配置目录");
-			ImGui.Text("6. 禁用IINACTEx");
-			ImGui.Text("7. 打开原版ACT的配置目录，如: D:\\Program\\ACT.DieMoe\\Config，找到Triggernometry.config.xml文件");
-			ImGui.Text("8. 将原版ACT配置目录下的Triggernometry.config.xml复制到IINACTEx的配置目录下");
-			ImGui.Text("9. 启用IINACTEx");
+			ImGui.Text("1. 安装插件Browsingway(卫月主库就有)，并打开Browsingway的设置界面。");
+			ImGui.Text("2. 点击Browsingway左下角的加号，按照下方`悬浮窗`板块中开发者喜欢使用的网址填写相关数据。");
+			ImGui.Text("2.1. 点击下方`悬浮窗`板块，在Overlay生成器种选择喜欢的悬浮窗，复制下面生成的URI，补充进Browsingway。");
+			ImGui.Text("3. 在发者喜欢使用的网址中有一个设置页面，在里面可以设置cactbot的表现方式。(默认不开启TTS只会有蜂鸣器音)");
+			ImGui.Text("4. 点击调试-IINACT-打开配置目录");
+			ImGui.Text("5. 禁用IINACTEx");
+			ImGui.Text("6. 打开原版ACT的配置目录，如: D:\\Program\\ACT.DieMoe\\Config，找到Triggernometry.config.xml文件");
+			ImGui.Text("7. 将原版ACT配置目录下的Triggernometry.config.xml复制到IINACTEx的配置目录下");
+			ImGui.Text("8. 启用IINACTEx");
 			ImGui.Text("*. 如果你看了教程还是不明白，或者觉得教程有值得改进的地方，请提issue。");
 		}
 		if (ImGui.CollapsingHeader("悬浮窗##CH悬浮窗", ImGuiTreeNodeFlags.DefaultOpen)) {
-			ImGui.Text("cactbot: ");
-			ImGui.SameLine();
-			const string cactboturl = "https://github.com/Latihas/cactbot/releases/latest/download/cactbot.zip";
-			if (ImGui.Button("一键下载解压")) {
-				if (FileDownloaderCactbot != null) {
-					NotificationManager.AddNotification(new Notification {
-						Type = NotificationType.Warning,
-						Content = "有未完成的下载任务"
-					});
-				} else {
-					var zipPath = Path.Combine(Instance.PluginConfigDirectory, "cactbot.zip");
-					FileDownloaderCactbot = new FileDownloader(cactboturl, zipPath, () => {
-						FileDownloaderCactbot = null;
-						UnzipWithoutPassword(zipPath, Instance.cactbotDir);
-					});
-					_ = FileDownloaderCactbot.DownloadFileAsync();
-				}
-			}
-			if (FileDownloaderCactbot != null) {
-				ImGui.SameLine();
-				ImGui.ProgressBar(FileDownloaderCactbot.Progress, new Vector2(0, 0), "下载中");
-			}
-			ImGui.Text("如果下载失败，请尝试从url下载: ");
-			ImGui.SameLine();
-			if (ImGui.Button(cactboturl)) ImGui.SetClipboardText(cactboturl);
-			ImGui.Text("然后参考 帮助-项目介绍-TTS/Cactbot 进行设置");
-			ImGui.Separator();
 			MainWindow.DrawOverlayGen();
-			ImGui.Text("在线的部分网页(如Timeline)不一定是最新的，IINACTEx尽量提供最新版Diemoe ACT内置的资源");
 			MainWindow.DrawOverlayLink();
+			if (ImGui.CollapsingHeader("手动使用本地cactbot##手动使用本地cactbot")) {
+				ImGui.TextWrapped("一般情况下用不到这一部分。如果你追求极致的加载速度可以考虑进行这里的配置");
+				ImGui.TextWrapped("在线资源会每2h进行一次同步更新编译，但是并不会自动下载到本地更新。手动点击'一键下载解压'会用最新版本覆盖本地版本。");
+				ImGui.Text("cactbot: ");
+				ImGui.SameLine();
+				const string cactboturl = "https://github.com/Latihas/cactbot/releases/latest/download/cactbot.zip";
+				if (ImGui.Button("一键下载解压")) {
+					if (FileDownloaderCactbot != null) {
+						NotificationManager.AddNotification(new Notification {
+							Type = NotificationType.Warning,
+							Content = "有未完成的下载任务"
+						});
+					} else {
+						var zipPath = Path.Combine(Instance.PluginConfigDirectory, "cactbot.zip");
+						FileDownloaderCactbot = new FileDownloader(cactboturl, zipPath, () => {
+							FileDownloaderCactbot = null;
+							UnzipWithoutPassword(zipPath, Instance.cactbotDir);
+						});
+						_ = FileDownloaderCactbot.DownloadFileAsync();
+					}
+				}
+				if (FileDownloaderCactbot != null) {
+					ImGui.SameLine();
+					ImGui.ProgressBar(FileDownloaderCactbot.Progress, new Vector2(0, 0), "下载中");
+				}
+				ImGui.Text("如果下载失败，请尝试从url下载: ");
+				ImGui.SameLine();
+				if (ImGui.Button(cactboturl)) ImGui.SetClipboardText(cactboturl);
+				ImGui.Text("然后参考 帮助-项目介绍-TTS/Cactbot 进行设置");
+			}
 		}
 	}
 
