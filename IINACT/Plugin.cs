@@ -92,7 +92,9 @@ public sealed class Plugin : IDalamudPlugin {
 	internal string OverlayPluginStatus => OverlayPlugin.Status;
 	public readonly ProxyPlugin TriggernometryProxyPlugin;
 	public readonly PostNamazu.PostNamazu PostNamazuPlugin;
-	internal HttpClient HttpClient { get; }
+	internal readonly HttpClient HttpClient = new() {
+		Timeout = TimeSpan.FromSeconds(30)
+	};
 	[SuppressMessage("ReSharper", "NotAccessedField.Global")]
 	public readonly TriggerWindow TriggerWindow;
 	public readonly FolderWindow FolderWindow;
@@ -148,17 +150,21 @@ public sealed class Plugin : IDalamudPlugin {
 		Instance = this;
 		LogTick("Start Initializing");
 		Version = Version.Parse(Assembly.GetExecutingAssembly().GetCustomAttribute<AssemblyInformationalVersionAttribute>()!.InformationalVersion.Split('+')[0]);
-		HttpClient = new HttpClient();
 		Init();
 		oFormActMain = new FormActMain(this, Log, Framework);
 		Configuration = PluginInterface.GetPluginConfig() as Configuration ?? new Configuration();
 		try {
-			if (ObjectTable.LocalPlayer != null) oFormActMain.LocalPlayerName = ObjectTable.LocalPlayer.Name.ToString();
-			if (Configuration.FFXIV_ACT_Plugin_CN_Update || Configuration.Version != LatestConfigVersion || Configuration.InitFatalError)
-				Directory.GetFiles(PluginAssemblyDirectory, "FFXIV_ACT_Plugin.*").ToList().ForEach(i => {
-					Log.Warning($"Deleting {i}");
-					File.Delete(i);
-				});
+			Framework.RunOnTick(() => {
+				if (ObjectTable.LocalPlayer != null) oFormActMain.LocalPlayerName = ObjectTable.LocalPlayer.Name.ToString();
+			});
+			if (Configuration.FFXIV_ACT_Plugin_CN_Update || Configuration.Version != LatestConfigVersion || Configuration.InitFatalError) {
+				Directory.GetFiles(PluginAssemblyDirectory, "FFXIV_ACT_Plugin.*")
+					.Concat(Directory.GetFiles(Path.Combine(PluginConfigDirectory, "Scripts")))
+					.ToList().ForEach(i => {
+						Log.Warning($"Deleting {i}");
+						File.Delete(i);
+					});
+			}
 			fetchDependencies = new FetchDependencies.FetchDependencies(Version, PluginAssemblyDirectory, DataManager.Language.ToString() == "ChineseSimplified", 5, HttpClient, Log);
 			fetchDependencies.GetFfxivPlugin(Configuration.FFXIV_ACT_Plugin_CN_Update);
 			Configuration.FFXIV_ACT_Plugin_CN_Update = false;

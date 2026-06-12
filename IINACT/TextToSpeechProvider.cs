@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Net;
-using System.Net.Http;
 using System.Reflection;
 using System.Runtime.Loader;
 using System.Speech.Synthesis;
@@ -19,7 +18,7 @@ namespace IINACT;
 
 internal class TextToSpeechProvider : IDisposable {
 	private readonly Lock speechLock = new();
-	private readonly HttpClient client = new();
+	// private readonly HttpClient client = new();
 	private SpeechSynthesizer? speechSynthesizer;
 	private readonly EdgeTTSManager? edgeTTSManager;
 	private readonly dynamic? LatihasTts;
@@ -129,7 +128,7 @@ internal class TextToSpeechProvider : IDisposable {
 		var lang = Instance.Configuration.GoogleTtsLanguage;
 		if (string.IsNullOrWhiteSpace(lang)) lang = "zh_cn";
 		var url = $"https://translate.google.com/translate_tts?ie=UTF-8&client=tw-ob&tl={lang}&q={query}";
-		var mp3Data = client.GetByteArrayAsync(url).Result;
+		var mp3Data = Instance.HttpClient.GetByteArrayAsync(url).Result;
 
 		using var stream = new MemoryStream(mp3Data);
 		using var reader = new Mp3FileReader(stream);

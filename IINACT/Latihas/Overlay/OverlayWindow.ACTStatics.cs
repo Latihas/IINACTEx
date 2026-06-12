@@ -256,8 +256,6 @@ public partial class OverlayWindow {
 			}
 			graphics.DrawEllipse(pen, rectangleF.X + num2 / 4f, rectangleF.Y + num2 / 4f, rectangleF.Width - num2 / 2f, rectangleF.Height - num2 / 2f);
 			graphics.DrawString(Sorting, font, brush2, rectangleF.Left + num2 / 8f, rectangleF.Top + num2 / 8f);
-		} catch (ThreadAbortException) {
-			// WriteInfoLog("GenDamageTypeGraph -> ThreadAbortException");
 		} catch (Exception ex3) {
 			WriteExceptionLog(ex3, string.Empty);
 			bitmap = GraphDrawMessage(ex3.ToString(), 12f, bitmap);
@@ -489,8 +487,6 @@ public partial class OverlayWindow {
 				var sizeF = graphics.MeasureString(s2, font3);
 				graphics.DrawString(s2, font3, brush, new PointF(rectangleF.Right - sizeF.Width - 1f, rectangleF.Y + rectangleF.Height / 2f - sizeF.Height / 2f + 1f));
 			}
-		} catch (ThreadAbortException) {
-			// WriteInfoLog("GenEncounterGraph -> ThreadAbortException");
 		} catch (Exception ex3) {
 			WriteExceptionLog(ex3, string.Empty);
 			bitmap = GraphDrawMessage(ex3.ToString(), 12f, bitmap);
@@ -686,14 +682,14 @@ public partial class OverlayWindow {
 	}
 
 	private void DrawGraph() {
-			lock (_textureLock) {
-				if (_currentTexture != null) {
-					var graphSize = ImGui.GetContentRegionAvail();
-					ImGui.Image(_currentTexture.Handle, graphSize);
-				} else {
-					ImGui.Text("No graph data");
-				}
+		lock (_textureLock) {
+			if (_currentTexture != null) {
+				var graphSize = ImGui.GetContentRegionAvail();
+				ImGui.Image(_currentTexture.Handle, graphSize);
+			} else {
+				ImGui.Text("No graph data");
 			}
+		}
 	}
 
 	private void PopulateTreeView(TreeNodeData? parentNode = null) {
