@@ -21,6 +21,7 @@ using Triggernometry.Core;
 using Triggernometry.Core.Serialization;
 using Triggernometry.Core.Variables;
 using Triggernometry.PluginBridges.BridgeNamazu;
+using Triggernometry.PScript;
 using Triggernometry.UI.CustomControls;
 using static IINACT.Plugin;
 
@@ -338,55 +339,78 @@ public static partial class LWindow {
 	}
 
 	internal static void DrawSettingsScripts() {
-		// using var tab = ImRaii.TabItem("脚本设置");
-		// if (!tab) return;
-		if (ImGui.Button("点击查看ACT日志教程")) Start("https://github.com/MnFeN/ACT_Tech_Guide/blob/main/7.0%20ACT%20%E6%97%A5%E5%BF%97%E6%8C%87%E5%8D%97.md");
-		ImGui.SameLine();
-		if (ImGui.Button("点击查看IINACTEx脚本教程")) Start("https://github.com/Latihas/TrnDevEnv");
-		ImGui.PushStyleColor(ImGuiCol.Text, ImGuiColors.DalamudYellow);
-		ImGui.Text("该设置仍在开发，危险性中等，请自行斟酌使用。内含一些开发者写的脚本，可以尝试，但不保证能用。");
-		ImGui.PopStyleColor(1);
-		ImGui.Text("支持加载实现IActPluginV1接口的脚本文件(可能支持编译好的dll，没有测试过)。");
-		ImGui.Text("原版ACT插件支持较为有限，银山雀儿，抹茶等无法载入，请用Sonar等插件替换。");
-		ImGui.Text("IScriptBase接口是IActPluginV1接口的扩展，用于快速创建触发器与绘图，可以在https://github.com/Latihas/IINACTEx/tree/cn/TrnDevEnv查看相关开发样例。");
-		ImGui.PushStyleColor(ImGuiCol.Text, ImGuiColors.ParsedGreen);
-		ImGui.Text("“我写的可是ACT插件，我肯定是绿玩。”");
-		ImGui.PopStyleColor(1);
-		ImGui.Separator();
-		if (ImGui.Button("打开脚本文件夹")) Start(Instance.PluginActScriptDirectory);
-		ImGui.Text("已载入插件");
-		foreach (var actPluginData in ActGlobals.oFormActMain.ActPlugins)
-			ImGui.Text(actPluginData.pluginFileName);
-		ImGui.Separator();
-		NewTable(["名称", "状态", "操作"], Directory.GetFiles(Instance.PluginActScriptDirectory, "*.cs", SearchOption.TopDirectoryOnly)
-			.Concat(Directory.GetFiles(Instance.PluginActScriptDirectory, "*.dll", SearchOption.TopDirectoryOnly))
-			.Select(Path.GetFileName).Cast<string>().ToArray(), [
-			i => ImGui.Text(i),
-			i => {
-				if (i.StartsWith('_')) {
-					ImGui.Text("内置插件");
-					return;
-				}
-				var plugins = ActGlobals.oFormActMain.ActPlugins.Select(x => x.pluginFileName).Where(x => x == i).ToList();
-				if (plugins.Count == 0) ImGui.Text("未载入");
-				else ImGui.Text(ActGlobals.oFormActMain.ActPlugins.First(x => x.pluginFileName == i).cbEnabled.Enabled ? "已启用" : "已禁用");
-			},
-			i => {
-				if (i.StartsWith('_')) return;
-				var plugins = ActGlobals.oFormActMain.ActPlugins.Select(x => x.pluginFileName).Where(x => x == i).ToList();
-				if (plugins.Count == 0) {
-					if (ImGui.Button($"载入##{i}"))
-						if (i.EndsWith(".cs"))
-							LoadPScript(i);
-						else
-							LoadIActPluginV1(i);
-				} else {
-					var plugin = ActGlobals.oFormActMain.ActPlugins.First(x => x.pluginFileName == i);
-					if (ImGui.Button($"禁用##{i}")) DeInitIActPluginV1(plugin);
-					ImGui.SameLine();
-				}
+		using var bar = ImRaii.TabBar("插件Bar");
+		if (!bar) return;
+		using (var tab = ImRaii.TabItem("常规")) {
+			if (tab) {
+				if (ImGui.Button("点击查看ACT日志教程")) Start("https://github.com/MnFeN/ACT_Tech_Guide/blob/main/7.0%20ACT%20%E6%97%A5%E5%BF%97%E6%8C%87%E5%8D%97.md");
+				ImGui.SameLine();
+				if (ImGui.Button("点击查看IINACTEx脚本教程")) Start("https://github.com/Latihas/TrnDevEnv");
+				ImGui.PushStyleColor(ImGuiCol.Text, ImGuiColors.DalamudYellow);
+				ImGui.Text("该设置仍在开发，危险性中等，请自行斟酌使用。内含一些开发者写的脚本，可以尝试，但不保证能用。");
+				ImGui.PopStyleColor(1);
+				ImGui.Text("支持加载实现IActPluginV1接口的脚本文件(可能支持编译好的dll，没有测试过)。");
+				ImGui.Text("原版ACT插件支持较为有限，银山雀儿，抹茶等无法载入，请用Sonar等插件替换。");
+				ImGui.Text("IScriptBase接口是IActPluginV1接口的扩展，用于快速创建触发器与绘图，可以在https://github.com/Latihas/IINACTEx/tree/cn/TrnDevEnv查看相关开发样例。");
+				ImGui.PushStyleColor(ImGuiCol.Text, ImGuiColors.ParsedGreen);
+				ImGui.Text("“我写的可是ACT插件，我肯定是绿玩。”");
+				ImGui.PopStyleColor(1);
+				ImGui.Separator();
+				if (ImGui.Button("打开脚本文件夹")) Start(Instance.PluginActScriptDirectory);
+				ImGui.Text("已载入插件");
+				foreach (var actPluginData in ActGlobals.oFormActMain.ActPlugins)
+					ImGui.Text(actPluginData.pluginFileName);
 			}
-		]);
+		}
+		using (var tab = ImRaii.TabItem("载入自定义插件")) {
+			if (tab) {
+				NewTable(["名称", "状态", "描述", "操作"], Directory.GetFiles(Instance.PluginActScriptDirectory, "*.cs", SearchOption.TopDirectoryOnly)
+					.Concat(Directory.GetFiles(Instance.PluginActScriptDirectory, "*.dll", SearchOption.TopDirectoryOnly))
+					.Select(Path.GetFileName).Cast<string>().ToArray(), [
+					i => ImGui.Text(i),
+					i => {
+						if (i.StartsWith('_')) {
+							ImGui.Text("内置插件");
+							return;
+						}
+						var plugins = ActGlobals.oFormActMain.ActPlugins.Select(x => x.pluginFileName).Where(x => x == i).ToList();
+						ImGui.Text(plugins.Count == 0 ? "未载入" :
+							ActGlobals.oFormActMain.ActPlugins.First(x => x.pluginFileName == i).cbEnabled.Enabled ? "已启用" : "已禁用");
+					},
+					i => {
+						if (i.StartsWith('_')) {
+							ImGui.Text("/");
+							return;
+						}
+						var plugins = ActGlobals.oFormActMain.ActPlugins.Select(x => x.pluginFileName).Where(x => x == i).ToList();
+						if (plugins.Count == 0) {
+							ImGui.Text("/");
+							return;
+						}
+						try {
+							ImGui.Text(((IScriptBase)ActGlobals.oFormActMain.ActPlugins.First(x => x.pluginFileName == i).pluginObj).Desc);
+						} catch {
+							ImGui.Text("/");
+						}
+					},
+					i => {
+						if (i.StartsWith('_')) return;
+						var plugins = ActGlobals.oFormActMain.ActPlugins.Select(x => x.pluginFileName).Where(x => x == i).ToList();
+						if (plugins.Count == 0) {
+							if (ImGui.Button($"载入##{i}"))
+								if (i.EndsWith(".cs"))
+									LoadPScript(i);
+								else
+									LoadIActPluginV1(i);
+						} else {
+							var plugin = ActGlobals.oFormActMain.ActPlugins.First(x => x.pluginFileName == i);
+							if (ImGui.Button($"禁用##{i}")) DeInitIActPluginV1(plugin);
+							ImGui.SameLine();
+						}
+					}
+				]);
+			}
+		}
 	}
 
 	private static void DrawSettingsOpCodes() {
@@ -529,6 +553,7 @@ public static partial class LWindow {
 	private static void DrawTriggerVarScalerSettings() {
 		using var tab = ImRaii.TabItem("临时标量");
 		if (!tab) return;
+		if (ImGui.Button("清空")) RealPlugin.Instance.sessionvars.Scalar.Clear();
 		TScaler(RealPlugin.Instance.sessionvars.Scalar);
 		DrawTriggerVarESettings(false, TriggerVarType.Scalar);
 	}
@@ -536,6 +561,7 @@ public static partial class LWindow {
 	private static void DrawTriggerVarPScalerSettings() {
 		using var tab = ImRaii.TabItem("永久标量");
 		if (!tab) return;
+		if (ImGui.Button("清空")) RealPlugin.Instance.cfg.PersistentVariables.Scalar.Clear();
 		TScaler(RealPlugin.Instance.cfg.PersistentVariables.Scalar);
 		DrawTriggerVarESettings(true, TriggerVarType.Scalar);
 	}
@@ -573,6 +599,7 @@ public static partial class LWindow {
 	internal static void DrawTriggerVarListSettings() {
 		using var tab = ImRaii.TabItem("临时列表");
 		if (!tab) return;
+		if (ImGui.Button("清空")) RealPlugin.Instance.sessionvars.List.Clear();
 		TList(RealPlugin.Instance.sessionvars.List);
 		DrawTriggerVarESettings(false, TriggerVarType.List);
 	}
@@ -580,6 +607,7 @@ public static partial class LWindow {
 	internal static void DrawTriggerVarPListSettings() {
 		using var tab = ImRaii.TabItem("永久列表");
 		if (!tab) return;
+		if (ImGui.Button("清空")) RealPlugin.Instance.cfg.PersistentVariables.List.Clear();
 		TList(RealPlugin.Instance.cfg.PersistentVariables.List);
 		DrawTriggerVarESettings(true, TriggerVarType.List);
 	}
@@ -601,6 +629,7 @@ public static partial class LWindow {
 	internal static void DrawTriggerVarTableSettings() {
 		using var tab = ImRaii.TabItem("临时表格");
 		if (!tab) return;
+		if (ImGui.Button("清空")) RealPlugin.Instance.sessionvars.Table.Clear();
 		TTable(RealPlugin.Instance.sessionvars.Table);
 		DrawTriggerVarESettings(false, TriggerVarType.Table);
 	}
@@ -608,6 +637,7 @@ public static partial class LWindow {
 	internal static void DrawTriggerVarPTableSettings() {
 		using var tab = ImRaii.TabItem("永久表格");
 		if (!tab) return;
+		if (ImGui.Button("清空")) RealPlugin.Instance.cfg.PersistentVariables.Table.Clear();
 		TTable(RealPlugin.Instance.cfg.PersistentVariables.Table);
 		DrawTriggerVarESettings(true, TriggerVarType.Table);
 	}
@@ -628,6 +658,7 @@ public static partial class LWindow {
 	internal static void DrawTriggerVarDictSettings() {
 		using var tab = ImRaii.TabItem("临时字典");
 		if (!tab) return;
+		if (ImGui.Button("清空")) RealPlugin.Instance.sessionvars.Dict.Clear();
 		TDict(RealPlugin.Instance.sessionvars.Dict);
 		DrawTriggerVarESettings(false, TriggerVarType.Dict);
 	}
@@ -635,6 +666,7 @@ public static partial class LWindow {
 	internal static void DrawTriggerVarPDictSettings() {
 		using var tab = ImRaii.TabItem("永久字典");
 		if (!tab) return;
+		if (ImGui.Button("清空")) RealPlugin.Instance.cfg.PersistentVariables.Dict.Clear();
 		TDict(RealPlugin.Instance.cfg.PersistentVariables.Dict);
 		DrawTriggerVarESettings(true, TriggerVarType.Dict);
 	}
@@ -655,6 +687,7 @@ public static partial class LWindow {
 	internal static void DrawTriggerVarTextAuraSettings() {
 		using var tab = ImRaii.TabItem("文本悬浮窗");
 		if (!tab) return;
+
 		NewTable(["悬浮窗名称", "名称", "文本"], RealPlugin.Instance.textauras.ToArray(), [
 			i => ImGui.Text(i.Key),
 			i => ImGui.Text(i.Value.AuraName),

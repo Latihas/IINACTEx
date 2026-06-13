@@ -26,32 +26,32 @@ using Region = FFXIV_ACT_Plugin.Config.Region;
 namespace IINACT;
 
 public partial class FfxivActPluginWrapper : IDisposable {
-	public readonly FFXIV_ACT_Plugin.FFXIV_ACT_Plugin ffxivActPlugin;
-	private ISettingsMediator settingsMediator = null!;
-	private readonly ParseMediator parseMediator;
-
-	private readonly ServerTimeProcessor serverTimeProcessor;
-	private readonly MobArrayProcessor mobArrayProcessor;
-	private readonly IZoneMapProcessor zoneMapProcessor;
 	private readonly CombatantManager combatantManager;
-	private readonly IPlayerProcessor playerProcessor;
-	private readonly IPartyProcessor partyProcessor;
-
-	private readonly int mobArraySize;
 	private readonly int combatantSize;
-	private readonly nint mobData;
-	private readonly nint[] mobDataOffsets;
-	private readonly SemaphoreSlim refreshSemaphore = new(0);
-	private byte mobDataAge = byte.MaxValue;
+	public readonly FFXIV_ACT_Plugin.FFXIV_ACT_Plugin ffxivActPlugin;
+	private readonly ILogFormat logFormat;
 
 	private readonly ILogOutput logOutput;
-	private readonly ILogFormat logFormat;
+	private readonly MobArrayProcessor mobArrayProcessor;
+
+	private readonly int mobArraySize;
+	private readonly nint mobData;
+	private readonly nint[] mobDataOffsets;
+	private readonly ParseMediator parseMediator;
+	private readonly IPartyProcessor partyProcessor;
+	private readonly IPlayerProcessor playerProcessor;
 	private readonly IProcessManager processManager;
+	private readonly SemaphoreSlim refreshSemaphore = new(0);
+	public readonly IDataRepository Repository;
+
+	private readonly ServerTimeProcessor serverTimeProcessor;
+	public readonly IDataSubscription Subscription;
+	private readonly IZoneMapProcessor zoneMapProcessor;
 
 	public DataCollectionSettingsEventArgs DataCollectionSettings = null!;
+	private byte mobDataAge = byte.MaxValue;
 	public ParseSettings ParseSettings = null!;
-	public readonly IDataRepository Repository;
-	public readonly IDataSubscription Subscription;
+	private ISettingsMediator settingsMediator = null!;
 
 	public unsafe FfxivActPluginWrapper() {
 		ffxivActPlugin = new FFXIV_ACT_Plugin.FFXIV_ACT_Plugin();
@@ -126,12 +126,13 @@ public partial class FfxivActPluginWrapper : IDisposable {
 		ffxivActPlugin.Dispose();
 		Marshal.FreeHGlobal(mobData);
 	}
-	public void SetChatMessageLoggingEnabled(bool enabled)
-	{
+
+	public void SetChatMessageLoggingEnabled(bool enabled) {
 		ChatGui.ChatMessage -= OnChatMessage;
 		if (enabled)
 			ChatGui.ChatMessage += OnChatMessage;
 	}
+
 	private void SetupSettingsMediator() {
 		settingsMediator = ffxivActPlugin._dataCollection._settingsMediator;
 
@@ -195,9 +196,9 @@ public partial class FfxivActPluginWrapper : IDisposable {
 		ActGlobals.oFormActMain.FfxivPlugin = ffxivActPlugin;
 	}
 
-	private void OFormActMain_BeforeLogLineRead(bool isImport, LogLineEventArgs logInfo) =>
-		(logInfo.logLine, logInfo.detectedType) =
-		parseMediator.BeforeLogLineRead(isImport, logInfo.detectedTime, logInfo.logLine);
+	private void OFormActMain_BeforeLogLineRead(bool isImport, LogLineEventArgs logInfo) {
+		(logInfo.logLine, logInfo.detectedType) = parseMediator.BeforeLogLineRead(isImport, logInfo.detectedTime, logInfo.logLine);
+	}
 
 	private void SetupDataSubscription() => ffxivActPlugin.DataSubscription.ZoneChanged += OnZoneChanged;
 

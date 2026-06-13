@@ -21,15 +21,11 @@ using static IINACT.Plugin;
 namespace IINACT.Latihas.Overlay;
 
 public partial class OverlayWindow {
-	private TreeNodeData? _currentSelectedNode;
-	private string _tableType;
-	private List<object> _currentTable = [];
 	private const float DpiScale = 1;
 	private const string _eDSort = "Damage";
 	private const string _mDSort = "Damage";
 	private const string _aTSort = "Time";
 	private static readonly CultureInfo usCulture = new("en-US");
-	private IDalamudTextureWrap? _currentTexture;
 	private static readonly string[] clbAT = [
 		// "EncId",
 		"Time", "Attacker",
@@ -98,6 +94,10 @@ public partial class OverlayWindow {
 		"Kills", "Deaths"
 	];
 	private readonly Lock _textureLock = new();
+	private TreeNodeData? _currentSelectedNode;
+	private List<object> _currentTable = [];
+	private IDalamudTextureWrap? _currentTexture;
+	private string _tableType;
 
 	private static Bitmap GenDamageTypeGraph(DamageTypeData DamageTypeSource, int SizeX, int SizeY, string Sorting) {
 		if (SizeX < 16 || SizeY < 16) return new Bitmap(16, 16);
@@ -529,7 +529,7 @@ public partial class OverlayWindow {
 
 	public void DrawACTStatics() {
 		var totalAvail = ImGui.GetContentRegionAvail();
-		_splitterWidth = Math.Clamp(_splitterWidth, 50, totalAvail.X - 50);
+		_splitterWidth = Math.Clamp(_splitterWidth, 50, Math.Max(50, totalAvail.X - 50));
 		if (ImGui.BeginChild("##LeftTreeView", new Vector2(_splitterWidth, -1), true)) {
 			var UseActPic = Instance.Configuration.UseActPic;
 			if (ImGui.Checkbox("使用原版ACT绘图", ref UseActPic)) {
@@ -568,7 +568,7 @@ public partial class OverlayWindow {
 		if (ImGui.BeginChild("##RightPanel", new Vector2(rightPanelWidth, -1), true)) {
 			var rightPanelAvail = ImGui.GetContentRegionAvail();
 			if (_splitterHeight <= 0) _splitterHeight = rightPanelAvail.Y;
-			var dataListHeight = Math.Clamp(_splitterHeight, 50, rightPanelAvail.Y - 50);
+			var dataListHeight = Math.Clamp(_splitterHeight, 50, Math.Max(50, rightPanelAvail.Y - 50));
 			if (ImGui.BeginChild("##DataListView", new Vector2(-1, dataListHeight), true)) {
 				DrawNavigationBar();
 				DrawDataListView();

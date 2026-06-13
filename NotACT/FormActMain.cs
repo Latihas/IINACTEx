@@ -24,48 +24,20 @@ public partial class FormActMain : Form, ISynchronizeInvoke {
 
 	public delegate void TextToSpeechDelegate(string text);
 
-	public IPluginLog PluginLog { get; }
-	public dynamic DalamudPlugin;
-	public IFramework PluginFramework;
-	public string? LocalPlayerName;
+	public static bool PluginInitialized;
 	private readonly ConcurrentQueue<MasterSwing> afterActionsQueue = new();
+	private readonly ReaderWriterLockSlim lastKnownLock = new(LockRecursionPolicy.SupportsRecursion);
+	public dynamic DalamudPlugin;
 	public DateTimeLogParser? GetDateTimeFromLog;
 	private volatile bool inCombat;
-	private readonly ReaderWriterLockSlim lastKnownLock = new(LockRecursionPolicy.SupportsRecursion);
-	private DateTime lastKnownTime;
 	private long lastKnownTicks;
+	private DateTime lastKnownTime;
 	private HistoryRecord? lastZoneRecord;
+	public string? LocalPlayerName;
+	private StreamWriter? outputWriter, outputWriterAct, outputWriterTrn;
+	public IFramework PluginFramework;
 	internal volatile bool refreshTree;
 	private FileStream? stream, streamAct, streamTrn;
-	private StreamWriter? outputWriter, outputWriterAct, outputWriterTrn;
-	public static bool PluginInitialized;
-	public new object? Invoke(Delegate method, object?[]? args) => method.DynamicInvoke(args);
-	public new IAsyncResult BeginInvoke(Delegate method, object?[]? args) => Task.FromResult(Invoke(method, args));
-	public new object? EndInvoke(IAsyncResult result) => ((Task<object?>)result).Result;
-	public new void Invoke(Action method) => _ = Invoke(method, null);
-	public new object? Invoke(Delegate method) => Invoke(method, null);
-	public event LogLineEventDelegate? BeforeLogLineRead;
-	public event LogLineEventDelegate? OnLogLineRead;
-	[SuppressMessage("Performance", "CS0067")]
-	public event LogFileChangedDelegate LogFileChanged;
-	public event CombatActionDelegate AfterCombatAction;
-	public event TextToSpeechDelegate TextToSpeech;
-
-	// private DateTime lastSetEncounter;
-	// private Thread logReaderThread;
-	// private Thread logWriterThread;
-	// private bool pluginActive = true;
-	[SuppressMessage("Performance", "CA1822")]
-	public void ValidateLists() {
-	}
-
-	[SuppressMessage("Performance", "CA1822")]
-	public void ValidateTableSetup() {
-	}
-
-	[SuppressMessage("Performance", "CA1822")]
-	public void OpenLog(bool GetCurrentZone, bool GetCharNameFromFile) {
-	}
 
 	public FormActMain(IDalamudPlugin plugin, IPluginLog pluginLog, IFramework framework) {
 		PluginLog = pluginLog;
@@ -79,6 +51,8 @@ public partial class FormActMain : Form, ISynchronizeInvoke {
 		LastKnownTime = DateTime.Now;
 		PluginFramework.Update += ThreadAfterCombatAction;
 	}
+
+	public IPluginLog PluginLog { get; }
 
 	[DesignerSerializationVisibility(Hidden)]
 	public bool ReadThreadLock { get; set; }
@@ -167,6 +141,33 @@ public partial class FormActMain : Form, ISynchronizeInvoke {
 	}
 	[DesignerSerializationVisibility(Hidden)]
 	public ZoneData? ActiveZone { get; set; }
+	public new object? Invoke(Delegate method, object?[]? args) => method.DynamicInvoke(args);
+	public new IAsyncResult BeginInvoke(Delegate method, object?[]? args) => Task.FromResult(Invoke(method, args));
+	public new object? EndInvoke(IAsyncResult result) => ((Task<object?>)result).Result;
+	public new void Invoke(Action method) => _ = Invoke(method, null);
+	public new object? Invoke(Delegate method) => Invoke(method, null);
+	public event LogLineEventDelegate? BeforeLogLineRead;
+	public event LogLineEventDelegate? OnLogLineRead;
+	[SuppressMessage("Performance", "CS0067")]
+	public event LogFileChangedDelegate LogFileChanged;
+	public event CombatActionDelegate AfterCombatAction;
+	public event TextToSpeechDelegate TextToSpeech;
+
+	// private DateTime lastSetEncounter;
+	// private Thread logReaderThread;
+	// private Thread logWriterThread;
+	// private bool pluginActive = true;
+	[SuppressMessage("Performance", "CA1822")]
+	public void ValidateLists() {
+	}
+
+	[SuppressMessage("Performance", "CA1822")]
+	public void ValidateTableSetup() {
+	}
+
+	[SuppressMessage("Performance", "CA1822")]
+	public void OpenLog(bool GetCurrentZone, bool GetCharNameFromFile) {
+	}
 
 	public void WriteExceptionLog(Exception ex, string MoreInfo) =>
 		PluginLog.Error(ex, $"[NotAct] {MoreInfo}");
@@ -329,11 +330,13 @@ public partial class FormActMain : Form, ISynchronizeInvoke {
 	}
 
 	private void LogReader(IFramework _) {
-		var logOutput = (LogOutput)FfxivPlugin!._dataCollection._logOutput;
-		// lock (logOutput._LogQueueLock) {
-		while (logOutput._LogQueue.TryDequeue(out var line))
-			ParseRawLogLine(line);
-		// }
+		var logOutput = (LogOutput)FfxivPlugin._dataCollection._logOutput;
+		lock (logOutput._LogQueueLock) {
+			while (logOutput._LogQueue.TryDequeue(out var line)) {
+				if (string.IsNullOrEmpty(line)) PluginLog.Error($"line is empty: {logOutput._LogQueue.Count}");
+				ParseRawLogLine(line);
+			}
+		}
 	}
 
 	private void ThreadAfterCombatAction(IFramework _) {

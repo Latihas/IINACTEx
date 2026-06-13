@@ -7,20 +7,21 @@ namespace Advanced_Combat_Tracker;
 [SuppressMessage("ReSharper", "UnusedMember.Global")]
 [SuppressMessage("ReSharper", "FieldCanBeMadeReadOnly.Global")]
 public class ActPluginData {
-	public Panel pPluginInfo = new();
+	public readonly Label lblPluginStatus = new();
 	public readonly ActPluginForm? PluginForm;
 	public readonly TabPage tpPluginSpace = new();
-	public FileInfo pluginFile;
-	public Label lblPluginTitle = new();
-	public readonly Label lblPluginStatus = new();
 	public Button btnXButton = new();
-	public string pluginVersion;
-	public IActPluginV1 pluginObj;
-	public bool isIScriptBase;
-	public string pluginFileName;
 	public CheckBox cbEnabled = new() {
 		Checked = true
 	};
+	public string? IScriptBaseDesc;
+	public bool isIScriptBase;
+	public Label lblPluginTitle = new();
+	public FileInfo pluginFile;
+	public string pluginFileName;
+	public IActPluginV1 pluginObj;
+	public string pluginVersion;
+	public Panel pPluginInfo = new();
 
 	public ActPluginData(string pluginFile, IActPluginV1 pluginObj, bool isIScriptBase, bool useForm = true) {
 		this.pluginFile = new FileInfo(Path.Combine(ActGlobals.oFormActMain.DalamudPlugin.PluginActScriptDirectory, pluginFile));
