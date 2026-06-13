@@ -15,9 +15,9 @@ public class CombatantMemoryManager : ICombatantMemory {
 	public readonly ICombatantMemory memory;
 
 	public CombatantMemoryManager(TinyIoCContainer container) {
-		container.Register<ICombatantMemory74, CombatantMemory74>();
+		container.Register<ICombatantMemory75, CombatantMemory75>();
 		container.Resolve<FFXIVRepository>();
-		memory = container.Resolve<ICombatantMemory74>();
+		memory = container.Resolve<ICombatantMemory75>();
 		memory.ScanPointers();
 	}
 
