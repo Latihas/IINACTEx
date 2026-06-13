@@ -16,7 +16,23 @@ using PluginCombatant = FFXIV_ACT_Plugin.Common.Models.Combatant;
 namespace RainbowMage.OverlayPlugin.EventSources;
 
 internal class FFXIVRequiredEventSource : EventSourceBase {
-	private PartyListsStruct cachedPartyList = new();
+	public enum PartyType {
+		Solo,
+		Party,
+		AllianceA,
+		AllianceB,
+		AllianceC,
+		AllianceD,
+		AllianceE,
+		AllianceF
+	}
+
+	private const string OnlineStatusChangedEvent = "OnlineStatusChanged";
+	private const string PartyChangedEvent = "PartyChanged";
+	private const string JobGaugeChangedEvent = "JobGaugeChanged";
+
+	// In milliseconds
+	private const int PollingRate = 50;
 
 	private static readonly Dictionary<uint, string> StatusMap = new() {
 		[0] = "Online",
@@ -28,23 +44,13 @@ internal class FFXIVRequiredEventSource : EventSourceBase {
 		[23] = "LookingForParty"
 	};
 
-	private const string OnlineStatusChangedEvent = "OnlineStatusChanged";
-	private const string PartyChangedEvent = "PartyChanged";
-	private const string JobGaugeChangedEvent = "JobGaugeChanged";
+	private readonly CancellationTokenSource cancellationToken;
+	private readonly ICombatantMemory combatantMemory;
+	private readonly IJobGaugeMemory jobGaugeMemory;
+	private readonly IPartyMemory partyMemory;
 
 	private readonly FFXIVRepository repository;
-	private readonly ICombatantMemory combatantMemory;
-	private readonly IPartyMemory partyMemory;
-	private readonly IJobGaugeMemory jobGaugeMemory;
-
-	private readonly CancellationTokenSource cancellationToken;
-
-	// In milliseconds
-	private const int PollingRate = 50;
-
-	// Event Source
-
-	public BuiltinEventConfig Config { get; set; }
+	private PartyListsStruct cachedPartyList = new();
 
 	public FFXIVRequiredEventSource(TinyIoCContainer container) : base(container) {
 		Name = "FFXIVRequired";
@@ -115,6 +121,10 @@ internal class FFXIVRequiredEventSource : EventSourceBase {
 		}
 	}
 
+	// Event Source
+
+	public BuiltinEventConfig Config { get; set; }
+
 	[MethodImpl(MethodImplOptions.NoInlining)]
 	private List<Dictionary<string, object>> GetCombatants(List<uint> ids, List<string> names, List<string> props) {
 		var filteredCombatants = new List<Dictionary<string, object>>();
@@ -161,44 +171,8 @@ internal class FFXIVRequiredEventSource : EventSourceBase {
 
 			filteredCombatants.Add(jObjCombatant);
 		}
-		foreach (var combatant in memCombatants) combatantMemory.ReturnCombatant(combatant);
+		foreach (var combatant in memCombatants) combatantMemory.ReturnCombatant();
 		return filteredCombatants;
-	}
-
-	public enum PartyType {
-		Solo,
-		Party,
-		AllianceA,
-		AllianceB,
-		AllianceC,
-		AllianceD,
-		AllianceE,
-		AllianceF
-	}
-
-	private struct PartyMember {
-		// Player id in hex (for ease in matching logs).
-		public string id;
-		public string name;
-
-		public uint worldId;
-
-		// Raw job id.
-		public int job;
-
-		public int level;
-
-		// @deprecated, please use partyType
-		public bool inParty;
-		public long contentId;
-		// 0x1 = valid/present
-		// 0x2 = unknown but set for some alliance members?
-		// 0x4 = unknown but always set for current party and alliance members?
-		// 0x8 = unknown but always set for current party?
-		public byte flags;
-		public uint objectId;
-		public ushort territoryType;
-		public string partyType;
 	}
 
 	private int GetPartyType(PluginCombatant combatant) =>
@@ -373,7 +347,7 @@ internal class FFXIVRequiredEventSource : EventSourceBase {
 				}
 			];
 			newParty.partyLeaderIndex = 0;
-			combatantMemory.ReturnCombatant(currentPlayer);
+			combatantMemory.ReturnCombatant();
 		}
 
 		var dispatchEvent = false;
@@ -448,5 +422,30 @@ internal class FFXIVRequiredEventSource : EventSourceBase {
 			}
 		}
 		return false;
+	}
+
+	private struct PartyMember {
+		// Player id in hex (for ease in matching logs).
+		public string id;
+		public string name;
+
+		public uint worldId;
+
+		// Raw job id.
+		public int job;
+
+		public int level;
+
+		// @deprecated, please use partyType
+		public bool inParty;
+		public long contentId;
+		// 0x1 = valid/present
+		// 0x2 = unknown but set for some alliance members?
+		// 0x4 = unknown but always set for current party and alliance members?
+		// 0x8 = unknown but always set for current party?
+		public byte flags;
+		public uint objectId;
+		public ushort territoryType;
+		public string partyType;
 	}
 }

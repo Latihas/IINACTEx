@@ -2,6 +2,7 @@
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using System.Numerics;
 using Dalamud.Bindings.ImGui;
 using Dalamud.Interface.Windowing;
 using Triggernometry.Core;
@@ -336,7 +337,7 @@ public partial class LWindow {
 							if (ImGui.InputText("回调名称", ref NamedCallbackName))
 								Action.NamedCallbackName = NamedCallbackName;
 							var NamedCallbackParam = Action.NamedCallbackParam;
-							if (ImGui.InputTextMultiline("回调参数", ref NamedCallbackParam))
+							if (ImGui.InputTextMultiline("回调参数", ref NamedCallbackParam, 1145141, new Vector2(-1, -1)))
 								Action.NamedCallbackParam = NamedCallbackParam;
 							break;
 						}
@@ -399,7 +400,7 @@ public partial class LWindow {
 						case ActionTypeEnum.ExecuteScript: {
 							var ExecScriptExpression = Action.ExecScriptExpression;
 							ImGui.SetNextItemWidth(-1);
-							if (ImGui.InputTextMultiline("## 脚本代码", ref ExecScriptExpression, 1145141))
+							if (ImGui.InputTextMultiline("## 脚本代码", ref ExecScriptExpression, 1145141, new Vector2(-1, -1)))
 								Action.ExecScriptExpression = ExecScriptExpression;
 							break;
 						}
@@ -573,13 +574,13 @@ public partial class LWindow {
 					ImGui.EndTabItem();
 				}
 				if (ImGui.BeginTabItem("描述")) {
-					var description = Action.Description ?? "";
-					ImGui.SetNextItemWidth(-1);
-					if (ImGui.InputTextMultiline("## 描述", ref description))
-						Action.Description = description;
 					var DescriptionOverride = Action.DescriptionOverride;
 					if (ImGui.Checkbox("覆盖此动作描述", ref DescriptionOverride))
 						Action.DescriptionOverride = DescriptionOverride;
+					var description = Action.Description ?? "";
+					ImGui.SetNextItemWidth(-1);
+					if (ImGui.InputTextMultiline("## 描述", ref description, 1145141, new Vector2(-1, -1)))
+						Action.Description = description;
 					ImGui.EndTabItem();
 				}
 				ImGui.EndTabBar();

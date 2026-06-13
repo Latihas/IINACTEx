@@ -12,7 +12,6 @@ public class AggroMemoryManager : IAggroMemory {
 
 	public AggroMemoryManager(TinyIoCContainer container) {
 		container.Register<IAggroMemory60, AggroMemory60>();
-		container.Resolve<FFXIVRepository>();
 		memory = container.Resolve<IAggroMemory60>();
 		memory.ScanPointers();
 	}

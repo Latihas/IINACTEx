@@ -15,14 +15,14 @@ public static partial class LWindow {
 		internal static Trigger? Trigger;
 		internal static ConditionPanel ConditionPanel;
 
+		private static readonly Vector4 ColorGrey = new(0.5f, 0.5f, 0.5f, 1.0f);
+
 		public void Open(Trigger trigger) {
 			Trigger = trigger;
 			ConditionPanel = new ConditionPanel(trigger);
 			IsOpen = true;
 			ProxyPlugin.DalamudPlugin.ActionWindow.IsOpen = false;
 		}
-
-		private static readonly Vector4 ColorGrey = new(0.5f, 0.5f, 0.5f, 1.0f);
 
 		public override void Draw() {
 			if (Trigger == null) return;
@@ -44,7 +44,7 @@ public static partial class LWindow {
 						selected = Trigger.Actions.Count - 1;
 					}
 					ImGui.SetNextItemWidth(-1);
-					if (ImGui.BeginListBox("## Actions")) {
+					if (ImGui.BeginListBox("## Actions", new Vector2(-1, -1))) {
 						var data = Trigger.Actions;
 						var Enabled = new bool[data.Count];
 						for (var i = 0; i < data.Count; i++) {
@@ -118,7 +118,7 @@ public static partial class LWindow {
 				if (ImGui.BeginTabItem("描述")) {
 					var description = Trigger.Description ?? "";
 					ImGui.SetNextItemWidth(-1);
-					if (ImGui.InputTextMultiline("## 描述", ref description))
+					if (ImGui.InputTextMultiline("## 描述", ref description, 1145141, new Vector2(-1, -1)))
 						Trigger.Description = description;
 					ImGui.EndTabItem();
 				}

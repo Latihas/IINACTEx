@@ -7,20 +7,11 @@ public class LineInCombat {
 	public const uint LogFileLineID = 260;
 	private readonly FFXIVRepository ffxiv;
 	private readonly IInCombatMemory inCombatMemory;
-	private InCombatArgs? lastEventArgs;
 
 	private readonly Func<string, DateTime, bool> logWriter;
-
-	public event EventHandler<InCombatArgs> OnInCombatChanged;
-
-	public class InCombatArgs(bool inActCombat, bool inGameCombat, bool inGameCombatChanged) {
-		public bool InACTCombat { get; private set; } = inActCombat;
-		public bool InGameCombat { get; private set; } = inGameCombat;
-		public bool InGameCombatChanged { get; private set; } = inGameCombatChanged;
-	}
+	private InCombatArgs? lastEventArgs;
 
 	public LineInCombat(TinyIoCContainer container) {
-		container.Resolve<ILogger>();
 		ffxiv = container.Resolve<FFXIVRepository>();
 		inCombatMemory = container.Resolve<IInCombatMemory>();
 		var customLogLines = container.Resolve<FFXIVCustomLogLines>();
@@ -31,6 +22,8 @@ public class LineInCombat {
 			Version = 1
 		});
 	}
+
+	public event EventHandler<InCombatArgs> OnInCombatChanged;
 
 	public void Update() {
 		if (!inCombatMemory.IsValid())
@@ -70,5 +63,11 @@ public class LineInCombat {
 		var isGameChangedDecimal = isGameChanged ? 1 : 0;
 		var line = $"{inACTCombatDecimal}|{inGameCombatDecimal}|{isACTChangedDecimal}|{isGameChangedDecimal}";
 		logWriter(line, ffxiv.GetServerTimestamp());
+	}
+
+	public class InCombatArgs(bool inActCombat, bool inGameCombat, bool inGameCombatChanged) {
+		public bool InACTCombat { get; private set; } = inActCombat;
+		public bool InGameCombat { get; private set; } = inGameCombat;
+		public bool InGameCombatChanged { get; private set; } = inGameCombatChanged;
 	}
 }

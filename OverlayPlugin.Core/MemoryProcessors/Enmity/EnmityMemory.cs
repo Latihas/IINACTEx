@@ -15,8 +15,6 @@ public abstract class EnmityMemory(TinyIoCContainer container) : IEnmityMemory {
 
 	public abstract Version GetVersion();
 
-	private static unsafe Hate ReadEnmityList() => UIState.Instance()->Hate;
-
 	public List<EnmityEntry> GetEnmityEntryList(List<Combatant.Combatant> combatantList) {
 		var mychar = combatantMemory.GetSelfCombatant();
 		var topEnmity = 0;
@@ -40,7 +38,9 @@ public abstract class EnmityMemory(TinyIoCContainer container) : IEnmityMemory {
 			};
 			result.Add(entry);
 		}
-		combatantMemory.ReturnCombatant(mychar);
+		combatantMemory.ReturnCombatant();
 		return result;
 	}
+
+	private static unsafe Hate ReadEnmityList() => UIState.Instance()->Hate;
 }

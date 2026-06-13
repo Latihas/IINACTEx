@@ -6,9 +6,9 @@ namespace RainbowMage.OverlayPlugin.MemoryProcessors.Combatant;
 
 public interface ICombatantMemory : IVersionedMemory {
 	Combatant? GetSelfCombatant();
-	unsafe Combatant GetCombatantFromAddress(GameObject* address, uint selfCharID);
+	unsafe Combatant? GetCombatantFromAddress(GameObject* address, uint selfCharID);
 	List<Combatant> GetCombatantList();
-	void ReturnCombatant(Combatant combatant);
+	void ReturnCombatant();
 }
 
 public class CombatantMemoryManager : ICombatantMemory {
@@ -16,7 +16,6 @@ public class CombatantMemoryManager : ICombatantMemory {
 
 	public CombatantMemoryManager(TinyIoCContainer container) {
 		container.Register<ICombatantMemory75, CombatantMemory75>();
-		container.Resolve<FFXIVRepository>();
 		memory = container.Resolve<ICombatantMemory75>();
 		memory.ScanPointers();
 	}
@@ -24,17 +23,17 @@ public class CombatantMemoryManager : ICombatantMemory {
 	public void ScanPointers() {
 	}
 
-	public bool IsValid() => memory != null && memory.IsValid();
+	public bool IsValid() => true;
 
-	public Version GetVersion() => IsValid() ? memory.GetVersion() : null;
+	public Version GetVersion() => memory.GetVersion();
 
-	public unsafe Combatant GetCombatantFromAddress(GameObject* address, uint selfCharID) => IsValid() ? memory.GetCombatantFromAddress(address, selfCharID) : null;
+	public unsafe Combatant? GetCombatantFromAddress(GameObject* address, uint selfCharID) => memory.GetCombatantFromAddress(address, selfCharID);
 
 	public List<Combatant> GetCombatantList() => IsValid() ? memory.GetCombatantList() : [];
 
 	public Combatant? GetSelfCombatant() => IsValid() ? memory.GetSelfCombatant() : null;
 
-	public void ReturnCombatant(Combatant combatant) {
-		if (IsValid()) memory.ReturnCombatant(combatant);
+	public void ReturnCombatant() {
+		if (IsValid()) memory.ReturnCombatant();
 	}
 }

@@ -44,107 +44,44 @@ namespace IINACT;
 [SuppressMessage("ReSharper", "UnusedAutoPropertyAccessor.Local")]
 [SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
 public sealed class Plugin : IDalamudPlugin {
-	internal readonly Version Version;
 	internal const string WindowPrefix = "IINACTEx ";
 	private const string MainWindowCommandName = "/iinact";
 	private const string EndEncCommandName = "/endenc";
 	internal const string OverlayCommandName = "/iinactoverlay";
-	[PluginService] private IDalamudPluginInterface pluginInterface { get; set; }
-	public static IDalamudPluginInterface PluginInterface => Instance.pluginInterface;
-	[PluginService] private ICommandManager commandManager { get; set; }
-	public static ICommandManager CommandManager => Instance.commandManager;
-	[PluginService] private IClientState clientState { get; set; }
-	public static IClientState ClientState => Instance.clientState;
-	[PluginService] private IDataManager dataManager { get; set; }
-	public static IDataManager DataManager => Instance.dataManager;
-	[PluginService] private IChatGui chatGui { get; set; }
-	public static IChatGui ChatGui => Instance.chatGui;
-	[PluginService] private IFramework framework { get; set; }
-	public static IFramework Framework => Instance.framework;
-	[PluginService] private ICondition condition { get; set; }
-	public static ICondition Condition => Instance.condition;
-	[PluginService] private IGameInteropProvider gameInteropProvider { get; set; }
-	public static IGameInteropProvider GameInteropProvider => Instance.gameInteropProvider;
-	[PluginService] private ISigScanner sigScanner { get; set; }
-	public static ISigScanner SigScanner => Instance.sigScanner;
-	[PluginService] private INotificationManager notificationManager { get; set; }
-	public static INotificationManager NotificationManager => Instance.notificationManager;
-	[PluginService] private IPluginLog log { get; set; }
-	public static IPluginLog Log => Instance.log;
-	[PluginService] private ITargetManager targetManager { get; set; }
-	public static ITargetManager TargetManager => Instance.targetManager;
-	[PluginService] private IObjectTable objectTable { get; set; }
-	public static IObjectTable ObjectTable => Instance.objectTable;
-	[PluginService] private IGameGui gameGui { get; set; }
-	public static IGameGui GameGui => Instance.gameGui;
-	[PluginService] private ITextureProvider textureProvider { get; set; }
-	public static ITextureProvider TextureProvider => Instance.textureProvider;
-	private readonly WindowSystem WindowSystem = new("IINACT");
-	public Configuration Configuration { get; private set; }
-	internal static TextToSpeechProvider TextToSpeechProvider { get; private set; }
+	private const int LatestConfigVersion = 3;
+
+	public const ImGuiTableFlags ImGuiTableFlag = ImGuiTableFlags.Borders | ImGuiTableFlags.Resizable | ImGuiTableFlags.RowBg;
 	internal static MainWindow MainWindow = null!;
-	internal static FileDialogManager FileDialogManager { get; private set; }
-	internal ZoneDownHookManager ZoneDownHookManager { get; set; }
-	private IpcProviders IpcProviders { get; }
-	public FfxivActPluginWrapper FfxivActPluginWrapper { get; set; }
-	public PluginMain OverlayPlugin { get; set; }
-	private ServerController? WebSocketServer { get; set; }
-	internal string OverlayPluginStatus => OverlayPlugin.Status;
-	public readonly ProxyPlugin TriggernometryProxyPlugin;
-	public readonly PostNamazu.PostNamazu PostNamazuPlugin;
+	private static DateTime lastLogTick = DateTime.Now;
+	private static EdgeTTSWindow EdgeTTSWindow = null!;
+	public static Plugin Instance;
+
+	internal static DateTime lastCnUpdateCheck = DateTime.Now.AddMinutes(-8);
+	public readonly ActionWindow ActionWindow;
+	public readonly ACTLogView ACTLogView;
+	// ReSharper disable once MemberCanBePrivate.Global
+	public readonly TinyIoCContainer Container;
+	internal readonly FetchDependencies.FetchDependencies fetchDependencies;
+	public readonly FolderWindow FolderWindow;
 	internal readonly HttpClient HttpClient = new() {
 		Timeout = TimeSpan.FromSeconds(30)
 	};
-	[SuppressMessage("ReSharper", "NotAccessedField.Global")]
-	public readonly TriggerWindow TriggerWindow;
-	public readonly FolderWindow FolderWindow;
-	public readonly ActionWindow ActionWindow;
 	// public readonly ExportWindow ExportWindow;
 	public readonly ImportWindow ImportWindow;
-	public readonly RepoWindow RepoWindow;
-	public readonly TriggernometryLogView TriggernometryLogView;
-	public readonly ACTLogView ACTLogView;
-	public readonly OverlayWindow OverlayWindow;
-	private static DateTime lastLogTick = DateTime.Now;
-	private readonly DateTime startLogTick = DateTime.Now;
-	private static EdgeTTSWindow EdgeTTSWindow = null!;
-	public static Plugin Instance;
-	private const int LatestConfigVersion = 3;
-	internal readonly FetchDependencies.FetchDependencies fetchDependencies;
-	// ReSharper disable once MemberCanBePrivate.Global
-	public readonly TinyIoCContainer Container;
-	public string PluginAssemblyDirectory => PluginInterface.AssemblyLocation.Directory!.ToString();
-	public string PluginConfigDirectory => PluginInterface.ConfigDirectory.ToString();
-	public string PluginActScriptDirectory => Path.Combine(PluginConfigDirectory, "ActScript");
+	public readonly bool opcodesjsoncReplaced;
 	public readonly (string, ushort, ushort)[] opcodestxtDiff = [];
 	public readonly bool opcodestxtReplaced;
-	public bool opcodestxtCanReplace => File.Exists(opcodestxtPath);
-	public string opcodestxtPath => Path.Combine(PluginAssemblyDirectory, "opcodes.txt");
-	public readonly bool opcodesjsoncReplaced;
-	public bool opcodesjsoncCanReplace => File.Exists(opcodesjsoncPath);
-	public string opcodesjsoncPath => Path.Combine(PluginAssemblyDirectory, "opcodes.jsonc");
-	public string cactbotDir => Path.Combine(Instance.PluginConfigDirectory, "cactbot");
+	public readonly OverlayWindow OverlayWindow;
+	public readonly PostNamazu.PostNamazu PostNamazuPlugin;
+	public readonly RepoWindow RepoWindow;
+	private readonly DateTime startLogTick = DateTime.Now;
+	public readonly TriggernometryLogView TriggernometryLogView;
+	public readonly ProxyPlugin TriggernometryProxyPlugin;
+	[SuppressMessage("ReSharper", "NotAccessedField.Global")]
+	public readonly TriggerWindow TriggerWindow;
+	internal readonly Version Version;
+	private readonly WindowSystem WindowSystem = new("IINACT");
 	public DalamudStartInfo DalamudStartInfo;
-
-	public static void UnzipWithoutPassword(string zipFilePath, string extractDir, bool overwrite = false) {
-		try {
-			if (Directory.Exists(extractDir))
-				if (overwrite) Directory.Delete(extractDir, true);
-				else return;
-			ZipFile.ExtractToDirectory(zipFilePath, extractDir);
-			File.Delete(zipFilePath);
-		} catch (Exception ex) {
-			Log.Warning($"解压失败：{ex.Message}");
-		}
-	}
-
-	internal static void LogTick(string s) {
-		var sec = (DateTime.Now - lastLogTick).TotalSeconds;
-		var str = $"[StartTick] {s}({sec}s)";
-		if (sec < 0.5) Log.Info(str);
-		else Log.Warning(str);
-		lastLogTick = DateTime.Now;
-	}
 
 	public Plugin() {
 		Instance = this;
@@ -157,9 +94,10 @@ public sealed class Plugin : IDalamudPlugin {
 			Framework.RunOnTick(() => {
 				if (ObjectTable.LocalPlayer != null) oFormActMain.LocalPlayerName = ObjectTable.LocalPlayer.Name.ToString();
 			});
+			Directory.CreateDirectory(scriptsDir);
 			if (Configuration.FFXIV_ACT_Plugin_CN_Update || Configuration.Version != LatestConfigVersion || Configuration.InitFatalError) {
 				Directory.GetFiles(PluginAssemblyDirectory, "FFXIV_ACT_Plugin.*")
-					.Concat(Directory.GetFiles(Path.Combine(PluginConfigDirectory, "Scripts")))
+					.Concat(Directory.GetFiles(scriptsDir))
 					.ToList().ForEach(i => {
 						Log.Warning($"Deleting {i}");
 						File.Delete(i);
@@ -314,6 +252,102 @@ public sealed class Plugin : IDalamudPlugin {
 		}
 	}
 
+	[PluginService] private IDalamudPluginInterface pluginInterface { get; set; }
+	public static IDalamudPluginInterface PluginInterface => Instance.pluginInterface;
+	[PluginService] private ICommandManager commandManager { get; set; }
+	public static ICommandManager CommandManager => Instance.commandManager;
+	[PluginService] private IClientState clientState { get; set; }
+	public static IClientState ClientState => Instance.clientState;
+	[PluginService] private IDataManager dataManager { get; set; }
+	public static IDataManager DataManager => Instance.dataManager;
+	[PluginService] private IChatGui chatGui { get; set; }
+	public static IChatGui ChatGui => Instance.chatGui;
+	[PluginService] private IFramework framework { get; set; }
+	public static IFramework Framework => Instance.framework;
+	[PluginService] private ICondition condition { get; set; }
+	public static ICondition Condition => Instance.condition;
+	[PluginService] private IGameInteropProvider gameInteropProvider { get; set; }
+	public static IGameInteropProvider GameInteropProvider => Instance.gameInteropProvider;
+	[PluginService] private ISigScanner sigScanner { get; set; }
+	public static ISigScanner SigScanner => Instance.sigScanner;
+	[PluginService] private INotificationManager notificationManager { get; set; }
+	public static INotificationManager NotificationManager => Instance.notificationManager;
+	[PluginService] private IPluginLog log { get; set; }
+	public static IPluginLog Log => Instance.log;
+	[PluginService] private ITargetManager targetManager { get; set; }
+	public static ITargetManager TargetManager => Instance.targetManager;
+	[PluginService] private IObjectTable objectTable { get; set; }
+	public static IObjectTable ObjectTable => Instance.objectTable;
+	[PluginService] private IGameGui gameGui { get; set; }
+	public static IGameGui GameGui => Instance.gameGui;
+	[PluginService] private ITextureProvider textureProvider { get; set; }
+	public static ITextureProvider TextureProvider => Instance.textureProvider;
+	public Configuration Configuration { get; private set; }
+	internal static TextToSpeechProvider TextToSpeechProvider { get; private set; }
+	internal static FileDialogManager FileDialogManager { get; private set; }
+	internal ZoneDownHookManager ZoneDownHookManager { get; set; }
+	private IpcProviders IpcProviders { get; }
+	public FfxivActPluginWrapper FfxivActPluginWrapper { get; set; }
+	public PluginMain OverlayPlugin { get; set; }
+	private ServerController? WebSocketServer { get; set; }
+	internal string OverlayPluginStatus => OverlayPlugin.Status;
+	public string PluginAssemblyDirectory => PluginInterface.AssemblyLocation.Directory!.ToString();
+	public string PluginConfigDirectory => PluginInterface.ConfigDirectory.ToString();
+	public string PluginActScriptDirectory => Path.Combine(PluginConfigDirectory, "ActScript");
+	public bool opcodestxtCanReplace => File.Exists(opcodestxtPath);
+	public string opcodestxtPath => Path.Combine(PluginAssemblyDirectory, "opcodes.txt");
+	public bool opcodesjsoncCanReplace => File.Exists(opcodesjsoncPath);
+	public string opcodesjsoncPath => Path.Combine(PluginAssemblyDirectory, "opcodes.jsonc");
+	public string cactbotDir => Path.Combine(Instance.PluginConfigDirectory, "cactbot");
+	public string scriptsDir => Path.Combine(PluginConfigDirectory, "Scripts");
+
+	public void Dispose() {
+		Configuration.Save();
+		TextToSpeechProvider.Dispose();
+		PluginInterface.UiBuilder.Draw -= DrawUI;
+		PluginInterface.UiBuilder.OpenConfigUi -= DrawConfigUI;
+		PluginInterface.UiBuilder.OpenMainUi -= DrawConfigUI;
+		ClientState.EnterPvP -= EnterPvP;
+		ClientState.LeavePvP -= LeavePvP;
+		Framework.Update -= CheckCnUpdate;
+		ClientState.Logout -= OnLogOut;
+		ClientState.Login -= OnLogIn;
+		IpcProviders.Dispose();
+		ZoneDownHookManager.Dispose();
+		WindowSystem.RemoveAllWindows();
+		OverlayWindow.Dispose();
+		SilverDasherPlugin?.DeInitPlugin();
+		HttpClient.Dispose();
+		CommandManager.RemoveHandler(MainWindowCommandName);
+		CommandManager.RemoveHandler(EndEncCommandName);
+		CommandManager.RemoveHandler(OverlayCommandName);
+		oFormActMain.ActPlugins.RemoveAt(0);
+		while (oFormActMain.ActPlugins.Count > 0)
+			DeInitIActPluginV1(oFormActMain.ActPlugins.Last(), true);
+		FfxivActPluginWrapper.Dispose();
+		ActGlobals.Dispose();
+	}
+
+	public static void UnzipWithoutPassword(string zipFilePath, string extractDir, bool overwrite = false) {
+		try {
+			if (Directory.Exists(extractDir))
+				if (overwrite) Directory.Delete(extractDir, true);
+				else return;
+			ZipFile.ExtractToDirectory(zipFilePath, extractDir);
+			File.Delete(zipFilePath);
+		} catch (Exception ex) {
+			Log.Warning($"解压失败：{ex.Message}");
+		}
+	}
+
+	internal static void LogTick(string s) {
+		var sec = (DateTime.Now - lastLogTick).TotalSeconds;
+		var str = $"[StartTick] {s}({sec}s)";
+		if (sec < 0.5) Log.Info(str);
+		else Log.Warning(str);
+		lastLogTick = DateTime.Now;
+	}
+
 	private static void OnLogIn() => oFormActMain.LocalPlayerName = ObjectTable.LocalPlayer!.Name.ToString();
 
 	private static void OnLogOut(int type, int code) {
@@ -324,8 +358,6 @@ public sealed class Plugin : IDalamudPlugin {
 				EnableSilverDasher();
 			});
 	}
-
-	internal static DateTime lastCnUpdateCheck = DateTime.Now.AddMinutes(-8);
 
 	public void CheckCnUpdate(IFramework _) {
 		if (!((DateTime.Now - lastCnUpdateCheck).TotalMinutes > 10)) return;
@@ -396,39 +428,10 @@ public sealed class Plugin : IDalamudPlugin {
 		try {
 			var rs = File.ReadAllText(Path.Combine(Instance.PluginActScriptDirectory, name));
 			if (CSharpScriptCompiler.CompileScript(rs, false))
-				LoadIActPluginV1(name, Path.Combine(Instance.PluginConfigDirectory, "Scripts", Path.GetFileName(CSharpScriptCompiler.GetScriptDllPath(rs))), preserveEnableState);
+				LoadIActPluginV1(name, Path.Combine(Instance.scriptsDir, Path.GetFileName(CSharpScriptCompiler.GetScriptDllPath(rs))), preserveEnableState);
 		} catch (Exception ex) {
 			Log.Warning($"ActScript {name} 载入失败: {ex}");
 		}
-	}
-
-	public const ImGuiTableFlags ImGuiTableFlag = ImGuiTableFlags.Borders | ImGuiTableFlags.Resizable | ImGuiTableFlags.RowBg;
-
-	public void Dispose() {
-		Configuration.Save();
-		TextToSpeechProvider.Dispose();
-		PluginInterface.UiBuilder.Draw -= DrawUI;
-		PluginInterface.UiBuilder.OpenConfigUi -= DrawConfigUI;
-		PluginInterface.UiBuilder.OpenMainUi -= DrawConfigUI;
-		ClientState.EnterPvP -= EnterPvP;
-		ClientState.LeavePvP -= LeavePvP;
-		Framework.Update -= CheckCnUpdate;
-		ClientState.Logout -= OnLogOut;
-		ClientState.Login -= OnLogIn;
-		IpcProviders.Dispose();
-		ZoneDownHookManager.Dispose();
-		WindowSystem.RemoveAllWindows();
-		OverlayWindow.Dispose();
-		SilverDasherPlugin?.DeInitPlugin();
-		HttpClient.Dispose();
-		CommandManager.RemoveHandler(MainWindowCommandName);
-		CommandManager.RemoveHandler(EndEncCommandName);
-		CommandManager.RemoveHandler(OverlayCommandName);
-		oFormActMain.ActPlugins.RemoveAt(0);
-		while (oFormActMain.ActPlugins.Count > 0)
-			DeInitIActPluginV1(oFormActMain.ActPlugins.Last(), true);
-		FfxivActPluginWrapper.Dispose();
-		ActGlobals.Dispose();
 	}
 
 	internal void RefreshBw() {

@@ -29,6 +29,11 @@ namespace IINACT.Latihas;
 public static partial class LWindow {
 	private const string WindowPrefix = "IINACTEx ";
 
+
+	private static string Sbe = "";
+
+	private static readonly Dictionary<string, FileDownloader> FileDownloaderOpcodes = new();
+
 	internal static void DrawTriggerSettings() {
 		using var bar = ImRaii.TabBar("TriggerBar");
 		if (!bar) return;
@@ -103,14 +108,11 @@ public static partial class LWindow {
 		if (ImGui.Button("清空日志队列")) RealPlugin.Instance.ClearLog();
 	}
 
-
-	private static string Sbe = "";
-
 	private static void DrawTriggerDebugEvalTest() {
 		using var tab = ImRaii.TabItem("评估");
 		if (!tab) return;
 		ImGui.SetNextItemWidth(-1);
-		ImGui.InputTextMultiline("代码", ref TestCode, 1145141);
+		ImGui.InputTextMultiline("代码", ref TestCode, 1145141, new Vector2(-1, -1));
 		if (ImGui.Button("编译代码"))
 			Sbe = CSharpScriptCompiler.CompileScript(TestCode, true)
 				? "成功"
@@ -516,8 +518,6 @@ public static partial class LWindow {
 		} else ImGui.Text("处理中");
 	}
 
-	private static readonly Dictionary<string, FileDownloader> FileDownloaderOpcodes = new();
-
 	private static void TScaler(SerializableDictionary<string, VariableScalar> data) =>
 		NewTable(["名称", "值", "时间", "源"], data.ToArray(), [
 			i => ImGui.Text(i.Key),
@@ -538,13 +538,6 @@ public static partial class LWindow {
 		if (!tab) return;
 		TScaler(RealPlugin.Instance.cfg.PersistentVariables.Scalar);
 		DrawTriggerVarESettings(true, TriggerVarType.Scalar);
-	}
-
-	private enum TriggerVarType {
-		Scalar,
-		List,
-		Table,
-		Dict
 	}
 
 	// private static string Ename = "";
@@ -693,5 +686,12 @@ public static partial class LWindow {
 			}
 			ImGui.EndTable();
 		}
+	}
+
+	private enum TriggerVarType {
+		Scalar,
+		List,
+		Table,
+		Dict
 	}
 }

@@ -16,143 +16,22 @@ namespace RainbowMage.OverlayPlugin.MemoryProcessors.Combatant;
 
 public class LineCombatant : IDisposable {
 	public const uint LogFileLineID = 261;
-	private readonly ILogger logger;
-	private readonly FFXIVRepository ffxiv;
-	private readonly ICombatantMemory combatantMemoryManager;
-	private bool inCombat;
-	private readonly ConcurrentDictionary<uint, CombatantStateInfo> combatantStateMap = [];
-
-	// Only emit a log line when this information changes every X milliseconds
-	private class CombatantChangeCriteria {
-		// in milliseconds
-		public const int PollingRate = 20;
-
-		public class CriteriaData {
-			// in milliseconds
-			public uint DelayDefault; // If any property has changed in this timeframe, a line will be written
-			public uint DelayPosition;
-			// in in-game distance, squared
-			public double DistancePosition;
-			// in radians
-			public float DistanceHeading;
-			public ReadOnlyDictionary<FieldInfo, uint> CheckFieldDelay;
-		}
-
-		public static CriteriaData Criteria(bool inCombat) => inCombat ? InCombatCriteria : OutOfCombatCriteria;
-
-		private const uint InCombatDelayDefault = 1000;
-
-		public static readonly CriteriaData InCombatCriteria = new() {
-			DelayDefault = InCombatDelayDefault,
-			DelayPosition = 250,
-			DistancePosition = Math.Pow(5, 2),
-			DistanceHeading = (float)(45 * (Math.PI / 180)), // 45º turns
-
-			CheckFieldDelay = new ReadOnlyDictionary<FieldInfo, uint>(new Dictionary<FieldInfo, uint> {
-				// Default delay threshold
-				[typeof(Combatant).GetField(nameof(Combatant.OwnerID))] = InCombatDelayDefault,
-				[typeof(Combatant).GetField(nameof(Combatant.Type))] = InCombatDelayDefault,
-				[typeof(Combatant).GetField(nameof(Combatant.MonsterType))] = InCombatDelayDefault,
-				[typeof(Combatant).GetField(nameof(Combatant.Status))] = InCombatDelayDefault,
-				[typeof(Combatant).GetField(nameof(Combatant.AggressionStatus))] = InCombatDelayDefault,
-				[typeof(Combatant).GetField(nameof(Combatant.IsTargetable))] = InCombatDelayDefault,
-				[typeof(Combatant).GetField(nameof(Combatant.Name))] = InCombatDelayDefault,
-				[typeof(Combatant).GetField(nameof(Combatant.Radius))] = InCombatDelayDefault,
-				[typeof(Combatant).GetField(nameof(Combatant.BNpcID))] = InCombatDelayDefault,
-				[typeof(Combatant).GetField(nameof(Combatant.CurrentMP))] = InCombatDelayDefault,
-				[typeof(Combatant).GetField(nameof(Combatant.IsCasting1))] = InCombatDelayDefault,
-				// No delay threshold
-				[typeof(Combatant).GetField(nameof(Combatant.BNpcNameID))] = 0,
-				[typeof(Combatant).GetField(nameof(Combatant.TransformationId))] = 0,
-				[typeof(Combatant).GetField(nameof(Combatant.WeaponId))] = 0,
-				[typeof(Combatant).GetField(nameof(Combatant.TargetID))] = 0,
-				[typeof(Combatant).GetField(nameof(Combatant.ModelStatus))] = 0
-			})
-		};
-
-		private const uint OutOfCombatDelayDefault = 5000;
-
-		public static readonly CriteriaData OutOfCombatCriteria = new() {
-			DelayDefault = OutOfCombatDelayDefault,
-			DelayPosition = 1250,
-			DistancePosition = Math.Pow(15, 2),
-			DistanceHeading = 20f, // Effectively disabled
-
-			CheckFieldDelay = new ReadOnlyDictionary<FieldInfo, uint>(new Dictionary<FieldInfo, uint> {
-				// Default delay threshold
-				[typeof(Combatant).GetField(nameof(Combatant.OwnerID))] = OutOfCombatDelayDefault,
-				[typeof(Combatant).GetField(nameof(Combatant.Type))] = OutOfCombatDelayDefault,
-				[typeof(Combatant).GetField(nameof(Combatant.MonsterType))] = OutOfCombatDelayDefault,
-				[typeof(Combatant).GetField(nameof(Combatant.Status))] = OutOfCombatDelayDefault,
-				[typeof(Combatant).GetField(nameof(Combatant.AggressionStatus))] = OutOfCombatDelayDefault,
-				[typeof(Combatant).GetField(nameof(Combatant.IsTargetable))] = OutOfCombatDelayDefault,
-				[typeof(Combatant).GetField(nameof(Combatant.Name))] = OutOfCombatDelayDefault,
-				[typeof(Combatant).GetField(nameof(Combatant.Radius))] = OutOfCombatDelayDefault,
-				[typeof(Combatant).GetField(nameof(Combatant.BNpcID))] = OutOfCombatDelayDefault,
-				[typeof(Combatant).GetField(nameof(Combatant.CurrentMP))] = OutOfCombatDelayDefault,
-				[typeof(Combatant).GetField(nameof(Combatant.IsCasting1))] = OutOfCombatDelayDefault,
-				// No delay threshold
-				[typeof(Combatant).GetField(nameof(Combatant.BNpcNameID))] = 1000,
-				[typeof(Combatant).GetField(nameof(Combatant.TransformationId))] = 1000,
-				[typeof(Combatant).GetField(nameof(Combatant.WeaponId))] = 1000,
-				[typeof(Combatant).GetField(nameof(Combatant.TargetID))] = 1000,
-				[typeof(Combatant).GetField(nameof(Combatant.ModelStatus))] = 1000
-			})
-		};
-
-		private static readonly string[] IgnoreFieldNames = [
-			// "ID" is always printed
-			nameof(Combatant.ID),
-			// Exclude "Effects" due to object complexity
-			nameof(Combatant.Effects),
-			// Excluded due to not being useful
-			// TODO: Maybe this should just add any field flagged as NonSerialized, if additional fields are added?
-			nameof(Combatant.RawEffectiveDistance),
-			// Excluded due to being included in many, many other lines
-			nameof(Combatant.CurrentHP),
-
-			// These are not currently written to but exclude them in case they're updated upstream properly in the future
-			nameof(Combatant.Distance), nameof(Combatant.EffectiveDistance),
-
-			// These fields are calculated and can be determined downstream by consumers if needed
-			nameof(Combatant.TargetID), nameof(Combatant.IsTargetable),
-
-			// CP and GP are pointless since this is currently restricted to combat-only.
-			nameof(Combatant.CurrentCP), nameof(Combatant.MaxCP), nameof(Combatant.CurrentGP), nameof(Combatant.MaxGP)
-		];
-
-		// Fields that should be written out for add or full list of changes
-		public static readonly FieldInfo[] AllFields = typeof(Combatant).GetFields()
-			.Where(field => !IgnoreFieldNames.Contains(field.Name))
-			.OrderBy(field => field.Name).ToArray();
-
-		private static object GetDefault(Type type) {
-			if (type.IsValueType) {
-				return Activator.CreateInstance(type);
-			}
-			return type == typeof(string) ? string.Empty : null;
-		}
-
-		public static readonly ReadOnlyDictionary<Type, object> DefaultValues =
-			new(
-				AllFields.Select(fi => fi.FieldType).Distinct().ToDictionary(t => t, t => GetDefault(t)));
-	}
-
-	private class CombatantStateInfo {
-		public DateTime lastUpdated;
-		public Combatant combatant;
-	}
-
-	private readonly Func<string, DateTime, bool> logWriter;
 
 	private readonly CancellationTokenSource cancellationToken;
+	private readonly ICombatantMemory combatantMemoryManager;
+	private readonly ConcurrentDictionary<uint, CombatantStateInfo> combatantStateMap = [];
+	private readonly FFXIVRepository ffxiv;
+	private readonly ILogger logger;
+
+	private readonly Func<string, DateTime, bool> logWriter;
 	private bool _disposed;
+	private bool inCombat;
 
 	public LineCombatant(TinyIoCContainer container) {
 		logger = container.Resolve<ILogger>();
 		ffxiv = container.Resolve<FFXIVRepository>();
 		combatantMemoryManager = container.Resolve<ICombatantMemory>();
-		container.Resolve<LineInCombat>().OnInCombatChanged += (sender, args) => {
+		container.Resolve<LineInCombat>().OnInCombatChanged += (_, args) => {
 			if (args.InGameCombatChanged) {
 				inCombat = args.InGameCombat;
 			}
@@ -176,6 +55,11 @@ public class LineCombatant : IDisposable {
 		cancellationToken = new CancellationTokenSource();
 
 		Task.Run(PollCombatants, cancellationToken.Token);
+	}
+
+	public void Dispose() {
+		Dispose(true);
+		GC.SuppressFinalize(this);
 	}
 
 	~LineCombatant() {
@@ -220,7 +104,7 @@ public class LineCombatant : IDisposable {
 					combatant = combatant,
 				};
 				// It's possible that another thread has already added this combatant since we checked
-				if (combatantStateMap.TryAdd(combatant.ID, state)) 
+				if (combatantStateMap.TryAdd(combatant.ID, state))
 					WriteLine(CombatantMemoryChangeType.Add, combatant.ID,
 						string.Join("", CombatantChangeCriteria.AllFields.Select((fi) => FormatFieldChange(fi, combatant, true))));
 				continue;
@@ -288,7 +172,7 @@ public class LineCombatant : IDisposable {
 					combatant = combatant
 				};
 
-				combatantMemoryManager.ReturnCombatant(oldCombatant);
+				combatantMemoryManager.ReturnCombatant();
 
 				WriteLine(
 					CombatantMemoryChangeType.Change,
@@ -297,7 +181,7 @@ public class LineCombatant : IDisposable {
 						CombatantChangeCriteria.AllFields.Where(field => changed.Contains(field))
 							.Select(fi => FormatFieldChange(fi, combatant))));
 			} else {
-				combatantMemoryManager.ReturnCombatant(combatant);
+				combatantMemoryManager.ReturnCombatant();
 			}
 		}
 
@@ -310,7 +194,7 @@ public class LineCombatant : IDisposable {
 			if (combatantIDs.Contains(ID)) continue;
 			combatantStateMap.TryRemove(ID, out var combatantStateInfo);
 			if (combatantStateInfo != null) {
-				combatantMemoryManager.ReturnCombatant(combatantStateInfo.combatant);
+				combatantMemoryManager.ReturnCombatant();
 			}
 			WriteLine(CombatantMemoryChangeType.Remove, ID, "");
 		}
@@ -373,12 +257,6 @@ public class LineCombatant : IDisposable {
 		}
 	}
 
-	private enum CombatantMemoryChangeType {
-		Add,
-		Remove,
-		Change
-	}
-
 	protected virtual void Dispose(bool disposing) {
 		if (_disposed) return;
 		if (disposing) {
@@ -388,8 +266,130 @@ public class LineCombatant : IDisposable {
 		_disposed = true;
 	}
 
-	public void Dispose() {
-		Dispose(true);
-		GC.SuppressFinalize(this);
+	// Only emit a log line when this information changes every X milliseconds
+	private class CombatantChangeCriteria {
+		// in milliseconds
+		public const int PollingRate = 20;
+
+		private const uint InCombatDelayDefault = 1000;
+
+		private const uint OutOfCombatDelayDefault = 5000;
+
+		public static readonly CriteriaData InCombatCriteria = new() {
+			DelayDefault = InCombatDelayDefault,
+			DelayPosition = 250,
+			DistancePosition = Math.Pow(5, 2),
+			DistanceHeading = (float)(45 * (Math.PI / 180)), // 45º turns
+
+			CheckFieldDelay = new ReadOnlyDictionary<FieldInfo, uint>(new Dictionary<FieldInfo, uint> {
+				// Default delay threshold
+				[typeof(Combatant).GetField(nameof(Combatant.OwnerID))] = InCombatDelayDefault,
+				[typeof(Combatant).GetField(nameof(Combatant.Type))] = InCombatDelayDefault,
+				[typeof(Combatant).GetField(nameof(Combatant.MonsterType))] = InCombatDelayDefault,
+				[typeof(Combatant).GetField(nameof(Combatant.Status))] = InCombatDelayDefault,
+				[typeof(Combatant).GetField(nameof(Combatant.AggressionStatus))] = InCombatDelayDefault,
+				[typeof(Combatant).GetField(nameof(Combatant.IsTargetable))] = InCombatDelayDefault,
+				[typeof(Combatant).GetField(nameof(Combatant.Name))] = InCombatDelayDefault,
+				[typeof(Combatant).GetField(nameof(Combatant.Radius))] = InCombatDelayDefault,
+				[typeof(Combatant).GetField(nameof(Combatant.BNpcID))] = InCombatDelayDefault,
+				[typeof(Combatant).GetField(nameof(Combatant.CurrentMP))] = InCombatDelayDefault,
+				[typeof(Combatant).GetField(nameof(Combatant.IsCasting1))] = InCombatDelayDefault,
+				// No delay threshold
+				[typeof(Combatant).GetField(nameof(Combatant.BNpcNameID))] = 0,
+				[typeof(Combatant).GetField(nameof(Combatant.TransformationId))] = 0,
+				[typeof(Combatant).GetField(nameof(Combatant.WeaponId))] = 0,
+				[typeof(Combatant).GetField(nameof(Combatant.TargetID))] = 0,
+				[typeof(Combatant).GetField(nameof(Combatant.ModelStatus))] = 0
+			})
+		};
+
+		public static readonly CriteriaData OutOfCombatCriteria = new() {
+			DelayDefault = OutOfCombatDelayDefault,
+			DelayPosition = 1250,
+			DistancePosition = Math.Pow(15, 2),
+			DistanceHeading = 20f, // Effectively disabled
+
+			CheckFieldDelay = new ReadOnlyDictionary<FieldInfo, uint>(new Dictionary<FieldInfo, uint> {
+				// Default delay threshold
+				[typeof(Combatant).GetField(nameof(Combatant.OwnerID))] = OutOfCombatDelayDefault,
+				[typeof(Combatant).GetField(nameof(Combatant.Type))] = OutOfCombatDelayDefault,
+				[typeof(Combatant).GetField(nameof(Combatant.MonsterType))] = OutOfCombatDelayDefault,
+				[typeof(Combatant).GetField(nameof(Combatant.Status))] = OutOfCombatDelayDefault,
+				[typeof(Combatant).GetField(nameof(Combatant.AggressionStatus))] = OutOfCombatDelayDefault,
+				[typeof(Combatant).GetField(nameof(Combatant.IsTargetable))] = OutOfCombatDelayDefault,
+				[typeof(Combatant).GetField(nameof(Combatant.Name))] = OutOfCombatDelayDefault,
+				[typeof(Combatant).GetField(nameof(Combatant.Radius))] = OutOfCombatDelayDefault,
+				[typeof(Combatant).GetField(nameof(Combatant.BNpcID))] = OutOfCombatDelayDefault,
+				[typeof(Combatant).GetField(nameof(Combatant.CurrentMP))] = OutOfCombatDelayDefault,
+				[typeof(Combatant).GetField(nameof(Combatant.IsCasting1))] = OutOfCombatDelayDefault,
+				// No delay threshold
+				[typeof(Combatant).GetField(nameof(Combatant.BNpcNameID))] = 1000,
+				[typeof(Combatant).GetField(nameof(Combatant.TransformationId))] = 1000,
+				[typeof(Combatant).GetField(nameof(Combatant.WeaponId))] = 1000,
+				[typeof(Combatant).GetField(nameof(Combatant.TargetID))] = 1000,
+				[typeof(Combatant).GetField(nameof(Combatant.ModelStatus))] = 1000
+			})
+		};
+
+		private static readonly string[] IgnoreFieldNames = [
+			// "ID" is always printed
+			nameof(Combatant.ID),
+			// Exclude "Effects" due to object complexity
+			nameof(Combatant.Effects),
+			// Excluded due to not being useful
+			// TODO: Maybe this should just add any field flagged as NonSerialized, if additional fields are added?
+			nameof(Combatant.RawEffectiveDistance),
+			// Excluded due to being included in many, many other lines
+			nameof(Combatant.CurrentHP),
+
+			// These are not currently written to but exclude them in case they're updated upstream properly in the future
+			nameof(Combatant.Distance), nameof(Combatant.EffectiveDistance),
+
+			// These fields are calculated and can be determined downstream by consumers if needed
+			nameof(Combatant.TargetID), nameof(Combatant.IsTargetable),
+
+			// CP and GP are pointless since this is currently restricted to combat-only.
+			nameof(Combatant.CurrentCP), nameof(Combatant.MaxCP), nameof(Combatant.CurrentGP), nameof(Combatant.MaxGP)
+		];
+
+		// Fields that should be written out for add or full list of changes
+		public static readonly FieldInfo[] AllFields = typeof(Combatant).GetFields()
+			.Where(field => !IgnoreFieldNames.Contains(field.Name))
+			.OrderBy(field => field.Name).ToArray();
+
+		public static readonly ReadOnlyDictionary<Type, object> DefaultValues =
+			new(
+				AllFields.Select(fi => fi.FieldType).Distinct().ToDictionary(t => t, t => GetDefault(t)));
+
+		public static CriteriaData Criteria(bool inCombat) => inCombat ? InCombatCriteria : OutOfCombatCriteria;
+
+		private static object GetDefault(Type type) {
+			if (type.IsValueType) {
+				return Activator.CreateInstance(type);
+			}
+			return type == typeof(string) ? string.Empty : null;
+		}
+
+		public class CriteriaData {
+			public ReadOnlyDictionary<FieldInfo, uint> CheckFieldDelay;
+			// in milliseconds
+			public uint DelayDefault; // If any property has changed in this timeframe, a line will be written
+			public uint DelayPosition;
+			// in radians
+			public float DistanceHeading;
+			// in in-game distance, squared
+			public double DistancePosition;
+		}
+	}
+
+	private class CombatantStateInfo {
+		public Combatant combatant;
+		public DateTime lastUpdated;
+	}
+
+	private enum CombatantMemoryChangeType {
+		Add,
+		Remove,
+		Change
 	}
 }

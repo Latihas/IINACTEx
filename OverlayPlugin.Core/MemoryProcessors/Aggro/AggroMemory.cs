@@ -28,7 +28,7 @@ public abstract class AggroMemory(TinyIoCContainer container) : IAggroMemory {
 		var targetCombatant = targetMemory.GetTargetCombatant();
 		if (targetCombatant != null) {
 			currentTargetID = targetCombatant.ID;
-			combatantMemory.ReturnCombatant(targetCombatant);
+			combatantMemory.ReturnCombatant();
 		}
 
 		var result = new List<AggroEntry>();
@@ -76,7 +76,7 @@ public abstract class AggroMemory(TinyIoCContainer container) : IAggroMemory {
 			result.Add(entry);
 		}
 
-		combatantMemory.ReturnCombatant(mychar);
+		combatantMemory.ReturnCombatant();
 
 		return result;
 	}

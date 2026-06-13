@@ -19,13 +19,6 @@ using static RainbowMage.OverlayPlugin.MemoryProcessors.InCombat.LineInCombat;
 namespace RainbowMage.OverlayPlugin.EventSources;
 
 public class EnmityEventSource : EventSourceBase {
-	private readonly ICombatantMemory combatantMemory;
-	private ITargetMemory targetMemory;
-	private IEnmityMemory enmityMemory;
-	private IAggroMemory aggroMemory;
-	private IEnmityHudMemory enmityHudMemory;
-	private readonly LineInCombat lineInCombat;
-
 	// General information about the target, focus target, hover target.  Also, enmity entries for main target.
 	private const string EnmityTargetDataEvent = "EnmityTargetData";
 	// All of the mobs with aggro on the player.  Equivalent of the sidebar aggro list in game.
@@ -34,20 +27,13 @@ public class EnmityEventSource : EventSourceBase {
 	private const string TargetableEnemiesEvent = "TargetableEnemies";
 	// State of combat, both act and game.
 	private const string InCombatEvent = "InCombat";
-
-	[Serializable]
-	internal class InCombatDataObject {
-		public string type = InCombatEvent;
-		public bool inACTCombat;
-		public bool inGameCombat;
-	}
-
-	public int endEncounterOutOfCombatDelayMs => ActGlobals.oFormActMain.DalamudPlugin.Configuration.endEncounterOutOfCombatDelayMs;
+	private readonly ICombatantMemory combatantMemory;
+	private readonly LineInCombat lineInCombat;
+	private IAggroMemory aggroMemory;
 	private CancellationTokenSource endEncounterToken;
-
-	public BuiltinEventConfig Config { get; set; }
-
-	public event Action EnmityTick;
+	private IEnmityHudMemory enmityHudMemory;
+	private IEnmityMemory enmityMemory;
+	private ITargetMemory targetMemory;
 
 	public EnmityEventSource(TinyIoCContainer container) : base(container) {
 		var haveCombatantMemory = container.TryResolve(out combatantMemory);
@@ -67,6 +53,12 @@ public class EnmityEventSource : EventSourceBase {
 		EnmityTick += UpdateEnmity;
 		EnmityTick += lineInCombat.Update;
 	}
+
+	public int endEncounterOutOfCombatDelayMs => ActGlobals.oFormActMain.DalamudPlugin.Configuration.endEncounterOutOfCombatDelayMs;
+
+	public BuiltinEventConfig Config { get; set; }
+
+	public event Action EnmityTick;
 
 	public override void Start() {
 		timer.Change(0, Config.EnmityIntervalMs);
@@ -187,7 +179,7 @@ public class EnmityEventSource : EventSourceBase {
 			}
 
 			foreach (var combatant in allCombatants)
-				combatantMemory.ReturnCombatant(combatant);
+				combatantMemory.ReturnCombatant();
 #if TRACEPERF
                 Log(LogLevel.Trace, "UpdateEnmity: {0}ms", stopwatch.ElapsedMilliseconds);
 #endif
@@ -200,29 +192,6 @@ public class EnmityEventSource : EventSourceBase {
 		if (combatantMemory != null) {
 			EnmityTick.Invoke();
 		}
-	}
-
-	[Serializable]
-	internal class EnmityTargetDataObject {
-		public string type = EnmityTargetDataEvent;
-		public Combatant? Target;
-		public Combatant? Focus;
-		public Combatant? Hover;
-		public Combatant TargetOfTarget;
-		public List<EnmityEntry> Entries;
-	}
-
-	[Serializable]
-	internal class EnmityAggroListObject {
-		public string type = EnmityAggroListEvent;
-		public List<AggroEntry> AggroList;
-		public List<EnmityHudEntry> EnmityHudList;
-	}
-
-	[Serializable]
-	internal class TargetableEnemiesObject {
-		public string type = TargetableEnemiesEvent;
-		public List<TargetableEnemyEntry> TargetableEnemyList;
 	}
 
 	internal JObject CreateTargetData(List<Combatant> combatants) {
@@ -259,16 +228,16 @@ public class EnmityEventSource : EventSourceBase {
 					enmity.TargetOfTarget.EffectiveDistance = mychar.EffectiveDistanceString(enmity.TargetOfTarget);
 				}
 
-				combatantMemory.ReturnCombatant(mychar);
+				combatantMemory.ReturnCombatant();
 			}
 		} catch (Exception ex) {
 			logger.Log(LogLevel.Error, "CreateTargetData: {0}", ex);
 		}
 
 		var ret = JObject.FromObject(enmity);
-		combatantMemory.ReturnCombatant(enmity.Target);
-		combatantMemory.ReturnCombatant(enmity.Focus);
-		combatantMemory.ReturnCombatant(enmity.Hover);
+		combatantMemory.ReturnCombatant();
+		combatantMemory.ReturnCombatant();
+		combatantMemory.ReturnCombatant();
 		return ret;
 	}
 
@@ -311,14 +280,44 @@ public class EnmityEventSource : EventSourceBase {
 		}
 		return enemyList;
 	}
+
+	[Serializable]
+	internal class InCombatDataObject {
+		public bool inACTCombat;
+		public bool inGameCombat;
+		public string type = InCombatEvent;
+	}
+
+	[Serializable]
+	internal class EnmityTargetDataObject {
+		public List<EnmityEntry> Entries;
+		public Combatant? Focus;
+		public Combatant? Hover;
+		public Combatant? Target;
+		public Combatant TargetOfTarget;
+		public string type = EnmityTargetDataEvent;
+	}
+
+	[Serializable]
+	internal class EnmityAggroListObject {
+		public List<AggroEntry> AggroList;
+		public List<EnmityHudEntry> EnmityHudList;
+		public string type = EnmityAggroListEvent;
+	}
+
+	[Serializable]
+	internal class TargetableEnemiesObject {
+		public List<TargetableEnemyEntry> TargetableEnemyList;
+		public string type = TargetableEnemiesEvent;
+	}
 }
 
 [Serializable]
 public class TargetableEnemyEntry {
-	public uint ID;
-	public string Name;
 	public int CurrentHP;
-	public int MaxHP;
-	public bool IsEngaged;
 	public byte EffectiveDistance;
+	public uint ID;
+	public bool IsEngaged;
+	public int MaxHP;
+	public string Name;
 }

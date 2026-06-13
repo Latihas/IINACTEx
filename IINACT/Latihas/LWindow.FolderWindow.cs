@@ -1,4 +1,5 @@
-﻿using Dalamud.Bindings.ImGui;
+﻿using System.Numerics;
+using Dalamud.Bindings.ImGui;
 using Dalamud.Interface.Windowing;
 using Triggernometry.Core;
 
@@ -40,9 +41,9 @@ public static partial class LWindow {
 			// var FFXIVJobFilterEnabled = Folder.FFXIVJobFilterEnabled != null && bool.Parse(Folder.FFXIVJobFilterEnabled);
 			// if (ImGui.Checkbox("限制职业", ref FFXIVJobFilterEnabled))
 			//     Folder.FFXIVJobFilterEnabled = FFXIVJobFilterEnabled.ToString();
-			ImGui.SetNextItemWidth(-1);
+			ImGui.Text("环境");
 			var RawEnvironmentVariables = Folder.RawEnvironmentVariables;
-			if (ImGui.InputTextMultiline("环境", ref RawEnvironmentVariables))
+			if (ImGui.InputTextMultiline("## 环境", ref RawEnvironmentVariables, 1145141, new Vector2(-1, -1)))
 				Folder.RawEnvironmentVariables = RawEnvironmentVariables;
 		}
 
