@@ -82,6 +82,7 @@ public sealed class Plugin : IDalamudPlugin {
 	internal readonly Version Version;
 	private readonly WindowSystem WindowSystem = new("IINACT");
 	public DalamudStartInfo DalamudStartInfo;
+	private readonly CancellationTokenSource postCts = new();
 
 	public Plugin() {
 		Instance = this;
@@ -203,12 +204,13 @@ public sealed class Plugin : IDalamudPlugin {
 			ClientState.Logout += OnLogOut;
 			ClientState.Login += OnLogIn;
 			ZoneDownHookManager = new ZoneDownHookManager();
+			if (Configuration.UseArrManager) ArrManager = new ArrManager();
 			foreach (var rt in Directory.GetFiles(PluginActScriptDirectory, "*.dll", SearchOption.TopDirectoryOnly).Select(Path.GetFileName).Cast<string>())
 				if (Configuration.ActScriptsEnabled.Contains(rt))
 					LoadIActPluginV1(rt, preserveEnableState: true);
 			PostNamazuPlugin.InitPlugin(PluginInterface, Log, SigScanner, Framework, new PluginIntegrationManager());
 			LogTick("Waiting Triggernometry");
-			CancellationTokenSource postCts = new();
+
 			var token = postCts.Token;
 			if (Configuration.AsyncOnInit) taskTrn.Wait();
 			LogTick("Triggernometry & PostNamazu & Callback Initialized");
@@ -286,6 +288,7 @@ public sealed class Plugin : IDalamudPlugin {
 	internal static TextToSpeechProvider TextToSpeechProvider { get; private set; }
 	internal static FileDialogManager FileDialogManager { get; private set; }
 	internal ZoneDownHookManager ZoneDownHookManager { get; set; }
+	internal ArrManager? ArrManager { get; set; }
 	private IpcProviders IpcProviders { get; }
 	public FfxivActPluginWrapper FfxivActPluginWrapper { get; set; }
 	public PluginMain OverlayPlugin { get; set; }
@@ -302,6 +305,8 @@ public sealed class Plugin : IDalamudPlugin {
 	public string scriptsDir => Path.Combine(PluginConfigDirectory, "Scripts");
 
 	public void Dispose() {
+		postCts.Cancel();
+		postCts.Dispose();
 		Configuration.Save();
 		TextToSpeechProvider.Dispose();
 		PluginInterface.UiBuilder.Draw -= DrawUI;
@@ -314,6 +319,7 @@ public sealed class Plugin : IDalamudPlugin {
 		ClientState.Login -= OnLogIn;
 		IpcProviders.Dispose();
 		ZoneDownHookManager.Dispose();
+		ArrManager?.Dispose();
 		WindowSystem.RemoveAllWindows();
 		OverlayWindow.Dispose();
 		SilverDasherPlugin?.DeInitPlugin();

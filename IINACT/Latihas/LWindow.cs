@@ -113,7 +113,7 @@ public static partial class LWindow {
 		using var tab = ImRaii.TabItem("评估");
 		if (!tab) return;
 		ImGui.SetNextItemWidth(-1);
-		ImGui.InputTextMultiline("代码", ref TestCode, 1145141, new Vector2(-1, -1));
+		ImGui.InputTextMultiline("代码", ref TestCode);
 		if (ImGui.Button("编译代码"))
 			Sbe = CSharpScriptCompiler.CompileScript(TestCode, true)
 				? "成功"
@@ -396,22 +396,32 @@ public static partial class LWindow {
 					i => {
 						if (i.StartsWith('_')) return;
 						var plugins = ActGlobals.oFormActMain.ActPlugins.Select(x => x.pluginFileName).Where(x => x == i).ToList();
+						lock (LoadingActPluginList)
+							if (LoadingActPluginList.Contains(i)) {
+								ImGui.Text("编译载入中...");
+								return;
+							}
 						if (plugins.Count == 0) {
 							if (ImGui.Button($"载入##{i}"))
-								if (i.EndsWith(".cs"))
-									LoadPScript(i);
-								else
-									LoadIActPluginV1(i);
+								Task.Run(() => {
+									lock (LoadingActPluginList) LoadingActPluginList.Add(i);
+									if (i.EndsWith(".cs"))
+										LoadPScript(i);
+									else
+										LoadIActPluginV1(i);
+									lock (LoadingActPluginList) LoadingActPluginList.Remove(i);
+								});
 						} else {
 							var plugin = ActGlobals.oFormActMain.ActPlugins.First(x => x.pluginFileName == i);
 							if (ImGui.Button($"禁用##{i}")) DeInitIActPluginV1(plugin);
-							ImGui.SameLine();
 						}
 					}
 				]);
 			}
 		}
 	}
+
+	private static List<string> LoadingActPluginList = [];
 
 	private static void DrawSettingsOpCodes() {
 		using var tab = ImRaii.TabItem("OpCodes设置");
@@ -450,6 +460,15 @@ public static partial class LWindow {
 			if (Instance.opcodesjsoncCanReplace) {
 				if (ImGui.Button("删除opcodes.jsonc")) File.Delete(Instance.opcodesjsoncPath);
 			} else ImGui.Text("(文件缺失，将在下次加载恢复内置)");
+			if (Instance.opcodestxtDiff.Length == 0) ImGui.Text("opcodes.txt无差异");
+			else {
+				ImGui.Text($"opcodes.txt有差异({Instance.opcodestxtDiff.Length}个)");
+				NewTable(["项目", "原始", "替换"], Instance.opcodestxtDiff, [
+					i => ImGui.Text(i.Item1),
+					i => ImGui.Text("0x" + i.Item2.ToString("X")),
+					i => ImGui.Text("0x" + i.Item3.ToString("X"))
+				]);
+			}
 		} else if (Instance.opcodesjsoncCanReplace) {
 			ImGui.PushStyleColor(ImGuiCol.Text, ImGuiColors.DalamudYellow);
 			ImGui.Text("opcodes.jsonc将在下次加载插件时替换");
@@ -457,15 +476,6 @@ public static partial class LWindow {
 			ImGui.SameLine();
 			if (ImGui.Button("删除opcodes.jsonc")) File.Delete(Instance.opcodesjsoncPath);
 		} else ImGui.Text("opcodes.jsonc为内置版本");
-		if (Instance.opcodestxtDiff.Length == 0) ImGui.Text("opcodes.txt无差异");
-		else {
-			ImGui.Text($"opcodes.txt有差异({Instance.opcodestxtDiff.Length}个)");
-			NewTable(["项目", "原始", "替换"], Instance.opcodestxtDiff, [
-				i => ImGui.Text(i.Item1),
-				i => ImGui.Text("0x" + i.Item2.ToString("X")),
-				i => ImGui.Text("0x" + i.Item3.ToString("X"))
-			]);
-		}
 		ImGui.Separator();
 		ImGui.Text("这里可以在线获取两个文件");
 		if (!FileDownloaderOpcodes.ContainsKey("[CN][Diemoe]opcodes.txt")) {

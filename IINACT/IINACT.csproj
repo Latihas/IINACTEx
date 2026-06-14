@@ -14,7 +14,7 @@
 		<IconUrl>https://raw.githubusercontent.com/marzent/IINACT/master/images/icon.png</IconUrl>
 		<RepoUrl>https://github.com/Latihas/IINACTEx</RepoUrl>
 		<Tags>parsing;plugin;ACT</Tags>
-		<AssemblyVersion>7.51.1.4</AssemblyVersion>
+		<AssemblyVersion>7.51.1.5</AssemblyVersion>
 		<LoadPriority>1</LoadPriority>
 	</PropertyGroup>
 	<ItemGroup>
@@ -89,6 +89,10 @@
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		</Content>
 		<Content Include="Res/**/*">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+			<TargetPath>$([System.String]::Copy('%(RecursiveDir)').Replace('Res/', ''))%(Filename)%(Extension)</TargetPath>
+		</Content>
+		<Content Include="../TrnDevEnv/publish/**/*">
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 			<TargetPath>$([System.String]::Copy('%(RecursiveDir)').Replace('Res/', ''))%(Filename)%(Extension)</TargetPath>
 		</Content>

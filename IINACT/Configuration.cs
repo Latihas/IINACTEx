@@ -84,6 +84,6 @@ public class Configuration : IPluginConfiguration {
 	public string GoogleTtsLanguage { get; set; } = "zh_cn";
 	public bool ForceGoogleTts { get; set; }
 	public void Save() => Plugin.PluginInterface.SavePluginConfig(this);
-
 	public int TtsPlaybackDevice { get; set; } = -1;
+	public bool UseArrManager { get; set; }
 }
