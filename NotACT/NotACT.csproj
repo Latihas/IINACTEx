@@ -1,29 +1,29 @@
 <Project Sdk="Dalamud.NET.Sdk/15.0.0">
-
-  <PropertyGroup>
-    <UseWindowsForms>true</UseWindowsForms>
-    <AssemblyName>Advanced Combat Tracker</AssemblyName>
-    <RootNamespace>Advanced_Combat_Tracker</RootNamespace>
-    <Version>6.9</Version>
-    <Use_DalamudPackager>false</Use_DalamudPackager>
-  </PropertyGroup>
-
-  <ItemGroup>
-    <Folder Include="Datatypes/"/>
-  </ItemGroup>
-  <ItemGroup>
-    <Reference Include="FFXIV_ACT_Plugin">
-      <HintPath>../external_dependencies/FFXIV_ACT_Plugin.dll</HintPath>
-    </Reference>
-    <Reference Include="FFXIV_ACT_Plugin.Logfile">
-      <HintPath>../external_dependencies/SDK/FFXIV_ACT_Plugin.Logfile.dll</HintPath>
-    </Reference>
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Remove="LatihasUtils.cs"/>
-  </ItemGroup>
-  <PropertyGroup Condition="'$(GITHUB_ACTIONS)' == ''">
-    <DalamudLibPath>$(appdata)/XIVLauncherCN/addon/Hooks/dev</DalamudLibPath>
-    <AssemblySearchPaths>$(AssemblySearchPaths);$(DalamudLibPath)</AssemblySearchPaths>
-  </PropertyGroup>
+	
+	<PropertyGroup>
+		<UseWindowsForms>true</UseWindowsForms>
+		<AssemblyName>Advanced Combat Tracker</AssemblyName>
+		<RootNamespace>Advanced_Combat_Tracker</RootNamespace>
+		<Version>6.9</Version>
+		<Use_DalamudPackager>false</Use_DalamudPackager>
+	</PropertyGroup>
+	
+	<ItemGroup>
+		<Folder Include="Datatypes/"/>
+	</ItemGroup>
+	<ItemGroup>
+		<Reference Include="FFXIV_ACT_Plugin">
+			<HintPath>../external_dependencies/FFXIV_ACT_Plugin.dll</HintPath>
+		</Reference>
+		<Reference Include="FFXIV_ACT_Plugin.Logfile">
+			<HintPath>../external_dependencies/SDK/FFXIV_ACT_Plugin.Logfile.dll</HintPath>
+		</Reference>
+	</ItemGroup>
+	<ItemGroup>
+		<Compile Remove="LatihasUtils.cs"/>
+	</ItemGroup>
+	<PropertyGroup Condition="'$(GITHUB_ACTIONS)' == ''">
+		<DalamudLibPath>$(appdata)/XIVLauncherCN/addon/Hooks/dev</DalamudLibPath>
+		<AssemblySearchPaths>$(AssemblySearchPaths);$(DalamudLibPath)</AssemblySearchPaths>
+	</PropertyGroup>
 </Project>

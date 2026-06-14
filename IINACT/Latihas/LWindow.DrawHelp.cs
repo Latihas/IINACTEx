@@ -2,7 +2,6 @@
 using System.Globalization;
 using System.IO;
 using System.Numerics;
-using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using System.Text;
 using Advanced_Combat_Tracker;
@@ -10,8 +9,6 @@ using Dalamud.Bindings.ImGui;
 using Dalamud.Interface.Colors;
 using Dalamud.Interface.ImGuiNotification;
 using Dalamud.Interface.Utility.Raii;
-using FFXIV_ACT_Plugin.Network.PacketHandlers;
-using Machina.FFXIV.Headers;
 using RainbowMage.OverlayPlugin;
 using Triggernometry;
 using Triggernometry.Core;

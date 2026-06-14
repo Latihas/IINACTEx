@@ -50,7 +50,7 @@ internal class LineMapEffect : LineBaseCustom<
 		List<ushort> IMapEffectPacket.flags1 {
 			get {
 				var flags = new List<ushort>();
-				for (var i = 0; i < count && i < MaxCount; ++i) 
+				for (var i = 0; i < count && i < MaxCount; ++i)
 					flags.Add(flags1[i]);
 				return flags;
 			}
@@ -59,7 +59,7 @@ internal class LineMapEffect : LineBaseCustom<
 		List<ushort> IMapEffectPacket.flags2 {
 			get {
 				var flags = new List<ushort>();
-				for (var i = 0; i < count && i < MaxCount; ++i) 
+				for (var i = 0; i < count && i < MaxCount; ++i)
 					flags.Add(flags2[i]);
 				return flags;
 			}
@@ -93,7 +93,7 @@ internal class LineMapEffect : LineBaseCustom<
 		List<ushort> IMapEffectPacket.flags1 {
 			get {
 				var flags = new List<ushort>();
-				for (var i = 0; i < count && i < MaxCount; ++i) 
+				for (var i = 0; i < count && i < MaxCount; ++i)
 					flags.Add(flags1[i]);
 				return flags;
 			}
@@ -102,7 +102,7 @@ internal class LineMapEffect : LineBaseCustom<
 		List<ushort> IMapEffectPacket.flags2 {
 			get {
 				var flags = new List<ushort>();
-				for (var i = 0; i < count && i < MaxCount; ++i) 
+				for (var i = 0; i < count && i < MaxCount; ++i)
 					flags.Add(flags2[i]);
 				return flags;
 			}
@@ -136,7 +136,7 @@ internal class LineMapEffect : LineBaseCustom<
 		List<ushort> IMapEffectPacket.flags1 {
 			get {
 				var flags = new List<ushort>();
-				for (var i = 0; i < count && i < MaxCount; ++i) 
+				for (var i = 0; i < count && i < MaxCount; ++i)
 					flags.Add(flags1[i]);
 				return flags;
 			}
@@ -145,7 +145,7 @@ internal class LineMapEffect : LineBaseCustom<
 		List<ushort> IMapEffectPacket.flags2 {
 			get {
 				var flags = new List<ushort>();
-				for (var i = 0; i < count && i < MaxCount; ++i) 
+				for (var i = 0; i < count && i < MaxCount; ++i)
 					flags.Add(flags2[i]);
 				return flags;
 			}

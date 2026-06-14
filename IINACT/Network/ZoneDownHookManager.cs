@@ -1,10 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
-using System.Text;
 using Dalamud.Hooking;
 using Dalamud.Interface.ImGuiNotification;
 using Machina.FFXIV.Dalamud;
@@ -79,7 +77,7 @@ public unsafe class ZoneDownHookManager : IDisposable {
 
 		var rxPtrs = multiScanner.ScanText(GenericDownSignature, 3);
 		zoneDownHook = GameInteropProvider.HookFromAddress<DownPrototype>(rxPtrs[2], ZoneDownDetour);
-		
+
 		Enable();
 	}
 

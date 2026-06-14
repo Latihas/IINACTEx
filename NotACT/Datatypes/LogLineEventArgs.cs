@@ -1,7 +1,11 @@
 ﻿using System;
+
 namespace Advanced_Combat_Tracker;
+
 public delegate void LogLineEventDelegate(bool isImport, LogLineEventArgs logInfo);
+
 public delegate void LogFileChangedDelegate(bool IsImport, string NewLogFileName);
+
 public class LogLineEventArgs : EventArgs {
 	public readonly string companionLogName;
 	public readonly DateTime detectedTime;
@@ -10,6 +14,7 @@ public class LogLineEventArgs : EventArgs {
 	public readonly string originalLogLine;
 	public int detectedType;
 	public string logLine;
+
 	public LogLineEventArgs(
 		string LogLine, int DetectedType, DateTime DetectedTime, string DetectedZone, bool InCombat) {
 		originalLogLine = LogLine;
@@ -20,6 +25,7 @@ public class LogLineEventArgs : EventArgs {
 		inCombat = InCombat;
 		companionLogName = string.Empty;
 	}
+
 	public LogLineEventArgs(
 		string LogLine, int DetectedType, DateTime DetectedTime, string DetectedZone, bool InCombat,
 		string CompanionLogName) {

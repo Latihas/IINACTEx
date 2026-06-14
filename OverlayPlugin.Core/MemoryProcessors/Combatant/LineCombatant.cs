@@ -101,12 +101,12 @@ public class LineCombatant : IDisposable {
 			if (!combatantStateMap.TryGetValue(combatant.ID, out var oldState)) {
 				var state = new CombatantStateInfo {
 					lastUpdated = now,
-					combatant = combatant,
+					combatant = combatant
 				};
 				// It's possible that another thread has already added this combatant since we checked
 				if (combatantStateMap.TryAdd(combatant.ID, state))
 					WriteLine(CombatantMemoryChangeType.Add, combatant.ID,
-						string.Join("", CombatantChangeCriteria.AllFields.Select((fi) => FormatFieldChange(fi, combatant, true))));
+						string.Join("", CombatantChangeCriteria.AllFields.Select(fi => FormatFieldChange(fi, combatant, true))));
 				continue;
 			}
 			var oldCombatant = oldState.combatant;

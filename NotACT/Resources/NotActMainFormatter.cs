@@ -1296,8 +1296,8 @@ public static class NotActMainFormatter {
 				delegate(MasterSwing Left, MasterSwing Right) {
 					var obj = Left.Tags.TryGetValue("CriticalStr", out var tag) ? (string)tag : "None";
 					var strB = Right.Tags.TryGetValue("CriticalStr", out var yTag) ? (string)yTag : "None";
-				return obj.CompareTo(strB);
-			}));
+					return obj.CompareTo(strB);
+				}));
 		MasterSwing.ColumnDefs.Add("Special",
 			new MasterSwing.ColumnDef("Special", true, "VARCHAR(64)", "Special",
 				Data => Data.Special,

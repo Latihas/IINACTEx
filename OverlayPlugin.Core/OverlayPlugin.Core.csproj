@@ -1,71 +1,71 @@
 <Project Sdk="Dalamud.NET.Sdk/15.0.0">
-  <PropertyGroup>
-    <EnableWindowsTargeting>true</EnableWindowsTargeting>
-    <OutputType>Library</OutputType>
-    <RootNamespace>RainbowMage.OverlayPlugin</RootNamespace>
-    <UseWindowsForms>true</UseWindowsForms>
-    <ImportWindowsDesktopTargets>true</ImportWindowsDesktopTargets>
-    <ProduceReferenceAssembly>false</ProduceReferenceAssembly>
-    <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <Version>0.19.99</Version>
-    <Use_DalamudPackager>false</Use_DalamudPackager>
-  </PropertyGroup>
-
-  <ItemGroup>
-    <None Remove="resources/act-overlays/overlays.json"/>
-    <None Remove="resources/opcodes.jsonc"/>
-    <None Remove="resources/reserved_log_lines.json"/>
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="resources/act-overlays/overlays.json"/>
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="resources/opcodes.jsonc"/>
-    <EmbeddedResource Include="resources/reserved_log_lines.json"/>
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="../machina/Machina.FFXIV/Machina.FFXIV.csproj"/>
-    <ProjectReference Include="../machina/Machina/Machina.csproj"/>
-    <ProjectReference Include="../OverlayPlugin.Common/OverlayPlugin.Common.csproj"/>
-  </ItemGroup>
-  <ItemGroup>
-	  <PackageReference Include="Microsoft.Extensions.ObjectPool" Version="10.0.9"/>
-    <PackageReference Include="NetCoreServer" Version="8.0.7"/>
-	  <PackageReference Include="TinyIoC" Version="1.3.0">
-		  <PrivateAssets>all</PrivateAssets>
-		  <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-	  </PackageReference>
-  </ItemGroup>
-  <ItemGroup>
-    <Reference Include="FFXIV_ACT_Plugin">
-      <HintPath>../external_dependencies/FFXIV_ACT_Plugin.dll</HintPath>
-    </Reference>
-    <Reference Include="FFXIV_ACT_Plugin.Common">
-      <HintPath>../external_dependencies/SDK/FFXIV_ACT_Plugin.Common.dll</HintPath>
-    </Reference>
-    <Reference Include="FFXIV_ACT_Plugin.Logfile">
-      <HintPath>../external_dependencies/SDK/FFXIV_ACT_Plugin.Logfile.dll</HintPath>
-    </Reference>
-    <Reference Include="FFXIV_ACT_Plugin.Memory">
-      <HintPath>../external_dependencies/SDK/FFXIV_ACT_Plugin.Memory.dll</HintPath>
-    </Reference>
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Update="Resources.Designer.cs">
-      <DesignTime>True</DesignTime>
-      <AutoGen>True</AutoGen>
-      <DependentUpon>Resources.resx</DependentUpon>
-    </Compile>
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Update="Resources.resx">
-      <Generator>ResXFileCodeGenerator</Generator>
-      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
-    </EmbeddedResource>
-  </ItemGroup>
-  <PropertyGroup Condition="'$(GITHUB_ACTIONS)' == ''">
-    <DalamudLibPath>$(appdata)/XIVLauncherCN/addon/Hooks/dev</DalamudLibPath>
-    <AssemblySearchPaths>$(AssemblySearchPaths);$(DalamudLibPath)</AssemblySearchPaths>
-  </PropertyGroup>
+	<PropertyGroup>
+		<EnableWindowsTargeting>true</EnableWindowsTargeting>
+		<OutputType>Library</OutputType>
+		<RootNamespace>RainbowMage.OverlayPlugin</RootNamespace>
+		<UseWindowsForms>true</UseWindowsForms>
+		<ImportWindowsDesktopTargets>true</ImportWindowsDesktopTargets>
+		<ProduceReferenceAssembly>false</ProduceReferenceAssembly>
+		<RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
+		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+		<Version>0.19.99</Version>
+		<Use_DalamudPackager>false</Use_DalamudPackager>
+	</PropertyGroup>
+	
+	<ItemGroup>
+		<None Remove="resources/act-overlays/overlays.json"/>
+		<None Remove="resources/opcodes.jsonc"/>
+		<None Remove="resources/reserved_log_lines.json"/>
+	</ItemGroup>
+	<ItemGroup>
+		<EmbeddedResource Include="resources/act-overlays/overlays.json"/>
+	</ItemGroup>
+	<ItemGroup>
+		<EmbeddedResource Include="resources/opcodes.jsonc"/>
+		<EmbeddedResource Include="resources/reserved_log_lines.json"/>
+	</ItemGroup>
+	<ItemGroup>
+		<ProjectReference Include="../machina/Machina.FFXIV/Machina.FFXIV.csproj"/>
+		<ProjectReference Include="../machina/Machina/Machina.csproj"/>
+		<ProjectReference Include="../OverlayPlugin.Common/OverlayPlugin.Common.csproj"/>
+	</ItemGroup>
+	<ItemGroup>
+		<PackageReference Include="Microsoft.Extensions.ObjectPool" Version="10.0.9"/>
+		<PackageReference Include="NetCoreServer" Version="8.0.7"/>
+		<PackageReference Include="TinyIoC" Version="1.3.0">
+			<PrivateAssets>all</PrivateAssets>
+			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+		</PackageReference>
+	</ItemGroup>
+	<ItemGroup>
+		<Reference Include="FFXIV_ACT_Plugin">
+			<HintPath>../external_dependencies/FFXIV_ACT_Plugin.dll</HintPath>
+		</Reference>
+		<Reference Include="FFXIV_ACT_Plugin.Common">
+			<HintPath>../external_dependencies/SDK/FFXIV_ACT_Plugin.Common.dll</HintPath>
+		</Reference>
+		<Reference Include="FFXIV_ACT_Plugin.Logfile">
+			<HintPath>../external_dependencies/SDK/FFXIV_ACT_Plugin.Logfile.dll</HintPath>
+		</Reference>
+		<Reference Include="FFXIV_ACT_Plugin.Memory">
+			<HintPath>../external_dependencies/SDK/FFXIV_ACT_Plugin.Memory.dll</HintPath>
+		</Reference>
+	</ItemGroup>
+	<ItemGroup>
+		<Compile Update="Resources.Designer.cs">
+			<DesignTime>True</DesignTime>
+			<AutoGen>True</AutoGen>
+			<DependentUpon>Resources.resx</DependentUpon>
+		</Compile>
+	</ItemGroup>
+	<ItemGroup>
+		<EmbeddedResource Update="Resources.resx">
+			<Generator>ResXFileCodeGenerator</Generator>
+			<LastGenOutput>Resources.Designer.cs</LastGenOutput>
+		</EmbeddedResource>
+	</ItemGroup>
+	<PropertyGroup Condition="'$(GITHUB_ACTIONS)' == ''">
+		<DalamudLibPath>$(appdata)/XIVLauncherCN/addon/Hooks/dev</DalamudLibPath>
+		<AssemblySearchPaths>$(AssemblySearchPaths);$(DalamudLibPath)</AssemblySearchPaths>
+	</PropertyGroup>
 </Project>

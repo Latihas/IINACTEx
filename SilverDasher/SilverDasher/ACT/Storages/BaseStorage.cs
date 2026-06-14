@@ -13,6 +13,7 @@ internal abstract class BaseStorage(Keeper keeper) {
 	internal abstract string? ResourceFileName { get; }
 
 	internal abstract void Load();
+
 	internal void LoadData<DataType>(string path, out DataType data) where DataType : new() {
 		try {
 			var jObject = JsonConvert.DeserializeObject<DataJson<DataType>>(File.ReadAllText(Path.Combine(Utils.GetPluginDirectory(), "data", path)))!;

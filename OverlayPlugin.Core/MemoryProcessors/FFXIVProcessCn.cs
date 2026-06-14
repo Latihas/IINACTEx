@@ -107,6 +107,7 @@ public class FFXIVProcessCn(TinyIoCContainer container) : FFXIVProcess(container
 			.Where(entry => entry.Value != null).ToArray();
 		return gobs.Length == 0 ? null : GetEntityData(gobs[0].Value);
 	}
+
 	public override unsafe JObject? GetJobSpecificData(EntityJob job) {
 		var jg = JobGaugeManager.Instance();
 		if (jg == null) {
