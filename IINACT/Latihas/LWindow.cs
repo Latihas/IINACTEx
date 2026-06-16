@@ -25,6 +25,7 @@ using Triggernometry.PluginBridges.BridgeNamazu;
 using Triggernometry.PScript;
 using Triggernometry.UI.CustomControls;
 using static IINACT.Plugin;
+using static Triggernometry.PScript.ScriptUtils;
 
 namespace IINACT.Latihas;
 
@@ -375,8 +376,11 @@ public static partial class LWindow {
 							return;
 						}
 						var plugins = ActGlobals.oFormActMain.ActPlugins.Select(x => x.pluginFileName).Where(x => x == i).ToList();
-						ImGui.Text(plugins.Count == 0 ? "未载入" :
-							ActGlobals.oFormActMain.ActPlugins.First(x => x.pluginFileName == i).cbEnabled.Enabled ? "已启用" : "已禁用");
+						if (plugins.Count == 0) ImGui.Text("未载入");
+						else {
+							var plugin = ActGlobals.oFormActMain.ActPlugins.First(x => x.pluginFileName == i);
+							ImGui.Text(plugin.cbEnabled.Enabled ? $"已启用{(((IScriptBase)plugin.pluginObj).IsDev ? "(开发中)" : "")}" : "已禁用");
+						}
 					},
 					i => {
 						if (i.StartsWith('_')) {
@@ -424,17 +428,10 @@ public static partial class LWindow {
 			if (tab) {
 				if (ObjectTable.LocalPlayer != null) {
 					if (ImGui.Button("新建小队信息")) {
-						Instance.Configuration.PartyInfos.Add(new PartyInfo(PartyList.Select(i => new PartyInfo.PartyPlayer(
-							Entity.GetEntityByID(i.EntityId).Job.SubRole switch {
-								Job.RoleType.PureHealer => JobCat.H1,
-								Job.RoleType.FlexHealer => JobCat.H1,
-								Job.RoleType.BarrierHealer => JobCat.H2,
-								Job.RoleType.StrengthMelee => JobCat.D1,
-								Job.RoleType.DexterityMelee => JobCat.D2,
-								Job.RoleType.PhysicalRanged => JobCat.D3,
-								Job.RoleType.MagicalRanged => JobCat.D4,
-								_ => JobCat.MT
-							}, i.Name.TextValue, i.World.Value.Name.ToString())).ToArray(), ClientState.TerritoryType));
+						Instance.Configuration.PartyInfos.Add(new PartyInfo(PartyList.Select((i, o) => {
+							var job = Entity.GetEntityByID(i.EntityId).Job;
+							return new PartyInfo.PartyPlayer(job, i.Name.TextValue, i.World.Value.Name.ToString(), o);
+						}).ToArray(), ClientState.TerritoryType));
 						Instance.Configuration.Save();
 					}
 					ImGui.Text("当前激活小队:");
@@ -476,11 +473,12 @@ public static partial class LWindow {
 		var playerdesc = PartyList.Select(i => $"{i.Name.TextValue}-{i.World.Value.Name.ToString()}").ToHashSet();
 		foreach (var party in Instance.Configuration.PartyInfos.Where(party => party.Territory == ClientState.TerritoryType)
 			         .Select(party => (party, p: party.players.Select(player => $"{player.name}-{player.world}").ToHashSet()))
-			         .Where(t => playerdesc.Equals(t.p))
+			         .Where(t => playerdesc.SetEquals(t.p))
 			         .Select(t => t.party)) {
 			currentPartyInfo = party;
-			break;
+			return;
 		}
+		currentPartyInfo = null;
 	}
 
 	public static PartyInfo? currentPartyInfo;
@@ -500,11 +498,11 @@ public static partial class LWindow {
 			i => ImGui.Text(i.world),
 			i => ImGui.Text(i.job.ToString()),
 			i => {
-				var j = 0;
+				var j = (int)i.jobcat;
 				if (ImGui.Combo($"职能##{prefix}{index1}职能{i.name}-{i.world}", ref j,
 					    Enum.GetValues<JobCat>()
 						    .Select(x => x.ToString()).ToList())) {
-					i.job = (JobCat)j;
+					i.jobcat = (JobCat)j;
 					Instance.Configuration.Save();
 				}
 			}
@@ -513,25 +511,38 @@ public static partial class LWindow {
 	}
 
 	public class PartyInfo(PartyInfo.PartyPlayer[] players, uint Territory) {
-		public PartyPlayer[] players = players;
+		public readonly PartyPlayer[] players = players;
 		public uint Territory = Territory;
 
-		public class PartyPlayer(JobCat job, string name, string world) {
-			public JobCat job = job;
-			public string name = name, world = world;
+		public class PartyPlayer {
+			public JobEnum job;
+			public int order;
+			public JobCat jobcat;
+			public string name;
+			public string world;
+
+			// ReSharper disable once UnusedMember.Global
+			public PartyPlayer() { }
+
+			public PartyPlayer(Job job, string name, string world, int order) {
+				this.job = job.JobType;
+				this.order = order;
+				jobcat = job.SubRole switch {
+					Job.RoleType.PureHealer => JobCat.H1,
+					Job.RoleType.FlexHealer => JobCat.H1,
+					Job.RoleType.BarrierHealer => JobCat.H2,
+					Job.RoleType.StrengthMelee => JobCat.D1,
+					Job.RoleType.DexterityMelee => JobCat.D2,
+					Job.RoleType.PhysicalRanged => JobCat.D3,
+					Job.RoleType.MagicalRanged => JobCat.D4,
+					_ => JobCat.MT
+				};
+				this.name = name;
+				this.world = world;
+			}
 		}
 	}
 
-	public enum JobCat {
-		MT,
-		ST,
-		H1,
-		H2,
-		D1,
-		D2,
-		D3,
-		D4
-	}
 
 	private static readonly List<string> LoadingActPluginList = [];
 
@@ -613,7 +624,7 @@ public static partial class LWindow {
 							resourceStream2.CopyTo(fileStream2);
 						}
 					} catch (Exception e) {
-						Log.Error(e.ToString());
+						Plugin.Log.Error(e.ToString());
 					}
 				});
 				_ = FileDownloaderOpcodes["[CN][Diemoe]opcodes.txt"].DownloadFileAsync();
@@ -640,7 +651,7 @@ public static partial class LWindow {
 						}
 						File.WriteAllText(Path.Combine(Instance.PluginAssemblyDirectory, "opcodes.txt"), sb.ToString());
 					} catch (Exception e) {
-						Log.Error(e.ToString());
+						Plugin.Log.Error(e.ToString());
 					}
 				});
 				_ = FileDownloaderOpcodes["[CN][Karashiiro]扩展的opcodes.txt"].DownloadFileAsync();

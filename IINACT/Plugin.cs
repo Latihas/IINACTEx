@@ -204,6 +204,7 @@ public sealed class Plugin : IDalamudPlugin {
 			ClientState.Logout += OnLogOut;
 			ClientState.Login += OnLogIn;
 			ClientState.TerritoryChanged += TerritoryChanged;
+			TerritoryChanged(0);
 			ZoneDownHookManager = new ZoneDownHookManager();
 			if (Configuration.UseArrManager) ArrManager = new ArrManager();
 			foreach (var rt in Directory.GetFiles(PluginActScriptDirectory, "*.dll", SearchOption.TopDirectoryOnly).Select(Path.GetFileName).Cast<string>())
