@@ -299,7 +299,7 @@ namespace RainbowMage.OverlayPlugin {
 	public
 #endif
 		static class TypeExtensions {
-		private static SafeDictionary<GenericMethodCacheKey, MethodInfo> _genericMethodCache;
+		private static readonly SafeDictionary<GenericMethodCacheKey, MethodInfo> _genericMethodCache;
 
 		static TypeExtensions() {
 			_genericMethodCache = new SafeDictionary<GenericMethodCacheKey, MethodInfo>();
@@ -820,8 +820,8 @@ namespace RainbowMage.OverlayPlugin {
 		///     Registration options for "fluent" API
 		/// </summary>
 		public sealed class RegisterOptions {
-			private TinyIoCContainer _Container;
-			private TypeRegistration _Registration;
+			private readonly TinyIoCContainer _Container;
+			private readonly TypeRegistration _Registration;
 
 			public RegisterOptions(TinyIoCContainer container, TypeRegistration registration) {
 				_Container = container;
@@ -2329,7 +2329,7 @@ namespace RainbowMage.OverlayPlugin {
 		private class DelegateFactory : ObjectFactoryBase {
 			private readonly Type registerType;
 
-			private Func<TinyIoCContainer, NamedParameterOverloads, object> _factory;
+			private readonly Func<TinyIoCContainer, NamedParameterOverloads, object> _factory;
 
 			public override bool AssumeConstruction => true;
 
@@ -2372,7 +2372,7 @@ namespace RainbowMage.OverlayPlugin {
 		private class WeakDelegateFactory : ObjectFactoryBase {
 			private readonly Type registerType;
 
-			private WeakReference _factory;
+			private readonly WeakReference _factory;
 
 			public override bool AssumeConstruction => true;
 
@@ -2428,7 +2428,7 @@ namespace RainbowMage.OverlayPlugin {
 		private class InstanceFactory : ObjectFactoryBase, IDisposable {
 			private readonly Type registerType;
 			private readonly Type registerImplementation;
-			private object _instance;
+			private readonly object _instance;
 
 			public override bool AssumeConstruction => true;
 
@@ -2700,7 +2700,7 @@ namespace RainbowMage.OverlayPlugin {
 		#region Type Registrations
 
 		public sealed class TypeRegistration {
-			private int _hashCode;
+			private readonly int _hashCode;
 
 			public Type Type { get; private set; }
 			public string Name { get; private set; }
@@ -2752,7 +2752,7 @@ namespace RainbowMage.OverlayPlugin {
 			RegisterDefaultTypes();
 		}
 
-		private TinyIoCContainer _Parent;
+		private readonly TinyIoCContainer _Parent;
 
 		private TinyIoCContainer(TinyIoCContainer parent)
 			: this() {

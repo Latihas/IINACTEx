@@ -290,7 +290,7 @@ public class MultiSigScanner : IDisposable {
 
 			var insnByte = Marshal.ReadByte(scanRet[i]);
 
-			if (insnByte == 0xE8 || insnByte == 0xE9)
+			if (insnByte is 0xE8 or 0xE9)
 				scanRet[i] = ReadJmpCallSig(scanRet[i]);
 		}
 
@@ -340,7 +340,7 @@ public class MultiSigScanner : IDisposable {
 		var mask = new bool[needleLength];
 		for (var i = 0; i < needleLength; i++) {
 			var hexString = signature.Substring(i * 2, 2);
-			if (hexString == "??" || hexString == "**") {
+			if (hexString is "??" or "**") {
 				needle[i] = 0;
 				mask[i] = true;
 				continue;

@@ -29,11 +29,11 @@ public class EnmityEventSource : EventSourceBase {
 	private const string InCombatEvent = "InCombat";
 	private readonly ICombatantMemory combatantMemory;
 	private readonly LineInCombat lineInCombat;
-	private IAggroMemory aggroMemory;
+	private readonly IAggroMemory aggroMemory;
 	private CancellationTokenSource endEncounterToken;
-	private IEnmityHudMemory enmityHudMemory;
-	private IEnmityMemory enmityMemory;
-	private ITargetMemory targetMemory;
+	private readonly IEnmityHudMemory enmityHudMemory;
+	private readonly IEnmityMemory enmityMemory;
+	private readonly ITargetMemory targetMemory;
 
 	public EnmityEventSource(TinyIoCContainer container) : base(container) {
 		var haveCombatantMemory = container.TryResolve(out combatantMemory);

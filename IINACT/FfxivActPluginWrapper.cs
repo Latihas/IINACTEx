@@ -183,8 +183,8 @@ public partial class FfxivActPluginWrapper : IDisposable {
 		var text = message.Message.TextValue.Replace('\r', ' ').Replace('\n', ' ').Replace('|', '❘');
 		if (message.LogKind == XivChatType.SystemMessage)
 			evenType = evenType | (uint)message.TargetKind << 7 | (uint)message.SourceKind << 11;
-		var line = logFormat.FormatChatMessage(evenType, player, text);
-		logOutput.WriteLine(LogMessageType.ChatLog, GameServerTime.CurrentServerTime, line);
+		logOutput.WriteLine(LogMessageType.ChatLog, GameServerTime.CurrentServerTime,
+			logFormat.FormatChatMessage(evenType, player, text));
 	}
 
 	private void SetupActWrapper() {
@@ -208,7 +208,7 @@ public partial class FfxivActPluginWrapper : IDisposable {
 
 	[SuppressGCTransition]
 	[LibraryImport("SafeMemoryReader.dll")]
-	private static partial int ReadMemory(nint dest, nint src, int size);
+	private static partial void ReadMemory(IntPtr dest, IntPtr src, int size);
 
 	private unsafe void MobDataRefresh(IFramework _) {
 		if (settingsMediator.DataCollectionSettings == null)

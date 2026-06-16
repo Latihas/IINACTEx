@@ -94,17 +94,10 @@ public abstract partial class FFXIVProcess(TinyIoCContainer container) {
 		PCT = 42
 	}
 
-	internal static bool IsGatherer(EntityJob job) => job == EntityJob.FSH || job == EntityJob.MIN || job == EntityJob.BTN;
+	internal static bool IsGatherer(EntityJob job) => job is EntityJob.FSH or EntityJob.MIN or EntityJob.BTN;
 
 	internal static bool IsCrafter(EntityJob job) =>
-		job == EntityJob.CRP ||
-		job == EntityJob.BSM ||
-		job == EntityJob.ARM ||
-		job == EntityJob.GSM ||
-		job == EntityJob.LTW ||
-		job == EntityJob.WVR ||
-		job == EntityJob.ALC ||
-		job == EntityJob.CUL;
+		job is EntityJob.CRP or EntityJob.BSM or EntityJob.ARM or EntityJob.GSM or EntityJob.LTW or EntityJob.WVR or EntityJob.ALC or EntityJob.CUL;
 
 	[Serializable]
 	public class EntityData {

@@ -20,6 +20,7 @@ using Triggernometry;
 using Triggernometry.Core;
 using Triggernometry.Core.Serialization;
 using Triggernometry.Core.Variables;
+using Triggernometry.FFXIV;
 using Triggernometry.PluginBridges.BridgeNamazu;
 using Triggernometry.PScript;
 using Triggernometry.UI.CustomControls;
@@ -419,9 +420,120 @@ public static partial class LWindow {
 				]);
 			}
 		}
+		using (var tab = ImRaii.TabItem("小队")) {
+			if (tab) {
+				if (ObjectTable.LocalPlayer != null) {
+					if (ImGui.Button("新建小队信息")) {
+						Instance.Configuration.PartyInfos.Add(new PartyInfo(PartyList.Select(i => new PartyInfo.PartyPlayer(
+							Entity.GetEntityByID(i.EntityId).Job.SubRole switch {
+								Job.RoleType.PureHealer => JobCat.H1,
+								Job.RoleType.FlexHealer => JobCat.H1,
+								Job.RoleType.BarrierHealer => JobCat.H2,
+								Job.RoleType.StrengthMelee => JobCat.D1,
+								Job.RoleType.DexterityMelee => JobCat.D2,
+								Job.RoleType.PhysicalRanged => JobCat.D3,
+								Job.RoleType.MagicalRanged => JobCat.D4,
+								_ => JobCat.MT
+							}, i.Name.TextValue, i.World.Value.Name.ToString())).ToArray(), ClientState.TerritoryType));
+						Instance.Configuration.Save();
+					}
+					ImGui.Text("当前激活小队:");
+					ImGui.SameLine();
+					if (ImGui.Button("刷新")) TerritoryChanged(0);
+					if (currentPartyInfo == null) {
+						ImGui.Text("无");
+					} else {
+						var party = currentPartyInfo;
+						ImGui.Text($"地区id: {party.Territory}");
+						NewTable(["名字", "服务器", "职业", "位置"], party.players, [
+							i => ImGui.Text(i.name),
+							i => ImGui.Text(i.world),
+							i => ImGui.Text(i.job.ToString()),
+							i => ImGui.Text(i.job.ToString())
+						]);
+					}
+					if (ImGui.CollapsingHeader("当前地图小队")) {
+						for (var index = 0; index < Instance.Configuration.PartyInfos.Count; index++) {
+							var party = Instance.Configuration.PartyInfos[index];
+							if (party.Territory != ClientState.TerritoryType) continue;
+							if (ImGui.Button("设为当前小队")) currentPartyInfo = party;
+							ImGui.SameLine();
+							if (DrawPartyInfo(index, "ct")) break;
+							ImGui.Separator();
+						}
+					}
+					if (ImGui.CollapsingHeader("所有小队"))
+						for (var index = 0; index < Instance.Configuration.PartyInfos.Count; index++) {
+							if (DrawPartyInfo(index, "a")) break;
+							ImGui.Separator();
+						}
+				}
+			}
+		}
 	}
 
-	private static List<string> LoadingActPluginList = [];
+	internal static void TerritoryChanged(uint _) {
+		var playerdesc = PartyList.Select(i => $"{i.Name.TextValue}-{i.World.Value.Name.ToString()}").ToHashSet();
+		foreach (var party in Instance.Configuration.PartyInfos.Where(party => party.Territory == ClientState.TerritoryType)
+			         .Select(party => (party, p: party.players.Select(player => $"{player.name}-{player.world}").ToHashSet()))
+			         .Where(t => playerdesc.Equals(t.p))
+			         .Select(t => t.party)) {
+			currentPartyInfo = party;
+			break;
+		}
+	}
+
+	public static PartyInfo? currentPartyInfo;
+
+	public static bool DrawPartyInfo(int index1, string prefix) {
+		if (ImGui.Button($"删除##{prefix}{index1}删除")) {
+			Instance.Configuration.PartyInfos.RemoveAt(index1);
+			Instance.Configuration.Save();
+			return true;
+		}
+		var party = Instance.Configuration.PartyInfos[index1];
+		if (ImGui.InputUInt($"地区id##{prefix}{index1}地区id", ref party.Territory)) {
+			Instance.Configuration.Save();
+		}
+		NewTable(["名字", "服务器", "职业", "位置"], party.players, [
+			i => ImGui.Text(i.name),
+			i => ImGui.Text(i.world),
+			i => ImGui.Text(i.job.ToString()),
+			i => {
+				var j = 0;
+				if (ImGui.Combo($"职能##{prefix}{index1}职能{i.name}-{i.world}", ref j,
+					    Enum.GetValues<JobCat>()
+						    .Select(x => x.ToString()).ToList())) {
+					i.job = (JobCat)j;
+					Instance.Configuration.Save();
+				}
+			}
+		]);
+		return false;
+	}
+
+	public class PartyInfo(PartyInfo.PartyPlayer[] players, uint Territory) {
+		public PartyPlayer[] players = players;
+		public uint Territory = Territory;
+
+		public class PartyPlayer(JobCat job, string name, string world) {
+			public JobCat job = job;
+			public string name = name, world = world;
+		}
+	}
+
+	public enum JobCat {
+		MT,
+		ST,
+		H1,
+		H2,
+		D1,
+		D2,
+		D3,
+		D4
+	}
+
+	private static readonly List<string> LoadingActPluginList = [];
 
 	private static void DrawSettingsOpCodes() {
 		using var tab = ImRaii.TabItem("OpCodes设置");

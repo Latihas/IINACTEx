@@ -203,6 +203,7 @@ public sealed class Plugin : IDalamudPlugin {
 			Framework.Update += CheckCnUpdate;
 			ClientState.Logout += OnLogOut;
 			ClientState.Login += OnLogIn;
+			ClientState.TerritoryChanged += TerritoryChanged;
 			ZoneDownHookManager = new ZoneDownHookManager();
 			if (Configuration.UseArrManager) ArrManager = new ArrManager();
 			foreach (var rt in Directory.GetFiles(PluginActScriptDirectory, "*.dll", SearchOption.TopDirectoryOnly).Select(Path.GetFileName).Cast<string>())
@@ -254,6 +255,8 @@ public sealed class Plugin : IDalamudPlugin {
 		}
 	}
 
+	
+
 	[PluginService] private IDalamudPluginInterface pluginInterface { get; set; }
 	public static IDalamudPluginInterface PluginInterface => Instance.pluginInterface;
 	[PluginService] private ICommandManager commandManager { get; set; }
@@ -264,6 +267,8 @@ public sealed class Plugin : IDalamudPlugin {
 	public static IDataManager DataManager => Instance.dataManager;
 	[PluginService] private IChatGui chatGui { get; set; }
 	public static IChatGui ChatGui => Instance.chatGui;
+	[PluginService] private IPartyList partyList { get; set; }
+	public static IPartyList PartyList => Instance.partyList;
 	[PluginService] private IFramework framework { get; set; }
 	public static IFramework Framework => Instance.framework;
 	[PluginService] private ICondition condition { get; set; }
@@ -317,6 +322,7 @@ public sealed class Plugin : IDalamudPlugin {
 		Framework.Update -= CheckCnUpdate;
 		ClientState.Logout -= OnLogOut;
 		ClientState.Login -= OnLogIn;
+		ClientState.TerritoryChanged -= TerritoryChanged;
 		IpcProviders.Dispose();
 		ZoneDownHookManager.Dispose();
 		ArrManager?.Dispose();

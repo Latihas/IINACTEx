@@ -419,11 +419,10 @@ public class CactbotEventSource : EventSourceBase {
 			if (e is { Status: WebExceptionStatus.ProtocolError, Response: HttpWebResponse { StatusCode: HttpStatusCode.NotFound } }) {
 				// Ignore file not found.
 			} else if (e.InnerException != null &&
-			           (e.InnerException is FileNotFoundException || e.InnerException is DirectoryNotFoundException)) {
+			           e.InnerException is FileNotFoundException or DirectoryNotFoundException) {
 				// Ignore file not found.
 			} else if (e.InnerException is { InnerException: not null } &&
-			           (e.InnerException.InnerException is FileNotFoundException ||
-			            e.InnerException.InnerException is DirectoryNotFoundException)) {
+			           e.InnerException.InnerException is FileNotFoundException or DirectoryNotFoundException) {
 				// Ignore file not found.
 			} else {
 				LogError("Unable to read manifest file: " + e.Message);

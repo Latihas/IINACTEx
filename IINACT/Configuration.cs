@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using Advanced_Combat_Tracker;
 using Dalamud.Configuration;
+using IINACT.Latihas;
 using Newtonsoft.Json;
 
 namespace IINACT;
@@ -86,4 +87,5 @@ public class Configuration : IPluginConfiguration {
 	public void Save() => Plugin.PluginInterface.SavePluginConfig(this);
 	public int TtsPlaybackDevice { get; set; } = -1;
 	public bool UseArrManager { get; set; }
+	public List<LWindow.PartyInfo> PartyInfos = [];
 }

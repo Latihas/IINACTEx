@@ -5,11 +5,11 @@ using Advanced_Combat_Tracker;
 namespace RainbowMage.OverlayPlugin;
 
 public class Registry {
-	private TinyIoCContainer _container;
-	private List<Type> _overlays;
-	private List<IEventSource> _eventSources;
+	private readonly TinyIoCContainer _container;
+	private readonly List<Type> _overlays;
+	private readonly List<IEventSource> _eventSources;
 	private List<Type> _esQueue;
-	private List<IOverlayPreset> _overlayPresets;
+	private readonly List<IOverlayPreset> _overlayPresets;
 
 	public IEnumerable<Type> Overlays => _overlays;
 

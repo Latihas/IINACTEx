@@ -95,7 +95,7 @@ public class ServerController(TinyIoCContainer container) {
 		url += "OVERLAY_WS=ws";
 		if (Config.WSServerSSL) url += "s";
 		url += "://";
-		if (Config.WSServerIP == "*" || Config.WSServerIP == "0.0.0.0")
+		if (Config.WSServerIP is "*" or "0.0.0.0")
 			url += "127.0.0.1";
 		else
 			url += Config.WSServerIP;

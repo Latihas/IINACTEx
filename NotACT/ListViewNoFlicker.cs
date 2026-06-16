@@ -132,7 +132,7 @@ public class ListViewNoFlicker : ListView {
 
 	protected override void WndProc(ref Message messg) {
 		try {
-			if (updating && antiFlicker && (messg.Msg == 20 || messg.Msg == 15))
+			if (updating && antiFlicker && messg.Msg is 20 or 15)
 				messg.Msg = 0;
 			base.WndProc(ref messg);
 		} catch (Exception ex) {

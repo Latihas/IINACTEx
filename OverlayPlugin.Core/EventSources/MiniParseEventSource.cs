@@ -272,7 +272,7 @@ internal partial class MiniParseEventSource : EventSourceBase {
 					// ACT_FFXIV_Plugin が提供する LastXXDPS は、
 					// ally.Items[CombatantData.DamageTypeDataOutgoingDamage].Items に All キーが存在しない場合に、
 					// プラグイン内で例外が発生してしまい、パフォーマンスが悪化するので代わりに空の文字列を挿入する
-					if (exportValuePair.Key == "Last10DPS" || exportValuePair.Key == "Last30DPS" || exportValuePair.Key == "Last60DPS" || exportValuePair.Key == "Last180DPS") {
+					if (exportValuePair.Key is "Last10DPS" or "Last30DPS" or "Last60DPS" or "Last180DPS") {
 						if (!ally.Items[CombatantData.DamageTypeDataOutgoingDamage].Items.ContainsKey("All")) {
 							valueDict.Add(exportValuePair.Key, "");
 							continue;
@@ -318,10 +318,7 @@ internal partial class MiniParseEventSource : EventSourceBase {
 				// ACT_FFXIV_Plugin が提供する LastXXDPS は、
 				// ally.Items[CombatantData.DamageTypeDataOutgoingDamage].Items に All キーが存在しない場合に、
 				// プラグイン内で例外が発生してしまい、パフォーマンスが悪化するので代わりに空の文字列を挿入する
-				if (exportValuePair.Key == "Last10DPS" ||
-				    exportValuePair.Key == "Last30DPS" ||
-				    exportValuePair.Key == "Last60DPS" ||
-				    exportValuePair.Key == "Last180DPS") {
+				if (exportValuePair.Key is "Last10DPS" or "Last30DPS" or "Last60DPS" or "Last180DPS") {
 					if (!allies.All(ally => ally.Items[CombatantData.DamageTypeDataOutgoingDamage].Items
 						    .ContainsKey("All"))) {
 						encounterDict.Add(exportValuePair.Key, "");
