@@ -81,7 +81,7 @@ public partial class FetchDependencies {
 				RemoteDieMoeBuildVersion = buildVersion;
 				return true;
 			} catch (Exception e) {
-				Log.Error(e.ToString());
+				Log.Warning(e.ToString());
 				return true;
 			}
 		}
@@ -108,7 +108,7 @@ public partial class FetchDependencies {
 			var sp2 = localv.Split('.');
 			return int.Parse(sp2[0]) < int.Parse(sp1[0]) || int.Parse(sp2[0]) == int.Parse(sp1[0]) && int.Parse(sp2[1]) < int.Parse(sp1[1]);
 		} catch (Exception e) {
-			Log.Error(e.ToString());
+			Log.Info(e.ToString());
 			return false;
 		}
 	}

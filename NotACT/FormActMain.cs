@@ -182,11 +182,13 @@ public partial class FormActMain : Form, ISynchronizeInvoke {
 		if (WriteLogFile && WriteActLogFile)
 			ActLogQueue.Enqueue(logLineEventArgs.logLine);
 		Task.Run(() => {
-			if (OnLogLineRead == null) return;
-			OnLogLineRead(false, new LogLineEventArgs(logLineEventArgs.logLine, logLineEventArgs.detectedType,
+			OnLogLineRead?.Invoke(false, new LogLineEventArgs(logLineEventArgs.logLine, logLineEventArgs.detectedType,
 				parsedLogTime, CurrentZone, inCombat, "Plugin"));
 		});
 	}
+
+	public void FakeOnLogLineRead(string s) => OnLogLineRead?.Invoke(false,
+		new LogLineEventArgs(s, 0, DateTime.Now, CurrentZone, inCombat, "Plugin"));
 
 	public void TTS(string message) => TextToSpeech(message);
 

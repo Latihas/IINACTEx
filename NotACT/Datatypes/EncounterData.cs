@@ -140,9 +140,8 @@ public class EncounterData {
 			var dateTime = DateTime.MinValue;
 			var allies = !ignoreEnemies ? GetAllies() : [..Items.Values];
 			if (allies.Count == 0) allies = [..Items.Values];
-			foreach (var combatantData in allies)
-				if (combatantData.ShortEndTime > dateTime)
-					dateTime = combatantData.ShortEndTime;
+			foreach (var combatantData in allies.Where(combatantData => combatantData.ShortEndTime > dateTime))
+				dateTime = combatantData.ShortEndTime;
 			return dateTime;
 		}
 	}

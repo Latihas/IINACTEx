@@ -104,11 +104,13 @@ public static partial class LWindow {
 		var LogFlattenMaxCount = RealPlugin.Instance.cfg.LogFlattenMaxCount.ToString();
 		if (ImGui.InputText("最大日志队列数量", ref LogFlattenMaxCount))
 			RealPlugin.Instance.cfg.LogFlattenMaxCount = int.Parse(LogFlattenMaxCount);
-		if (ImGui.Button("Trn日志")) Instance.TriggernometryLogView.Toggle();
+		if (ImGui.Button("Trn日志")) Instance.TriggernometryLogView.IsOpen = true;
 		ImGui.SameLine();
-		if (ImGui.Button("ACT日志")) Instance.ACTLogView.Toggle();
+		if (ImGui.Button("ACT日志")) Instance.ACTLogView.IsOpen = true;
 		ImGui.SameLine();
 		if (ImGui.Button("清空日志队列")) RealPlugin.Instance.ClearLog();
+		ImGui.SameLine();
+		if (ImGui.Button("打开Actxt编辑器")) Instance.ActxtEditor.IsOpen = true;
 	}
 
 	private static void DrawTriggerDebugEvalTest() {

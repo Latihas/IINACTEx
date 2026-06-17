@@ -23,6 +23,7 @@ using IINACT.Latihas.Overlay;
 using IINACT.Network;
 using IINACT.TextToSpeech;
 using IINACT.Windows;
+using Lumina.Excel.Sheets;
 using Machina.FFXIV;
 using Machina.FFXIV.Headers.Opcodes;
 using PostNamazu.Common;
@@ -59,6 +60,7 @@ public sealed class Plugin : IDalamudPlugin {
 	internal static DateTime lastCnUpdateCheck = DateTime.Now.AddMinutes(-8);
 	public readonly ActionWindow ActionWindow;
 	public readonly ACTLogView ACTLogView;
+	public readonly ActxtEditor ActxtEditor;
 	// ReSharper disable once MemberCanBePrivate.Global
 	public readonly TinyIoCContainer Container;
 	internal readonly FetchDependencies.FetchDependencies fetchDependencies;
@@ -82,8 +84,8 @@ public sealed class Plugin : IDalamudPlugin {
 	internal readonly Version Version;
 	private readonly WindowSystem WindowSystem = new("IINACT");
 	public DalamudStartInfo DalamudStartInfo;
-	private readonly CancellationTokenSource postCts = new();
-
+	private readonly CancellationTokenSource PluginCts = new();
+	public static Dictionary<uint, string> MapInfo = new();
 	public Plugin() {
 		Instance = this;
 		LogTick("Start Initializing");
@@ -147,6 +149,7 @@ public sealed class Plugin : IDalamudPlugin {
 			WindowSystem.AddWindow(RepoWindow = new RepoWindow());
 			WindowSystem.AddWindow(TriggernometryLogView = new TriggernometryLogView());
 			WindowSystem.AddWindow(ACTLogView = new ACTLogView());
+			WindowSystem.AddWindow(ActxtEditor = new ActxtEditor());
 			// WindowSystem.AddWindow(ActStatics = new ACTStatics());
 			IpcProviders = new IpcProviders(PluginInterface);
 			Container = new TinyIoCContainer();
@@ -213,7 +216,7 @@ public sealed class Plugin : IDalamudPlugin {
 			PostNamazuPlugin.InitPlugin(PluginInterface, Log, SigScanner, Framework, new PluginIntegrationManager());
 			LogTick("Waiting Triggernometry");
 
-			var token = postCts.Token;
+			var token = PluginCts.Token;
 			if (Configuration.AsyncOnInit) taskTrn.Wait();
 			LogTick("Triggernometry & PostNamazu & Callback Initialized");
 			var sourceDir = Path.Combine(Instance.PluginAssemblyDirectory, "scripts");
@@ -235,12 +238,14 @@ public sealed class Plugin : IDalamudPlugin {
 			if (Configuration.LoadSilverDasherOnInit) EnableSilverDasher();
 			if (Directory.Exists(Path.Combine(PluginConfigDirectory, "cactbot"))) RefreshBw();
 			MainWindow.UpdateWindowTitle();
-			if (Configuration.ShowWindowOnInit) MainWindow.Toggle();
-			if (Configuration.ShowOverlayOnInit) OverlayWindow.Toggle();
-			if (Configuration.TtsOnInit) oFormActMain.TTS("插件加载完成");
+			MapInfo = DataManager.GetExcelSheet<TerritoryType>().Where(i => !i.PlaceNameRegion.Value.Name.IsEmpty)
+				.ToDictionary(i => i.RowId, i => $"{i.PlaceNameRegion.Value.Name}|{i.PlaceName.Value.Name}");
 			Configuration.Version = LatestConfigVersion;
 			Configuration.InitFatalError = false;
 			Configuration.Save();
+			if (Configuration.ShowWindowOnInit) MainWindow.IsOpen = true;
+			if (Configuration.ShowOverlayOnInit) OverlayWindow.IsOpen = true;
+			if (Configuration.TtsOnInit) oFormActMain.TTS("插件加载完成");
 			Log.Info($"[StartTick] IINACTEx Inited. Total {(DateTime.Now - startLogTick).TotalSeconds}s");
 		} catch (Exception e) {
 			var s = $"IINACTEx Inited Failed. Please Restart Game to Fix. Error: {e}";
@@ -256,7 +261,6 @@ public sealed class Plugin : IDalamudPlugin {
 		}
 	}
 
-	
 
 	[PluginService] private IDalamudPluginInterface pluginInterface { get; set; }
 	public static IDalamudPluginInterface PluginInterface => Instance.pluginInterface;
@@ -311,8 +315,8 @@ public sealed class Plugin : IDalamudPlugin {
 	public string scriptsDir => Path.Combine(PluginConfigDirectory, "Scripts");
 
 	public void Dispose() {
-		postCts.Cancel();
-		postCts.Dispose();
+		PluginCts.Cancel();
+		PluginCts.Dispose();
 		Configuration.Save();
 		TextToSpeechProvider.Dispose();
 		PluginInterface.UiBuilder.Draw -= DrawUI;
@@ -380,7 +384,7 @@ public sealed class Plugin : IDalamudPlugin {
 			Configuration.FFXIV_ACT_Plugin_CN_Update = fetchDependencies.CheckCnUpdate();
 			Configuration.Save();
 			MainWindow.UpdateWindowTitle();
-		});
+		}, PluginCts.Token);
 	}
 
 	private static void InitIActPluginV1(ActPluginData plugin, bool preserveEnableState = false) {
