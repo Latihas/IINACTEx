@@ -77,10 +77,11 @@ public static partial class LWindow {
 		ImGui.Text("如果频繁炸游戏，可能是VfxModule的问题，在 触发器-ModuleBase-启用ModuleBase-取消VfxModule勾选 即可禁用");
 		ImGui.PopStyleColor(1);
 		if (ImGui.CollapsingHeader("更新日志##CH更新日志", ImGuiTreeNodeFlags.DefaultOpen)) {
-			ImGui.Text("原版ACT统计和银山雀儿已迁移至卫月API。如果有任何bug或是修改建议请提Issue。");
-			ImGui.Text("Overlay Plugin几乎完全使用卫月API重写，可能会有bug，请及时反馈。");
-			ImGui.Text("大幅缩短启动时间。除了刚开卫月时和其他插件一起加载时间较长，正常游戏内重启插件速度极快。");
-			ImGui.Text("如果启用了ArrManager，需要重新载入插件才能生效。在进入ARR回放时，会尝试解析ARR包内容，输出到警告级别日志。但是目前还是难以转换为ACT日志。希望有能力的帮助一下。");
+			ImGui.TextWrapped("原版ACT统计和银山雀儿已迁移至卫月API。如果有任何bug或是修改建议请提Issue。");
+			ImGui.TextWrapped("Overlay Plugin几乎完全使用卫月API重写，可能会有bug，请及时反馈。");
+			ImGui.TextWrapped("大幅缩短启动时间。除了刚开卫月时和其他插件一起加载时间较长，正常游戏内重启插件速度极快。");
+			ImGui.TextWrapped("如果启用了ArrManager，需要重新载入插件才能生效。在进入ARR回放时，会尝试解析ARR包内容，输出到警告级别日志。但是目前还是难以转换为ACT日志。希望有能力的帮助一下。");
+			ImGui.TextWrapped("新增了小队与ACT日志重放功能，但是仍在开发中。");
 		}
 		if (ImGui.CollapsingHeader("项目介绍##CH项目介绍")) {
 			ImGui.Text("修改IINACT的初衷旨在尽可能满足日常对ACT的基本需求，替代ACT，假装自己是西瓜玩。");
@@ -151,7 +152,7 @@ public static partial class LWindow {
 			ImGui.Unindent();
 			ImGui.Unindent();
 		}
-		if (ImGui.CollapsingHeader("常见问题##常见问题", ImGuiTreeNodeFlags.DefaultOpen)) {
+		if (ImGui.CollapsingHeader("常见问题##常见问题")) {
 			ImGui.Text("1. 是否可以与原版ACT系列(如呆萌, 咖啡等)一起使用?");
 			ImGui.TextWrapped("    : 是。但是需要先开IINACTEx, 再开原版ACT系列。反过来不行。");
 			ImGui.Separator();

@@ -18,6 +18,7 @@ public partial class LWindow {
 		private static readonly FileDialogManager FileDialogManager = new();
 		private static string FilePath = "";
 		private static List<string> ImportLogs = [];
+		internal CancellationTokenSource? ReplayCts;
 
 		public static string ReadLockedTextFile(string filePath) {
 			using var stream = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
@@ -51,13 +52,7 @@ public partial class LWindow {
 							FilePath = str.First();
 							ImportLogs = ReadLockedTextFile(FilePath).Split(Environment.NewLine).ToList();
 							ImportLogs.Sort((a, b) => string.Compare(
-								a,
-								0,
-								b,
-								0,
-								14,
-								StringComparison.Ordinal
-							));
+								a, 0, b, 0, 14, StringComparison.Ordinal));
 							var Territory = 0u;
 							foreach (var log in ImportLogs) {
 								var territoryRegex = TerritoryRegex_.Match(log);
@@ -146,9 +141,7 @@ public partial class LWindow {
 		}
 
 		private static DateTime ParseTimestamp(string logLine) => DateTime.ParseExact(logLine.Substring(1, 12), "HH:mm:ss.fff", null);
-
-		private CancellationTokenSource? ReplayCts;
-
+		
 		[GeneratedRegex(@"^.{14} Territory 01:(?<id>[^:]+):")]
 		private static partial Regex TerritoryRegex();
 

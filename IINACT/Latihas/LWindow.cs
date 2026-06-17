@@ -110,7 +110,7 @@ public static partial class LWindow {
 		ImGui.SameLine();
 		if (ImGui.Button("清空日志队列")) RealPlugin.Instance.ClearLog();
 		ImGui.SameLine();
-		if (ImGui.Button("打开Actxt编辑器")) Instance.ActxtEditor.IsOpen = true;
+		if (ImGui.Button("Act日志重放")) Instance.ActxtEditor.IsOpen = true;
 	}
 
 	private static void DrawTriggerDebugEvalTest() {
@@ -443,7 +443,7 @@ public static partial class LWindow {
 						ImGui.Text("无");
 					} else {
 						var party = currentPartyInfo;
-						ImGui.Text($"地区id: {party.Territory}");
+						ImGui.Text($"地区: {party.Territory}({MapInfo.GetValueOrDefault(party.Territory, "")})");
 						NewTable(["名字", "服务器", "职业", "位置"], party.players, [
 							i => ImGui.Text(i.name),
 							i => ImGui.Text(i.world),
@@ -495,6 +495,7 @@ public static partial class LWindow {
 		if (ImGui.InputUInt($"地区id##{prefix}{index1}地区id", ref party.Territory)) {
 			Instance.Configuration.Save();
 		}
+		ImGui.Text($"地区名称: {MapInfo.GetValueOrDefault(party.Territory, "")}");
 		NewTable(["名字", "服务器", "职业", "位置"], party.players, [
 			i => ImGui.Text(i.name),
 			i => ImGui.Text(i.world),

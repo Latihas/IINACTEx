@@ -32,6 +32,7 @@ using RainbowMage.OverlayPlugin.EventSources;
 using RainbowMage.OverlayPlugin.Handlers.Ipc;
 using RainbowMage.OverlayPlugin.WebSocket;
 using Triggernometry;
+using Triggernometry.Core;
 using Triggernometry.PluginBridges.BridgeNamazu;
 using Triggernometry.PScript;
 using TriggernometryProxy;
@@ -49,7 +50,7 @@ public sealed class Plugin : IDalamudPlugin {
 	private const string MainWindowCommandName = "/iinact";
 	private const string EndEncCommandName = "/endenc";
 	internal const string OverlayCommandName = "/iinactoverlay";
-	private const int LatestConfigVersion = 3;
+	private const int LatestConfigVersion = 4;
 
 	public const ImGuiTableFlags ImGuiTableFlag = ImGuiTableFlags.Borders | ImGuiTableFlags.Resizable | ImGuiTableFlags.RowBg;
 	internal static MainWindow MainWindow = null!;
@@ -86,6 +87,7 @@ public sealed class Plugin : IDalamudPlugin {
 	public DalamudStartInfo DalamudStartInfo;
 	private readonly CancellationTokenSource PluginCts = new();
 	public static Dictionary<uint, string> MapInfo = new();
+
 	public Plugin() {
 		Instance = this;
 		LogTick("Start Initializing");
@@ -98,7 +100,8 @@ public sealed class Plugin : IDalamudPlugin {
 				if (ObjectTable.LocalPlayer != null) oFormActMain.LocalPlayerName = ObjectTable.LocalPlayer.Name.ToString();
 			});
 			Directory.CreateDirectory(scriptsDir);
-			if (Configuration.FFXIV_ACT_Plugin_CN_Update || Configuration.Version != LatestConfigVersion || Configuration.InitFatalError) {
+			var configupdate = Configuration.FFXIV_ACT_Plugin_CN_Update || Configuration.Version != LatestConfigVersion || Configuration.InitFatalError;
+			if (configupdate) {
 				Directory.GetFiles(PluginAssemblyDirectory, "FFXIV_ACT_Plugin.*")
 					.Concat(Directory.GetFiles(scriptsDir))
 					.ToList().ForEach(i => {
@@ -174,7 +177,7 @@ public sealed class Plugin : IDalamudPlugin {
 			LogTick("OverlayPlugin Initialized");
 			var taskTrn = Task.Run(() => {
 				TriggernometryProxyPlugin.InitPlugin(this, PluginInterface, Log, ClientState, Framework, GameInteropProvider, ObjectTable, GameGui, SigScanner,
-					LatestConfigVersion, LogTick);
+					LogTick);
 			});
 			if (!Configuration.AsyncOnInit) taskTrn.Wait();
 			if (opcodesjsoncReplaced) Log.Warning("opcodesjsonc Replaced");
@@ -240,6 +243,7 @@ public sealed class Plugin : IDalamudPlugin {
 			MainWindow.UpdateWindowTitle();
 			MapInfo = DataManager.GetExcelSheet<TerritoryType>().Where(i => !i.PlaceNameRegion.Value.Name.IsEmpty)
 				.ToDictionary(i => i.RowId, i => $"{i.PlaceNameRegion.Value.Name}|{i.PlaceName.Value.Name}");
+			if (configupdate) RealPlugin.Instance.cfg.CompileFailedScripts.Clear();
 			Configuration.Version = LatestConfigVersion;
 			Configuration.InitFatalError = false;
 			Configuration.Save();
@@ -317,6 +321,8 @@ public sealed class Plugin : IDalamudPlugin {
 	public void Dispose() {
 		PluginCts.Cancel();
 		PluginCts.Dispose();
+		ActxtEditor.ReplayCts?.Cancel();
+		ActxtEditor.ReplayCts?.Dispose();
 		Configuration.Save();
 		TextToSpeechProvider.Dispose();
 		PluginInterface.UiBuilder.Draw -= DrawUI;
