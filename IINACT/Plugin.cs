@@ -187,7 +187,6 @@ public sealed class Plugin : IDalamudPlugin {
 			IpcProviders.OverlayIpcHandler = Container.Resolve<IpcHandlerController>();
 			MainWindow.OverlayPluginConfig = Container.Resolve<IPluginConfig>();
 			MainWindow.OverlayPluginEventConfig = Container.Resolve<BuiltinEventConfig>();
-			OverlayWindow.Init(WebSocketServer);
 			CommandManager.AddHandler(MainWindowCommandName, new CommandInfo(OnCommand) {
 				HelpMessage = "显示IINACT主窗口"
 			});
@@ -230,6 +229,7 @@ public sealed class Plugin : IDalamudPlugin {
 				if (Configuration.ActScriptsEnabled.Contains(rt))
 					LoadPScript(rt, true);
 			var taskPP = Task.Run(() => {
+				OverlayWindow.Init(WebSocketServer);
 				LogTick("Asyc Post Start");
 				BridgeNamazu.InitializeModules();
 				LogTick("InitializeModules");

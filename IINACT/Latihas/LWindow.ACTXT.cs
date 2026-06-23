@@ -18,7 +18,9 @@ public partial class LWindow {
 		private static readonly FileDialogManager FileDialogManager = new();
 		private static string FilePath = "";
 		private static List<string> ImportLogs = [];
-		internal CancellationTokenSource? ReplayCts;
+		public CancellationTokenSource? ReplayCts;
+		public bool IsReplayIgnoreT_Trn => ReplayCts != null && Plugin.Instance.Configuration.ReplayIgnoreTerritoryTrn;
+		public bool IsReplayIgnoreT_Script => ReplayCts != null && Plugin.Instance.Configuration.ReplayIgnoreTerritoryScript;
 
 		public static string ReadLockedTextFile(string filePath) {
 			using var stream = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
@@ -38,6 +40,7 @@ public partial class LWindow {
 		private ActxtCombat? currentCombat;
 		private string currentCombatStart;
 		private int ReplayTotal, ReplayIndex;
+		private double ReplayelapsedMs;
 
 		public override void Draw() {
 			if (actxtCombats == null) ImGui.Text("处理中");
@@ -85,8 +88,19 @@ public partial class LWindow {
 				ImGui.SameLine();
 				ImGui.Text(FilePath);
 				ImGui.Text($"共{ImportLogs.Count}条, 点击复制战斗日志行");
+				var ReplayIgnoreTerritoryTrn = Plugin.Instance.Configuration.ReplayIgnoreTerritoryTrn;
+				if (ImGui.Checkbox("解除Trn所有区域限制", ref ReplayIgnoreTerritoryTrn)) {
+					Plugin.Instance.Configuration.ReplayIgnoreTerritoryTrn = ReplayIgnoreTerritoryTrn;
+					Plugin.Instance.Configuration.Save();
+				}
+				ImGui.SameLine();
+				var ReplayIgnoreTerritoryScript = Plugin.Instance.Configuration.ReplayIgnoreTerritoryScript;
+				if (ImGui.Checkbox("解除Script所有区域限制", ref ReplayIgnoreTerritoryScript)) {
+					Plugin.Instance.Configuration.ReplayIgnoreTerritoryScript = ReplayIgnoreTerritoryScript;
+					Plugin.Instance.Configuration.Save();
+				}
 				if (ReplayCts != null) {
-					ImGui.Text($"正在重放({ReplayIndex}/{ReplayTotal})");
+					ImGui.Text($"正在重放({ReplayIndex}/{ReplayTotal}){ReplayelapsedMs}ms");
 					ImGui.SameLine();
 					if (ImGui.Button("停止所有重放")) {
 						ReplayCts.Cancel();
@@ -123,8 +137,8 @@ public partial class LWindow {
 									for (var index = 0; index < orderedEntries.Count; index++) {
 										var entry = orderedEntries[index];
 										var targetDelayMs = (entry.Timestamp - baseTime).TotalMilliseconds;
-										var elapsedMs = (DateTime.Now - startTime).TotalMilliseconds;
-										var remainMs = targetDelayMs - elapsedMs;
+										ReplayelapsedMs = (DateTime.Now - startTime).TotalMilliseconds;
+										var remainMs = targetDelayMs - ReplayelapsedMs;
 										if (remainMs > 0)
 											await Task.Delay((int)Math.Ceiling(remainMs), token).ConfigureAwait(false);
 										ReplayIndex = index;
@@ -141,7 +155,7 @@ public partial class LWindow {
 		}
 
 		private static DateTime ParseTimestamp(string logLine) => DateTime.ParseExact(logLine.Substring(1, 12), "HH:mm:ss.fff", null);
-		
+
 		[GeneratedRegex(@"^.{14} Territory 01:(?<id>[^:]+):")]
 		private static partial Regex TerritoryRegex();
 

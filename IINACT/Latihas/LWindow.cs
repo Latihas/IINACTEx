@@ -26,6 +26,7 @@ using Triggernometry.PScript;
 using Triggernometry.UI.CustomControls;
 using static IINACT.Plugin;
 using static Triggernometry.PScript.ScriptUtils;
+using static TriggernometryProxy.ProxyPlugin;
 
 namespace IINACT.Latihas;
 
@@ -156,8 +157,8 @@ public static partial class LWindow {
 		ImGui.Text("目标信息");
 		var targ = TargetManager.Target;
 		if (targ == null)
-			if (ObjectTable.LocalPlayer != null)
-				targ = ObjectTable.LocalPlayer;
+			if (Plugin.ObjectTable.LocalPlayer != null)
+				targ = Plugin.ObjectTable.LocalPlayer;
 		if (targ != null) {
 			ImGui.Text("Target.Name: " + targ.Name);
 			ImGui.Text("Target.Address: 0x" + targ.Address.ToString("X"));
@@ -428,12 +429,12 @@ public static partial class LWindow {
 		}
 		using (var tab = ImRaii.TabItem("小队")) {
 			if (tab) {
-				if (ObjectTable.LocalPlayer != null) {
+				if (Plugin.ObjectTable.LocalPlayer != null) {
 					if (ImGui.Button("新建小队信息")) {
 						Instance.Configuration.PartyInfos.Add(new PartyInfo(PartyList.Select((i, o) => {
 							var job = Entity.GetEntityByID(i.EntityId).Job;
 							return new PartyInfo.PartyPlayer(job, i.Name.TextValue, i.World.Value.Name.ToString(), o);
-						}).ToArray(), ClientState.TerritoryType));
+						}).ToArray(), Plugin.ClientState.TerritoryType));
 						Instance.Configuration.Save();
 					}
 					ImGui.Text("当前激活小队:");
@@ -454,7 +455,7 @@ public static partial class LWindow {
 					if (ImGui.CollapsingHeader("当前地图小队")) {
 						for (var index = 0; index < Instance.Configuration.PartyInfos.Count; index++) {
 							var party = Instance.Configuration.PartyInfos[index];
-							if (party.Territory != ClientState.TerritoryType) continue;
+							if (party.Territory != Plugin.ClientState.TerritoryType) continue;
 							if (ImGui.Button("设为当前小队")) currentPartyInfo = party;
 							ImGui.SameLine();
 							if (DrawPartyInfo(index, "ct")) break;
@@ -473,7 +474,7 @@ public static partial class LWindow {
 
 	internal static void TerritoryChanged(uint _) {
 		var playerdesc = PartyList.Select(i => $"{i.Name.TextValue}-{i.World.Value.Name.ToString()}").ToHashSet();
-		foreach (var party in Instance.Configuration.PartyInfos.Where(party => party.Territory == ClientState.TerritoryType)
+		foreach (var party in Instance.Configuration.PartyInfos.Where(party => party.Territory == Plugin.ClientState.TerritoryType)
 			         .Select(party => (party, p: party.players.Select(player => $"{player.name}-{player.world}").ToHashSet()))
 			         .Where(t => playerdesc.SetEquals(t.p))
 			         .Select(t => t.party)) {
@@ -483,7 +484,7 @@ public static partial class LWindow {
 		currentPartyInfo = null;
 	}
 
-	public static PartyInfo? currentPartyInfo;
+	
 
 	public static bool DrawPartyInfo(int index1, string prefix) {
 		if (ImGui.Button($"删除##{prefix}{index1}删除")) {
@@ -513,39 +514,7 @@ public static partial class LWindow {
 		return false;
 	}
 
-	public class PartyInfo(PartyInfo.PartyPlayer[] players, uint Territory) {
-		public readonly PartyPlayer[] players = players;
-		public uint Territory = Territory;
-
-		public class PartyPlayer {
-			public JobEnum job;
-			public int order;
-			public JobCat jobcat;
-			public string name;
-			public string world;
-
-			// ReSharper disable once UnusedMember.Global
-			public PartyPlayer() { }
-
-			public PartyPlayer(Job job, string name, string world, int order) {
-				this.job = job.JobType;
-				this.order = order;
-				jobcat = job.SubRole switch {
-					Job.RoleType.PureHealer => JobCat.H1,
-					Job.RoleType.FlexHealer => JobCat.H1,
-					Job.RoleType.BarrierHealer => JobCat.H2,
-					Job.RoleType.StrengthMelee => JobCat.D1,
-					Job.RoleType.DexterityMelee => JobCat.D2,
-					Job.RoleType.PhysicalRanged => JobCat.D3,
-					Job.RoleType.MagicalRanged => JobCat.D4,
-					_ => JobCat.MT
-				};
-				this.name = name;
-				this.world = world;
-			}
-		}
-	}
-
+	
 
 	private static readonly List<string> LoadingActPluginList = [];
 

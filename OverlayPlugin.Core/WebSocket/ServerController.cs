@@ -38,7 +38,6 @@ public class ServerController(TinyIoCContainer container) {
 		Start();
 	}
 
-	public bool IsSSLPossible() => File.Exists(GetCertPath());
 
 	private static bool IsAssemblyLoadContextException(Exception ex) {
 		if (ex == null) return false;
@@ -61,10 +60,6 @@ public class ServerController(TinyIoCContainer container) {
 		Failed = false;
 
 		try {
-			// TODO: add SSL support
-			// var sslPath = GetCertPath();
-			// var secure = _cfg.WSServerSSL && File.Exists(sslPath);
-
 			var address = Config.WSServerIP == "*" ? IPAddress.Any : IPAddress.Parse(Config.WSServerIP);
 
 			Server = new OverlayServer(address, Config.WSServerPort, Container);
@@ -102,15 +97,6 @@ public class ServerController(TinyIoCContainer container) {
 
 		url += ":" + Config.WSServerPort + "/ws";
 		return url;
-	}
-
-	public string GetCertPath() {
-		var path = Path.Combine(
-			ActGlobals.oFormActMain.AppDataFolder.FullName,
-			"Config",
-			"OverlayPluginSSL.p12");
-
-		return path;
 	}
 
 	public class StateChangedArgs(bool running, bool failed) : EventArgs {

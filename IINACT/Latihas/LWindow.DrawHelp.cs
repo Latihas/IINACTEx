@@ -82,6 +82,8 @@ public static partial class LWindow {
 			ImGui.TextWrapped("大幅缩短启动时间。除了刚开卫月时和其他插件一起加载时间较长，正常游戏内重启插件速度极快。");
 			ImGui.TextWrapped("如果启用了ArrManager，需要重新载入插件才能生效。在进入ARR回放时，会尝试解析ARR包内容，输出到警告级别日志。但是目前还是难以转换为ACT日志。希望有能力的帮助一下。");
 			ImGui.TextWrapped("新增了小队与ACT日志重放功能，但是仍在开发中。");
+			ImGui.TextWrapped("[已知问题]");
+			ImGui.TextWrapped("第一次加载/更新后第一次加载时可能ws功能会失效(伤害统计等)，重新加载插件即可解决。");
 		}
 		if (ImGui.CollapsingHeader("项目介绍##CH项目介绍")) {
 			ImGui.Text("修改IINACT的初衷旨在尽可能满足日常对ACT的基本需求，替代ACT，假装自己是西瓜玩。");
