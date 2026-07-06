@@ -209,11 +209,6 @@ public static partial class LWindow {
 			Instance.Configuration.TtsOnInit = TtsOnInit;
 			Instance.Configuration.Save();
 		}
-		var AsyncOnInit = Instance.Configuration.AsyncOnInit;
-		if (ImGui.Checkbox("启动时使用异步加载(仍在测试，开启后可能会有bug，但是能显著加快加载速度，请留意启动时相关模块有无报错)", ref AsyncOnInit)) {
-			Instance.Configuration.AsyncOnInit = AsyncOnInit;
-			Instance.Configuration.Save();
-		}
 		ImGui.Separator();
 		var endEncounterOutOfCombatDelayMs = Instance.Configuration.endEncounterOutOfCombatDelayMs;
 		if (ImGui.InputInt("脱战(ms)后分割战斗", ref endEncounterOutOfCombatDelayMs)) {

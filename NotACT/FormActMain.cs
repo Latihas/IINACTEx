@@ -39,7 +39,7 @@ public partial class FormActMain : Form, ISynchronizeInvoke {
 	internal volatile bool refreshTree;
 	private FileStream? stream, streamAct, streamTrn;
 
-	public FormActMain(IDalamudPlugin plugin, IPluginLog pluginLog, IFramework framework) {
+	public FormActMain(IDalamudPlugin plugin, IPluginLog pluginLog, IFramework framework, string localPlayerName) {
 		PluginLog = pluginLog;
 		DalamudPlugin = plugin;
 		PluginFramework = framework;
@@ -50,6 +50,7 @@ public partial class FormActMain : Form, ISynchronizeInvoke {
 		NotActMainFormatter.SetupEnvironment();
 		LastKnownTime = DateTime.Now;
 		PluginFramework.Update += ThreadAfterCombatAction;
+		LocalPlayerName = localPlayerName;
 	}
 
 	public IPluginLog PluginLog { get; }
@@ -195,19 +196,19 @@ public partial class FormActMain : Form, ISynchronizeInvoke {
 	public void ChangeZone(string ZoneName) {
 		lastZoneRecord?.EndTime = LastKnownTime;
 		CurrentZone = ZoneName;
-		var lastLastRecord = lastZoneRecord;
-		lastZoneRecord = new HistoryRecord(0, LastKnownTime, LastKnownTime.AddDays(1.0), CurrentZone,
-			ActGlobals.charName);
-		if (lastLastRecord == null) {
+		if (lastZoneRecord == null) {
 			//first run after parser init
 			PluginFramework.Update += LogReader;
 			PluginFramework.Update += LogWriter;
 			PluginFramework.Update += LogWriterAct;
 			PluginFramework.Update += LogWriterTrn;
 		}
-		if (ActiveZone != null) return;
-		ActiveZone = new ZoneData(DateTime.Now, CurrentZone, true, false, false);
-		// ZoneList.Add(ActiveZone);
+		lastZoneRecord = new HistoryRecord(0, LastKnownTime, LastKnownTime.AddDays(1), CurrentZone,
+			ActGlobals.charName);
+		// if (ActiveZone != null) return;
+		// ZoneList.Add(
+		ActiveZone ??= new ZoneData(LastKnownTime, CurrentZone, true, false, false);
+		// );
 	}
 
 	public void ActCommands(string commandText) {
@@ -259,8 +260,7 @@ public partial class FormActMain : Form, ISynchronizeInvoke {
 				}
 			}
 			// Set the active encounter
-			ActiveZone.ActiveEncounter = new EncounterData(ActGlobals.charName, CurrentZone, ActiveZone);
-			ActiveZone.Items.Add(ActiveZone.ActiveEncounter);
+			ActiveZone.Items.Add(ActiveZone.ActiveEncounter = new EncounterData(ActGlobals.charName, CurrentZone, ActiveZone));
 			// lastSetEncounter = LastKnownTime;
 		}
 		// Check if the encounter is selective

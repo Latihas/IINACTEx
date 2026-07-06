@@ -291,18 +291,14 @@ public class EncounterData {
 	public List<CombatantData> GetAllies(bool allowLimited = false) {
 		if (alliesCached || allowLimited && DateTime.Now.Second == alliesLastCall.Second ||
 		    Active && Title == Trans["mergedEncounterTerm-all"]) {
-			oFormActMain.PluginLog.Warning($"cachedAllies: {cachedAllies.Count}");
 			return cachedAllies;
 		}
 		if (GetIgnoreEnemies()) {
 			List<CombatantData> x = [..Items.Values];
-			oFormActMain.PluginLog.Warning($"GetIgnoreEnemies: {x.Count}");
 			return x;
 		}
 		var combatant = GetCombatant(CharName);
-		oFormActMain.PluginLog.Warning($"GetCombatant(CharName) {CharName}");
 		if (combatant == null) {
-			oFormActMain.PluginLog.Warning("combatant == null");
 			return [];
 		}
 		var sortedAllies = new SortedList<string, AllyObject> {
@@ -331,7 +327,6 @@ public class EncounterData {
 			.Select(ally => ally.Value.cd).ToList();
 		alliesCached = true;
 		alliesLastCall = DateTime.Now;
-		oFormActMain.PluginLog.Warning($"cachedAlliesL: {cachedAllies.Count}");
 		return cachedAllies;
 	}
 

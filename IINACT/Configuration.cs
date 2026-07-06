@@ -39,7 +39,6 @@ public class Configuration : IPluginConfiguration {
 	public bool ShowOverlayOnInit { get; set; } = true;
 	public bool TtsOnInit { get; set; } = true;
 	public bool LoadSilverDasherOnInit { get; set; }
-	public bool AsyncOnInit { get; set; } = true;
 	public float TtsInterval { get; set; } = 1.5f;
 	public float ACTUpdateInterval { get; set; } = 0.5f;
 	public bool UseActPic { get; set; } = true;

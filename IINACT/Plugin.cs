@@ -59,46 +59,41 @@ public sealed class Plugin : IDalamudPlugin {
 	public static Plugin Instance;
 
 	internal static DateTime lastCnUpdateCheck = DateTime.Now.AddMinutes(-8);
-	public readonly ActionWindow ActionWindow;
-	public readonly ACTLogView ACTLogView;
-	public readonly ActxtEditor ActxtEditor;
+	public ActionWindow ActionWindow;
+	public ACTLogView ACTLogView;
+	public ActxtEditor ActxtEditor;
 	// ReSharper disable once MemberCanBePrivate.Global
-	public readonly TinyIoCContainer Container;
-	internal readonly FetchDependencies.FetchDependencies fetchDependencies;
-	public readonly FolderWindow FolderWindow;
+	public TinyIoCContainer Container;
+	internal FetchDependencies.FetchDependencies fetchDependencies;
+	public FolderWindow FolderWindow;
 	internal readonly HttpClient HttpClient = new() {
 		Timeout = TimeSpan.FromSeconds(30)
 	};
 	// public readonly ExportWindow ExportWindow;
-	public readonly ImportWindow ImportWindow;
-	public readonly bool opcodesjsoncReplaced;
-	public readonly (string, ushort, ushort)[] opcodestxtDiff = [];
-	public readonly bool opcodestxtReplaced;
-	public readonly OverlayWindow OverlayWindow;
-	public readonly PostNamazu.PostNamazu PostNamazuPlugin;
-	public readonly RepoWindow RepoWindow;
+	public ImportWindow ImportWindow;
+	public bool opcodesjsoncReplaced;
+	public (string, ushort, ushort)[] opcodestxtDiff = [];
+	public bool opcodestxtReplaced;
+	public OverlayWindow OverlayWindow;
+	public PostNamazu.PostNamazu PostNamazuPlugin;
+	public RepoWindow RepoWindow;
 	private readonly DateTime startLogTick = DateTime.Now;
-	public readonly TriggernometryLogView TriggernometryLogView;
-	public readonly ProxyPlugin TriggernometryProxyPlugin;
+	public TriggernometryLogView TriggernometryLogView;
+	public ProxyPlugin TriggernometryProxyPlugin;
 	[SuppressMessage("ReSharper", "NotAccessedField.Global")]
-	public readonly TriggerWindow TriggerWindow;
+	public TriggerWindow TriggerWindow;
 	internal readonly Version Version;
 	private readonly WindowSystem WindowSystem = new("IINACT");
 	public DalamudStartInfo DalamudStartInfo;
 	private readonly CancellationTokenSource PluginCts = new();
 	public static Dictionary<uint, string> MapInfo = new();
 
-	public Plugin() {
-		Instance = this;
+	private void InitAll() {
 		LogTick("Start Initializing");
-		Version = Version.Parse(Assembly.GetExecutingAssembly().GetCustomAttribute<AssemblyInformationalVersionAttribute>()!.InformationalVersion.Split('+')[0]);
 		Init();
-		oFormActMain = new FormActMain(this, Log, Framework);
+		oFormActMain = new FormActMain(this, Log, Framework, ObjectTable.LocalPlayer!.Name.ToString());
 		Configuration = PluginInterface.GetPluginConfig() as Configuration ?? new Configuration();
 		try {
-			Framework.RunOnTick(() => {
-				if (ObjectTable.LocalPlayer != null) oFormActMain.LocalPlayerName = ObjectTable.LocalPlayer.Name.ToString();
-			});
 			Directory.CreateDirectory(scriptsDir);
 			var configupdate = Configuration.FFXIV_ACT_Plugin_CN_Update || Configuration.Version != LatestConfigVersion || Configuration.InitFatalError;
 			if (configupdate) {
@@ -175,11 +170,10 @@ public sealed class Plugin : IDalamudPlugin {
 			LogTick("FfxivActPlugin Inited");
 			OverlayPlugin.InitPlugin(LogTick, extraOpcodes);
 			LogTick("OverlayPlugin Initialized");
-			var taskTrn = Task.Run(() => {
-				TriggernometryProxyPlugin.InitPlugin(this, PluginInterface, Log, ClientState, Framework, GameInteropProvider, ObjectTable, GameGui, SigScanner,
-					LogTick);
-			});
-			if (!Configuration.AsyncOnInit) taskTrn.Wait();
+
+			TriggernometryProxyPlugin.InitPlugin(this, PluginInterface, Log, ClientState, Framework, GameInteropProvider, ObjectTable, GameGui, SigScanner,
+				LogTick);
+
 			if (opcodesjsoncReplaced) Log.Warning("opcodesjsonc Replaced");
 			var registry = Container.Resolve<Registry>();
 			MainWindow.OverlayPresets = registry.OverlayPresets;
@@ -207,19 +201,14 @@ public sealed class Plugin : IDalamudPlugin {
 			ClientState.LeavePvP += LeavePvP;
 			Framework.Update += CheckCnUpdate;
 			ClientState.Logout += OnLogOut;
-			ClientState.Login += OnLogIn;
 			ClientState.TerritoryChanged += TerritoryChanged;
 			TerritoryChanged(0);
 			ZoneDownHookManager = new ZoneDownHookManager();
 			if (Configuration.UseArrManager) ArrManager = new ArrManager();
-			foreach (var rt in Directory.GetFiles(PluginActScriptDirectory, "*.dll", SearchOption.TopDirectoryOnly).Select(Path.GetFileName).Cast<string>())
+			foreach (var rt in Directory.GetFiles(PluginActScriptDirectory, "*.dll", SearchOption.TopDirectoryOnly).Select(Path.GetFileName))
 				if (Configuration.ActScriptsEnabled.Contains(rt))
 					LoadIActPluginV1(rt, preserveEnableState: true);
 			PostNamazuPlugin.InitPlugin(PluginInterface, Log, SigScanner, Framework, new PluginIntegrationManager());
-			LogTick("Waiting Triggernometry");
-
-			var token = PluginCts.Token;
-			if (Configuration.AsyncOnInit) taskTrn.Wait();
 			LogTick("Triggernometry & PostNamazu & Callback Initialized");
 			var sourceDir = Path.Combine(Instance.PluginAssemblyDirectory, "scripts");
 			var targetDir = Instance.PluginActScriptDirectory;
@@ -228,21 +217,19 @@ public sealed class Plugin : IDalamudPlugin {
 			foreach (var rt in Directory.GetFiles(PluginActScriptDirectory, "*.cs", SearchOption.TopDirectoryOnly).Select(Path.GetFileName).Cast<string>())
 				if (Configuration.ActScriptsEnabled.Contains(rt))
 					LoadPScript(rt, true);
-			var taskPP = Task.Run(() => {
-				OverlayWindow.Init(WebSocketServer);
-				LogTick("Asyc Post Start");
-				BridgeNamazu.InitializeModules();
-				LogTick("InitializeModules");
-				BridgeNamazu.RegisterAnnotatedMethods();
-				FormActMain.PluginInitialized = true;
-				LogTick("Asyc Post Process Done");
-			}, token);
-			if (!Configuration.AsyncOnInit) taskPP.Wait();
+
+			OverlayWindow.Init(WebSocketServer);
+			LogTick("Asyc Post Start");
+			BridgeNamazu.InitializeModules();
+			LogTick("InitializeModules");
+			BridgeNamazu.RegisterAnnotatedMethods();
+			FormActMain.PluginInitialized = true;
+			LogTick("Asyc Post Process Done");
 			if (Configuration.LoadSilverDasherOnInit) EnableSilverDasher();
 			if (Directory.Exists(Path.Combine(PluginConfigDirectory, "cactbot"))) RefreshBw();
 			MainWindow.UpdateWindowTitle();
 			MapInfo = DataManager.GetExcelSheet<TerritoryType>().Where(i => !i.PlaceNameRegion.Value.Name.IsEmpty)
-				.ToDictionary(i => i.RowId, i => $"{i.PlaceNameRegion.Value.Name}|{i.PlaceName.Value.Name}");
+				.ToDictionary(i => i.RowId, i => i.PlaceName.Value.Name.ToString());
 			if (configupdate) RealPlugin.Instance.cfg.CompileFailedScripts.Clear();
 			Configuration.Version = LatestConfigVersion;
 			Configuration.InitFatalError = false;
@@ -251,6 +238,7 @@ public sealed class Plugin : IDalamudPlugin {
 			if (Configuration.ShowOverlayOnInit) OverlayWindow.IsOpen = true;
 			if (Configuration.TtsOnInit) oFormActMain.TTS("插件加载完成");
 			Log.Info($"[StartTick] IINACTEx Inited. Total {(DateTime.Now - startLogTick).TotalSeconds}s");
+			Inited = true;
 		} catch (Exception e) {
 			var s = $"IINACTEx Inited Failed. Please Restart Game to Fix. Error: {e}";
 			Log.Fatal(s);
@@ -261,10 +249,26 @@ public sealed class Plugin : IDalamudPlugin {
 				Content = s,
 				Title = "插件启动出现严重错误，请重启游戏以修复。"
 			});
-			throw new Exception(s);
 		}
 	}
+	
+	public Plugin() {
+		Instance = this;
+		Version = Version.Parse(Assembly.GetExecutingAssembly().GetCustomAttribute<AssemblyInformationalVersionAttribute>()!.InformationalVersion.Split('+')[0]);
+		var token = PluginCts.Token;
+		if (ClientState.IsLoggedIn)
+			Task.Run(InitAll, token);
+		else
+			ClientState.Login += () => {
+				if (Inited) {
+					oFormActMain.LocalPlayerName = ObjectTable.LocalPlayer!.Name.ToString();
+					return;
+				}
+				Task.Run(InitAll, token);
+			};
+	}
 
+	private bool Inited;
 
 	[PluginService] private IDalamudPluginInterface pluginInterface { get; set; }
 	public static IDalamudPluginInterface PluginInterface => Instance.pluginInterface;
@@ -303,7 +307,7 @@ public sealed class Plugin : IDalamudPlugin {
 	internal static FileDialogManager FileDialogManager { get; private set; }
 	internal ZoneDownHookManager ZoneDownHookManager { get; set; }
 	internal ArrManager? ArrManager { get; set; }
-	private IpcProviders IpcProviders { get; }
+	private IpcProviders IpcProviders { get; set; }
 	public FfxivActPluginWrapper FfxivActPluginWrapper { get; set; }
 	public PluginMain OverlayPlugin { get; set; }
 	private ServerController? WebSocketServer { get; set; }
@@ -321,6 +325,7 @@ public sealed class Plugin : IDalamudPlugin {
 	public void Dispose() {
 		PluginCts.Cancel();
 		PluginCts.Dispose();
+		if (!Inited) return;
 		ActxtEditor.ReplayCts?.Cancel();
 		ActxtEditor.ReplayCts?.Dispose();
 		Configuration.Save();
@@ -332,7 +337,6 @@ public sealed class Plugin : IDalamudPlugin {
 		ClientState.LeavePvP -= LeavePvP;
 		Framework.Update -= CheckCnUpdate;
 		ClientState.Logout -= OnLogOut;
-		ClientState.Login -= OnLogIn;
 		ClientState.TerritoryChanged -= TerritoryChanged;
 		IpcProviders.Dispose();
 		ZoneDownHookManager.Dispose();
@@ -371,10 +375,8 @@ public sealed class Plugin : IDalamudPlugin {
 		lastLogTick = DateTime.Now;
 	}
 
-	private static void OnLogIn() => oFormActMain.LocalPlayerName = ObjectTable.LocalPlayer!.Name.ToString();
 
 	private static void OnLogOut(int type, int code) {
-		oFormActMain.LocalPlayerName = null;
 		if (DisableSilverDasher())
 			Task.Run(async () => {
 				await Task.Delay(5000);
