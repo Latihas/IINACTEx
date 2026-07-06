@@ -4,6 +4,7 @@ using System.Collections.Immutable;
 using System.Diagnostics.CodeAnalysis;
 using System.Drawing;
 using System.Linq;
+using static Advanced_Combat_Tracker.ActGlobals;
 
 // ReSharper disable once CheckNamespace
 namespace Advanced_Combat_Tracker;
@@ -84,7 +85,7 @@ public class EncounterData {
 	public string CharName { get; set; }
 	public string ZoneName {
 		get {
-			if (zoneName == ActGlobals.Trans["mergedEncounterTerm-all"] && Parent != null) return Parent.ZoneName;
+			if (zoneName == Trans["mergedEncounterTerm-all"] && Parent != null) return Parent.ZoneName;
 			return zoneName;
 		}
 		set => zoneName = value;
@@ -109,11 +110,11 @@ public class EncounterData {
 		set;
 	} = [];
 	public string Title {
-		get => zoneName == ActGlobals.Trans["mergedEncounterTerm-all"]
-			? ActGlobals.Trans["mergedEncounterTerm-all"]
+		get => zoneName == Trans["mergedEncounterTerm-all"]
+			? Trans["mergedEncounterTerm-all"]
 			: field;
 		set;
-	} = ActGlobals.Trans["encounterData-defaultEncounterName"];
+	} = Trans["encounterData-defaultEncounterName"];
 	public DateTime StartTime {
 		get {
 			var dateTime = DateTime.MaxValue;
@@ -126,7 +127,7 @@ public class EncounterData {
 	}
 	public DateTime EndTime {
 		get {
-			if (!ActGlobals.longDuration) return ShortEndTime;
+			if (!longDuration) return ShortEndTime;
 			var dateTime = DateTime.MinValue;
 			for (var i = 0; i < Items.Count; i++) {
 				var combatantData = Items.Values[i];
@@ -224,8 +225,8 @@ public class EncounterData {
 		// Check if we should skip parsing based on selective lists and ignoreEnemies setting
 		var shouldSkipParsing =
 			!sParsing ||
-			ActGlobals.oFormActMain.SelectiveListGetSelected(attackerName) ||
-			ActGlobals.oFormActMain.SelectiveListGetSelected(victimName) && !ignoreEnemies;
+			oFormActMain.SelectiveListGetSelected(attackerName) ||
+			oFormActMain.SelectiveListGetSelected(victimName) && !ignoreEnemies;
 		// Add the action to the appropriate combatant's collection
 		if (shouldSkipParsing) {
 			if (!Items.TryGetValue(attackerName, out var combatant)) {
@@ -263,12 +264,12 @@ public class EncounterData {
 	}
 
 	public void EndCombat(bool Finalize) {
-		lock (ActGlobals.ActionDataLock) {
+		lock (ActionDataLock) {
 			Active = false;
 			EndTimes.Add(StartTimes[EndTimes.Count] < EndTime ? EndTime : StartTimes[EndTimes.Count]);
 			if (!Finalize) return;
 			Trim();
-			Title = GetStrongestEnemy(ActGlobals.charName)!;
+			Title = GetStrongestEnemy(charName)!;
 		}
 	}
 
@@ -289,12 +290,21 @@ public class EncounterData {
 
 	public List<CombatantData> GetAllies(bool allowLimited = false) {
 		if (alliesCached || allowLimited && DateTime.Now.Second == alliesLastCall.Second ||
-		    Active && Title == ActGlobals.Trans["mergedEncounterTerm-all"]) {
+		    Active && Title == Trans["mergedEncounterTerm-all"]) {
+			oFormActMain.PluginLog.Warning($"cachedAllies: {cachedAllies.Count}");
 			return cachedAllies;
 		}
-		if (GetIgnoreEnemies()) return [..Items.Values];
+		if (GetIgnoreEnemies()) {
+			List<CombatantData> x = [..Items.Values];
+			oFormActMain.PluginLog.Warning($"GetIgnoreEnemies: {x.Count}");
+			return x;
+		}
 		var combatant = GetCombatant(CharName);
-		if (combatant == null) return [];
+		oFormActMain.PluginLog.Warning($"GetCombatant(CharName) {CharName}");
+		if (combatant == null) {
+			oFormActMain.PluginLog.Warning("combatant == null");
+			return [];
+		}
 		var sortedAllies = new SortedList<string, AllyObject> {
 			[combatant.Name.ToUpper()] = new(combatant)
 		};
@@ -321,6 +331,7 @@ public class EncounterData {
 			.Select(ally => ally.Value.cd).ToList();
 		alliesCached = true;
 		alliesLastCall = DateTime.Now;
+		oFormActMain.PluginLog.Warning($"cachedAlliesL: {cachedAllies.Count}");
 		return cachedAllies;
 	}
 
@@ -344,9 +355,9 @@ public class EncounterData {
 	}
 
 	public string? GetStrongestEnemy(string combatantName) {
-		if (sParsing && ignoreEnemies) return ActGlobals.Trans["encounterData-defaultEncounterName"];
+		if (sParsing && ignoreEnemies) return Trans["encounterData-defaultEncounterName"];
 		var allies = GetAllies();
-		if (allies.Count == 0) return ActGlobals.Trans["encounterData-defaultEncounterName"];
+		if (allies.Count == 0) return Trans["encounterData-defaultEncounterName"];
 		var enemies = Items.Values
 			.Where(c => !allies.Contains(c))
 			.Select(c => new {
@@ -361,15 +372,15 @@ public class EncounterData {
 	public string GetMaxHit(bool ShowType = true, bool UseSuffix = true) {
 		var allies = ignoreEnemies ? [..Items.Values] : GetAllies();
 		var maxSwing = allies
-			.SelectMany(combatant => combatant.GetAttackType(ActGlobals.Trans["attackTypeTerm-all"],
+			.SelectMany(combatant => combatant.GetAttackType(Trans["attackTypeTerm-all"],
 					CombatantData.DamageTypeDataOutgoingDamage)
 				?.Items ?? [])
 			.Where(swing => swing.Damage > 0).MaxBy(swing => swing.Damage);
 		if (maxSwing == null) return string.Empty;
-		var arg = allies.FirstOrDefault(combatant => combatant.GetAttackType(ActGlobals.Trans["attackTypeTerm-all"],
+		var arg = allies.FirstOrDefault(combatant => combatant.GetAttackType(Trans["attackTypeTerm-all"],
 			CombatantData.DamageTypeDataOutgoingDamage)?.Items.Contains(maxSwing) ?? false)?.Name;
 		if (arg == null) return string.Empty;
-		var damageString = ActGlobals.oFormActMain.CreateDamageString(maxSwing.Damage, UseSuffix, !ShowType);
+		var damageString = oFormActMain.CreateDamageString(maxSwing.Damage, UseSuffix, !ShowType);
 		return ShowType
 			? $"{arg}-{maxSwing.AttackType}-{damageString}"
 			: $"{arg}-{damageString}";
@@ -378,15 +389,15 @@ public class EncounterData {
 	public string GetMaxHeal(bool ShowType = true, bool CountWards = true, bool UseSuffix = true) {
 		var allies = !ignoreEnemies ? GetAllies() : [..Items.Values];
 		var maxHealSwing = allies
-			.Where(a => a.GetAttackType(ActGlobals.Trans["attackTypeTerm-all"], CombatantData.DamageTypeDataOutgoingHealing) != null)
-			.SelectMany(a => a.GetAttackType(ActGlobals.Trans["attackTypeTerm-all"], CombatantData.DamageTypeDataOutgoingHealing)?.Items!)
-			.Where(s => CountWards || s.DamageType != ActGlobals.Trans["specialAttackTerm-wardAbsorb"]).MaxBy(s => s.Damage);
+			.Where(a => a.GetAttackType(Trans["attackTypeTerm-all"], CombatantData.DamageTypeDataOutgoingHealing) != null)
+			.SelectMany(a => a.GetAttackType(Trans["attackTypeTerm-all"], CombatantData.DamageTypeDataOutgoingHealing)?.Items!)
+			.Where(s => CountWards || s.DamageType != Trans["specialAttackTerm-wardAbsorb"]).MaxBy(s => s.Damage);
 		if (maxHealSwing == null) return string.Empty;
 		var combatantName =
-			allies.FirstOrDefault(a => a.GetAttackType(ActGlobals.Trans["attackTypeTerm-all"],
+			allies.FirstOrDefault(a => a.GetAttackType(Trans["attackTypeTerm-all"],
 				                           CombatantData.DamageTypeDataOutgoingHealing)?.Items.Contains(maxHealSwing) ??
 			                           false)?.Name ?? string.Empty;
-		var damageString = ActGlobals.oFormActMain.CreateDamageString(maxHealSwing.Damage, UseSuffix, ShowType);
+		var damageString = oFormActMain.CreateDamageString(maxHealSwing.Damage, UseSuffix, ShowType);
 		return ShowType
 			? $"{combatantName}-{maxHealSwing.AttackType}-{damageString}"
 			: $"{combatantName}-{damageString}";

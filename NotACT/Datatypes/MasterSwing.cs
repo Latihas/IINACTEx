@@ -36,8 +36,8 @@ public class MasterSwing(
 	public int TimeSorter => timeSorter;
 	public int SwingType => swingType;
 	public Dnum Damage => damage;
-	public string Attacker => oFormActMain.LocalPlayerName != null && attacker == oFormActMain.LocalPlayerName ? charName : attacker;
-	public string Victim => oFormActMain.LocalPlayerName != null && victim == oFormActMain.LocalPlayerName ? charName : victim;
+	public string Attacker => attacker;
+	public string Victim => victim;
 	public string AttackType => attackType;
 	public string DamageType => damageType;
 	public bool Critical {

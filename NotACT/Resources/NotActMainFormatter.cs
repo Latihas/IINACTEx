@@ -1726,19 +1726,19 @@ public static class NotActMainFormatter {
 				case "damage":
 					return data.Damage.ToString();
 				case "damage-k":
-					return (data.Damage / 1000.0).ToString("0.00");
+					return (data.Damage / 1000f).ToString("0.00");
 				case "damage-m":
-					return (data.Damage / 1000000.0).ToString("0.00");
+					return (data.Damage / 1000000f).ToString("0.00");
 				case "damage-b":
-					return (data.Damage / 1000000000.0).ToString("0.00");
+					return (data.Damage / 1000000000f).ToString("0.00");
 				case "damage-*":
 					return oFormActMain.CreateDamageString(data.Damage, true, true);
 				case "DAMAGE-k":
-					return (data.Damage / 1000.0).ToString("0");
+					return (data.Damage / 1000f).ToString("0");
 				case "DAMAGE-m":
-					return (data.Damage / 1000000.0).ToString("0");
+					return (data.Damage / 1000000f).ToString("0");
 				case "DAMAGE-b":
-					return (data.Damage / 1000000000.0).ToString("0");
+					return (data.Damage / 1000000000f).ToString("0");
 				case "DAMAGE-*":
 					return oFormActMain.CreateDamageString(data.Damage, true, false);
 				case "healed":

@@ -14,15 +14,11 @@ internal class OverlaySession(WsServer server, TinyIoCContainer container) : WsS
 	public override void OnWsConnected(HttpRequest request) {
 		Logger.Log(LogLevel.Debug, $"Overlay WebSocket session with Id {Id} connected!");
 
-		switch (request.Url) {
-			case "/ws":
-				Handler = new SocketHandler(Logger, Dispatcher, this);
-				break;
-			case "/MiniParse":
-			case "/BeforeLogLineRead":
-				Handler = new LegacySocketHandler(Logger, Dispatcher, Repository, this);
-				break;
-		}
+		Handler = request.Url switch {
+			"/ws" => new SocketHandler(Logger, Dispatcher, this),
+			"/MiniParse" or "/BeforeLogLineRead" => new LegacySocketHandler(Logger, Dispatcher, Repository, this),
+			_ => Handler
+		};
 	}
 
 	public override void OnWsDisconnected() {

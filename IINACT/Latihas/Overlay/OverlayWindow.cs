@@ -2,12 +2,12 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
-using Advanced_Combat_Tracker;
 using Dalamud.Bindings.ImGui;
 using Dalamud.Interface.Utility.Raii;
 using Dalamud.Interface.Windowing;
 using Newtonsoft.Json;
 using RainbowMage.OverlayPlugin.WebSocket;
+using static Advanced_Combat_Tracker.ActGlobals;
 
 namespace IINACT.Latihas.Overlay;
 
@@ -173,7 +173,7 @@ public partial class OverlayWindow() : Window("IINACTEx Overlay###IINACTEx Overl
 			drawList.AddRectFilled(barPos, barPos + barSize, ImGui.GetColorU32(ImGuiCol.FrameBg));
 			drawList.AddRectFilled(barPos, barPos + barSize with {
 				X = barWidth * dpsRatio
-			}, combatant.Name == ActGlobals.charName ? ImGui.GetColorU32(new Vector4(1, 1, 1, .5f)) : GetProgressColor(dpsRatio));
+			}, combatant.Name == charName ? ImGui.GetColorU32(new Vector4(1, 1, 1, .5f)) : GetProgressColor(dpsRatio));
 			ImGui.SetCursorScreenPos(barPos + new Vector2(5, (barSize.Y - ImGui.GetTextLineHeight()) / 2));
 			ImGui.Text($"{Math.Round(dpsRatio * 100, 1)}%({Math.Round(100f * Catval(combatant) / totalDps, 1)}%)");
 		}

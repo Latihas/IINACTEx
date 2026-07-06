@@ -96,11 +96,9 @@ public class CombatantData : IComparable, IEquatable<CombatantData>, IComparable
 		get {
 			if (deathsCached) return field;
 			if (!AllInc.TryGetValue(ActGlobals.Trans["specialAttackTerm-killing"], out var value)) {
-				if (AllInc.TryGetValue(ActGlobals.Trans["attackTypeTerm-all"], out value)) {
-					foreach (var swing in value.Items)
-						if (swing.Damage == Dnum.Death)
-							field++;
-				} else
+				if (AllInc.TryGetValue(ActGlobals.Trans["attackTypeTerm-all"], out value))
+					field += value.Items.Count(swing => swing.Damage == Dnum.Death);
+				else
 					field = 0;
 			} else
 				field = value.Items.Count;
