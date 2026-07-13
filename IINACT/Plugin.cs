@@ -90,24 +90,7 @@ public sealed class Plugin : IDalamudPlugin {
 
 	private void InitAll() {
 		LogTick("Start Initializing");
-		Init();
-		oFormActMain = new FormActMain(this, Log, Framework, ObjectTable.LocalPlayer!.Name.ToString());
-		Configuration = PluginInterface.GetPluginConfig() as Configuration ?? new Configuration();
 		try {
-			Directory.CreateDirectory(scriptsDir);
-			var configupdate = Configuration.FFXIV_ACT_Plugin_CN_Update || Configuration.Version != LatestConfigVersion || Configuration.InitFatalError;
-			if (configupdate) {
-				Directory.GetFiles(PluginAssemblyDirectory, "FFXIV_ACT_Plugin.*")
-					.Concat(Directory.GetFiles(scriptsDir))
-					.ToList().ForEach(i => {
-						Log.Warning($"Deleting {i}");
-						File.Delete(i);
-					});
-			}
-			fetchDependencies = new FetchDependencies.FetchDependencies(Version, PluginAssemblyDirectory, DataManager.Language.ToString() == "ChineseSimplified", 5, HttpClient, Log);
-			fetchDependencies.GetFfxivPlugin(Configuration.FFXIV_ACT_Plugin_CN_Update);
-			Configuration.FFXIV_ACT_Plugin_CN_Update = false;
-			LogTick("Dependencies Fetched");
 			if (!Directory.Exists(PluginActScriptDirectory)) Directory.CreateDirectory(PluginActScriptDirectory);
 			var region = DataManager.Language.ToString() == "ChineseSimplified" ? GameRegion.Chinese : GameRegion.Global;
 			if (opcodestxtCanReplace) {
@@ -127,10 +110,7 @@ public sealed class Plugin : IDalamudPlugin {
 				}
 			} else
 				OpcodeManager.Instance.SetRegion(region);
-			FileDialogManager = new FileDialogManager();
-			ActLocalization.Init();
-			ActLocalization.AddPrebuild();
-			oFormActMain.LogFilePath = Configuration.LogFilePath;
+			
 			TextToSpeechProvider = new TextToSpeechProvider();
 			var info = PluginInterface.GetType().Assembly.GetType("Dalamud.Service`1", true)!.MakeGenericType(PluginInterface.GetType().Assembly.GetType("Dalamud.Dalamud", true)!).GetMethod("Get")!.Invoke(null, BindingFlags.Default, null, [], null)!;
 			DalamudStartInfo = (DalamudStartInfo)info.GetType().GetProperty("StartInfo", BindingFlags.NonPublic | BindingFlags.Instance)!.GetValue(info)!;
@@ -237,8 +217,9 @@ public sealed class Plugin : IDalamudPlugin {
 			if (Configuration.ShowWindowOnInit) MainWindow.IsOpen = true;
 			if (Configuration.ShowOverlayOnInit) OverlayWindow.IsOpen = true;
 			if (Configuration.TtsOnInit) oFormActMain.TTS("插件加载完成");
-			Log.Info($"[StartTick] IINACTEx Inited. Total {(DateTime.Now - startLogTick).TotalSeconds}s");
+			oFormActMain.LocalPlayerName = ObjectTable.LocalPlayer!.Name.ToString();
 			Inited = true;
+			Log.Info($"[StartTick] IINACTEx Inited. Total {(DateTime.Now - startLogTick).TotalSeconds}s");
 		} catch (Exception e) {
 			var s = $"IINACTEx Inited Failed. Please Restart Game to Fix. Error: {e}";
 			Log.Fatal(s);
@@ -251,10 +232,33 @@ public sealed class Plugin : IDalamudPlugin {
 			});
 		}
 	}
-	
+
+	private bool configupdate => Configuration.FFXIV_ACT_Plugin_CN_Update || Configuration.Version != LatestConfigVersion || Configuration.InitFatalError;
+
 	public Plugin() {
 		Instance = this;
 		Version = Version.Parse(Assembly.GetExecutingAssembly().GetCustomAttribute<AssemblyInformationalVersionAttribute>()!.InformationalVersion.Split('+')[0]);
+		Init();
+		oFormActMain = new FormActMain(this, Log, Framework);
+		ActLocalization.Init();
+		ActLocalization.AddPrebuild();
+		Configuration = PluginInterface.GetPluginConfig() as Configuration ?? new Configuration();
+		Directory.CreateDirectory(scriptsDir);
+		if (configupdate) {
+			Directory.GetFiles(PluginAssemblyDirectory, "FFXIV_ACT_Plugin.*")
+				.Concat(Directory.GetFiles(scriptsDir))
+				.ToList().ForEach(i => {
+					Log.Warning($"Deleting {i}");
+					File.Delete(i);
+				});
+		}
+		fetchDependencies = new FetchDependencies.FetchDependencies(Version, PluginAssemblyDirectory, DataManager.Language.ToString() == "ChineseSimplified", 5, HttpClient, Log);
+		fetchDependencies.GetFfxivPlugin(Configuration.FFXIV_ACT_Plugin_CN_Update);
+		Configuration.FFXIV_ACT_Plugin_CN_Update = false; //Don't Save Before InitAll
+		FileDialogManager = new FileDialogManager();
+		oFormActMain.LogFilePath = Configuration.LogFilePath;
+		
+		
 		var token = PluginCts.Token;
 		if (ClientState.IsLoggedIn)
 			Task.Run(InitAll, token);

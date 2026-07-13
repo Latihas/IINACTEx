@@ -39,7 +39,7 @@ public partial class FormActMain : Form, ISynchronizeInvoke {
 	internal volatile bool refreshTree;
 	private FileStream? stream, streamAct, streamTrn;
 
-	public FormActMain(IDalamudPlugin plugin, IPluginLog pluginLog, IFramework framework, string localPlayerName) {
+	public FormActMain(IDalamudPlugin plugin, IPluginLog pluginLog, IFramework framework) {
 		PluginLog = pluginLog;
 		DalamudPlugin = plugin;
 		PluginFramework = framework;
@@ -50,7 +50,6 @@ public partial class FormActMain : Form, ISynchronizeInvoke {
 		NotActMainFormatter.SetupEnvironment();
 		LastKnownTime = DateTime.Now;
 		PluginFramework.Update += ThreadAfterCombatAction;
-		LocalPlayerName = localPlayerName;
 	}
 
 	public IPluginLog PluginLog { get; }
