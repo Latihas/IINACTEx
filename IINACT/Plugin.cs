@@ -64,7 +64,7 @@ public sealed class Plugin : IDalamudPlugin {
 	public ActxtEditor ActxtEditor;
 	// ReSharper disable once MemberCanBePrivate.Global
 	public TinyIoCContainer Container;
-	internal FetchDependencies.FetchDependencies fetchDependencies;
+	internal readonly FetchDependencies.FetchDependencies fetchDependencies;
 	public FolderWindow FolderWindow;
 	internal readonly HttpClient HttpClient = new() {
 		Timeout = TimeSpan.FromSeconds(30)

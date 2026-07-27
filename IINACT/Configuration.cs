@@ -88,5 +88,6 @@ public class Configuration : IPluginConfiguration {
 	public bool UseArrManager { get; set; }
 	public bool ReplayIgnoreTerritoryTrn { get; set; }
 	public bool ReplayIgnoreTerritoryScript { get; set; } = true;
+	public bool ScriptCommander { get; set; } = false;
 	public List<ProxyPlugin.PartyInfo> PartyInfos = [];
 }

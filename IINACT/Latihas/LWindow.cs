@@ -364,6 +364,11 @@ public static partial class LWindow {
 		}
 		using (var tab = ImRaii.TabItem("载入自定义插件")) {
 			if (tab) {
+				var commander = Instance.Configuration.ScriptCommander;
+				if (ImGui.Checkbox("指挥模式(Log输出到小队)", ref commander)) {
+					Instance.Configuration.ScriptCommander = commander;
+					Instance.Configuration.Save();
+				}
 				NewTable(["名称", "状态", "描述", "操作"], Directory.GetFiles(Instance.PluginActScriptDirectory, "*.cs", SearchOption.TopDirectoryOnly)
 					.Concat(Directory.GetFiles(Instance.PluginActScriptDirectory, "*.dll", SearchOption.TopDirectoryOnly))
 					.Select(Path.GetFileName).Cast<string>().ToArray(), [
@@ -479,7 +484,6 @@ public static partial class LWindow {
 		currentPartyInfo = null;
 	}
 
-	
 
 	public static bool DrawPartyInfo(int index1, string prefix) {
 		if (ImGui.Button($"删除##{prefix}{index1}删除")) {
@@ -509,7 +513,6 @@ public static partial class LWindow {
 		return false;
 	}
 
-	
 
 	private static readonly List<string> LoadingActPluginList = [];
 
