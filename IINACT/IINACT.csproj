@@ -92,9 +92,9 @@
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 			<TargetPath>$([System.String]::Copy('%(RecursiveDir)').Replace('Res/', ''))%(Filename)%(Extension)</TargetPath>
 		</Content>
-		<Content Include="../TrnDevEnv/p/**/*">
+		<Content Include="../TrnDevEnv/scripts/*">
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-			<TargetPath>$([System.String]::Copy('%(RecursiveDir)').Replace('Res/', ''))%(Filename)%(Extension)</TargetPath>
+			<TargetPath>$([System.String]::Copy('%(RecursiveDir)').Replace('Res/', ''))/scripts/%(Filename)%(Extension)</TargetPath>
 		</Content>
 		<EmbeddedResource Include="logo.png"/>
 	</ItemGroup>
