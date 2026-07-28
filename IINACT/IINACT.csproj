@@ -14,7 +14,7 @@
 		<IconUrl>https://raw.githubusercontent.com/marzent/IINACT/master/images/icon.png</IconUrl>
 		<RepoUrl>https://github.com/Latihas/IINACTEx</RepoUrl>
 		<Tags>parsing;plugin;ACT</Tags>
-		<AssemblyVersion>7.51.2.2</AssemblyVersion>
+		<AssemblyVersion>7.55.0.0</AssemblyVersion>
 		<LoadPriority>1</LoadPriority>
 	</PropertyGroup>
 	<ItemGroup>
@@ -23,7 +23,7 @@
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 		</PackageReference>
 		<PackageReference Include="NAudio" Version="2.3.0"/>
-		<PackageReference Include="System.Speech" Version="10.0.9"/>
+		<PackageReference Include="System.Speech" Version="10.0.10"/>
 	</ItemGroup>
 	<ItemGroup>
 		<ProjectReference Include="../EdgeTTS/EdgeTTS.csproj"/>

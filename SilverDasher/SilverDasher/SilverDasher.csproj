@@ -5,7 +5,7 @@
 		<Use_DalamudPackager>false</Use_DalamudPackager>
 	</PropertyGroup>
 	<ItemGroup>
-		<PackageReference Include="MQTTnet" Version="5.1.0.1559"/>
+		<PackageReference Include="MQTTnet" Version="5.2.0.1603"/>
 		<Reference Include="FFXIV_ACT_Plugin">
 			<HintPath>../../external_dependencies/FFXIV_ACT_Plugin.dll</HintPath>
 			<Private>False</Private>
