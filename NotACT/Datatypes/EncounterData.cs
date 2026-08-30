@@ -139,8 +139,8 @@ public class EncounterData {
 	public DateTime ShortEndTime {
 		get {
 			var dateTime = DateTime.MinValue;
-			var allies = !ignoreEnemies ? GetAllies() : [..Items.Values];
-			if (allies.Count == 0) allies = [..Items.Values];
+			var allies = !ignoreEnemies ? GetAllies() : [.. Items.Values];
+			if (allies.Count == 0) allies = [.. Items.Values];
 			foreach (var combatantData in allies.Where(combatantData => combatantData.ShortEndTime > dateTime))
 				dateTime = combatantData.ShortEndTime;
 			return dateTime;
@@ -169,14 +169,14 @@ public class EncounterData {
 		? $"{Duration.Minutes:00}:{Duration.Seconds:00}"
 		: $"{Duration.Hours:00}:{Duration.Minutes:00}:{Duration.Seconds:00}";
 	public long Damage =>
-		(!ignoreEnemies ? GetAllies() : [..Items.Values]).Sum(t => t.Damage);
+		(!ignoreEnemies ? GetAllies() : [.. Items.Values]).Sum(t => t.Damage);
 	public int AlliedKills =>
-		(!ignoreEnemies ? GetAllies() : [..Items.Values]).Sum(combatantData => combatantData.Kills);
-	public int AlliedDeaths => (!ignoreEnemies ? GetAllies() : [..Items.Values])
+		(!ignoreEnemies ? GetAllies() : [.. Items.Values]).Sum(combatantData => combatantData.Kills);
+	public int AlliedDeaths => (!ignoreEnemies ? GetAllies() : [.. Items.Values])
 		.Where(combatantData => !combatantData.Name.Contains(' '))
 		.Sum(combatantData => combatantData.Deaths);
 	public long Healed =>
-		(!ignoreEnemies ? GetAllies() : [..Items.Values]).Sum(combatantData => combatantData.Healed);
+		(!ignoreEnemies ? GetAllies() : [.. Items.Values]).Sum(combatantData => combatantData.Healed);
 	public double DPS => Damage / Duration.TotalSeconds;
 	public string? EncId {
 		get {
@@ -294,7 +294,7 @@ public class EncounterData {
 			return cachedAllies;
 		}
 		if (GetIgnoreEnemies()) {
-			List<CombatantData> x = [..Items.Values];
+			List<CombatantData> x = [.. Items.Values];
 			return x;
 		}
 		var combatant = GetCombatant(CharName);
@@ -308,7 +308,7 @@ public class EncounterData {
 		while (listChanged) {
 			listChanged = false;
 			for (var i = 0; i < sortedAllies.Count; i++) {
-				ImmutableArray<KeyValuePair<string, int>> subAllies = [..sortedAllies.Values[i].cd.Allies];
+				ImmutableArray<KeyValuePair<string, int>> subAllies = [.. sortedAllies.Values[i].cd.Allies];
 				foreach (var (name, value) in subAllies) {
 					if (!sortedAllies.TryGetValue(name, out var value1)) {
 						var combatant2 = GetCombatant(name);
@@ -365,7 +365,7 @@ public class EncounterData {
 	}
 
 	public string GetMaxHit(bool ShowType = true, bool UseSuffix = true) {
-		var allies = ignoreEnemies ? [..Items.Values] : GetAllies();
+		var allies = ignoreEnemies ? [.. Items.Values] : GetAllies();
 		var maxSwing = allies
 			.SelectMany(combatant => combatant.GetAttackType(Trans["attackTypeTerm-all"],
 					CombatantData.DamageTypeDataOutgoingDamage)
@@ -382,7 +382,7 @@ public class EncounterData {
 	}
 
 	public string GetMaxHeal(bool ShowType = true, bool CountWards = true, bool UseSuffix = true) {
-		var allies = !ignoreEnemies ? GetAllies() : [..Items.Values];
+		var allies = !ignoreEnemies ? GetAllies() : [.. Items.Values];
 		var maxHealSwing = allies
 			.Where(a => a.GetAttackType(Trans["attackTypeTerm-all"], CombatantData.DamageTypeDataOutgoingHealing) != null)
 			.SelectMany(a => a.GetAttackType(Trans["attackTypeTerm-all"], CombatantData.DamageTypeDataOutgoingHealing)?.Items!)

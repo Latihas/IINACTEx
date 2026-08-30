@@ -90,7 +90,7 @@ public class EventDispatcher(TinyIoCContainer container) {
 
 		List<IEventReceiver> snapshot;
 		lock (value)
-			snapshot = [..value];
+			snapshot = [.. value];
 
 		lock (value) {
 			foreach (var receiver in snapshot) {

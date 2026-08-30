@@ -50,7 +50,7 @@ public sealed class Plugin : IDalamudPlugin {
 	private const string MainWindowCommandName = "/iinact";
 	private const string EndEncCommandName = "/endenc";
 	internal const string OverlayCommandName = "/iinactoverlay";
-	private const int LatestConfigVersion = 4;
+	private const int LatestConfigVersion = 5;
 
 	public const ImGuiTableFlags ImGuiTableFlag = ImGuiTableFlags.Borders | ImGuiTableFlags.Resizable | ImGuiTableFlags.RowBg;
 	internal static MainWindow MainWindow = null!;
@@ -110,7 +110,7 @@ public sealed class Plugin : IDalamudPlugin {
 				}
 			} else
 				OpcodeManager.Instance.SetRegion(region);
-			
+
 			TextToSpeechProvider = new TextToSpeechProvider();
 			var info = PluginInterface.GetType().Assembly.GetType("Dalamud.Service`1", true)!.MakeGenericType(PluginInterface.GetType().Assembly.GetType("Dalamud.Dalamud", true)!).GetMethod("Get")!.Invoke(null, BindingFlags.Default, null, [], null)!;
 			DalamudStartInfo = (DalamudStartInfo)info.GetType().GetProperty("StartInfo", BindingFlags.NonPublic | BindingFlags.Instance)!.GetValue(info)!;
@@ -206,7 +206,7 @@ public sealed class Plugin : IDalamudPlugin {
 			FormActMain.PluginInitialized = true;
 			LogTick("Asyc Post Process Done");
 			if (Configuration.LoadSilverDasherOnInit) EnableSilverDasher();
-			if (Directory.Exists(Path.Combine(PluginConfigDirectory, "cactbot"))) RefreshBw();
+			RefreshBw();
 			MainWindow.UpdateWindowTitle();
 			MapInfo = DataManager.GetExcelSheet<TerritoryType>().Where(i => !i.PlaceNameRegion.Value.Name.IsEmpty)
 				.ToDictionary(i => i.RowId, i => i.PlaceName.Value.Name.ToString());
@@ -257,8 +257,8 @@ public sealed class Plugin : IDalamudPlugin {
 		Configuration.FFXIV_ACT_Plugin_CN_Update = false; //Don't Save Before InitAll
 		FileDialogManager = new FileDialogManager();
 		oFormActMain.LogFilePath = Configuration.LogFilePath;
-		
-		
+
+
 		var token = PluginCts.Token;
 		if (ClientState.IsLoggedIn)
 			Task.Run(InitAll, token);

@@ -102,25 +102,25 @@ public abstract partial class FFXIVProcess(TinyIoCContainer container) {
 	[Serializable]
 	public class EntityData {
 		public string name;
-		public uint id = 0;
+		public uint id;
 		public EntityType type = EntityType.None;
-		public ushort distance = 0;
-		public float pos_x = 0;
-		public float pos_y = 0;
-		public float pos_z = 0;
-		public float rotation = 0;
-		public int hp = 0;
-		public int max_hp = 0;
-		public int mp = 0;
-		public int max_mp = 0;
-		public short gp = 0;
-		public short max_gp = 0;
-		public short cp = 0;
-		public short max_cp = 0;
+		public ushort distance;
+		public float pos_x;
+		public float pos_y;
+		public float pos_z;
+		public float rotation;
+		public int hp;
+		public int max_hp;
+		public int mp;
+		public int max_mp;
+		public short gp;
+		public short max_gp;
+		public short cp;
+		public short max_cp;
 		public EntityJob job = EntityJob.None;
-		public short level = 0;
+		public short level;
 		public string debug_job;
-		public int shield_value = 0;
+		public int shield_value;
 
 		public override bool Equals(object obj) =>
 			obj is EntityData o &&

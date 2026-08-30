@@ -1,7 +1,5 @@
 using System;
-using System.IO;
 using System.Net;
-using Advanced_Combat_Tracker;
 
 namespace RainbowMage.OverlayPlugin.WebSocket;
 
