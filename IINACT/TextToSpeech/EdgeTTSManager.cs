@@ -95,16 +95,16 @@ public class EdgeTTSManager {
 
 	public EdgeTTSConfig GetConfig() => _config;
 
-	public Voice[] GetAvailableVoices() =>
-		_engine.Voices
-			.SelectMany(localeGroup => localeGroup.Value.SelectMany(genderGroup => genderGroup.Value))
-			.Select(voiceInfo => new Voice
-			(
-				voiceInfo.ShortName,
-				$"{voiceInfo.FriendlyName} ({voiceInfo.LocaleInfo.DisplayName} - {voiceInfo.GenderName})"
-			))
-			.OrderBy(v => v.DisplayName)
-			.ToArray();
+	// public Voice[] GetAvailableVoices() =>
+	// 	_engine.Voices
+	// 		.SelectMany(localeGroup => localeGroup.Value.SelectMany(genderGroup => genderGroup.Value))
+	// 		.Select(voiceInfo => new Voice
+	// 		(
+	// 			voiceInfo.ShortName,
+	// 			$"{voiceInfo.FriendlyName} ({voiceInfo.LocaleInfo.DisplayName} - {voiceInfo.GenderName})"
+	// 		))
+	// 		.OrderBy(v => v.DisplayName)
+	// 		.ToArray();
 
 	public VoiceEntry[] GetAvailableVoiceEntries() {
 		static string GetLanguageDisplayName(string languageCode) {
@@ -125,7 +125,7 @@ public class EdgeTTSManager {
 				};
 			}
 
-			return voiceInfo.GenderName;
+			return voiceInfo.Gender;
 		}
 
 		return _engine.Voices

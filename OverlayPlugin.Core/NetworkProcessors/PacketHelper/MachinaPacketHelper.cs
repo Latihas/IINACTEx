@@ -106,7 +106,7 @@ public class MachinaRegionalizedPacketHelper<PacketType>
 		this.tc = tc;
 	}
 
-	public static bool Create(string packetTypeName, out MachinaRegionalizedPacketHelper<PacketType> packetHelper, string packetOpcodeName = null) {
+	public static bool Create(string packetTypeName, out MachinaRegionalizedPacketHelper<PacketType> packetHelper, string? packetOpcodeName = null) {
 		packetOpcodeName = packetOpcodeName ?? packetTypeName;
 		packetHelper = null;
 		var opcodes = FFXIVRepository.GetMachinaOpcodes();

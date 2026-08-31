@@ -20,18 +20,13 @@ internal class RegionalizedPacketHelper<
 	public readonly PacketHelper<PacketStruct_KR> kr = new(krOpcode);
 	public readonly PacketHelper<PacketStruct_TC> tc = new(tcOpcode);
 
-	public IPacketHelper this[GameRegion gameRegion] {
-		get {
-			switch (gameRegion) {
-				case GameRegion.Global: return global;
-				case GameRegion.Chinese: return cn;
-				case GameRegion.Korean: return kr;
-				case GameRegion.TraditionalChinese: return tc;
-
-				default: return global;
-			}
-		}
-	}
+	public IPacketHelper this[GameRegion gameRegion] => gameRegion switch {
+		GameRegion.Global => global,
+		GameRegion.Chinese => cn,
+		GameRegion.Korean => kr,
+		GameRegion.TraditionalChinese => tc,
+		_ => global
+	};
 
 	public static RegionalizedPacketHelper<PacketStruct_Global, PacketStruct_CN, PacketStruct_KR, PacketStruct_TC>
 		CreateFromMachina(string opcodeName) {

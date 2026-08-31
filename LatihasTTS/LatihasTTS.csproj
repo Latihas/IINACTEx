@@ -3,8 +3,8 @@
 		<Use_DalamudPackager>false</Use_DalamudPackager>
 	</PropertyGroup>
 	<ItemGroup>
-		<PackageReference Include="Microsoft.ML.OnnxRuntime" Version="1.28.0"/>
-		<PackageReference Include="NAudio" Version="2.3.0"/>
+		<PackageReference Include="Microsoft.ML.OnnxRuntime" Version="1.29.0"/>
+		<PackageReference Include="NAudio" Version="3.0.1"/>
 	</ItemGroup>
 	<PropertyGroup Condition="'$(GITHUB_ACTIONS)' == ''">
 		<DalamudLibPath>$(appdata)/XIVLauncherCN/addon/Hooks/dev</DalamudLibPath>

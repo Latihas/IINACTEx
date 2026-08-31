@@ -17,10 +17,5 @@ public partial class FormActMain {
 	public ActPluginData? PluginGetSelfData(IActPluginV1 MyPluginInstance) =>
 		oFormActMain.ActPlugins.FirstOrDefault(t => t.pluginObj == MyPluginInstance);
 
-	public static void AddDefaultPlugins(dynamic o1, IActPluginV1 o2, IActPluginV1 o3, IActPluginV1 o4) {
-		oFormActMain.ActPlugins.Add(new ActPluginData("FFXIV_ACT_Plugin.dll", o1.ffxivActPlugin, false, false));
-		oFormActMain.ActPlugins.Add(new ActPluginData("OverlayPlugin.dll", o2, false, false));
-		oFormActMain.ActPlugins.Add(new ActPluginData("Triggernometry.dll", o3, false, false));
-		oFormActMain.ActPlugins.Add(new ActPluginData("PostNamazu.dll", o4, false, false));
-	}
+	public static void AddFFXIV_ACT_Plugin(dynamic o1) => oFormActMain.ActPlugins.Add(new ActPluginData("FFXIV_ACT_Plugin.dll", o1.ffxivActPlugin, false, false));
 }
