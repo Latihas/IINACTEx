@@ -93,6 +93,7 @@ public sealed class Plugin : IDalamudPlugin {
 		try {
 			if (!Directory.Exists(PluginActScriptDirectory)) Directory.CreateDirectory(PluginActScriptDirectory);
 			var region = DataManager.Language.ToString() == "ChineseSimplified" ? GameRegion.Chinese : GameRegion.Global;
+			log.Error(region.ToString());
 			if (opcodestxtCanReplace) {
 				try {
 					var d1 = OpcodeManager.Instance._opcodes[region].ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
