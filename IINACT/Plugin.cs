@@ -93,7 +93,6 @@ public sealed class Plugin : IDalamudPlugin {
 		try {
 			if (!Directory.Exists(PluginActScriptDirectory)) Directory.CreateDirectory(PluginActScriptDirectory);
 			var region = DataManager.Language.ToString() == "ChineseSimplified" ? GameRegion.Chinese : GameRegion.Global;
-			log.Error(region.ToString());
 			if (opcodestxtCanReplace) {
 				try {
 					var d1 = OpcodeManager.Instance._opcodes[region].ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
@@ -109,7 +108,7 @@ public sealed class Plugin : IDalamudPlugin {
 					Log.Error($"opcodestxt Replace Failed: {ex}");
 				}
 			}
-			OpcodeManager.Instance.SetRegion(region);
+			OpcodeManager.Instance.SetRegion(region, null);
 
 			TextToSpeechProvider = new TextToSpeechProvider();
 			var info = PluginInterface.GetType().Assembly.GetType("Dalamud.Service`1", true)!.MakeGenericType(PluginInterface.GetType().Assembly.GetType("Dalamud.Dalamud", true)!).GetMethod("Get")!.Invoke(null, BindingFlags.Default, null, [], null)!;
@@ -135,7 +134,7 @@ public sealed class Plugin : IDalamudPlugin {
 			oFormActMain.PostNamazuPlugin = PostNamazuPlugin = new PostNamazu.PostNamazu();
 			var extraOpcodes = opcodesjsoncCanReplace ? File.ReadAllText(opcodesjsoncPath) : null;
 			FormActMain.AddFFXIV_ACT_Plugin(FfxivActPluginWrapper = new FfxivActPluginWrapper());
-			OpcodeManager.Instance.SetRegion(region); //防止重置
+			// OpcodeManager.Instance.SetRegion(region); //防止重置
 			Container = new TinyIoCContainer();
 			var logger = new Logger(Log);
 			Container.Register(logger);
