@@ -130,6 +130,12 @@ public sealed class Plugin : IDalamudPlugin {
 			WindowSystem.AddWindow(ActxtEditor = new ActxtEditor());
 			// WindowSystem.AddWindow(ActStatics = new ACTStatics());
 			IpcProviders = new IpcProviders(PluginInterface);
+			opcodesjsoncReplaced = opcodesjsoncCanReplace;
+			oFormActMain.TriggernometryPlugin = TriggernometryProxyPlugin = new ProxyPlugin();
+			oFormActMain.PostNamazuPlugin = PostNamazuPlugin = new PostNamazu.PostNamazu();
+			var extraOpcodes = opcodesjsoncCanReplace ? File.ReadAllText(opcodesjsoncPath) : null;
+			FormActMain.AddFFXIV_ACT_Plugin(FfxivActPluginWrapper = new FfxivActPluginWrapper());
+			OpcodeManager.Instance.SetRegion(region); //防止重置
 			Container = new TinyIoCContainer();
 			var logger = new Logger(Log);
 			Container.Register(logger);
@@ -138,12 +144,6 @@ public sealed class Plugin : IDalamudPlugin {
 			Container.Register(FileDialogManager);
 			Container.Register(PluginInterface);
 			oFormActMain.OverlayPluginContainer = Container;
-			opcodesjsoncReplaced = opcodesjsoncCanReplace;
-			oFormActMain.TriggernometryPlugin = TriggernometryProxyPlugin = new ProxyPlugin();
-			oFormActMain.PostNamazuPlugin = PostNamazuPlugin = new PostNamazu.PostNamazu();
-			var extraOpcodes = opcodesjsoncCanReplace ? File.ReadAllText(opcodesjsoncPath) : null;
-			FormActMain.AddFFXIV_ACT_Plugin(FfxivActPluginWrapper = new FfxivActPluginWrapper());
-			OpcodeManager.Instance.SetRegion(region); //防止重置
 			Container.Register(OverlayPlugin = new PluginMain(PluginAssemblyDirectory, logger, Container));
 			OverlayPlugin.PreInitPlugin(PluginConfigDirectory);
 			oFormActMain.ActPlugins.Add(new ActPluginData("OverlayPlugin.dll", new PluginLoader(OverlayPlugin), false, false));
