@@ -8,7 +8,7 @@
 		<ProduceReferenceAssembly>false</ProduceReferenceAssembly>
 		<RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
 		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-		<Version>0.19.105</Version>
+		<Version>0.19.106</Version>
 		<Use_DalamudPackager>false</Use_DalamudPackager>
 	</PropertyGroup>
 	
