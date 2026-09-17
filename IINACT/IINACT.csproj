@@ -14,15 +14,15 @@
 		<IconUrl>https://raw.githubusercontent.com/marzent/IINACT/master/images/icon.png</IconUrl>
 		<RepoUrl>https://github.com/Latihas/IINACTEx</RepoUrl>
 		<Tags>parsing;plugin;ACT</Tags>
-		<AssemblyVersion>7.56.0.0</AssemblyVersion>
+		<AssemblyVersion>7.56.1.0</AssemblyVersion>
 	</PropertyGroup>
 	<ItemGroup>
 		<PackageReference Include="Microsoft.Windows.CsWin32" Version="0.3.321">
 			<PrivateAssets>all</PrivateAssets>
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 		</PackageReference>
-		<PackageReference Include="NAudio" Version="3.0.1"/>
-		<PackageReference Include="System.Speech" Version="10.0.11"/>
+		<PackageReference Include="NAudio" Version="3.1.0"/>
+		<PackageReference Include="System.Speech" Version="10.0.12"/>
 	</ItemGroup>
 	<ItemGroup>
 		<ProjectReference Include="../EdgeTTS/EdgeTTS.csproj"/>
