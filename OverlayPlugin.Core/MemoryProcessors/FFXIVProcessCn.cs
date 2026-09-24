@@ -1,12 +1,15 @@
 ﻿using System;
 using System.Linq;
+using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text;
 using FFXIVClientStructs.FFXIV.Client.Game;
 using FFXIVClientStructs.FFXIV.Client.Game.Character;
 using FFXIVClientStructs.FFXIV.Client.Game.Object;
 using FFXIVClientStructs.Interop;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using Newtonsoft.Json.Serialization;
 
 namespace RainbowMage.OverlayPlugin.MemoryProcessors;
 
@@ -108,7 +111,16 @@ public class FFXIVProcessCn(TinyIoCContainer container) : FFXIVProcess(container
 		return gobs.Length == 0 ? null : GetEntityData(gobs[0].Value);
 	}
 
+	public sealed class JobGaugeStructResolver : DefaultContractResolver {
+		protected override JsonProperty CreateProperty(MemberInfo member, MemberSerialization memberSerialization) {
+			var prop = base.CreateProperty(member, memberSerialization);
+			if (prop.PropertyName is "VirtualTable" or "JobGauge") prop.Ignored = true;
+			return prop;
+		}
+	}
+
 	public override unsafe JObject? GetJobSpecificData(EntityJob job) {
+		var settings = JsonSerializer.Create(new JsonSerializerSettings { ContractResolver = new JobGaugeStructResolver() });
 		var jg = JobGaugeManager.Instance();
 		if (jg == null) {
 			// The pointer can be null when not logged in.
@@ -117,29 +129,29 @@ public class FFXIVProcessCn(TinyIoCContainer container) : FFXIVProcess(container
 		// fixed (byte* p = Read8(job_inner_ptr, kJobDataInnerStructSize)) {
 		if (jg->CurrentGauge == null) return null;
 		return job switch {
-			EntityJob.RDM => JObject.FromObject(jg->RedMage),
-			EntityJob.WAR => JObject.FromObject(jg->Warrior),
-			EntityJob.DRK => JObject.FromObject(jg->DarkKnight),
-			EntityJob.PLD => JObject.FromObject(jg->Paladin),
-			EntityJob.GNB => JObject.FromObject(jg->Gunbreaker),
-			EntityJob.BRD => JObject.FromObject(jg->Bard),
-			EntityJob.DNC => JObject.FromObject(jg->Dancer),
-			EntityJob.DRG => JObject.FromObject(jg->Dragoon),
-			EntityJob.NIN => JObject.FromObject(jg->Ninja),
-			EntityJob.THM => JObject.FromObject(Marshal.PtrToStructure<ThaumaturgeJobMemory>(new IntPtr(&jg->EmptyGauge))),
-			EntityJob.BLM => JObject.FromObject(jg->BlackMage),
-			EntityJob.WHM => JObject.FromObject(jg->WhiteMage),
-			EntityJob.ACN => JObject.FromObject(Marshal.PtrToStructure<ArcanistJobMemory>(new IntPtr(&jg->EmptyGauge))),
-			EntityJob.SMN => JObject.FromObject(jg->Summoner),
-			EntityJob.SCH => JObject.FromObject(jg->Scholar),
-			EntityJob.MNK => JObject.FromObject(jg->Monk),
-			EntityJob.MCH => JObject.FromObject(jg->Machinist),
-			EntityJob.AST => JObject.FromObject(jg->Astrologian),
-			EntityJob.SAM => JObject.FromObject(jg->Samurai),
-			EntityJob.SGE => JObject.FromObject(jg->Sage),
-			EntityJob.RPR => JObject.FromObject(jg->Reaper),
-			EntityJob.VPR => JObject.FromObject(jg->Viper),
-			EntityJob.PCT => JObject.FromObject(jg->Pictomancer),
+			EntityJob.RDM => JObject.FromObject(jg->RedMage, settings),
+			EntityJob.WAR => JObject.FromObject(jg->Warrior, settings),
+			EntityJob.DRK => JObject.FromObject(jg->DarkKnight, settings),
+			EntityJob.PLD => JObject.FromObject(jg->Paladin, settings),
+			EntityJob.GNB => JObject.FromObject(jg->Gunbreaker, settings),
+			EntityJob.BRD => JObject.FromObject(jg->Bard, settings),
+			EntityJob.DNC => JObject.FromObject(jg->Dancer, settings),
+			EntityJob.DRG => JObject.FromObject(jg->Dragoon, settings),
+			EntityJob.NIN => JObject.FromObject(jg->Ninja, settings),
+			EntityJob.THM => JObject.FromObject(Marshal.PtrToStructure<ThaumaturgeJobMemory>(new IntPtr(&jg->EmptyGauge)), settings),
+			EntityJob.BLM => JObject.FromObject(jg->BlackMage, settings),
+			EntityJob.WHM => JObject.FromObject(jg->WhiteMage, settings),
+			EntityJob.ACN => JObject.FromObject(Marshal.PtrToStructure<ArcanistJobMemory>(new IntPtr(&jg->EmptyGauge)), settings),
+			EntityJob.SMN => JObject.FromObject(jg->Summoner, settings),
+			EntityJob.SCH => JObject.FromObject(jg->Scholar, settings),
+			EntityJob.MNK => JObject.FromObject(jg->Monk, settings),
+			EntityJob.MCH => JObject.FromObject(jg->Machinist, settings),
+			EntityJob.AST => JObject.FromObject(jg->Astrologian, settings),
+			EntityJob.SAM => JObject.FromObject(jg->Samurai, settings),
+			EntityJob.SGE => JObject.FromObject(jg->Sage, settings),
+			EntityJob.RPR => JObject.FromObject(jg->Reaper, settings),
+			EntityJob.VPR => JObject.FromObject(jg->Viper, settings),
+			EntityJob.PCT => JObject.FromObject(jg->Pictomancer, settings),
 			_ => null
 		};
 	}
