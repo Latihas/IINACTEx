@@ -42,6 +42,7 @@ public partial class FfxivActPluginWrapper : IDisposable {
 	private readonly IPlayerProcessor playerProcessor;
 	private readonly IProcessManager processManager;
 	private readonly SemaphoreSlim refreshSemaphore = new(0);
+	private readonly CancellationTokenSource cancellationTokenSource;
 	public readonly IDataRepository Repository;
 
 	private readonly ServerTimeProcessor serverTimeProcessor;
@@ -92,9 +93,11 @@ public partial class FfxivActPluginWrapper : IDisposable {
 		SetChatMessageLoggingEnabled(Instance.Configuration.LogChatMessages);
 		ActGlobals.oFormActMain.BeforeLogLineRead += OFormActMain_BeforeLogLineRead;
 		serverTimeProcessor.ServerTime = DateTime.Now;
-
-		Framework.Update += ScanMemory;
-
+		cancellationTokenSource = new CancellationTokenSource();
+		var scanThread1 = new Thread(() => ScanMemory(cancellationTokenSource.Token)) {
+			IsBackground = true
+		};
+		scanThread1.Start();
 		mobArraySize = mobArrayProcessor._internalMmobArray.Length;
 		var combatantProcessor = (CombatantProcessor)combatantManager._combatantProcessor;
 		var combatantBufferSize1 = ((ReadCombatant)combatantProcessor._readCombatant)._buffer.Length;
@@ -118,7 +121,8 @@ public partial class FfxivActPluginWrapper : IDisposable {
 		};
 
 	public void Dispose() {
-		Framework.Update -= ScanMemory;
+		cancellationTokenSource.Cancel();
+		cancellationTokenSource.Dispose();
 		Framework.Update -= MobDataRefresh;
 		SetChatMessageLoggingEnabled(false);
 		ActGlobals.oFormActMain.BeforeLogLineRead -= OFormActMain_BeforeLogLineRead;
@@ -211,60 +215,59 @@ public partial class FfxivActPluginWrapper : IDisposable {
 	private static partial void ReadMemory(IntPtr dest, IntPtr src, int size);
 
 	private unsafe void MobDataRefresh(IFramework _) {
-		if (settingsMediator.DataCollectionSettings == null)
-			return;
-
-		if (mobDataAge < 3 || !Condition[ConditionFlag.BoundByDuty56] && mobDataAge < 10) {
+		if (settingsMediator.DataCollectionSettings is null) return;
+		if (mobDataAge < (Condition[ConditionFlag.BoundByDuty56] ? 3 : 10)) {
 			mobDataAge++;
-			if (mobArrayProcessor.PrimaryPlayerPointer == nint.Zero)
-				return;
-
-			refreshSemaphore.Release();
+			if (mobArrayProcessor.PrimaryPlayerPointer != nint.Zero)
+				refreshSemaphore.Release();
 			return;
 		}
-
 		mobDataAge = 0;
-		var mobArrayAddress = (ulong*)mobArrayProcessor._readMobArray.Read64();
 		var mobArray = mobArrayProcessor._internalMmobArray;
-
-		if (*mobArrayAddress == 0) {
-			Array.Clear(mobArray);
+		var mobSpan = mobArray.AsSpan();
+		var mobArrayAddress = (ulong*)mobArrayProcessor._readMobArray.Read64();
+		if (mobArrayAddress == null) {
+			mobSpan.Clear();
 			return;
 		}
-
-		ReadMemory(mobDataOffsets[0], (nint)(void*)*mobArrayAddress, combatantSize);
-		mobArray[0] = mobDataOffsets[0];
-
+		var firstAddress = *mobArrayAddress;
+		if (firstAddress == 0) {
+			mobSpan.Clear();
+			return;
+		}
+		ReadMemory(mobDataOffsets[0], (nint)firstAddress, combatantSize);
+		mobSpan[0] = mobDataOffsets[0];
 		for (var i = 1; i < mobArraySize; i++) {
-			if (*(mobArrayAddress + i) == 0) {
-				mobArray[i] = nint.Zero;
+			var address = mobArrayAddress[i];
+			if (address == 0) {
+				mobSpan[i] = nint.Zero;
 				continue;
 			}
-			ReadMemory(mobDataOffsets[i], (nint)(void*)*(mobArrayAddress + i), combatantSize);
-			mobArray[i] = mobDataOffsets[i];
+			ReadMemory(mobDataOffsets[i], (nint)address, combatantSize);
+			mobSpan[i] = mobDataOffsets[i];
 		}
-
 		refreshSemaphore.Release();
 	}
 
-	private void ScanMemory(IFramework framework) {
-		try {
-			serverTimeProcessor.ServerTime = GameServerTime.CurrentServerTime;
-
-			var zoneId = zoneMapProcessor.ZoneID;
-			zoneMapProcessor.Refresh();
-			if (zoneMapProcessor.ZoneID == 0)
+	private void ScanMemory(CancellationToken token) {
+		while (!token.IsCancellationRequested) {
+			try {
+				refreshSemaphore.Wait(token);
+				serverTimeProcessor.ServerTime = GameServerTime.CurrentServerTime;
+				var zoneId = zoneMapProcessor.ZoneID;
+				zoneMapProcessor.Refresh();
+				if (zoneMapProcessor.ZoneID == 0) continue;
+				if (zoneId != zoneMapProcessor.ZoneID)
+					combatantManager.Rescan();
+				else
+					combatantManager.Refresh();
+				playerProcessor.Refresh();
+				partyProcessor.Refresh();
+			} catch (Exception ex) when (ex is ThreadAbortException or OperationCanceledException or ObjectDisposedException) {
 				return;
-
-			if (zoneId != zoneMapProcessor.ZoneID)
-				combatantManager.Rescan();
-			else
-				combatantManager.Refresh();
-
-			playerProcessor.Refresh();
-			partyProcessor.Refresh();
-		} catch (Exception ex) when (ex is ThreadAbortException or OperationCanceledException or ObjectDisposedException) { } catch (Exception ex) {
-			Log.Error(ex, "[FFXIV_ACT_Plugin] ScanMemory failure");
+			} catch (Exception ex) {
+				Log.Error(ex, "[FFXIV_ACT_Plugin] ScanMemory failure");
+			}
 		}
 	}
 }

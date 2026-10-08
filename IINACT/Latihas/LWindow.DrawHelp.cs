@@ -25,7 +25,7 @@ public static partial class LWindow {
 	internal static void DrawInitSettings() {
 		if (ImGui.CollapsingHeader("首次安装配置##CH首次安装配置", ImGuiTreeNodeFlags.DefaultOpen)) {
 			ImGui.Text("IINACTEx下载下来不动也可以正常使用。以下的配置为增加使用体验的配置。");
-			ImGui.Text("1. 安装插件Browsingway(卫月主库就有)，并打开Browsingway的设置界面。");
+			ImGui.Text("1. 安装插件Browsingway(卫月主库就有，也可以用我的精简过的Browsingway.WebView2)，并打开Browsingway的设置界面。");
 			ImGui.Text("2. 点击Browsingway左下角的加号，按照下方`悬浮窗`板块中开发者喜欢使用的网址填写相关数据。");
 			ImGui.Text("2.1. 点击下方`悬浮窗`板块，在Overlay生成器种选择喜欢的悬浮窗，复制下面生成的URI，补充进Browsingway。");
 			ImGui.Text("3. 在发者喜欢使用的网址中有一个设置页面，在里面可以设置cactbot的表现方式。(默认不开启TTS只会有蜂鸣器音)");

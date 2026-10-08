@@ -33,11 +33,14 @@ public partial class FormActMain : Form, ISynchronizeInvoke {
 	private long lastKnownTicks;
 	private DateTime lastKnownTime;
 	private HistoryRecord? lastZoneRecord;
+	private Thread logReaderThread;
+	private Thread logWriterThread;
 	public string? LocalPlayerName;
 	private StreamWriter? outputWriter, outputWriterAct, outputWriterTrn;
 	public IFramework PluginFramework;
 	internal volatile bool refreshTree;
 	private FileStream? stream, streamAct, streamTrn;
+	private bool pluginActive = true;
 
 	public FormActMain(IDalamudPlugin plugin, IPluginLog pluginLog, IFramework framework) {
 		PluginLog = pluginLog;
@@ -153,10 +156,6 @@ public partial class FormActMain : Form, ISynchronizeInvoke {
 	public event CombatActionDelegate AfterCombatAction;
 	public event TextToSpeechDelegate TextToSpeech;
 
-	// private DateTime lastSetEncounter;
-	// private Thread logReaderThread;
-	// private Thread logWriterThread;
-	// private bool pluginActive = true;
 	[SuppressMessage("Performance", "CA1822")]
 	public void ValidateLists() {
 	}
@@ -197,10 +196,8 @@ public partial class FormActMain : Form, ISynchronizeInvoke {
 		CurrentZone = ZoneName;
 		if (lastZoneRecord == null) {
 			//first run after parser init
-			PluginFramework.Update += LogReader;
-			PluginFramework.Update += LogWriter;
-			PluginFramework.Update += LogWriterAct;
-			PluginFramework.Update += LogWriterTrn;
+			StartLogReaderThread();
+			StartLogWriterThread();
 		}
 		lastZoneRecord = new HistoryRecord(0, LastKnownTime, LastKnownTime.AddDays(1), CurrentZone,
 			ActGlobals.charName);
@@ -303,39 +300,58 @@ public partial class FormActMain : Form, ISynchronizeInvoke {
 		afterActionsQueue.Enqueue(Action);
 	}
 
-	private void LogWriter(IFramework _) {
-		if (!WriteLogFile || DisableWritingPvpLogFile) return;
-		stream ??= new FileStream(LogFilePath, FileMode.Append, FileAccess.Write, FileShare.ReadWrite);
-		outputWriter ??= new StreamWriter(stream);
-		while (LogQueue.TryDequeue(out var line))
-			outputWriter?.WriteLine(line);
-		outputWriter?.Flush();
+	private void StartLogWriterThread() {
+		logWriterThread = new Thread(LogWriter) {
+			IsBackground = true,
+			Name = "LogWriterThread",
+			Priority = ThreadPriority.BelowNormal
+		};
+		logWriterThread.Start();
 	}
 
-	private void LogWriterAct(IFramework _) {
-		if (!WriteLogFile || !WriteActLogFile || DisableWritingPvpLogFile) return;
-		streamAct ??= new FileStream(LogFilePath + ".actxt", FileMode.Append, FileAccess.Write, FileShare.ReadWrite);
-		outputWriterAct ??= new StreamWriter(streamAct);
-		while (ActLogQueue.TryDequeue(out var line))
-			outputWriterAct?.WriteLine(line);
-		outputWriterAct?.Flush();
+	private void LogWriter() {
+		while (pluginActive) {
+			if (!WriteLogFile || DisableWritingPvpLogFile) continue;
+			stream ??= new FileStream(LogFilePath, FileMode.Append, FileAccess.Write, FileShare.ReadWrite);
+			outputWriter ??= new StreamWriter(stream);
+			while (LogQueue.TryDequeue(out var line))
+				outputWriter?.WriteLine(line);
+			outputWriter?.Flush();
+
+			if (WriteActLogFile) {
+				streamAct ??= new FileStream(LogFilePath + ".actxt", FileMode.Append, FileAccess.Write, FileShare.ReadWrite);
+				outputWriterAct ??= new StreamWriter(streamAct);
+				while (ActLogQueue.TryDequeue(out var line))
+					outputWriterAct?.WriteLine(line);
+				outputWriterAct?.Flush();
+			}
+			if (WriteTrnLogFile) {
+				streamTrn ??= new FileStream(LogFilePath + ".trnxt", FileMode.Append, FileAccess.Write, FileShare.ReadWrite);
+				outputWriterTrn ??= new StreamWriter(streamTrn);
+				while (TrnLogQueue.TryDequeue(out var line))
+					outputWriterTrn?.WriteLine(line);
+				outputWriterTrn?.Flush();
+			}
+		}
 	}
 
-	private void LogWriterTrn(IFramework _) {
-		if (!WriteLogFile || !WriteTrnLogFile || DisableWritingPvpLogFile) return;
-		streamTrn ??= new FileStream(LogFilePath + ".trnxt", FileMode.Append, FileAccess.Write, FileShare.ReadWrite);
-		outputWriterTrn ??= new StreamWriter(streamTrn);
-		while (TrnLogQueue.TryDequeue(out var line))
-			outputWriterTrn?.WriteLine(line);
-		outputWriterTrn?.Flush();
+	private void StartLogReaderThread() {
+		logReaderThread = new Thread(LogReader) {
+			IsBackground = true,
+			Name = "LogReaderThread",
+			Priority = ThreadPriority.Normal
+		};
+		logReaderThread.Start();
 	}
 
-	private void LogReader(IFramework _) {
+	private void LogReader() {
 		var logOutput = (LogOutput)FfxivPlugin._dataCollection._logOutput;
-		lock (logOutput._LogQueueLock) {
-			while (logOutput._LogQueue.TryDequeue(out var line)) {
-				if (string.IsNullOrEmpty(line)) PluginLog.Error($"line is empty: {logOutput._LogQueue.Count}");
-				ParseRawLogLine(line);
+		while (pluginActive) {
+			lock (logOutput._LogQueueLock) {
+				while (logOutput._LogQueue.TryDequeue(out var line)) {
+					if (string.IsNullOrEmpty(line)) PluginLog.Error($"line is empty: {logOutput._LogQueue.Count}");
+					ParseRawLogLine(line);
+				}
 			}
 		}
 	}
@@ -403,10 +419,7 @@ public partial class FormActMain : Form, ISynchronizeInvoke {
 	}
 
 	internal void RemoveFrameworkUpdates() {
-		PluginFramework.Update -= LogWriter;
-		PluginFramework.Update -= LogWriterAct;
-		PluginFramework.Update -= LogWriterTrn;
-		PluginFramework.Update -= LogReader;
+		pluginActive = false;
 		PluginFramework.Update -= ThreadAfterCombatAction;
 		outputWriter?.Dispose();
 		outputWriterAct?.Dispose();
