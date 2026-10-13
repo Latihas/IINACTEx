@@ -7,6 +7,9 @@
 			<HintPath>$(DalamudLibPath)Mono.Cecil.dll</HintPath>
 			<Private>false</Private>
 		</Reference>
+		<Reference Include="NuGet.Versioning">
+			<HintPath>..\..\..\..\.nuget\packages\nuget.versioning\7.9.0\lib\net8.0\NuGet.Versioning.dll</HintPath>
+		</Reference>
 	</ItemGroup>
 	<PropertyGroup Condition="'$(GITHUB_ACTIONS)' == ''">
 		<DalamudLibPath>$(appdata)/XIVLauncherCN/addon/Hooks/dev</DalamudLibPath>

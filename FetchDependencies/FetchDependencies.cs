@@ -21,6 +21,7 @@ public partial class FetchDependencies {
 
 	private const string VersionUrlGlobal = "https://www.iinact.com/updater/version";
 	private const string VersionUrlChinese = "https://cdn.diemoe.net/files/ACT.DieMoe/Packs/FFXIV_ACT_Plugin/chinese.version";
+	private const string VersionUrlChinese2 = "https://img.shields.io/github/v/release/NewMoe-Technology/FFXIV_ACT_Plugin_CN.json";
 	private const string PluginUrlGlobal = "https://www.iinact.com/updater/download";
 	private const string PluginUrlChinese = "https://meowrs.com/https://raw.githubusercontent.com/NewMoe-Technology/FFXIV_ACT_Plugin_CN/refs/heads/main/SDK/Latest/FFXIV_ACT_Plugin.dll";
 
@@ -63,22 +64,45 @@ public partial class FetchDependencies {
 
 	public string? GetFFXIV_ACT_PluginVersion() => new Patcher(PluginVersion, DependenciesDir).LogFilePluginVersion();
 
-	[GeneratedRegex(@"build_version\s*=\s*([0-9.]+)", RegexOptions.Multiline)]
-	private static partial Regex DieMoeBuildVersionRegex();
+	[GeneratedRegex(@"display_at\s*=\s*([^\s]+)", RegexOptions.Multiline)]
+	private static partial Regex DieMoeDisplayAtRegex();
+
+	[GeneratedRegex("""
+	                \s*"value":\s*"v?([^"]+)"
+	                """, RegexOptions.Multiline)]
+	private static partial Regex DieMoeGithubRegex();
+
+	private string GetChineseVersionString() {
+		using var ctso = new CancellationTokenSource(TimeSpan.FromSeconds(20));
+		var outerToken = ctso.Token;
+		try {
+			using var cts2 = CancellationTokenSource.CreateLinkedTokenSource(outerToken);
+			cts2.CancelAfter(TimeSpan.FromSeconds(10));
+			var remoteVersionString2 = HttpClient.GetStringAsync(VersionUrlChinese2, cts2.Token)
+				.GetAwaiter().GetResult();
+			var match2 = DieMoeGithubRegex().Match(remoteVersionString2);
+			return match2.Success ? match2.Groups[1].Value : string.Empty;
+		} catch (Exception e) {
+			Log.Warning(e.ToString());
+		}
+		using var cts = CancellationTokenSource.CreateLinkedTokenSource(outerToken);
+		cts.CancelAfter(TimeSpan.FromSeconds(10));
+		var remoteVersionString = HttpClient.GetStringAsync(VersionUrlChinese, cts.Token)
+			.GetAwaiter().GetResult();
+		var match = DieMoeDisplayAtRegex().Match(remoteVersionString);
+		return match.Success ? match.Groups[1].Value : string.Empty;
+	}
 
 	private bool NeedsUpdate(string dllPath) {
 		if (!File.Exists(dllPath)) {
 			if (!IsChinese) return true;
 			try {
-				using var cancelAfterDelay = new CancellationTokenSource(TimeSpan.FromSeconds(15));
-				var remoteVersionString = HttpClient.GetStringAsync(VersionUrlChinese, cancelAfterDelay.Token).Result;
-				var match = DieMoeBuildVersionRegex().Match(remoteVersionString);
-				var buildVersion = match.Success ? match.Groups[1].Value : string.Empty;
-				if (string.IsNullOrEmpty(buildVersion)) {
-					Log.Error($"Failed to parse DieMoe Plugin version string: {remoteVersionString}");
+				var remotev = GetChineseVersionString();
+				if (string.IsNullOrEmpty(remotev)) {
+					Log.Error("Failed to parse DieMoe Plugin version string.");
 					return true;
 				}
-				RemoteDieMoeBuildVersion = buildVersion;
+				RemoteDieMoeBuildVersion = remotev;
 				return true;
 			} catch (Exception e) {
 				Log.Warning(e.ToString());
@@ -88,25 +112,21 @@ public partial class FetchDependencies {
 		try {
 			using var plugin = new TargetAssembly(dllPath);
 			if (!plugin.ApiVersionMatches()) return true;
-			using var cancelAfterDelay = new CancellationTokenSource(TimeSpan.FromSeconds(15));
-			if (!IsChinese)
+			if (!IsChinese) {
+				using var cancelAfterDelayG = new CancellationTokenSource(TimeSpan.FromSeconds(10));
 				return new Version(HttpClient
-					.GetStringAsync(VersionUrlGlobal, cancelAfterDelay.Token).Result) > plugin.Version;
-			var remoteVersionString = HttpClient.GetStringAsync(VersionUrlChinese, cancelAfterDelay.Token).Result;
-			var match = DieMoeBuildVersionRegex().Match(remoteVersionString);
-			var buildVersion = match.Success ? match.Groups[1].Value : string.Empty;
-			if (string.IsNullOrEmpty(buildVersion)) {
-				Log.Error($"Failed to parse DieMoe Plugin version string: {remoteVersionString}");
+					.GetStringAsync(VersionUrlGlobal, cancelAfterDelayG.Token).Result) > plugin.Version;
+			}
+			var remotev = GetChineseVersionString();
+			if (string.IsNullOrEmpty(remotev)) {
+				Log.Error("Failed to parse DieMoe Plugin version string.");
 				return false;
 			}
-			RemoteDieMoeBuildVersion = buildVersion;
+			RemoteDieMoeBuildVersion = remotev;
 			var localv = plugin.GetDieMoeBuildVersion();
-			Log.Warning($"LocalV: {localv}, RemoteV: {buildVersion}");
+			Log.Warning($"LocalV: {localv}, RemoteV: {remotev}");
 			if (localv == null) return true;
-			if (localv == buildVersion) return false;
-			var sp1 = buildVersion.Split('.');
-			var sp2 = localv.Split('.');
-			return int.Parse(sp2[0]) < int.Parse(sp1[0]) || int.Parse(sp2[0]) == int.Parse(sp1[0]) && int.Parse(sp2[1]) < int.Parse(sp1[1]);
+			return string.CompareOrdinal(localv, remotev) == -1;
 		} catch (Exception e) {
 			Log.Info(e.ToString());
 			return false;
