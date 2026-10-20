@@ -120,17 +120,8 @@ public class MainWindow() : Window(WindowPrefix) {
 		return (r, g, b);
 	}
 
-	private string? FFXIV_ACT_PluginVersion {
-		get {
-			field ??= Instance.fetchDependencies.GetFFXIV_ACT_PluginVersion();
-			return field;
-		}
-	}
-
-	internal void UpdateWindowTitle() {
-		WindowName =
-			$"IINACTEx [版本{Assembly.GetExecutingAssembly().GetName().Version?.ToString()}] [{ApiVersion.NamespaceIdentifier}] [核心{Instance.Version}] [解析{FFXIV_ACT_PluginVersion}{(Instance.Configuration.FFXIV_ACT_Plugin_CN_Update ? "(解析插件可更新，请重新加载插件以更新)" : "")}]###IINACTEx";
-	}
+	internal void UpdateWindowTitle() => WindowName =
+		$"IINACTEx [版本{Assembly.GetExecutingAssembly().GetName().Version?.ToString()}] [{ApiVersion.NamespaceIdentifier}] [核心{Instance.Version}] [解析{Instance.fetchDependencies.LastLocalV}{(Instance.Configuration.FFXIV_ACT_Plugin_CN_Update ? "(解析插件可更新，请重新加载插件以更新)" : "")}]###IINACTEx";
 
 	public override void Draw() {
 		foreach (var p in ImGuiColor) ImGui.PushStyleColor(p.Key, p.Value);

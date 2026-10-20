@@ -258,6 +258,20 @@ public static partial class LWindow {
 		var SimulatedBeepVolume = RealPlugin.Instance.cfg.SimulatedBeepVolume;
 		if (ImGui.SliderInt("蜂鸣器音量", ref SimulatedBeepVolume, 0, 100))
 			RealPlugin.Instance.cfg.SimulatedBeepVolume = SimulatedBeepVolume;
+
+		var rendererMode = (int)RealPlugin.Instance.cfg.ScarboroughRendererMode;
+		var rendererModes = new List<string> {
+			"原始 Win32/Direct2D",
+			"Dalamud ImGui"
+		};
+		ImGui.SetNextItemWidth(240 * ImGuiHelpers.GlobalScale);
+		if (ImGui.Combo("Scarborough渲染模式", ref rendererMode, rendererModes)) {
+			RealPlugin.Instance.cfg.ScarboroughRendererMode =
+				(Triggernometry.Core.Configuration.ScarboroughRendererModeEnum)rendererMode;
+			if (!RealPlugin.Instance.configBroken)
+				Task.Run(RealPlugin.Instance.SaveCurrentConfig);
+		}
+		ImGui.TextColored(ImGuiColors.DalamudYellow, "渲染模式只在插件重启后生效，修改后请重启插件。");
 	}
 
 

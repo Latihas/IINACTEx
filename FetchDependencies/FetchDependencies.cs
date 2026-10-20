@@ -10,6 +10,17 @@ using Dalamud.Plugin.Services;
 namespace FetchDependencies;
 
 public partial class FetchDependencies {
+	public string? LastLocalV {
+		get {
+			if (field == null) {
+				using var plugin = new TargetAssembly(Path.Combine(DependenciesDir, "FFXIV_ACT_Plugin.dll"));
+				field = plugin.GetDieMoeBuildVersion();
+			}
+			return field;
+		}
+		set;
+	}
+
 	public FetchDependencies(Version version, string assemblyDir, bool isChinese, int languagePreserve, HttpClient httpClient, IPluginLog log) {
 		PluginVersion = version;
 		DependenciesDir = assemblyDir;
@@ -92,7 +103,6 @@ public partial class FetchDependencies {
 		var match = DieMoeDisplayAtRegex().Match(remoteVersionString);
 		return match.Success ? match.Groups[1].Value : string.Empty;
 	}
-
 	private bool NeedsUpdate(string dllPath) {
 		if (!File.Exists(dllPath)) {
 			if (!IsChinese) return true;
@@ -123,10 +133,10 @@ public partial class FetchDependencies {
 				return false;
 			}
 			RemoteDieMoeBuildVersion = remotev;
-			var localv = plugin.GetDieMoeBuildVersion();
-			Log.Warning($"LocalV: {localv}, RemoteV: {remotev}");
-			if (localv == null) return true;
-			return string.CompareOrdinal(localv, remotev) == -1;
+			LastLocalV = plugin.GetDieMoeBuildVersion();
+			Log.Warning($"LocalV: {LastLocalV}, RemoteV: {remotev}");
+			if (LastLocalV == null) return true;
+			return string.CompareOrdinal(LastLocalV, remotev) == -1;
 		} catch (Exception e) {
 			Log.Info(e.ToString());
 			return false;
