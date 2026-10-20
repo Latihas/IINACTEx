@@ -152,8 +152,7 @@ public sealed class Plugin : IDalamudPlugin {
 			LogTick("FfxivActPlugin Inited");
 			OverlayPlugin.InitPlugin(LogTick, extraOpcodes);
 			LogTick("OverlayPlugin Initialized");
-			TriggernometryProxyPlugin.InitPlugin(this, PluginInterface, Log, ClientState, Framework, GameInteropProvider, ObjectTable, GameGui, SigScanner,
-				LogTick);
+			TriggernometryProxyPlugin.InitPlugin(this, PluginInterface, Log, ClientState, Framework, GameInteropProvider, ObjectTable, GameGui, SigScanner, TextureProvider, LogTick);
 			if (opcodesjsoncReplaced) Log.Warning("opcodesjsonc Replaced");
 			var registry = Container.Resolve<Registry>();
 			MainWindow.OverlayPresets = registry.OverlayPresets;
