@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Buffers;
 using System.Runtime.InteropServices;
 using FFXIVClientStructs.FFXIV.Client.Game.Character;
 using FFXIVClientStructs.FFXIV.Client.Game.Object;
@@ -8,20 +9,25 @@ namespace RainbowMage.OverlayPlugin.MemoryProcessors.Combatant;
 internal interface ICombatantMemory75 : ICombatantMemory;
 
 internal class CombatantMemory75 : CombatantMemory, ICombatantMemory75 {
+	private static readonly IntPtr CurrentProcessHandle = NativeMethods.GetCurrentProcess();
+
 	public override Version GetVersion() => new(7, 4);
 
 	// Returns a combatant if the combatant is a mob or a PC.
 	public override unsafe Combatant? GetMobFromByteArray(GameObject* gameObject, uint mycharID) {
 		if (gameObject == null) return null;
-		var mem = Marshal.PtrToStructure<Character>((IntPtr)gameObject);
-		return mem.EntityId is 0 or emptyID ? null : GetCombatantFromByteArray(gameObject, mycharID, false);
+		if (!TryReadStruct((IntPtr)gameObject, out BattleChara mem)) return null;
+		return mem.EntityId is 0 or emptyID ? null : CreateCombatant(mem, mycharID, false);
 	}
 
 	// Will return any kind of combatant, even if not a mob.
 	// This function always returns a combatant object, even if empty.
 	protected override unsafe Combatant? GetCombatantFromByteArray(GameObject* gameObject, uint mycharID, bool isPlayer, bool exceptEffects = false) {
 		if (gameObject == null) return null;
-		var ori = Marshal.PtrToStructure<BattleChara>((IntPtr)gameObject);
+		return TryReadStruct((IntPtr)gameObject, out BattleChara ori) ? CreateCombatant(ori, mycharID, isPlayer, exceptEffects) : null;
+	}
+
+	private static unsafe Combatant CreateCombatant(BattleChara ori, uint mycharID, bool isPlayer, bool exceptEffects = false) {
 		if (isPlayer) mycharID = ori.EntityId;
 		var type = (ObjectType)ori.ObjectKind;
 		var PCTargetID = (uint)ori.LookAt.Controller.Params[0].TargetParam.TargetId;
@@ -40,7 +46,7 @@ internal class CombatantMemory75 : CombatantMemory, ICombatantMemory75 {
 			// Normalize all possible aggression statuses into the basic 4 ones.
 			AggressionStatus = 0,
 			NPCTargetID = (uint)ori.TargetId,
-			RawEffectiveDistance = ori.YalmDistanceFromPlayerZ,
+			RawEffectiveDistance = ori.NextDistance,
 			PosX = position.X,
 			// Y and Z are deliberately swapped to match FFXIV_ACT_Plugin's data model
 			PosY = position.Z,
@@ -91,5 +97,28 @@ internal class CombatantMemory75 : CombatantMemory, ICombatantMemory75 {
 			combatant.MaxHP = 0;
 		}
 		return combatant;
+	}
+
+	private static bool TryReadStruct<T>(IntPtr address, out T value) where T : struct {
+		value = default;
+		if (address == IntPtr.Zero) return false;
+		var size = Marshal.SizeOf<T>();
+		var buffer = ArrayPool<byte>.Shared.Rent(size);
+		try {
+			var bytesRead = IntPtr.Zero;
+			if (!NativeMethods.ReadProcessMemory(CurrentProcessHandle, address, buffer, size, ref bytesRead) ||
+			    bytesRead.ToInt64() != size) {
+				return false;
+			}
+			var handle = GCHandle.Alloc(buffer, GCHandleType.Pinned);
+			try {
+				value = Marshal.PtrToStructure<T>(handle.AddrOfPinnedObject());
+				return true;
+			} finally {
+				handle.Free();
+			}
+		} finally {
+			ArrayPool<byte>.Shared.Return(buffer);
+		}
 	}
 }

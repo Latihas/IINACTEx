@@ -215,6 +215,9 @@ internal class NativeMethods {
 	public static extern IntPtr OpenProcess(ProcessAccessFlags processAccess, bool bInheritHandle, int processId);
 
 	[DllImport("kernel32.dll")]
+	public static extern IntPtr GetCurrentProcess();
+
+	[DllImport("kernel32.dll")]
 	public static extern int CloseHandle(IntPtr hObject);
 
 	[DllImport("kernel32.dll")]
