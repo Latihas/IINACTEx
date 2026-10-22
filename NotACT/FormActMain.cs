@@ -7,6 +7,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Media;
+using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
@@ -38,6 +39,7 @@ public partial class FormActMain : Form, ISynchronizeInvoke {
 	public IFramework PluginFramework;
 	internal volatile bool refreshTree;
 	private FileStream? stream, streamAct, streamTrn;
+	private int _logWriterRunning;
 
 	public FormActMain(IDalamudPlugin plugin, IPluginLog pluginLog, IFramework framework) {
 		PluginLog = pluginLog;
@@ -49,6 +51,8 @@ public partial class FormActMain : Form, ISynchronizeInvoke {
 		// ActGlobals.ActLocalization.AddPrebuild();
 		NotActMainFormatter.SetupEnvironment();
 		LastKnownTime = DateTime.Now;
+		PluginFramework.Update += LogReader;
+		PluginFramework.Update += LogWriter;
 		PluginFramework.Update += ThreadAfterCombatAction;
 	}
 
@@ -191,11 +195,6 @@ public partial class FormActMain : Form, ISynchronizeInvoke {
 	public void ChangeZone(string ZoneName) {
 		lastZoneRecord?.EndTime = LastKnownTime;
 		CurrentZone = ZoneName;
-		if (lastZoneRecord == null) {
-			//first run after parser init
-			PluginFramework.Update += LogReader;
-			PluginFramework.Update += LogWriter;
-		}
 		lastZoneRecord = new HistoryRecord(0, LastKnownTime, LastKnownTime.AddDays(1), CurrentZone,
 			ActGlobals.charName);
 		ActiveZone ??= new ZoneData(LastKnownTime, CurrentZone, true, false, false);
@@ -294,38 +293,56 @@ public partial class FormActMain : Form, ISynchronizeInvoke {
 		afterActionsQueue.Enqueue(Action);
 	}
 
-	private void LogWriter(IFramework _) {
+	private void LogWriter(IFramework __) {
+		if (Interlocked.CompareExchange(ref _logWriterRunning, 1, 0) != 0) return;
+		_ = Task.Run(async () => {
+			try {
+				await WriteLogQueuesAsync().ConfigureAwait(false);
+			} catch (ObjectDisposedException) {
+			} catch (Exception ex) {
+				WriteExceptionLog(ex, "LogWriter failed");
+			} finally {
+				Interlocked.Exchange(ref _logWriterRunning, 0);
+			}
+		});
+	}
+
+	private async Task WriteLogQueuesAsync() {
 		if (!WriteLogFile || DisableWritingPvpLogFile) return;
 		{
-			stream ??= new FileStream(LogFilePath, FileMode.Append, FileAccess.Write, FileShare.ReadWrite);
+			stream ??= new FileStream(LogFilePath, FileMode.Append, FileAccess.Write,
+				FileShare.ReadWrite, 64 * 1024, true);
 			outputWriter ??= new StreamWriter(stream);
-			while (LogQueue.TryDequeue(out var line))
-				outputWriter?.WriteLine(line);
-			outputWriter?.Flush();
+			await DrainQueueAsync(LogQueue, outputWriter).ConfigureAwait(false);
 		}
 		if (WriteActLogFile) {
-			streamAct ??= new FileStream(LogFilePath + ".actxt", FileMode.Append, FileAccess.Write, FileShare.ReadWrite);
+			streamAct ??= new FileStream(LogFilePath + ".actxt", FileMode.Append, FileAccess.Write,
+				FileShare.ReadWrite, 64 * 1024, true);
 			outputWriterAct ??= new StreamWriter(streamAct);
-			while (ActLogQueue.TryDequeue(out var line))
-				outputWriterAct?.WriteLine(line);
-			outputWriterAct?.Flush();
+			await DrainQueueAsync(ActLogQueue, outputWriterAct).ConfigureAwait(false);
 		}
 		if (WriteTrnLogFile) {
-			streamTrn ??= new FileStream(LogFilePath + ".trnxt", FileMode.Append, FileAccess.Write, FileShare.ReadWrite);
+			streamTrn ??= new FileStream(LogFilePath + ".trnxt", FileMode.Append, FileAccess.Write,
+				FileShare.ReadWrite, 64 * 1024, true);
 			outputWriterTrn ??= new StreamWriter(streamTrn);
-			while (TrnLogQueue.TryDequeue(out var line))
-				outputWriterTrn?.WriteLine(line);
-			outputWriterTrn?.Flush();
+			await DrainQueueAsync(TrnLogQueue, outputWriterTrn).ConfigureAwait(false);
 		}
+	}
+
+	private static async Task DrainQueueAsync(ConcurrentQueue<string> queue, StreamWriter writer) {
+		if (queue.IsEmpty) return;
+		var sb = new StringBuilder(64 * 1024);
+		while (sb.Length < 64 * 1024 && queue.TryDequeue(out var line))
+			sb.AppendLine(line);
+		if (sb.Length == 0) return;
+		await writer.WriteAsync(sb).ConfigureAwait(false);
+		await writer.FlushAsync().ConfigureAwait(false);
 	}
 
 	private void LogReader(IFramework _) {
 		var logOutput = (LogOutput)FfxivPlugin._dataCollection._logOutput;
 		lock (logOutput._LogQueueLock) {
-			while (logOutput._LogQueue.TryDequeue(out var line)) {
-				if (string.IsNullOrEmpty(line)) PluginLog.Error($"line is empty: {logOutput._LogQueue.Count}");
-				ParseRawLogLine(line);
-			}
+			while (logOutput._LogQueue.TryDequeue(out var line)) ParseRawLogLine(line);
 		}
 	}
 
@@ -395,11 +412,14 @@ public partial class FormActMain : Form, ISynchronizeInvoke {
 		PluginFramework.Update -= ThreadAfterCombatAction;
 		PluginFramework.Update -= LogReader;
 		PluginFramework.Update -= LogWriter;
+		var spin = new SpinWait();
+		while (Interlocked.CompareExchange(ref _logWriterRunning, 1, 0) != 0) spin.SpinOnce();
 		outputWriter?.Dispose();
 		outputWriterAct?.Dispose();
 		outputWriterTrn?.Dispose();
 		stream?.Dispose();
 		streamAct?.Dispose();
 		streamTrn?.Dispose();
+		Interlocked.Exchange(ref _logWriterRunning, 0);
 	}
 }
