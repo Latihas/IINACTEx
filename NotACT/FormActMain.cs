@@ -351,6 +351,7 @@ public partial class FormActMain : Form, ISynchronizeInvoke {
 		var logOutput = (LogOutput)FfxivPlugin._dataCollection._logOutput;
 		while (pluginActive) {
 			lock (logOutput._LogQueueLock) {
+				if (logOutput._LogQueue.Count == 0) Thread.Sleep(50);
 				while (logOutput._LogQueue.TryDequeue(out var line)) {
 					if (string.IsNullOrEmpty(line)) PluginLog.Error($"line is empty: {logOutput._LogQueue.Count}");
 					ParseRawLogLine(line);
