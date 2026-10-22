@@ -33,14 +33,11 @@ public partial class FormActMain : Form, ISynchronizeInvoke {
 	private long lastKnownTicks;
 	private DateTime lastKnownTime;
 	private HistoryRecord? lastZoneRecord;
-	private Thread logReaderThread;
-	private Thread logWriterThread;
 	public string? LocalPlayerName;
 	private StreamWriter? outputWriter, outputWriterAct, outputWriterTrn;
 	public IFramework PluginFramework;
 	internal volatile bool refreshTree;
 	private FileStream? stream, streamAct, streamTrn;
-	private bool pluginActive = true;
 
 	public FormActMain(IDalamudPlugin plugin, IPluginLog pluginLog, IFramework framework) {
 		PluginLog = pluginLog;
@@ -196,15 +193,12 @@ public partial class FormActMain : Form, ISynchronizeInvoke {
 		CurrentZone = ZoneName;
 		if (lastZoneRecord == null) {
 			//first run after parser init
-			StartLogReaderThread();
-			StartLogWriterThread();
+			PluginFramework.Update += LogReader;
+			PluginFramework.Update += LogWriter;
 		}
 		lastZoneRecord = new HistoryRecord(0, LastKnownTime, LastKnownTime.AddDays(1), CurrentZone,
 			ActGlobals.charName);
-		// if (ActiveZone != null) return;
-		// ZoneList.Add(
 		ActiveZone ??= new ZoneData(LastKnownTime, CurrentZone, true, false, false);
-		// );
 	}
 
 	public void ActCommands(string commandText) {
@@ -300,62 +294,37 @@ public partial class FormActMain : Form, ISynchronizeInvoke {
 		afterActionsQueue.Enqueue(Action);
 	}
 
-	private void StartLogWriterThread() {
-		logWriterThread = new Thread(LogWriter) {
-			IsBackground = true,
-			Name = "LogWriterThread",
-			Priority = ThreadPriority.BelowNormal
-		};
-		logWriterThread.Start();
-	}
-
-	private void LogWriter() {
-		while (pluginActive) {
-			if (!WriteLogFile || DisableWritingPvpLogFile) {
-				Thread.Sleep(2000);
-				continue;
-			}
+	private void LogWriter(IFramework _) {
+		if (!WriteLogFile || DisableWritingPvpLogFile) return;
+		{
 			stream ??= new FileStream(LogFilePath, FileMode.Append, FileAccess.Write, FileShare.ReadWrite);
 			outputWriter ??= new StreamWriter(stream);
 			while (LogQueue.TryDequeue(out var line))
 				outputWriter?.WriteLine(line);
 			outputWriter?.Flush();
-
-			if (WriteActLogFile) {
-				streamAct ??= new FileStream(LogFilePath + ".actxt", FileMode.Append, FileAccess.Write, FileShare.ReadWrite);
-				outputWriterAct ??= new StreamWriter(streamAct);
-				while (ActLogQueue.TryDequeue(out var line))
-					outputWriterAct?.WriteLine(line);
-				outputWriterAct?.Flush();
-			}
-			if (WriteTrnLogFile) {
-				streamTrn ??= new FileStream(LogFilePath + ".trnxt", FileMode.Append, FileAccess.Write, FileShare.ReadWrite);
-				outputWriterTrn ??= new StreamWriter(streamTrn);
-				while (TrnLogQueue.TryDequeue(out var line))
-					outputWriterTrn?.WriteLine(line);
-				outputWriterTrn?.Flush();
-			}
+		}
+		if (WriteActLogFile) {
+			streamAct ??= new FileStream(LogFilePath + ".actxt", FileMode.Append, FileAccess.Write, FileShare.ReadWrite);
+			outputWriterAct ??= new StreamWriter(streamAct);
+			while (ActLogQueue.TryDequeue(out var line))
+				outputWriterAct?.WriteLine(line);
+			outputWriterAct?.Flush();
+		}
+		if (WriteTrnLogFile) {
+			streamTrn ??= new FileStream(LogFilePath + ".trnxt", FileMode.Append, FileAccess.Write, FileShare.ReadWrite);
+			outputWriterTrn ??= new StreamWriter(streamTrn);
+			while (TrnLogQueue.TryDequeue(out var line))
+				outputWriterTrn?.WriteLine(line);
+			outputWriterTrn?.Flush();
 		}
 	}
 
-	private void StartLogReaderThread() {
-		logReaderThread = new Thread(LogReader) {
-			IsBackground = true,
-			Name = "LogReaderThread",
-			Priority = ThreadPriority.Normal
-		};
-		logReaderThread.Start();
-	}
-
-	private void LogReader() {
+	private void LogReader(IFramework _) {
 		var logOutput = (LogOutput)FfxivPlugin._dataCollection._logOutput;
-		while (pluginActive) {
-			lock (logOutput._LogQueueLock) {
-				if (logOutput._LogQueue.Count == 0) Thread.Sleep(50);
-				while (logOutput._LogQueue.TryDequeue(out var line)) {
-					if (string.IsNullOrEmpty(line)) PluginLog.Error($"line is empty: {logOutput._LogQueue.Count}");
-					ParseRawLogLine(line);
-				}
+		lock (logOutput._LogQueueLock) {
+			while (logOutput._LogQueue.TryDequeue(out var line)) {
+				if (string.IsNullOrEmpty(line)) PluginLog.Error($"line is empty: {logOutput._LogQueue.Count}");
+				ParseRawLogLine(line);
 			}
 		}
 	}
@@ -423,8 +392,9 @@ public partial class FormActMain : Form, ISynchronizeInvoke {
 	}
 
 	internal void RemoveFrameworkUpdates() {
-		pluginActive = false;
 		PluginFramework.Update -= ThreadAfterCombatAction;
+		PluginFramework.Update -= LogReader;
+		PluginFramework.Update -= LogWriter;
 		outputWriter?.Dispose();
 		outputWriterAct?.Dispose();
 		outputWriterTrn?.Dispose();
