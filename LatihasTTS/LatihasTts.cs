@@ -14,6 +14,7 @@ namespace LatihasTTS;
 
 [SuppressMessage("ReSharper", "UnusedType.Global")]
 [SuppressMessage("Usage", "CA2211:非常量字段应当不可见")]
+[SuppressMessage("ReSharper", "UnusedMember.Global")]
 public partial class LatihasTts : IDisposable {
 	private static string Tmpdir;
 	private static string Assetsdir;

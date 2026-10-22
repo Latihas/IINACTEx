@@ -59,9 +59,6 @@ public partial class FormActMain : Form, ISynchronizeInvoke {
 		NotActMainFormatter.SetupEnvironment();
 		LastKnownTime = DateTime.Now;
 		_ = ConsumeLogLinesAsync();
-		PluginFramework.Update += LogReader;
-		PluginFramework.Update += LogWriter;
-		PluginFramework.Update += ThreadAfterCombatAction;
 	}
 
 	public IPluginLog PluginLog { get; }
@@ -201,6 +198,12 @@ public partial class FormActMain : Form, ISynchronizeInvoke {
 	public void ChangeZone(string ZoneName) {
 		lastZoneRecord?.EndTime = LastKnownTime;
 		CurrentZone = ZoneName;
+		if (lastZoneRecord == null) {
+			//first run after parser init
+			PluginFramework.Update += LogReader;
+			PluginFramework.Update += LogWriter;
+			PluginFramework.Update += ThreadAfterCombatAction;
+		}
 		lastZoneRecord = new HistoryRecord(0, LastKnownTime, LastKnownTime.AddDays(1), CurrentZone,
 			ActGlobals.charName);
 		ActiveZone ??= new ZoneData(LastKnownTime, CurrentZone, true, false, false);
