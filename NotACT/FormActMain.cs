@@ -348,11 +348,15 @@ public partial class FormActMain : Form, ISynchronizeInvoke {
 		await writer.FlushAsync().ConfigureAwait(false);
 	}
 
+	private static readonly Queue<string> TempLogRead = [];
+
 	private void LogReader(IFramework _) {
 		var logOutput = (LogOutput)FfxivPlugin._dataCollection._logOutput;
-		lock (logOutput._LogQueueLock) {
-			while (logOutput._LogQueue.TryDequeue(out var line)) ParseRawLogLine(line);
-		}
+		lock (logOutput._LogQueueLock)
+			while (logOutput._LogQueue.TryDequeue(out var line))
+				TempLogRead.Enqueue(line);
+		// ReSharper disable once InconsistentlySynchronizedField
+		while (TempLogRead.TryDequeue(out var line)) ParseRawLogLine(line);
 	}
 
 	private async Task ConsumeLogLinesAsync() {
