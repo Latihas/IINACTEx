@@ -311,7 +311,10 @@ public partial class FormActMain : Form, ISynchronizeInvoke {
 
 	private void LogWriter() {
 		while (pluginActive) {
-			if (!WriteLogFile || DisableWritingPvpLogFile) continue;
+			if (!WriteLogFile || DisableWritingPvpLogFile) {
+				Thread.Sleep(2000);
+				continue;
+			}
 			stream ??= new FileStream(LogFilePath, FileMode.Append, FileAccess.Write, FileShare.ReadWrite);
 			outputWriter ??= new StreamWriter(stream);
 			while (LogQueue.TryDequeue(out var line))
