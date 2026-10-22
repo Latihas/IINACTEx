@@ -90,17 +90,17 @@ public partial class LatihasTts : IDisposable {
 			var ad = new byte[2 * a.Length];
 			var iter = 0;
 			foreach (var da in a) ad[iter++] = ad[iter++] = (byte)(da * 128 * 1.25);
-			Task.Run(() => {
-				try {
-					if (!Directory.Exists(Tmpdir)) Directory.CreateDirectory(Tmpdir);
-					using var fostream = new MemoryStream(ad);
-					using var outputStream = new FileStream(tmpfp, FileMode.Create, FileAccess.Write);
-					fostream.CopyTo(outputStream);
-				} catch (Exception e) {
-					Log.Error(e.ToString());
-				}
-			});
+			_ = WriteCacheAsync(tmpfp, ad);
 			return new MemoryStream(ad);
+		}
+
+		private static async Task WriteCacheAsync(string path, byte[] data) {
+			try {
+				if (!Directory.Exists(Tmpdir)) Directory.CreateDirectory(Tmpdir);
+				await File.WriteAllBytesAsync(path, data).ConfigureAwait(false);
+			} catch (Exception e) {
+				Log.Error(e.ToString());
+			}
 		}
 
 		public class Player {

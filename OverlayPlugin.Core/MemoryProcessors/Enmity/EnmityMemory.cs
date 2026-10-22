@@ -38,7 +38,6 @@ public abstract class EnmityMemory(TinyIoCContainer container) : IEnmityMemory {
 			};
 			result.Add(entry);
 		}
-		combatantMemory.ReturnCombatant();
 		return result;
 	}
 

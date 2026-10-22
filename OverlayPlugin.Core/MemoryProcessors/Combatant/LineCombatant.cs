@@ -171,17 +171,12 @@ public class LineCombatant : IDisposable {
 					lastUpdated = now,
 					combatant = combatant
 				};
-
-				combatantMemoryManager.ReturnCombatant();
-
 				WriteLine(
 					CombatantMemoryChangeType.Change,
 					combatant.ID,
 					string.Join("",
 						CombatantChangeCriteria.AllFields.Where(field => changed.Contains(field))
 							.Select(fi => FormatFieldChange(fi, combatant))));
-			} else {
-				combatantMemoryManager.ReturnCombatant();
 			}
 		}
 
@@ -192,10 +187,7 @@ public class LineCombatant : IDisposable {
 				continue;
 			}
 			if (combatantIDs.Contains(ID)) continue;
-			combatantStateMap.TryRemove(ID, out var combatantStateInfo);
-			if (combatantStateInfo != null) {
-				combatantMemoryManager.ReturnCombatant();
-			}
+			combatantStateMap.TryRemove(ID, out _);
 			WriteLine(CombatantMemoryChangeType.Remove, ID, "");
 		}
 	}
@@ -204,9 +196,7 @@ public class LineCombatant : IDisposable {
 		var oldVal = fi.GetValue(oldCombatant);
 		var newVal = fi.GetValue(combatant);
 		// There's some weird behavior with just using `==` or `.Equals` here, where two UInt32 values that are the same somehow aren't.
-		if (oldVal is IComparable comparable) {
-			return comparable.CompareTo(newVal) == 0;
-		}
+		if (oldVal is IComparable comparable) return comparable.CompareTo(newVal) == 0;
 		return oldVal.Equals(newVal);
 	}
 

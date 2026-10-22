@@ -45,22 +45,16 @@ public abstract class CombatantMemory : ICombatantMemory {
 			         .Where(entry => entry.Value != null)) {
 			var combatant = GetMobFromByteArray(p.Value, mychar?.ID ?? 0);
 			if (combatant == null) continue;
-			if (seen.Contains(combatant.ID)) {
-				ReturnCombatant();
-				continue;
-			}
+			if (seen.Contains(combatant.ID)) continue;
 
 			// TODO: should this just be a dictionary? there are a lot of id lookups.
 			result.Add(combatant);
 			seen.Add(combatant.ID);
 		}
-
-		ReturnCombatant();
 		return result;
 	}
 
-	public void ReturnCombatant() {
-	}
+	public void ReturnCombatant() { }
 
 	// Returns a combatant if the combatant is a mob or a PC.
 	public abstract unsafe Combatant? GetMobFromByteArray(GameObject* gameObject, uint mycharID);

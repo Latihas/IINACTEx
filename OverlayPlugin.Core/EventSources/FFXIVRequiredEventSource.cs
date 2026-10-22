@@ -129,49 +129,47 @@ internal class FFXIVRequiredEventSource : EventSourceBase {
 	private List<Dictionary<string, object>> GetCombatants(List<uint> ids, List<string> names, List<string> props) {
 		var filteredCombatants = new List<Dictionary<string, object>>();
 		var pluginCombatants = repository.GetCombatants();
-
-		if (!combatantMemory.IsValid())
-			return filteredCombatants;
-
+		if (!combatantMemory.IsValid()) return filteredCombatants;
+		var pluginCombatantsById = new Dictionary<uint, PluginCombatant>(pluginCombatants.Count);
+		foreach (var combatant in pluginCombatants) pluginCombatantsById.TryAdd(combatant.ID, combatant);
+		var idSet = ids.Count > 0 ? new HashSet<uint>(ids) : null;
+		var nameSet = names.Count > 0
+			? new HashSet<string>(names, StringComparer.InvariantCultureIgnoreCase)
+			: null;
+		var propSet = props.Count > 0 ? new HashSet<string>(props) : null;
 		var memCombatants = combatantMemory.GetCombatantList();
 		foreach (var combatant in memCombatants) {
 			if (combatant.ID == 0) continue;
-			var include = false;
-			var combatantName = combatant.Name;
-			if (ids.Count == 0 && names.Count == 0) {
-				include = true;
-			} else {
-				if (ids.Any(id => combatant.ID == id)) include = true;
-				if (!include && names.Any(name => string.Equals(combatantName, name, StringComparison.InvariantCultureIgnoreCase)))
-					include = true;
+			var include = idSet == null && nameSet == null;
+			if (!include && idSet != null && idSet.Contains(combatant.ID)) include = true;
+			if (!include && nameSet != null && combatant.Name != null && nameSet.Contains(combatant.Name)) include = true;
+			if (!include) continue;
+
+			var jObjCombatant = JObject.FromObject(combatant);
+			var result = new Dictionary<string, object>(jObjCombatant.Count);
+			foreach (var property in jObjCombatant.Properties()) {
+				result[property.Name] = property.Value.ToObject<object>();
 			}
 
-			if (!include) continue;
-			var jObjCombatant = JObject.FromObject(combatant).ToObject<Dictionary<string, object>>();
-			var ID = Convert.ToUInt32(jObjCombatant["ID"]);
-			var pluginCombatant = pluginCombatants.FirstOrDefault(c => c.ID == ID);
+			var pluginCombatant = pluginCombatantsById.GetValueOrDefault(combatant.ID);
 			if (pluginCombatant != null) {
-				jObjCombatant["PartyType"] = GetPartyType(pluginCombatant);
+				result["PartyType"] = GetPartyType(pluginCombatant);
 			}
 
 			// Handle 0xFFFE (outofrange1) and 0xFFFF (outofrange2) values for WorldID
-			var WorldID = Convert.ToUInt32(jObjCombatant["WorldID"]);
+			var WorldID = Convert.ToUInt32(result["WorldID"]);
 			string WorldName = null;
 			if (WorldID < 0xFFFE) WorldName = GetWorldName(WorldID);
 
-			jObjCombatant["WorldName"] = WorldName;
+			result["WorldName"] = WorldName;
 
 			// If the request is filtering properties, remove them here
-			if (props.Count > 0) {
-				jObjCombatant.Keys
-					.Where(k => !props.Contains(k))
-					.ToList()
-					.ForEach(k => jObjCombatant.Remove(k));
+			if (propSet != null) {
+				foreach (var key in result.Keys.ToList().Where(key => !propSet.Contains(key))) result.Remove(key);
 			}
 
-			filteredCombatants.Add(jObjCombatant);
+			filteredCombatants.Add(result);
 		}
-		foreach (var combatant in memCombatants) combatantMemory.ReturnCombatant();
 		return filteredCombatants;
 	}
 
@@ -347,7 +345,6 @@ internal class FFXIVRequiredEventSource : EventSourceBase {
 				}
 			];
 			newParty.partyLeaderIndex = 0;
-			combatantMemory.ReturnCombatant();
 		}
 
 		var dispatchEvent = false;

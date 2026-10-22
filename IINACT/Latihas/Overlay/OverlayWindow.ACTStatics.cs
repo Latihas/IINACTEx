@@ -94,6 +94,7 @@ public partial class OverlayWindow {
 		"Kills", "Deaths"
 	];
 	private readonly Lock _textureLock = new();
+	private int _textureUpdateRunning;
 	private TreeNodeData? _currentSelectedNode;
 	private List<object> _currentTable = [];
 	private IDalamudTextureWrap? _currentTexture;
@@ -818,12 +819,6 @@ public partial class OverlayWindow {
 	private void LoadNodeData() {
 		if ((DateTime.Now - lastUpdate).TotalSeconds < Instance.Configuration.ACTUpdateInterval) return;
 		if (Instance.Configuration.UseActPic) {
-			Task.Run(() => {
-				lock (_textureLock) {
-					_currentTexture?.Dispose();
-					_currentTexture = null;
-				}
-			});
 			lastUpdate = DateTime.Now;
 		}
 		PopulateTreeView();
@@ -940,10 +935,24 @@ public partial class OverlayWindow {
 	private DateTime lastUpdate = DateTime.MinValue;
 
 	private void UpdateGraphTexture(Bitmap bitmap) {
+		if (Interlocked.CompareExchange(ref _textureUpdateRunning, 1, 0) != 0) {
+			bitmap.Dispose();
+			return;
+		}
 		Task.Run(() => {
-			lock (_textureLock) {
-				_currentTexture?.Dispose();
-				_currentTexture = Bitmap2Texture(bitmap);
+			try {
+				var newTexture = Bitmap2Texture(bitmap);
+				IDalamudTextureWrap? oldTexture;
+				lock (_textureLock) {
+					oldTexture = _currentTexture;
+					_currentTexture = newTexture;
+				}
+				oldTexture?.Dispose();
+			} catch (Exception ex) {
+				Log.Error(ex, "Failed to update graph texture");
+				bitmap.Dispose();
+			} finally {
+				Interlocked.Exchange(ref _textureUpdateRunning, 0);
 			}
 		});
 	}

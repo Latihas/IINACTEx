@@ -33,7 +33,5 @@ public class CombatantMemoryManager : ICombatantMemory {
 
 	public Combatant? GetSelfCombatant() => IsValid() ? memory.GetSelfCombatant() : null;
 
-	public void ReturnCombatant() {
-		if (IsValid()) memory.ReturnCombatant();
-	}
+	public void ReturnCombatant() { }
 }

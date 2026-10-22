@@ -352,6 +352,21 @@ public static partial class LWindow {
 		}
 	}
 
+	private static DateTime LastUpdateCsDlls = DateTime.MinValue;
+	private static string[] GetCsDlls {
+		get {
+			field ??= [];
+			var now = DateTime.Now;
+			if ((now - LastUpdateCsDlls).TotalSeconds < 1) return field;
+			LastUpdateCsDlls = now;
+			return field = [
+				.. Directory.GetFiles(Instance.PluginActScriptDirectory, "*.cs", SearchOption.TopDirectoryOnly)
+					.Concat(Directory.GetFiles(Instance.PluginActScriptDirectory, "*.dll", SearchOption.TopDirectoryOnly))
+					.Select(Path.GetFileName).Cast<string>()
+			];
+		}
+	}
+
 	internal static void DrawSettingsScripts() {
 		using var bar = ImRaii.TabBar("插件Bar");
 		if (!bar) return;
@@ -383,9 +398,7 @@ public static partial class LWindow {
 					Instance.Configuration.ScriptCommander = commander;
 					Instance.Configuration.Save();
 				}
-				NewTable(["名称", "状态", "描述", "操作"], Directory.GetFiles(Instance.PluginActScriptDirectory, "*.cs", SearchOption.TopDirectoryOnly)
-					.Concat(Directory.GetFiles(Instance.PluginActScriptDirectory, "*.dll", SearchOption.TopDirectoryOnly))
-					.Select(Path.GetFileName).Cast<string>().ToArray(), [
+				NewTable(["名称", "状态", "描述", "操作"], GetCsDlls, [
 					i => ImGui.Text(i),
 					i => {
 						if (i.StartsWith('_')) {
@@ -683,8 +696,8 @@ public static partial class LWindow {
 		DrawTriggerVarESettings(true, TriggerVarType.Scalar);
 	}
 
-	// private static string Ename = "";
-	// private static string Eexpr = "";
+// private static string Ename = "";
+// private static string Eexpr = "";
 
 	private static void DrawTriggerVarESettings(bool persist, TriggerVarType type) {
 		//     ImGui.Separator();

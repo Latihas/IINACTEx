@@ -10,6 +10,7 @@ using System.Media;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
+using System.Threading.Channels;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using Advanced_Combat_Tracker.Resources;
@@ -27,6 +28,12 @@ public partial class FormActMain : Form, ISynchronizeInvoke {
 
 	public static bool PluginInitialized;
 	private readonly ConcurrentQueue<MasterSwing> afterActionsQueue = new();
+	private readonly Channel<LogLineEventArgs> logLineChannel =
+		Channel.CreateUnbounded<LogLineEventArgs>(new UnboundedChannelOptions {
+			SingleReader = true,
+			SingleWriter = false
+		});
+	private readonly CancellationTokenSource logLineCts = new();
 	private readonly ReaderWriterLockSlim lastKnownLock = new(LockRecursionPolicy.SupportsRecursion);
 	public dynamic DalamudPlugin;
 	public DateTimeLogParser? GetDateTimeFromLog;
@@ -51,6 +58,7 @@ public partial class FormActMain : Form, ISynchronizeInvoke {
 		// ActGlobals.ActLocalization.AddPrebuild();
 		NotActMainFormatter.SetupEnvironment();
 		LastKnownTime = DateTime.Now;
+		_ = ConsumeLogLinesAsync();
 		PluginFramework.Update += LogReader;
 		PluginFramework.Update += LogWriter;
 		PluginFramework.Update += ThreadAfterCombatAction;
@@ -181,10 +189,8 @@ public partial class FormActMain : Form, ISynchronizeInvoke {
 		BeforeLogLineRead(false, logLineEventArgs);
 		if (WriteLogFile && WriteActLogFile)
 			ActLogQueue.Enqueue(logLineEventArgs.logLine);
-		Task.Run(() => {
-			OnLogLineRead?.Invoke(false, new LogLineEventArgs(logLineEventArgs.logLine, logLineEventArgs.detectedType,
-				parsedLogTime, CurrentZone, inCombat, "Plugin"));
-		});
+		_ = logLineChannel.Writer.TryWrite(new LogLineEventArgs(logLineEventArgs.logLine, logLineEventArgs.detectedType,
+			parsedLogTime, CurrentZone, inCombat, "Plugin"));
 	}
 
 	public void FakeOnLogLineRead(string s) => OnLogLineRead?.Invoke(false,
@@ -346,6 +352,24 @@ public partial class FormActMain : Form, ISynchronizeInvoke {
 		}
 	}
 
+	private async Task ConsumeLogLinesAsync() {
+		try {
+			await foreach (var item in logLineChannel.Reader.ReadAllAsync(logLineCts.Token).ConfigureAwait(false)) {
+				try {
+					OnLogLineRead?.Invoke(false, item);
+				} catch (Exception ex) {
+					WriteExceptionLog(ex, "OnLogLineRead handler failed");
+				}
+			}
+		} catch (OperationCanceledException) {
+			// Immediate shutdown was requested.
+		} catch (Exception ex) {
+			WriteExceptionLog(ex, "Log line consumer failed");
+		} finally {
+			logLineCts.Dispose();
+		}
+	}
+
 	private void ThreadAfterCombatAction(IFramework _) {
 		while (afterActionsQueue.TryDequeue(out var masterSwing)) {
 			ActiveZone?.AddCombatAction(masterSwing);
@@ -412,6 +436,8 @@ public partial class FormActMain : Form, ISynchronizeInvoke {
 		PluginFramework.Update -= ThreadAfterCombatAction;
 		PluginFramework.Update -= LogReader;
 		PluginFramework.Update -= LogWriter;
+		logLineChannel.Writer.TryComplete();
+		logLineCts.Cancel();
 		var spin = new SpinWait();
 		while (Interlocked.CompareExchange(ref _logWriterRunning, 1, 0) != 0) spin.SpinOnce();
 		outputWriter?.Dispose();

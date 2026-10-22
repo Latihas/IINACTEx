@@ -26,21 +26,16 @@ public abstract class AggroMemory(TinyIoCContainer container) : IAggroMemory {
 
 		uint currentTargetID = 0;
 		var targetCombatant = targetMemory.GetTargetCombatant();
-		if (targetCombatant != null) {
-			currentTargetID = targetCombatant.ID;
-			combatantMemory.ReturnCombatant();
-		}
+		if (targetCombatant != null) currentTargetID = targetCombatant.ID;
 
 		var result = new List<AggroEntry>();
 
 		var list = UIState.Instance()->Hater.Haters;
 		foreach (var e in list) {
-			if (e.EntityId <= 0)
-				continue;
+			if (e.EntityId <= 0) continue;
 			var e1 = e;
 			var c = combatantList.Find(x => x.ID == e1.EntityId);
-			if (c == null)
-				continue;
+			if (c == null) continue;
 
 			var entry = new AggroEntry {
 				ID = e.EntityId,
@@ -65,19 +60,15 @@ public abstract class AggroMemory(TinyIoCContainer container) : IAggroMemory {
 						ID = t.ID,
 						Name = t.Name,
 						OwnerID = t.OwnerID,
-						isMe = mychar.ID == t.ID ? true : false,
+						isMe = mychar.ID == t.ID,
 						Enmity = 0,
 						HateRate = 0,
 						Job = t.Job
 					};
 				}
 			}
-
 			result.Add(entry);
 		}
-
-		combatantMemory.ReturnCombatant();
-
 		return result;
 	}
 }

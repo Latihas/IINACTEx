@@ -177,9 +177,6 @@ public class EnmityEventSource : EventSourceBase {
 			if (targetableEnemies) {
 				DispatchEvent(CreateTargetableEnemyList(combatants));
 			}
-
-			foreach (var combatant in allCombatants)
-				combatantMemory.ReturnCombatant();
 #if TRACEPERF
                 Log(LogLevel.Trace, "UpdateEnmity: {0}ms", stopwatch.ElapsedMilliseconds);
 #endif
@@ -227,18 +224,11 @@ public class EnmityEventSource : EventSourceBase {
 					enmity.TargetOfTarget.Distance = mychar.DistanceString(enmity.TargetOfTarget);
 					enmity.TargetOfTarget.EffectiveDistance = mychar.EffectiveDistanceString(enmity.TargetOfTarget);
 				}
-
-				combatantMemory.ReturnCombatant();
 			}
 		} catch (Exception ex) {
 			logger.Log(LogLevel.Error, "CreateTargetData: {0}", ex);
 		}
-
-		var ret = JObject.FromObject(enmity);
-		combatantMemory.ReturnCombatant();
-		combatantMemory.ReturnCombatant();
-		combatantMemory.ReturnCombatant();
-		return ret;
+		return JObject.FromObject(enmity);
 	}
 
 	internal JObject CreateAggroList(List<Combatant> combatants) {
