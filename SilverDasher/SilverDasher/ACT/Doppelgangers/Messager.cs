@@ -45,6 +45,7 @@ internal class Messager(SilverDasher plugin) : Doppelganger(plugin) {
 		var tomestoneConfig = new MqttClientOptionsBuilder().WithCredentials(Tailor.Judge() + Convert.ToBase64String(Encoding.UTF8.GetBytes(Keeper.PlayerName)) + Keeper.PlayerWorldID, Tailor.Seal(Agent.session, Keeper.PlayerName + Keeper.PlayerWorld))
 			.WithTlsOptions(o => o.WithSslProtocols(SslProtocols.Tls12)).WithWebSocketServer(o => o.WithUri(DataStorage.SilverDasherTree))
 			.Build();
+		Tomestone.ApplicationMessageReceivedAsync -= Unpack;
 		Tomestone.ApplicationMessageReceivedAsync += Unpack;
 		Task.Run(async delegate {
 			var i = 0;

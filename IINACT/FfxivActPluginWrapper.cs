@@ -124,6 +124,7 @@ public partial class FfxivActPluginWrapper : IDisposable {
 		cancellationTokenSource.Cancel();
 		cancellationTokenSource.Dispose();
 		Framework.Update -= MobDataRefresh;
+		RemoveDataSubscription();
 		SetChatMessageLoggingEnabled(false);
 		ActGlobals.oFormActMain.BeforeLogLineRead -= OFormActMain_BeforeLogLineRead;
 		ffxivActPlugin.DeInitPlugin();
@@ -205,6 +206,7 @@ public partial class FfxivActPluginWrapper : IDisposable {
 	}
 
 	private void SetupDataSubscription() => ffxivActPlugin.DataSubscription.ZoneChanged += OnZoneChanged;
+	private void RemoveDataSubscription() => ffxivActPlugin.DataSubscription.ZoneChanged -= OnZoneChanged;
 
 	private static void OnZoneChanged(uint zoneId, string zoneName) => ActGlobals.oFormActMain.ChangeZone(zoneName);
 

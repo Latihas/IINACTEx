@@ -162,6 +162,7 @@ internal class TextToSpeechProvider : IDisposable {
 	}
 
 	public void Dispose() {
+		ActGlobals.oFormActMain.TextToSpeech -= Speak;
 		speechChannel.Writer.TryComplete();
 		googleWaveOut?.Dispose();
 		LatihasTts?.Dispose();
