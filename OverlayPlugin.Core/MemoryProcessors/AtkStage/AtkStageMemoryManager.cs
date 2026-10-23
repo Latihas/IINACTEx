@@ -5,7 +5,7 @@ namespace RainbowMage.OverlayPlugin.MemoryProcessors.AtkStage;
 public interface IAtkStageMemory : IVersionedMemory {
 	IntPtr GetAddonAddress(string name);
 	T? GetAddon<T>() where T : struct;
-	object GetAddon(string name);
+	object? GetAddon(string name);
 }
 
 internal class AtkStageMemoryManager : IAtkStageMemory {
@@ -28,5 +28,5 @@ internal class AtkStageMemoryManager : IAtkStageMemory {
 
 	public T? GetAddon<T>() where T : struct => memory.GetAddon<T>();
 
-	public object GetAddon(string name) => memory.GetAddon(name);
+	public object? GetAddon(string name) => memory.GetAddon(name);
 }

@@ -125,17 +125,13 @@ public class PluginMain {
 			OverlayApi.SendMessage += (_, e) => {
 				Task.Run(() => {
 					var targetOverlay = Overlays.FirstOrDefault(x => x.Name == e.Target);
-					if (targetOverlay != null) {
-						targetOverlay.SendMessage(e.Message);
-					}
+					targetOverlay?.SendMessage(e.Message);
 				});
 			};
 			OverlayApi.OverlayMessage += (_, e) => {
 				Task.Run(() => {
 					var targetOverlay = Overlays.FirstOrDefault(x => x.Name == e.Target);
-					if (targetOverlay != null) {
-						targetOverlay.OverlayMessage(e.Message);
-					}
+					targetOverlay?.OverlayMessage(e.Message);
 				});
 			};
 
@@ -367,8 +363,7 @@ public class PluginMain {
 			}
 
 			foreach (var es in registry.EventSources) {
-				if (es != null)
-					es.SaveConfig(Config);
+				es?.SaveConfig(Config);
 			}
 
 			_container.Resolve<BuiltinEventConfig>().SaveConfig(Config);

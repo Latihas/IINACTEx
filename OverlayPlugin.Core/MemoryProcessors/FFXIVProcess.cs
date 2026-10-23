@@ -1,9 +1,5 @@
 using System;
-using System.Buffers;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Runtime.InteropServices;
-using Dalamud;
 using FFXIVClientStructs.FFXIV.Client.Game;
 using FFXIVClientStructs.FFXIV.Client.Game.Object;
 using Newtonsoft.Json.Linq;
@@ -20,21 +16,8 @@ public class LimitedProcess(Process process) {
 // Exposes the FFXIV game directly. Call FindProcess() regularly to update
 // memory addresses when FFXIV is run or closed.
 public abstract partial class FFXIVProcess(TinyIoCContainer container) {
-	internal readonly ILogger logger_ = container.Resolve<ILogger>();
+	private readonly ILogger logger_ = container.Resolve<ILogger>();
 	private readonly LimitedProcess process_ = new(Process.GetCurrentProcess());
-
-	// Values found in the EntityStruct's type field.
-	// public enum EntityType : byte {
-	// 	None = 0,
-	// 	PC = 1,
-	// 	Monster = 2,
-	// 	NPC = 3,
-	// 	Aetherite = 5,
-	// 	GatheringNode = 6,
-	// 	ClickableObject = 7,
-	// 	Minion = 9,
-	// 	Mailbox = 12
-	// }
 
 	// Values found in the EntityStruct's job field.
 	public enum EntityJob : byte {
@@ -133,31 +116,6 @@ public abstract partial class FFXIVProcess(TinyIoCContainer container) {
 			level == o.level &&
 			// debug_job == o.debug_job &&
 			shield_value == o.shield_value;
-
-		public override int GetHashCode() {
-			var hash = 17;
-			hash = hash * 31 + name.GetHashCode();
-			hash = hash * 31 + id.GetHashCode();
-			hash = hash * 31 + type.GetHashCode();
-			hash = hash * 31 + distance.GetHashCode();
-			hash = hash * 31 + pos_x.GetHashCode();
-			hash = hash * 31 + pos_y.GetHashCode();
-			hash = hash * 31 + pos_z.GetHashCode();
-			hash = hash * 31 + rotation.GetHashCode();
-			hash = hash * 31 + hp.GetHashCode();
-			hash = hash * 31 + max_hp.GetHashCode();
-			hash = hash * 31 + mp.GetHashCode();
-			hash = hash * 31 + max_mp.GetHashCode();
-			hash = hash * 31 + gp.GetHashCode();
-			hash = hash * 31 + max_gp.GetHashCode();
-			hash = hash * 31 + cp.GetHashCode();
-			hash = hash * 31 + max_cp.GetHashCode();
-			hash = hash * 31 + job.GetHashCode();
-			hash = hash * 31 + level.GetHashCode();
-			hash = hash * 31 + shield_value.GetHashCode();
-			// hash = hash * 31 + debug_job.GetHashCode();
-			return hash;
-		}
 	}
 
 	// The op before the pointer wildcard in the signature reads a pointer-to-a-pointer
@@ -176,212 +134,7 @@ public abstract partial class FFXIVProcess(TinyIoCContainer container) {
 
 	public unsafe bool GetInGameCombat() => Conditions.Instance()->InCombat;
 
-	internal unsafe byte[]? GetRawJobSpecificDataBytes() {
-		var jg = JobGaugeManager.Instance();
-		if (jg == null) return null;
-		var c = jg->CurrentGauge;
-		return c == null ? null : SafeMemory.Read<byte>((IntPtr)jg->CurrentGauge, sizeof(IntPtr));
-	}
-
-	public abstract JObject GetJobSpecificData(EntityJob job);
-	internal abstract unsafe EntityData GetEntityData(GameObject* entityPtr);
-	public abstract EntityData GetSelfData();
-
-	[SuppressGCTransition]
-	[LibraryImport("SafeMemoryReader.dll")]
-	private static partial int ReadMemory(nint dest, nint src, int size);
-
-	/// Reads |count| bytes at |addr| in the |process_|. Returns null on error.
-	internal unsafe byte[] Read8(IntPtr addr, int count) {
-		var data = new byte[count];
-
-		fixed (byte* dataPtr = data) {
-			var result = ReadMemory((nint)dataPtr, addr, count);
-			if (result != 0) return null;
-		}
-
-		return data;
-	}
-
-	internal unsafe byte[] Read8Pooled(IntPtr addr, int count) {
-		var data = ArrayPool<byte>.Shared.Rent(count);
-
-		fixed (byte* dataPtr = data) {
-			var result = ReadMemory((nint)dataPtr, addr, count);
-			if (result != 0) return null;
-		}
-
-		return data;
-	}
-
-	/// Reads |addr| in the |process_| and returns it as a 16bit ints. Returns null on error.
-	internal short[] Read16(IntPtr addr, int count) {
-		var buffer = Read8(addr, count * 2);
-		if (buffer == null)
-			return null;
-		var out_buffer = new short[count];
-		for (var i = 0; i < count; ++i)
-			out_buffer[i] = BitConverter.ToInt16(buffer, 2 * i);
-		return out_buffer;
-	}
-
-	/// Reads |addr| in the |process_| and returns it as a 32bit ints. Returns null on error.
-	internal int[] Read32(IntPtr addr, int count) {
-		var buffer = Read8(addr, count * 4);
-		if (buffer == null)
-			return null;
-		var out_buffer = new int[count];
-		for (var i = 0; i < count; ++i)
-			out_buffer[i] = BitConverter.ToInt32(buffer, 4 * i);
-		return out_buffer;
-	}
-
-	/// Reads |addr| in the |process_| and returns it as a 32bit uints. Returns null on error.
-	internal uint[] Read32U(IntPtr addr, int count) {
-		var buffer = Read8(addr, count * 4);
-		if (buffer == null)
-			return null;
-		var out_buffer = new uint[count];
-		for (var i = 0; i < count; ++i)
-			out_buffer[i] = BitConverter.ToUInt32(buffer, 4 * i);
-		return out_buffer;
-	}
-
-	/// Reads |addr| in the |process_| and returns it as a 32bit floats. Returns null on error.
-	internal float[] ReadSingle(IntPtr addr, int count) {
-		var buffer = Read8(addr, count * 4);
-		if (buffer == null)
-			return null;
-		var out_buffer = new float[count];
-		for (var i = 0; i < count; ++i)
-			out_buffer[i] = BitConverter.ToSingle(buffer, 4 * i);
-		return out_buffer;
-	}
-
-	/// Reads |addr| in the |process_| and returns it as a 64bit ints. Returns null on error.
-	internal long[] Read64(IntPtr addr, int count) {
-		var buffer = Read8(addr, count * 8);
-		if (buffer == null)
-			return null;
-		var out_buffer = new long[count];
-		for (var i = 0; i < count; ++i)
-			out_buffer[i] = BitConverter.ToInt64(buffer, 8 * i);
-		return out_buffer;
-	}
-
-	/// Reads |addr| in the |process_| and returns it as a 64bit pointer. Returns 0 on error.
-	internal IntPtr ReadIntPtr(IntPtr addr) {
-		var buffer = Read8Pooled(addr, 8);
-		if (buffer == null)
-			return IntPtr.Zero;
-		var ret = new IntPtr(BitConverter.ToInt64(buffer, 0));
-		ArrayPool<byte>.Shared.Return(buffer);
-		return ret;
-	}
-
-	/// <summary>
-	///     Signature scan.
-	///     Searches the |process_| memory for a |pattern|, which can include wildcards. When the
-	///     pattern is found, it reads a pointer found at |offset| bytes after the end of the
-	///     pattern.
-	///     If the pattern is found multiple times, the pointer relative to the end of each
-	///     instance is returned.
-	///     Heavily based on code from ACT_EnmityPlugin.
-	/// </summary>
-	/// <param name="pattern">String containing bytes represented in hex to search for, with "??" as a wildcard.</param>
-	/// <param name="offset">The offset from the end of the found pattern to read a pointer from the process memory.</param>
-	/// <param name="rip_addressing">Uses x64 RIP relative addressing mode</param>
-	/// <returns>A list of pointers read relative to the end of strings in the process memory matching the |pattern|.</returns>
-	internal List<IntPtr> SigScan(string pattern, int pattern_offset, bool rip_addressing, int rip_offset = 0) {
-		var matches_list = new List<IntPtr>();
-
-		if (pattern == null || pattern.Length % 2 != 0) {
-			logger_.Log(LogLevel.Error, "Invalid signature pattern: " + pattern);
-			return matches_list;
-		}
-
-		// Build a byte array from the pattern string. "??" is a wildcard
-		// represented as null in the array.
-		var pattern_array = new byte?[pattern.Length / 2];
-		for (var i = 0; i < pattern.Length / 2; i++) {
-			var text = pattern.Substring(i * 2, 2);
-			if (text == "??") {
-				pattern_array[i] = null;
-			} else {
-				pattern_array[i] = Convert.ToByte(text, 16);
-			}
-		}
-
-		// Read this many bytes at a time. This needs to be a 32bit number as BitConverter pulls
-		// from a 32bit offset into the array that we read from the process.
-		const int kMaxReadSize = 65536;
-
-		var module_memory_size = process_.MainModule.ModuleMemorySize;
-		var process_start_addr = process_.MainModule.BaseAddress;
-		var process_end_addr = IntPtr.Add(process_start_addr, module_memory_size);
-
-		var read_start_addr = process_start_addr;
-		var read_buffer = new byte[kMaxReadSize];
-		while (read_start_addr.ToInt64() < process_end_addr.ToInt64()) {
-			// Determine how much to read without going off the end of the process.
-			var bytes_left = process_end_addr.ToInt64() - read_start_addr.ToInt64();
-			var read_size = (IntPtr)Math.Min(bytes_left, kMaxReadSize);
-
-			var num_bytes_read = IntPtr.Zero;
-			if (NativeMethods.ReadProcessMemory(process_.Handle, read_start_addr, read_buffer, read_size,
-				    ref num_bytes_read)) {
-				var max_search_offset =
-					num_bytes_read.ToInt32() - pattern_array.Length - Math.Max(0, pattern_offset);
-				// With RIP we will read a 4byte pointer at the |offset|, else we read an 8byte pointer. Either
-				// way we can't find a pattern such that the pointer we want to read is off the end of the buffer.
-				if (rip_addressing)
-					max_search_offset -= 4; //  + 1L; ?
-				else
-					max_search_offset -= 8;
-
-				for (var search_offset = 0; (long)search_offset < max_search_offset; ++search_offset) {
-					var found_pattern = true;
-					for (var pattern_i = 0; pattern_i < pattern_array.Length; pattern_i++) {
-						// Wildcard always matches, otherwise compare to the read_buffer.
-						var pattern_byte = pattern_array[pattern_i];
-						if (pattern_byte.HasValue &&
-						    pattern_byte.Value != read_buffer[search_offset + pattern_i]) {
-							found_pattern = false;
-							break;
-						}
-					}
-
-					if (found_pattern) {
-						IntPtr pointer;
-						if (rip_addressing) {
-							var rip_ptr_offset =
-								BitConverter.ToInt32(read_buffer,
-									search_offset + pattern_array.Length + pattern_offset);
-							var pattern_start_game_addr = read_start_addr.ToInt64() + search_offset;
-							long pointer_offset_from_pattern_start = pattern_array.Length + pattern_offset;
-							var rip_ptr_base = pattern_start_game_addr + pointer_offset_from_pattern_start + 4 +
-							                   rip_offset;
-							// In RIP addressing, the pointer from the executable is 32bits which we stored as |rip_ptr_offset|. The pointer
-							// is then added to the address of the byte following the pointer, making it relative to that address, which we
-							// stored as |rip_ptr_base|.
-							pointer = new IntPtr(rip_ptr_offset + rip_ptr_base);
-						} else {
-							// In normal addressing, the 64bits found with the pattern are the absolute pointer.
-							pointer = new IntPtr(
-								BitConverter.ToInt64(read_buffer,
-									search_offset + pattern_array.Length + pattern_offset));
-						}
-
-						matches_list.Add(pointer);
-					}
-				}
-			}
-
-			// Move to the next contiguous buffer to read.
-			// TODO: If the pattern lies across 2 buffers, then it would not be found.
-			read_start_addr = IntPtr.Add(read_start_addr, kMaxReadSize);
-		}
-
-		return matches_list;
-	}
+	public abstract JObject? GetJobSpecificData(EntityJob job);
+	internal abstract unsafe EntityData? GetEntityData(GameObject* entityPtr);
+	public abstract EntityData? GetSelfData();
 }

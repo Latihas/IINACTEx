@@ -45,7 +45,7 @@ public class FFXIVClientStructsEventSource : EventSourceBase {
 		RegisterEventHandler("getSortedPartyList", _ => GetSortedPartyList());
 	}
 
-	private unsafe JObject GetSortedPartyList() {
+	private unsafe JObject? GetSortedPartyList() {
 		var partyList = new SortedPartyList();
 
 		if (!atkStageMemory.IsValid()) return null;
@@ -109,30 +109,18 @@ public class FFXIVClientStructsEventSource : EventSourceBase {
 		};
 	}
 
-	private JObject GetAddon(string key) {
-		if (!atkStageMemory.IsValid()) {
-			return null;
-		}
-
+	private JObject? GetAddon(string key) {
+		if (!atkStageMemory.IsValid()) return null;
 		var addon = atkStageMemory.GetAddon(key);
-
-		if (addon == null) {
-			return null;
-		}
-
-		static void HandleDeserializationError(object sender, ErrorEventArgs errorArgs) {
-			errorArgs.ErrorContext.Handled = true;
-		}
-
-		var settings = new JsonSerializerSettings {
+		if (addon == null) return null;
+		return JObject.FromObject(addon, JsonSerializer.CreateDefault(new JsonSerializerSettings {
 			ReferenceLoopHandling = ReferenceLoopHandling.Ignore,
 			Error = HandleDeserializationError
-		};
-		var serializer = JsonSerializer.CreateDefault(settings);
+		}));
 
-		var jObject = JObject.FromObject(addon, serializer);
-
-		return jObject;
+		static void HandleDeserializationError(object? sender, ErrorEventArgs errorArgs) {
+			errorArgs.ErrorContext.Handled = true;
+		}
 	}
 
 	public override void Start() {

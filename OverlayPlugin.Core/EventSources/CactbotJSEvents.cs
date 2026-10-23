@@ -1,4 +1,6 @@
 ﻿using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
+using System.Numerics;
 using RainbowMage.OverlayPlugin.MemoryProcessors;
 
 namespace RainbowMage.OverlayPlugin.EventSources;
@@ -9,12 +11,13 @@ public interface JSEvent {
 }
 
 // This class defines all the event |details| structures that go to each event type.
+[SuppressMessage("ReSharper", "UnusedMember.Global")]
 public class JSEvents {
-	public class Point3F(float x, float y, float z) {
-		public float x = x;
-		public float y = y;
-		public float z = z;
-	}
+	// public class Point3F(float x, float y, float z) {
+	// 	public float x = x;
+	// 	public float y = y;
+	// 	public float z = z;
+	// }
 
 	public class ForceReloadEvent : JSEvent {
 		public string EventName() => "onForceReload";
@@ -38,11 +41,11 @@ public class JSEvents {
 		public List<string> logs = logs;
 	}
 
-	public class ImportLogEvent(List<string> logs) : JSEvent {
-		public string EventName() => "onImportLogEvent";
-
-		public List<string> logs = logs;
-	}
+	// public class ImportLogEvent(List<string> logs) : JSEvent {
+	// 	public string EventName() => "onImportLogEvent";
+	//
+	// 	public List<string> logs = logs;
+	// }
 
 	public class InCombatChangedEvent(bool inActCombat, bool inGameCombat) : JSEvent {
 		public string EventName() => "onInCombatChangedEvent";
@@ -61,9 +64,9 @@ public class JSEvents {
 		public string EventName() => "onPlayerDied";
 	}
 
-	public class PartyWipeEvent : JSEvent {
-		public string EventName() => "onPartyWipe";
-	}
+	// public class PartyWipeEvent : JSEvent {
+	// 	public string EventName() => "onPartyWipe";
+	// }
 
 	public class PlayerChangedEvent(FFXIVProcess.EntityData e) : JSEvent {
 		public string EventName() => "onPlayerChangedEvent";
@@ -86,62 +89,62 @@ public class JSEvents {
 		// public string debugJob = e.debug_job;
 		public uint currentShield = e.shield_value;
 
-		public Point3F pos = new(e.pos_x, e.pos_y, e.pos_z);
+		public Vector3 pos = new(e.pos_x, e.pos_y, e.pos_z);
 		public float rotation = e.rotation;
 
 		// One of the FooJobDetails structures, depending on the value of |job|.
 		public object jobDetail = null;
 	}
 
-	public abstract class EntityChangedEvent {
-		public EntityChangedEvent(FFXIVProcess.EntityData e) {
-			if (e != null) {
-				id = e.id;
-				level = e.level;
-				name = e.name;
-				job = e.job.ToString();
-				currentHP = e.hp;
-				maxHP = e.max_hp;
-				currentMP = e.mp;
-				maxMP = e.max_mp;
-				pos = new Point3F(e.pos_x, e.pos_y, e.pos_z);
-				distance = e.distance;
-			}
-		}
-
-		public uint id;
-		public int level;
-		public string name;
-		public string job;
-
-		public uint currentHP;
-		public uint maxHP;
-		public uint currentMP;
-		public uint maxMP;
-		public int currentTP = 0;
-		public int maxTP = 0;
-
-		public Point3F pos;
-		public int distance;
-	}
-
-	public class SendSaveData(string data) : JSEvent {
-		public string EventName() => "onSendSaveData";
-
-		public string data = data;
-	}
-
-	public class DataFilesRead(Dictionary<string, string> files) : JSEvent {
-		public string EventName() => "onDataFilesRead";
-
-		public Dictionary<string, string> files = files;
-	}
-
-	public class OnInitializeOverlay(string location, Dictionary<string, string> files, string language) : JSEvent {
-		public string EventName() => "onInitializeOverlay";
-
-		public string userLocation = location;
-		public Dictionary<string, string> localUserFiles = files;
-		public string language = language;
-	}
+	// public abstract class EntityChangedEvent {
+	// 	public EntityChangedEvent(FFXIVProcess.EntityData e) {
+	// 		if (e != null) {
+	// 			id = e.id;
+	// 			level = e.level;
+	// 			name = e.name;
+	// 			job = e.job.ToString();
+	// 			currentHP = e.hp;
+	// 			maxHP = e.max_hp;
+	// 			currentMP = e.mp;
+	// 			maxMP = e.max_mp;
+	// 			pos = new Point3F(e.pos_x, e.pos_y, e.pos_z);
+	// 			distance = e.distance;
+	// 		}
+	// 	}
+	//
+	// 	public uint id;
+	// 	public int level;
+	// 	public string name;
+	// 	public string job;
+	//
+	// 	public uint currentHP;
+	// 	public uint maxHP;
+	// 	public uint currentMP;
+	// 	public uint maxMP;
+	// 	public int currentTP = 0;
+	// 	public int maxTP = 0;
+	//
+	// 	public Point3F pos;
+	// 	public int distance;
+	// }
+	//
+	// public class SendSaveData(string data) : JSEvent {
+	// 	public string EventName() => "onSendSaveData";
+	//
+	// 	public string data = data;
+	// }
+	//
+	// public class DataFilesRead(Dictionary<string, string> files) : JSEvent {
+	// 	public string EventName() => "onDataFilesRead";
+	//
+	// 	public Dictionary<string, string> files = files;
+	// }
+	//
+	// public class OnInitializeOverlay(string location, Dictionary<string, string> files, string language) : JSEvent {
+	// 	public string EventName() => "onInitializeOverlay";
+	//
+	// 	public string userLocation = location;
+	// 	public Dictionary<string, string> localUserFiles = files;
+	// 	public string language = language;
+	// }
 }

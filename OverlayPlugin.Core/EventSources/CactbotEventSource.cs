@@ -36,7 +36,7 @@ public class CactbotEventSource : EventSourceBase {
 	// When true, the update function should reset notify state back to defaults.
 	private bool resetNotifyState;
 
-	private Timer fastUpdateTimer;
+	private Timer? fastUpdateTimer;
 
 	// Held while the |fast_update_timer_| is running.
 	private FFXIVProcess ffxiv;
@@ -45,23 +45,23 @@ public class CactbotEventSource : EventSourceBase {
 	private string pcLocale;
 	private List<FileSystemWatcher> watchers;
 
-	public const string ForceReloadEvent = "onForceReload";
-	public const string GameExistsEvent = "onGameExistsEvent";
-	public const string GameActiveChangedEvent = "onGameActiveChangedEvent";
-	public const string LogEvent = "onLogEvent";
-	public const string ImportLogEvent = "onImportLogEvent";
-	public const string InCombatChangedEvent = "onInCombatChangedEvent";
-	public const string ZoneChangedEvent = "onZoneChangedEvent";
-	public const string PlayerDiedEvent = "onPlayerDied";
-	public const string PartyWipeEvent = "onPartyWipe";
-	public const string PlayerChangedEvent = "onPlayerChangedEvent";
-	public const string SendSaveDataEvent = "onSendSaveData";
-	public const string DataFilesReadEvent = "onDataFilesRead";
-	public const string InitializeOverlayEvent = "onInitializeOverlay";
+	// public const string ForceReloadEvent = "onForceReload";
+	// public const string GameExistsEvent = "onGameExistsEvent";
+	// public const string GameActiveChangedEvent = "onGameActiveChangedEvent";
+	// public const string LogEvent = "onLogEvent";
+	// public const string ImportLogEvent = "onImportLogEvent";
+	// public const string InCombatChangedEvent = "onInCombatChangedEvent";
+	// public const string ZoneChangedEvent = "onZoneChangedEvent";
+	// public const string PlayerDiedEvent = "onPlayerDied";
+	// public const string PartyWipeEvent = "onPartyWipe";
+	// public const string PlayerChangedEvent = "onPlayerChangedEvent";
+	// public const string SendSaveDataEvent = "onSendSaveData";
+	// public const string DataFilesReadEvent = "onDataFilesRead";
+	// public const string InitializeOverlayEvent = "onInitializeOverlay";
 
-	public void Wipe() {
-		DispatchToJs(new JSEvents.PartyWipeEvent());
-	}
+	// public void Wipe() {
+	// 	DispatchToJs(new JSEvents.PartyWipeEvent());
+	// }
 
 	public CactbotEventSource(TinyIoCContainer container) : base(container) {
 		Name = "Cactbot";
@@ -219,11 +219,7 @@ public class CactbotEventSource : EventSourceBase {
 
 	public override void Stop() {
 		fastUpdateTimer?.Stop();
-
-		var formActMain = ActGlobals.oFormActMain;
-
-		if (formActMain is not null)
-			formActMain.OnLogLineRead -= OnLogLineRead;
+		ActGlobals.oFormActMain.OnLogLineRead -= OnLogLineRead;
 	}
 
 	public override void Dispose() {
@@ -557,14 +553,10 @@ public class CactbotEventSource : EventSourceBase {
 
 	private void StartFileWatcher() {
 		watchers = [];
-		var paths = new List<string> {
-			Config.UserConfigFile
-		};
+		List<string?> paths = [Config.UserConfigFile];
 
 		foreach (var path in paths) {
-			if (string.IsNullOrEmpty(path))
-				continue;
-
+			if (string.IsNullOrEmpty(path)) continue;
 			string watchDir;
 			try {
 				// Get canonical url for paths so that Directory.Exists will work properly.
@@ -573,8 +565,7 @@ public class CactbotEventSource : EventSourceBase {
 				continue;
 			}
 
-			if (!Directory.Exists(watchDir))
-				continue;
+			if (!Directory.Exists(watchDir)) continue;
 
 			var watcher = new FileSystemWatcher {
 				Path = watchDir,
@@ -617,7 +608,7 @@ public class CactbotEventSource : EventSourceBase {
 		public bool? InActCombat;
 		public bool? InGameCombat;
 		public bool Dead;
-		public string ZoneName;
+		public string? ZoneName;
 		public JObject JobData = new();
 		public FFXIVProcess.EntityData Player;
 	}

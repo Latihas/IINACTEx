@@ -22,18 +22,16 @@ public abstract class JobGaugeMemory : IJobGaugeMemory {
 			}
 			if (obj.Job != Job) return false;
 			var objRawData = obj.RawData;
-			var rawData = RawData;
-			if (objRawData.Length != rawData.Length) return false;
-			return !objRawData.Where((t, i) => t != rawData[i]).Any();
+			var _rawData = RawData;
+			if (objRawData.Length != _rawData.Length) return false;
+			return !objRawData.Where((t, i) => t != _rawData[i]).Any();
 		}
 	}
-
-	// protected FFXIVMemory memory = container.Resolve<FFXIVMemory>();
 	public bool IsValid() => true;
 
 	public void ScanPointers() {
 	}
 
 	public abstract Version GetVersion();
-	public abstract IJobGauge GetJobGauge();
+	public abstract IJobGauge? GetJobGauge();
 }

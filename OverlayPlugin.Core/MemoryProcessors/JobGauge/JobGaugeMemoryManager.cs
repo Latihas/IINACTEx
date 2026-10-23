@@ -51,12 +51,9 @@ public enum JobGaugeJob : byte {
 
 public interface IJobGauge : IEquatable<IJobGauge> {
 	JobGaugeJob Job { get; }
-	IBaseJobGauge Data { get; }
+	IBaseJobGauge? Data { get; }
 	int[] RawData { get; }
-#if !DEBUG
-	[JsonIgnore]
-#endif
-	object BaseObject { get; }
+	[JsonIgnore] object BaseObject { get; }
 }
 
 public interface IJobGaugeMemory : IVersionedMemory {
@@ -79,7 +76,7 @@ internal class JobGaugeMemoryManager : IJobGaugeMemory {
 
 	Version IVersionedMemory.GetVersion() => memory.GetVersion();
 
-	public IJobGauge GetJobGauge() => memory.GetJobGauge();
+	public IJobGauge? GetJobGauge() => memory.GetJobGauge();
 }
 
 public interface IBaseJobGauge;

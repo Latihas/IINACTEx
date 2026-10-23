@@ -7,12 +7,11 @@ namespace RainbowMage.OverlayPlugin.EventSources;
 
 [Serializable]
 public class CactbotEventSourceConfig {
-	public event EventHandler WatchFileChangesChanged;
+	public event EventHandler? WatchFileChangesChanged;
 
 	private static IPluginConfig _pluginConfig;
 
-	public static CactbotEventSourceConfig LoadConfig(
-		IPluginConfig pluginConfig, ILogger logger) {
+	public static CactbotEventSourceConfig LoadConfig(IPluginConfig pluginConfig, ILogger logger) {
 		_pluginConfig = pluginConfig;
 		var result = new CactbotEventSourceConfig();
 
@@ -51,35 +50,25 @@ public class CactbotEventSourceConfig {
 		_pluginConfig.Save();
 	}
 
-	public Dictionary<string, JToken> OverlayData;
+	public Dictionary<string, JToken>? OverlayData;
 
 	public DateTime LastUpdateCheck;
 
-	[JsonIgnore] public string DisplayLanguage {
+	[JsonIgnore] public string? DisplayLanguage {
 		get {
-			if (!OverlayData.TryGetValue("options", out var options))
-				return null;
+			if (OverlayData == null || !OverlayData.TryGetValue("options", out var options)) return null;
 			var general = options["general"];
-			if (general == null)
-				return null;
-			var dir = general["DisplayLanguage"];
-			if (dir == null)
-				return null;
-			return dir.ToString();
+			var dir = general?["DisplayLanguage"];
+			return dir?.ToString();
 		}
 	}
 
-	[JsonIgnore] public string UserConfigFile {
+	[JsonIgnore] public string? UserConfigFile {
 		get {
-			if (!OverlayData.TryGetValue("options", out var options))
-				return null;
+			if (OverlayData == null || !OverlayData.TryGetValue("options", out var options)) return null;
 			var general = options["general"];
-			if (general == null)
-				return null;
-			var dir = general["CactbotUserDirectory"];
-			if (dir == null)
-				return null;
-			return dir.ToString();
+			var dir = general?["CactbotUserDirectory"];
+			return dir?.ToString();
 		}
 	}
 
@@ -87,14 +76,10 @@ public class CactbotEventSourceConfig {
 
 	[JsonIgnore] public bool WatchFileChanges {
 		get {
-			if (!OverlayData.TryGetValue("options", out var options))
-				return false;
+			if (OverlayData == null || !OverlayData.TryGetValue("options", out var options)) return false;
 			var general = options["general"];
-			if (general == null)
-				return false;
-			var dir = general["ReloadOnFileChange"];
-			if (dir == null)
-				return false;
+			var dir = general?["ReloadOnFileChange"];
+			if (dir == null) return false;
 			try {
 				return dir.ToObject<bool>();
 			} catch {

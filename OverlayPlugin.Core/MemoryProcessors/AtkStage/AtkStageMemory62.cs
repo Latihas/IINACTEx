@@ -347,9 +347,7 @@ internal class AtkStageMemory62(TinyIoCContainer container) : AtkStageMemory, IA
 	}
 
 	public object? GetAddon(string name) {
-		if (!AddonMap.TryGetValue(name, out var addonType) || !IsValid())
-			return null;
-
+		if (!AddonMap.TryGetValue(name, out var addonType) || !IsValid()) return null;
 		var ptr = GetAddonAddress(name);
 		if (ptr == nint.Zero) return null;
 		var addon = Marshal.PtrToStructure(ptr, addonType);

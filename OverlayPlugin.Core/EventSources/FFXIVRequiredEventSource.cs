@@ -278,9 +278,7 @@ internal class FFXIVRequiredEventSource : EventSourceBase {
 
 	public override void Stop() {
 		base.Stop();
-		if (cancellationToken != null) {
-			cancellationToken.Cancel();
-		}
+		cancellationToken?.Cancel();
 	}
 
 	private async void PollJobGauge() {
