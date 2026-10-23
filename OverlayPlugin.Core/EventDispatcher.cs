@@ -8,7 +8,7 @@ namespace RainbowMage.OverlayPlugin;
 
 public class EventDispatcher(TinyIoCContainer container) {
 	private readonly ILogger _logger = container.Resolve<ILogger>();
-	private readonly ConcurrentDictionary<string, Func<JObject, JToken>> handlers = [];
+	private readonly ConcurrentDictionary<string, Func<JObject, JToken?>> handlers = [];
 	private readonly ConcurrentDictionary<string, List<IEventReceiver>> eventFilter = [];
 	private readonly ConcurrentDictionary<string, Func<JObject?>> stateCallbacks = [];
 
@@ -16,7 +16,7 @@ public class EventDispatcher(TinyIoCContainer container) {
 		_logger.Log(level, string.Format(message, args));
 	}
 
-	public void RegisterHandler(string name, Func<JObject, JToken> handler) {
+	public void RegisterHandler(string name, Func<JObject, JToken?> handler) {
 		if (!handlers.TryAdd(name, handler)) {
 			throw new Exception(string.Format(Resources.DuplicateHandlerError, name));
 		}
@@ -103,7 +103,7 @@ public class EventDispatcher(TinyIoCContainer container) {
 		}
 	}
 
-	public JToken CallHandler(JObject e) {
+	public JToken? CallHandler(JObject e) {
 		var handlerName = e["call"]!.ToString();
 		if (!handlers.TryGetValue(handlerName, out var value))
 			throw new Exception(string.Format(Resources.MissingHandlerError, handlerName));
@@ -112,7 +112,6 @@ public class EventDispatcher(TinyIoCContainer container) {
 		if (result != null && result.Type != JTokenType.Object) {
 			throw new Exception("Handler response must be an object or null");
 		}
-
 		return result;
 	}
 

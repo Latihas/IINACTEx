@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Numerics;
 
 namespace RainbowMage.OverlayPlugin.MemoryProcessors.Combatant;
 
@@ -123,6 +124,7 @@ public class Combatant {
 	public float PosX;
 	public float PosY;
 	public float PosZ;
+	private Vector3 Position => new(PosX, PosY, PosZ);
 	public float Heading;
 	public float Radius;
 
@@ -161,21 +163,13 @@ public class Combatant {
 	public short TransformationId;
 	public byte WeaponId;
 
-	private float GetDistance(Combatant target) {
-		var distanceX = Math.Abs(PosX - target.PosX);
-		var distanceY = Math.Abs(PosY - target.PosY);
-		var distanceZ = Math.Abs(PosZ - target.PosZ);
-		return (float)Math.Sqrt(distanceX * distanceX + distanceY * distanceY + distanceZ * distanceZ);
-	}
+	private float GetDistance(Combatant target) => Vector3.Distance(Position, target.Position);
 
 	public string DistanceString(Combatant target) => GetDistance(target).ToString("0.00");
 
-	public string EffectiveDistanceString(Combatant target) {
+	public string EffectiveDistanceString(Combatant target) =>
 		// Mild hack for backwards compat for pre-6.x with no Radius memory location.
-		if (target.Radius == 0)
-			return RawEffectiveDistance.ToString("0.00");
-		return (GetDistance(target) - target.Radius).ToString("0.00");
-	}
+		target.Radius == 0 ? RawEffectiveDistance.ToString("0.00") : (GetDistance(target) - target.Radius).ToString("0.00");
 }
 
 [Serializable]

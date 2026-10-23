@@ -93,7 +93,7 @@ public abstract class EventSourceBase : IEventSource {
 		dispatcher.RegisterEventType(type, () => eventCache[type]);
 	}
 
-	protected void RegisterEventHandler(string name, Func<JObject, JToken> handler) {
+	protected void RegisterEventHandler(string name, Func<JObject, JToken?> handler) {
 		dispatcher.RegisterHandler(name, handler);
 	}
 

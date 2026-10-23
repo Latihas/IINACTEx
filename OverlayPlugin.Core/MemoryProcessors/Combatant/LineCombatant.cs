@@ -27,6 +27,15 @@ public class LineCombatant : IDisposable {
 	private bool _disposed;
 	private bool inCombat;
 
+	#region PreDefineFields
+
+	private static readonly FieldInfo PosXField = typeof(Combatant).GetField(nameof(Combatant.PosX))!;
+	private static readonly FieldInfo PosYField = typeof(Combatant).GetField(nameof(Combatant.PosY))!;
+	private static readonly FieldInfo PosZField = typeof(Combatant).GetField(nameof(Combatant.PosZ))!;
+	private static readonly FieldInfo HeadingField = typeof(Combatant).GetField(nameof(Combatant.Heading))!;
+
+	#endregion
+
 	public LineCombatant(TinyIoCContainer container) {
 		logger = container.Resolve<ILogger>();
 		ffxiv = container.Resolve<FFXIVRepository>();
@@ -96,7 +105,7 @@ public class LineCombatant : IDisposable {
 		var criteria = CombatantChangeCriteria.Criteria(inCombat);
 
 		// Check combatants currently in memory first
-		foreach (var combatant in combatants.Where(combatant => filter.Length <= 0 || filter.Contains(combatant.ID))) {
+		foreach (var combatant in combatants.Where(combatant => filter.Length == 0 || Array.IndexOf(filter, combatant.ID) >= 0)) {
 			// If this is a new combatant, always write a line for it
 			if (!combatantStateMap.TryGetValue(combatant.ID, out var oldState)) {
 				var state = new CombatantStateInfo {
@@ -138,10 +147,10 @@ public class LineCombatant : IDisposable {
 
 				// If any position data has changed, write all position data
 				if (writePosition) {
-					changed.Add(typeof(Combatant).GetField(nameof(Combatant.PosX)));
-					changed.Add(typeof(Combatant).GetField(nameof(Combatant.PosY)));
-					changed.Add(typeof(Combatant).GetField(nameof(Combatant.PosZ)));
-					changed.Add(typeof(Combatant).GetField(nameof(Combatant.Heading)));
+					changed.Add(PosXField);
+					changed.Add(PosYField);
+					changed.Add(PosZField);
+					changed.Add(HeadingField);
 				}
 			}
 
@@ -159,8 +168,7 @@ public class LineCombatant : IDisposable {
 				// Check all fields for changes, since we're writing a change line
 				foreach (var fi in CombatantChangeCriteria.AllFields) {
 					// Don't reprocess an already checked line that we know has a change
-					if (changed.Contains(fi))
-						continue;
+					if (changed.Contains(fi)) continue;
 					if (!ValueEqual(fi, oldCombatant, combatant)) changed.Add(fi);
 				}
 

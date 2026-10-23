@@ -63,8 +63,7 @@ public class CactbotEventSource : EventSourceBase {
 		DispatchToJs(new JSEvents.PartyWipeEvent());
 	}
 
-	public CactbotEventSource(TinyIoCContainer container)
-		: base(container) {
+	public CactbotEventSource(TinyIoCContainer container) : base(container) {
 		Name = "Cactbot";
 
 		RegisterEventTypes([
@@ -196,22 +195,8 @@ public class CactbotEventSource : EventSourceBase {
 		LogInfo("Parsing Plugin Language: {0}", language ?? "(unknown)");
 
 		LogInfo("System Locale: {0}", pcLocale ?? "(unknown)");
-
-		switch (language) {
-			case "cn":
-				ffxiv = new FFXIVProcessCn(container);
-				LogInfo("Version: cn");
-				break;
-			case "ko":
-				ffxiv = new FFXIVProcessKo(container);
-				LogInfo("Version: ko");
-				break;
-			default:
-				ffxiv = new FFXIVProcessIntl(container);
-				LogInfo("Version: intl");
-				break;
-		}
-
+		ffxiv = new FFXIVProcessDalamud(container);
+		LogInfo("Version: Dalamud");
 		// Incoming events.
 		ActGlobals.oFormActMain.OnLogLineRead += OnLogLineRead;
 
@@ -624,9 +609,9 @@ public class CactbotEventSource : EventSourceBase {
 
 	// State that is tracked and sent to JS when it changes.
 	private class NotifyState {
-		public bool AddedDomContentListener = false;
-		public bool DomContentLoaded = false;
-		public bool SentDataDir = false;
+		// public bool AddedDomContentListener = false;
+		// public bool DomContentLoaded = false;
+		// public bool SentDataDir = false;
 		public bool GameExists;
 		public bool GameActive;
 		public bool? InActCombat;

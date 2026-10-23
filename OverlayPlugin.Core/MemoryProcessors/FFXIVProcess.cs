@@ -11,20 +11,9 @@ using Newtonsoft.Json.Linq;
 namespace RainbowMage.OverlayPlugin.MemoryProcessors;
 
 // Wrap Process so that Process.Handle can be overridden with a more restricted handle.
-public class LimitedProcess {
-	private readonly Process process;
-
-	public LimitedProcess(Process process) {
-		this.process = process;
-		if (process == null)
-			return;
-		Handle = -1;
-	}
-
-	public IntPtr Handle { get; } = IntPtr.Zero;
-
+public class LimitedProcess(Process process) {
+	public IntPtr Handle => -1;
 	public int Id => process.Id;
-
 	public ProcessModule MainModule => process.MainModule;
 }
 
@@ -32,20 +21,20 @@ public class LimitedProcess {
 // memory addresses when FFXIV is run or closed.
 public abstract partial class FFXIVProcess(TinyIoCContainer container) {
 	internal readonly ILogger logger_ = container.Resolve<ILogger>();
-	private LimitedProcess process_;
+	private readonly LimitedProcess process_ = new(Process.GetCurrentProcess());
 
 	// Values found in the EntityStruct's type field.
-	public enum EntityType : byte {
-		None = 0,
-		PC = 1,
-		Monster = 2,
-		NPC = 3,
-		Aetherite = 5,
-		GatheringNode = 6,
-		ClickableObject = 7,
-		Minion = 9,
-		Mailbox = 12
-	}
+	// public enum EntityType : byte {
+	// 	None = 0,
+	// 	PC = 1,
+	// 	Monster = 2,
+	// 	NPC = 3,
+	// 	Aetherite = 5,
+	// 	GatheringNode = 6,
+	// 	ClickableObject = 7,
+	// 	Minion = 9,
+	// 	Mailbox = 12
+	// }
 
 	// Values found in the EntityStruct's job field.
 	public enum EntityJob : byte {
@@ -91,7 +80,8 @@ public abstract partial class FFXIVProcess(TinyIoCContainer container) {
 		RPR = 39,
 		SGE = 40,
 		VPR = 41,
-		PCT = 42
+		PCT = 42,
+		BST = 43
 	}
 
 	internal static bool IsGatherer(EntityJob job) => job is EntityJob.FSH or EntityJob.MIN or EntityJob.BTN;
@@ -103,24 +93,24 @@ public abstract partial class FFXIVProcess(TinyIoCContainer container) {
 	public class EntityData {
 		public string name;
 		public uint id;
-		public EntityType type = EntityType.None;
+		public ObjectKind type = ObjectKind.None;
 		public ushort distance;
 		public float pos_x;
 		public float pos_y;
 		public float pos_z;
 		public float rotation;
-		public int hp;
-		public int max_hp;
-		public int mp;
-		public int max_mp;
+		public uint hp;
+		public uint max_hp;
+		public uint mp;
+		public uint max_mp;
 		public short gp;
 		public short max_gp;
 		public short cp;
 		public short max_cp;
 		public EntityJob job = EntityJob.None;
 		public short level;
-		public string debug_job;
-		public int shield_value;
+		// public string debug_job;
+		public uint shield_value;
 
 		public override bool Equals(object obj) =>
 			obj is EntityData o &&
@@ -141,7 +131,7 @@ public abstract partial class FFXIVProcess(TinyIoCContainer container) {
 			max_cp == o.max_cp &&
 			job == o.job &&
 			level == o.level &&
-			debug_job == o.debug_job &&
+			// debug_job == o.debug_job &&
 			shield_value == o.shield_value;
 
 		public override int GetHashCode() {
@@ -165,7 +155,7 @@ public abstract partial class FFXIVProcess(TinyIoCContainer container) {
 			hash = hash * 31 + job.GetHashCode();
 			hash = hash * 31 + level.GetHashCode();
 			hash = hash * 31 + shield_value.GetHashCode();
-			hash = hash * 31 + debug_job.GetHashCode();
+			// hash = hash * 31 + debug_job.GetHashCode();
 			return hash;
 		}
 	}
@@ -179,42 +169,9 @@ public abstract partial class FFXIVProcess(TinyIoCContainer container) {
 	//   JobDataInnerStruct {
 	internal static int kJobDataOuterStructOffset = 0;
 
-	internal abstract void ReadSignatures();
-
-	public bool HasProcess() =>
-		// If FindProcess failed, return false. But also return false if
-		// FindProcess succeeded but the process has since exited.
-		process_ != null;
-
-	public bool FindProcess() {
-		if (HasProcess())
-			return true;
-
-		// Only support the DirectX 11 binary. The DirectX 9 one has different addresses.
-		var found_process = Process.GetCurrentProcess();
-		var changed_existance = process_ == null;
-		var changed_pid = process_ != null && process_.Id != found_process.Id;
-		if (changed_existance || changed_pid) {
-			// player_ptr_addr_ = IntPtr.Zero;
-			process_ = new LimitedProcess(found_process);
-
-			if (process_ != null) {
-				ReadSignatures();
-			}
-		}
-
-		return process_ != null;
-	}
-
-	public bool IsActive() {
-		if (!HasProcess())
-			return false;
-		var active_hwnd = NativeMethods.GetForegroundWindow();
-		uint active_process_id;
-		NativeMethods.GetWindowThreadProcessId(active_hwnd, out active_process_id);
-		return active_process_id == process_.Id;
-	}
-
+	public bool HasProcess() => true;
+	public bool FindProcess() => true;
+	public bool IsActive() => true;
 	public abstract unsafe EntityData GetEntityDataFromByteArray(GameObject* GameObject);
 
 	public unsafe bool GetInGameCombat() => Conditions.Instance()->InCombat;

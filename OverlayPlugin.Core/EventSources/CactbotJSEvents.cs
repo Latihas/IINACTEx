@@ -73,18 +73,18 @@ public class JSEvents {
 		public string name = e.name;
 		public string job = e.job.ToString();
 
-		public int currentHP = e.hp;
-		public int maxHP = e.max_hp;
-		public int currentMP = e.mp;
-		public int maxMP = e.max_mp;
+		public uint currentHP = e.hp;
+		public uint maxHP = e.max_hp;
+		public uint currentMP = e.mp;
+		public uint maxMP = e.max_mp;
 		public int currentTP;
 		public int maxTP = 1000;
 		public int currentGP = e.gp;
 		public int maxGP = e.max_gp;
 		public int currentCP = e.cp;
 		public int maxCP = e.max_cp;
-		public string debugJob = e.debug_job;
-		public int currentShield = e.shield_value;
+		// public string debugJob = e.debug_job;
+		public uint currentShield = e.shield_value;
 
 		public Point3F pos = new(e.pos_x, e.pos_y, e.pos_z);
 		public float rotation = e.rotation;
@@ -114,10 +114,10 @@ public class JSEvents {
 		public string name;
 		public string job;
 
-		public int currentHP;
-		public int maxHP;
-		public int currentMP;
-		public int maxMP;
+		public uint currentHP;
+		public uint maxHP;
+		public uint currentMP;
+		public uint maxMP;
 		public int currentTP = 0;
 		public int maxTP = 0;
 

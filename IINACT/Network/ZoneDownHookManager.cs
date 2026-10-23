@@ -19,24 +19,21 @@ public unsafe class ZoneDownHookManager : IDisposable {
 	private const string OpcodeKeyTableSignature = "?? ?? ?? 2B C8 ?? 8B ?? 8A ?? ?? ?? ?? 41 81";
 	private readonly int[] opcodeKeyTable;
 	private readonly byte[] keys = new byte[3];
-
 	private delegate nuint DownPrototype(byte* data, byte* a2, nuint a3, nuint a4, nuint a5);
-
 	private readonly Hook<DownPrototype> zoneDownHook;
-
 	private readonly SimpleBuffer buffer;
-
-	private readonly VersionConstants versionConstants;
 	public readonly Unscrambler73 unscrambler;
+	private readonly HashSet<int> obfuscatedOpcodesSet;
 
 	public ZoneDownHookManager() {
+		VersionConstants versionConstants1;
 		buffer = new SimpleBuffer(1024 * 1024);
 		var multiScanner = new MultiSigScanner();
 		var moduleBase = multiScanner.Module.BaseAddress;
 
 		var version = GetRunningGameVersion();
 		if (VersionConstants.Constants.ContainsKey(version)) {
-			versionConstants = VersionConstants.ForGameVersion(version);
+			versionConstants1 = VersionConstants.ForGameVersion(version);
 			unscrambler = (Unscrambler73)UnscramblerFactory.ForGameVersion(version);
 		} else {
 			Log.Warning("[ZoneDownHookManager] Creating fallback Unscrambler constants dynamically");
@@ -63,23 +60,24 @@ public unsafe class ZoneDownHookManager : IDisposable {
 			}
 			Log.Debug(
 				$"[ZoneDownHookManager] opcodeKeyTableOffset {opcodeKeyTableOffset:X}, opcodeKeyTableSize {opcodeKeyTableSize:X}");
-			versionConstants = GetFallbackVersionConstant(opcodeKeyTableOffset, opcodeKeyTableSize);
+			versionConstants1 = GetFallbackVersionConstant(opcodeKeyTableOffset, opcodeKeyTableSize);
 			unscrambler = new Unscrambler73();
-			unscrambler.Initialize(versionConstants);
+			unscrambler.Initialize(versionConstants1);
 		}
 
-		var rawOpcodeKeyTable = new byte[versionConstants.OpcodeKeyTableSize];
+		var rawOpcodeKeyTable = new byte[versionConstants1.OpcodeKeyTableSize];
 		opcodeKeyTable = new int[rawOpcodeKeyTable.Length / 4];
-		Marshal.Copy(moduleBase + (nint)versionConstants.OpcodeKeyTableOffset, rawOpcodeKeyTable, 0, rawOpcodeKeyTable.Length);
+		Marshal.Copy(moduleBase + (nint)versionConstants1.OpcodeKeyTableOffset, rawOpcodeKeyTable, 0, rawOpcodeKeyTable.Length);
 		Log.Debug("[ZoneDownHookManager] raw opcode key table {@Data} (length: {Length})", rawOpcodeKeyTable, rawOpcodeKeyTable.Length);
 		for (var i = 0; i < rawOpcodeKeyTable.Length; i += 4)
 			opcodeKeyTable[i / 4] = BitConverter.ToInt32(rawOpcodeKeyTable, i);
 
 		var rxPtrs = multiScanner.ScanText(GenericDownSignature, 3);
 		zoneDownHook = GameInteropProvider.HookFromAddress<DownPrototype>(rxPtrs[2], ZoneDownDetour);
-
+		obfuscatedOpcodesSet = [.. versionConstants1.ObfuscatedOpcodes.Values];
 		Enable();
 	}
+
 
 	private static bool IsModulePointer(ReadOnlySpan<byte> memory, int offset, nint moduleBase, long moduleSize) {
 		if (offset + 8 > memory.Length) return false;
@@ -175,7 +173,7 @@ public unsafe class ZoneDownHookManager : IDisposable {
 			var pktHdr = pktHdrSlice.Cast<byte, PacketElementHeader>();
 			var pktData = data.Slice(offset + pktHdrSize, (int)pktHdr.Size - pktHdrSize);
 			var pktOpcode = OpcodeUtility.GetOpcodeFromPacketAtIpcStart(pktData);
-			var needsDeobfuscation = versionConstants.ObfuscatedOpcodes.ContainsValue(pktOpcode);
+			var needsDeobfuscation = obfuscatedOpcodesSet.Contains(pktOpcode);
 
 			buffer.Clear();
 			buffer.Write(pktHdrSlice);
@@ -186,9 +184,8 @@ public unsafe class ZoneDownHookManager : IDisposable {
 				buffer.Write(pktData);
 				var slice = buffer.Get(pos, pktData.Length);
 				unscrambler.Unscramble(slice, keys[0], keys[1], keys[2], opcodeKeyTable);
-			} else {
+			} else
 				buffer.Write(pktData);
-			}
 
 			EnqueueToMachina(buffer.GetBuffer());
 
