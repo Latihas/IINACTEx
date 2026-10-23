@@ -135,7 +135,7 @@ public class ListViewNoFlicker : ListView {
 			if (updating && antiFlicker && messg.Msg is 20 or 15)
 				messg.Msg = 0;
 			base.WndProc(ref messg);
-		} catch (Exception ex) {
+		} catch (Exception) {
 			// ActGlobals.oFormActMain.WriteExceptionLog(ex, messg.ToString());
 		}
 	}

@@ -12,8 +12,7 @@ using Newtonsoft.Json.Serialization;
 
 namespace RainbowMage.OverlayPlugin.MemoryProcessors;
 
-public class FFXIVProcessDalamud(TinyIoCContainer container) : FFXIVProcess(container) {
-
+public class FFXIVProcessDalamud : FFXIVProcess {
 	public override unsafe EntityData GetEntityDataFromByteArray(GameObject* source) {
 		var mem = Marshal.PtrToStructure<Character>((IntPtr)source);
 		var entity = new EntityData {

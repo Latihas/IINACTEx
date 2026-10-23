@@ -30,19 +30,15 @@ internal class LineActorMove(TinyIoCContainer container) : LineBaseCustom<
 		[FieldOffset(0x8)] public ushort y;
 		[FieldOffset(0xA)] public ushort z;
 
-		public string ToString(long epoch, uint ActorID) {
-			// Only emit for non-player actors
-			if (ActorID < 0x40000000) {
-				return null;
-			}
-
-			return
-				string.Format(CultureInfo.InvariantCulture,
+		// Only emit for non-player actors
+		public string? ToString(long epoch, uint ActorID) =>
+			ActorID < 0x40000000
+				? null
+				: string.Format(CultureInfo.InvariantCulture,
 					"{0:X8}|{1:F4}|{2:X4}|{3:X4}|{4:F4}|{5:F4}|{6:F4}",
 					ActorID, FFXIVRepository.ConvertHeading(rotation), unknown1, unknown2,
 					FFXIVRepository.ConvertUInt16Coordinate(x), FFXIVRepository.ConvertUInt16Coordinate(z),
 					FFXIVRepository.ConvertUInt16Coordinate(y));
-		}
 	}
 
 	public const uint LogFileLineID = 270;

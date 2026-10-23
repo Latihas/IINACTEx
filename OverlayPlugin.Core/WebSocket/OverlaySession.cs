@@ -28,9 +28,9 @@ internal class OverlaySession(WsServer server, TinyIoCContainer container) : WsS
 
 	public override void OnWsReceived(byte[] buffer, long offset, long size) {
 		var message = Encoding.UTF8.GetString(buffer, (int)offset, (int)size);
-#if DEBUG
-		Logger.Log(LogLevel.Trace, $"Overlay WebSocket {Id} received message: {message}");
-#endif
+// #if DEBUG
+// 		Logger.Log(LogLevel.Trace, $"Overlay WebSocket {Id} received message: {message}");
+// #endif
 		Handler?.OnMessage(message);
 	}
 

@@ -103,6 +103,7 @@ public partial class FetchDependencies {
 		var match = DieMoeDisplayAtRegex().Match(remoteVersionString);
 		return match.Success ? match.Groups[1].Value : string.Empty;
 	}
+
 	private bool NeedsUpdate(string dllPath) {
 		if (!File.Exists(dllPath)) {
 			if (!IsChinese) return true;

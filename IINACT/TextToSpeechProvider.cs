@@ -109,7 +109,7 @@ internal class TextToSpeechProvider : IDisposable {
 					if (useEdgeTTS && edgeTTSManager != null) {
 						await edgeTTSManager.Speak(message).ConfigureAwait(false);
 					} else if (useLatihasTTS && LatihasTts != null) {
-						await Task.Run(() => { LatihasTts.Speak(message); }).ConfigureAwait(false);
+						await Task.Run(() => { LatihasTts!.Speak(message); }).ConfigureAwait(false);
 					} else if (speechSynthesizer == null || Instance.Configuration.ForceGoogleTts) {
 						await SpeakGoogle(message).ConfigureAwait(false);
 					} else {

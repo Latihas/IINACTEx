@@ -14,24 +14,20 @@ public class OverlayPreset : IOverlayPreset {
 	public string Name { get; set; }
 	public string Uri { get; set; }
 
-	[JsonProperty("plaintext_uri")] public string PlaintextUri { get; set; }
+	[JsonProperty("plaintext_uri")] public string? PlaintextUri { get; set; }
 	[JsonProperty("suggested_width")] public int? SuggestedWidth { get; set; }
 	[JsonProperty("suggested_height")] public int? SuggestedHeight { get; set; }
 	public List<string> Features { get; set; } = [];
 
-	public Uri ToOverlayUri(Uri webSocketServer) {
+	public Uri? ToOverlayUri(Uri? webSocketServer) {
 		Uri overlayUri;
 
-		if (webSocketServer == null) {
-			return null;
-		}
+		if (webSocketServer == null) return null;
 
-		if (webSocketServer.Scheme == "wss") {
-			overlayUri = new Uri(Uri);
-		} else if (webSocketServer.Scheme == "ws") {
-			overlayUri = new Uri(PlaintextUri ?? Uri);
-		} else {
-			return null;
+		switch (webSocketServer.Scheme) {
+			case "wss": overlayUri = new Uri(Uri); break;
+			case "ws": overlayUri = new Uri(PlaintextUri ?? Uri); break;
+			default: return null;
 		}
 
 		if (Features.Contains("overlay_ws")) {

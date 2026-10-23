@@ -26,7 +26,7 @@ public class LineActorControlExtra(TinyIoCContainer container) : LineBaseSubMach
 	];
 
 	public class ActorControlExtraPacket : MachinaPacketWrapper {
-		public override string ToString(long epoch, uint ActorID) {
+		public override string? ToString(long epoch, uint ActorID) {
 			var category = Get<Server_ActorControlCategory>("category");
 
 			if (!AllowedActorControlCategories.Contains(category)) return null;

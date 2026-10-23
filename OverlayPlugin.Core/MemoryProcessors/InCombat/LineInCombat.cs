@@ -8,7 +8,7 @@ public class LineInCombat {
 	private readonly FFXIVRepository ffxiv;
 	private readonly IInCombatMemory inCombatMemory;
 
-	private readonly Func<string, DateTime, bool> logWriter;
+	private readonly Func<string, DateTime, bool>? logWriter;
 	private InCombatArgs? lastEventArgs;
 
 	public LineInCombat(TinyIoCContainer container) {
@@ -23,12 +23,9 @@ public class LineInCombat {
 		});
 	}
 
-	public event EventHandler<InCombatArgs> OnInCombatChanged;
+	public event EventHandler<InCombatArgs>? OnInCombatChanged;
 
 	public void Update() {
-		if (!inCombatMemory.IsValid())
-			return;
-
 		var inACTCombat = ActGlobals.oFormActMain.InCombat;
 		var inGameCombat = inCombatMemory.GetInCombat();
 
@@ -62,7 +59,7 @@ public class LineInCombat {
 		var isACTChangedDecimal = isACTChanged ? 1 : 0;
 		var isGameChangedDecimal = isGameChanged ? 1 : 0;
 		var line = $"{inACTCombatDecimal}|{inGameCombatDecimal}|{isACTChangedDecimal}|{isGameChangedDecimal}";
-		logWriter(line, ffxiv.GetServerTimestamp());
+		logWriter?.Invoke(line, ffxiv.GetServerTimestamp());
 	}
 
 	public class InCombatArgs(bool inActCombat, bool inGameCombat, bool inGameCombatChanged) {

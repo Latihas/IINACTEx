@@ -13,7 +13,7 @@ public class EncounterData {
 	[SuppressMessage("ReSharper", "UnusedType.Global")]
 	public delegate Color ColorDataCallback(EncounterData Data);
 
-	public delegate string ExportStringDataCallback(EncounterData Data, List<CombatantData> SelectiveAllies, string ExtraFormat);
+	public delegate string ExportStringDataCallback(EncounterData? Data, List<CombatantData> SelectiveAllies, string ExtraFormat);
 
 	public delegate string StringDataCallback(EncounterData Data);
 

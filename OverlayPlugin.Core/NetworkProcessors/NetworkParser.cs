@@ -6,50 +6,33 @@ using RainbowMage.OverlayPlugin.NetworkProcessors.PacketHelper;
 namespace RainbowMage.OverlayPlugin.NetworkProcessors;
 
 internal class NetworkParser {
-	public event EventHandler<OnlineStatusChangedArgs> OnOnlineStatusChanged;
+	public event EventHandler<OnlineStatusChangedArgs>? OnOnlineStatusChanged;
 
-	public class ActorControlPacket : MachinaPacketWrapper {
+	private class ActorControlPacket : MachinaPacketWrapper {
 		public override string ToString(long epoch, uint ActorID) => "";
 	}
 
-	private readonly MachinaRegionalizedPacketHelper<ActorControlPacket> actorControlPacketHelper;
+	private readonly MachinaRegionalizedPacketHelper<ActorControlPacket>? actorControlPacketHelper;
 
-	private static FFXIVRepository ffxiv;
+	private readonly FFXIVRepository ffxiv;
 	private GameRegion? currentRegion;
 
 	private const string machinaPacketName = "ActorControl";
 
 	public NetworkParser(TinyIoCContainer container) {
-		var logger = container.Resolve<ILogger>();
-
-		ffxiv = ffxiv ?? container.Resolve<FFXIVRepository>();
+		ffxiv ??= container.Resolve<FFXIVRepository>();
 		ffxiv.RegisterNetworkParser(Parse);
-		ffxiv.RegisterProcessChangedHandler(ProcessChanged);
 
 		if (!MachinaRegionalizedPacketHelper<ActorControlPacket>.Create(machinaPacketName, out actorControlPacketHelper)) {
-			logger.Log(LogLevel.Error, $"Failed to initialize NetworkParser: Failed to create {machinaPacketName} packet helper from Machina structs");
+			container.Resolve<ILogger>().Log(LogLevel.Error, $"Failed to initialize NetworkParser: Failed to create {machinaPacketName} packet helper from Machina structs");
 		}
 	}
 
-	private void ProcessChanged(Process process) {
-		if (!ffxiv.IsFFXIVPluginPresent())
-			return;
-
-		currentRegion = null;
-	}
-
 	private void Parse(string id, long epoch, byte[] message) {
-		if (actorControlPacketHelper == null)
-			return;
-
-		if (currentRegion == null)
-			currentRegion = ffxiv.GetMachinaRegion();
-
-		if (currentRegion == null)
-			return;
-
+		if (actorControlPacketHelper == null) return;
+		currentRegion ??= ffxiv.GetMachinaRegion();
+		if (currentRegion == null) return;
 		var helper = (MachinaPacketHelper<ActorControlPacket>)actorControlPacketHelper[currentRegion.Value];
-
 		if (helper.ToStructs(message, out var header, out var packet)) {
 			var category = packet.Get<Server_ActorControlCategory>("category");
 			if (category != Server_ActorControlCategory.StatusUpdate) return;

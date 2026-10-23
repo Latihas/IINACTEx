@@ -20,9 +20,8 @@ public abstract class EnmityHudMemory(
 
 	public abstract Version GetVersion();
 
-	private unsafe bool GetDynamicPointerAddress() {
-		var enmityHudAddress = FFXIVClientStructs.FFXIV.Component.GUI.AtkStage.Instance();
-		if (enmityHudAddress == null) return false;
+	private bool GetDynamicPointerAddress() {
+		var enmityHudAddress = FFXIVClientStructs.FFXIV.Component.GUI.AtkStage.Addresses.Instance.Value;
 
 		// Resolve Dynamic Pointers.
 		// The static sigscan address fetched in GetPointerAddress is statically allocated.
@@ -30,19 +29,14 @@ public abstract class EnmityHudMemory(
 		// Walk down the pointer tree to the actual address we want, determined by enmityHudPointerPath.
 		if (DateTimeOffset.UtcNow - lastDateTimeDynamicAddressChecked < TimeSpan.FromSeconds(30)) return true;
 		lastDateTimeDynamicAddressChecked = DateTimeOffset.UtcNow;
-		var tmpEnmityHudDynamicAddress = (IntPtr)enmityHudAddress;
-
 		foreach (var p in enmityHudPointerPath) {
-			tmpEnmityHudDynamicAddress += p;
-			tmpEnmityHudDynamicAddress = memory.ReadIntPtr(tmpEnmityHudDynamicAddress);
-			if (tmpEnmityHudDynamicAddress == IntPtr.Zero) {
+			enmityHudAddress = memory.ReadIntPtr(enmityHudAddress + p);
+			if (enmityHudAddress == IntPtr.Zero) {
 				enmityHudDynamicAddress = IntPtr.Zero;
 				return false;
 			}
 		}
-
-		enmityHudDynamicAddress = new IntPtr(tmpEnmityHudDynamicAddress.ToInt64());
-
+		enmityHudDynamicAddress = new IntPtr(enmityHudAddress.ToInt64());
 		return true;
 	}
 

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using FFXIVClientStructs.FFXIV.Client.UI;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using Newtonsoft.Json;
@@ -9,6 +10,8 @@ using RainbowMage.OverlayPlugin.MemoryProcessors.AtkStage;
 
 namespace RainbowMage.OverlayPlugin.EventSources;
 
+[SuppressMessage("ReSharper", "NotAccessedField.Global")] 
+[SuppressMessage("ReSharper", "CollectionNeverQueried.Global")]
 public class SortedPartyList {
 	public string PartyType;
 	public int MemberCount;
@@ -47,8 +50,6 @@ public class FFXIVClientStructsEventSource : EventSourceBase {
 
 	private unsafe JObject? GetSortedPartyList() {
 		var partyList = new SortedPartyList();
-
-		if (!atkStageMemory.IsValid()) return null;
 
 		var addonPartyListCandidate = atkStageMemory.GetAddon<AddonPartyList>();
 		if (!addonPartyListCandidate.HasValue) return null;
@@ -110,7 +111,6 @@ public class FFXIVClientStructsEventSource : EventSourceBase {
 	}
 
 	private JObject? GetAddon(string key) {
-		if (!atkStageMemory.IsValid()) return null;
 		var addon = atkStageMemory.GetAddon(key);
 		if (addon == null) return null;
 		return JObject.FromObject(addon, JsonSerializer.CreateDefault(new JsonSerializerSettings {

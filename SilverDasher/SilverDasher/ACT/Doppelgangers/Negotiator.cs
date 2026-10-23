@@ -49,8 +49,7 @@ internal class Negotiator : Doppelganger {
 			}, currentTerritoryID2, currentInstance2);
 			hashSet.Add(item);
 		}
-		List<string> list = [];
-		list.AddRange(Keeper.CurrentMobs.Keys.Where(key => !hashSet.Contains(key)));
+		List<string> list = [.. Keeper.CurrentMobs.Keys.Where(key => !hashSet.Contains(key))];
 		foreach (var item3 in list)
 			Keeper.CurrentMobs.Remove(item3, out _);
 	}

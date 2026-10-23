@@ -4,8 +4,7 @@ using FFXIVClientStructs.FFXIV.Client.UI.Info;
 
 namespace RainbowMage.OverlayPlugin.MemoryProcessors.ContentFinderSettings;
 
-public abstract class ContentFinderSettingsMemory(TinyIoCContainer container)
-	: IContentFinderSettingsMemory {
+public abstract class ContentFinderSettingsMemory : IContentFinderSettingsMemory {
 	private struct ContentFinderSettingsImpl : ContentFinderSettings {
 		public bool inContentFinderContent { get; set; }
 
@@ -20,19 +19,6 @@ public abstract class ContentFinderSettingsMemory(TinyIoCContainer container)
 		public byte levelSync { get; set; }
 	}
 
-	protected FFXIVMemory memory = container.Resolve<FFXIVMemory>();
-	protected ILogger logger = container.Resolve<ILogger>();
-
-	// protected IntPtr settingsAddress = IntPtr.Zero;
-	// protected IntPtr inContentFinderAddress = IntPtr.Zero;
-
-	protected void ResetPointers() {
-		// settingsAddress = IntPtr.Zero;
-		// inContentFinderAddress = IntPtr.Zero;
-	}
-
-	private bool HasValidPointers() => true;
-
 	public bool IsValid() => true;
 
 	public virtual void ScanPointers() { }
@@ -41,15 +27,15 @@ public abstract class ContentFinderSettingsMemory(TinyIoCContainer container)
 
 	public ContentFinderSettings GetContentFinderSettings() {
 		unsafe {
-			var settings = new ContentFinderSettingsImpl {
-				inContentFinderContent = InfoProxyCrossRealm.IsLocalPlayerInParty()
-			};
 			var cf = ContentsFinder.Instance();
-			settings.unrestrictedParty = Convert.ToByte(cf->IsUnrestrictedParty);
-			settings.minimalItemLevel = Convert.ToByte(cf->IsMinimalIL);
-			settings.levelSync = Convert.ToByte(cf->IsLevelSync);
-			settings.silenceEcho = Convert.ToByte(cf->IsSilenceEcho);
-			settings.explorerMode = Convert.ToByte(cf->IsExplorerMode);
+			var settings = new ContentFinderSettingsImpl {
+				inContentFinderContent = InfoProxyCrossRealm.IsLocalPlayerInParty(),
+				unrestrictedParty = Convert.ToByte(cf->IsUnrestrictedParty),
+				minimalItemLevel = Convert.ToByte(cf->IsMinimalIL),
+				levelSync = Convert.ToByte(cf->IsLevelSync),
+				silenceEcho = Convert.ToByte(cf->IsSilenceEcho),
+				explorerMode = Convert.ToByte(cf->IsExplorerMode)
+			};
 			return settings;
 		}
 	}

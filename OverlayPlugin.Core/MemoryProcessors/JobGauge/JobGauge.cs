@@ -13,7 +13,7 @@ public abstract class JobGaugeMemory : IJobGaugeMemory {
 
 		public JobGaugeJob Job => job;
 		public IBaseJobGauge? Data => data;
-		public int[] RawData => rawData.Select(b => (int)b).ToArray();
+		public int[] RawData => [.. rawData.Select(b => (int)b)];
 		public object BaseObject => baseObject;
 
 		public bool Equals(IJobGauge? obj) {
@@ -27,6 +27,7 @@ public abstract class JobGaugeMemory : IJobGaugeMemory {
 			return !objRawData.Where((t, i) => t != _rawData[i]).Any();
 		}
 	}
+
 	public bool IsValid() => true;
 
 	public void ScanPointers() {

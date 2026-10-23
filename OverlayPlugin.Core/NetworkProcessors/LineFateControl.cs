@@ -12,7 +12,7 @@ internal class LineFateControl : LineBaseSubMachina<LineFateControl.FateControlP
 	];
 
 	internal class FateControlPacket : MachinaPacketWrapper {
-		public override string ToString(long epoch, uint ActorID) {
+		public override string? ToString(long epoch, uint ActorID) {
 			var category = Get<Server_ActorControlCategory>("category");
 
 			if (!FateActorControlCategories.Contains(category)) return null;
@@ -28,22 +28,19 @@ internal class LineFateControl : LineBaseSubMachina<LineFateControl.FateControlP
 
 			var categoryStr = category.ToString().Replace("Fate", "");
 
-			// Do some basic filtering on fate data to avoid spamming the log needlessly.
-			if (category == Server_ActorControlCategory.FateAdd) {
-				if (!fates.TryAdd(fateID, 0)) {
-					return null;
-				}
-			} else if (category == Server_ActorControlCategory.FateRemove) {
-				if (!fates.Remove(fateID)) {
-					return null;
-				}
-			} else if (category == Server_ActorControlCategory.FateUpdate) {
-				if (fates.TryGetValue(fateID, out var oldProgress)) {
-					if (progress == oldProgress) {
-						return null;
+			switch (category) {
+				// Do some basic filtering on fate data to avoid spamming the log needlessly.
+				case Server_ActorControlCategory.FateAdd when !fates.TryAdd(fateID, 0):
+				case Server_ActorControlCategory.FateRemove when !fates.Remove(fateID): return null;
+				case Server_ActorControlCategory.FateUpdate: {
+					if (fates.TryGetValue(fateID, out var oldProgress)) {
+						if (progress == oldProgress) {
+							return null;
+						}
 					}
+					fates[fateID] = progress;
+					break;
 				}
-				fates[fateID] = progress;
 			}
 
 			return $"{categoryStr}|" +

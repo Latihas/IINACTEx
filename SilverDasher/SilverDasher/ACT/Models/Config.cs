@@ -10,8 +10,6 @@ using SilverDasher.ACT.Storages;
 namespace SilverDasher.ACT.Models;
 
 public class Config {
-	[JsonIgnore] public string VersionString { get; } = string.Join(".", BitConverter.GetBytes(DataStorage.Version));
-
 	[JsonProperty("TTSNotifications")] public Dictionary<HuntState, bool> TTSNotifications = new() {
 		[HuntState.Healthy] = true,
 		[HuntState.Taunted] = true,
@@ -85,9 +83,6 @@ public class Config {
 
 	[JsonProperty("toastType")] public string ToastType { get; set; } = "UWP";
 
-	[JsonIgnore] public bool IsToastTypeUWP => "UWP" == ToastType;
-
-	[JsonIgnore] public bool IsToastTypeLegacy => "Legacy" == ToastType;
 	[JsonIgnore] public bool NotifySpottedToast {
 		get => ToastNotifications[HuntState.Healthy];
 		set => ToastNotifications[HuntState.Healthy] = value;
@@ -231,21 +226,21 @@ public class Config {
 	private List<int> GetListByType(string type) => type.Contains("fate") ? FateSubscriptions : HuntSubscriptions;
 
 
-	public void EditSubscription(bool? edit, string type, string id, List<string> ids) {
-		if (edit.GetValueOrDefault()) {
-			if (ids != null) {
-				foreach (var id2 in ids) GetListByType(type).Add(int.Parse(id2));
-				return;
-			}
-			GetListByType(type).Add(int.Parse(id));
-			return;
-		}
-		if (ids != null) {
-			foreach (var id3 in ids) GetListByType(type).Remove(int.Parse(id3));
-			return;
-		}
-		GetListByType(type).Remove(int.Parse(id));
-	}
+	// public void EditSubscription(bool? edit, string type, string id, List<string> ids) {
+	// 	if (edit.GetValueOrDefault()) {
+	// 		if (ids != null) {
+	// 			foreach (var id2 in ids) GetListByType(type).Add(int.Parse(id2));
+	// 			return;
+	// 		}
+	// 		GetListByType(type).Add(int.Parse(id));
+	// 		return;
+	// 	}
+	// 	if (ids != null) {
+	// 		foreach (var id3 in ids) GetListByType(type).Remove(int.Parse(id3));
+	// 		return;
+	// 	}
+	// 	GetListByType(type).Remove(int.Parse(id));
+	// }
 
 	public static Config Load() {
 		if (!File.Exists(DataStorage.ConfigPath)) {
@@ -255,11 +250,11 @@ public class Config {
 		}
 		try {
 			var config = JsonConvert.DeserializeObject<Config>(File.ReadAllText(DataStorage.ConfigPath));
-			config.HuntSubscriptions ??= [];
+			if (config == null) throw new Exception();
 			var source = new HashSet<int>(config.HuntSubscriptions);
 			var source2 = new HashSet<int>(config.FateSubscriptions);
-			config.HuntSubscriptions = source.ToList();
-			config.FateSubscriptions = source2.ToList();
+			config.HuntSubscriptions = [.. source];
+			config.FateSubscriptions = [.. source2];
 			return config;
 		} catch {
 			Utils.ShowMessageBox("读取配置文件时发生问题。将使用默认设置，订阅信息已清空，请重新订阅。");

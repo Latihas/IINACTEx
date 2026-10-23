@@ -96,9 +96,9 @@ public class FFXIVRepository {
 	public bool IsFFXIVPluginPresent() => true;
 
 
-	public Version? GetOverlayPluginVersion() => Assembly.GetExecutingAssembly().GetName().Version;
+	public Version GetOverlayPluginVersion() => Assembly.GetExecutingAssembly().GetName().Version!;
 
-	public Version? GetPluginVersion() => typeof(FFXIV_ACT_Plugin.FFXIV_ACT_Plugin).Assembly.GetName().Version;
+	public Version GetPluginVersion() => typeof(FFXIV_ACT_Plugin.FFXIV_ACT_Plugin).Assembly.GetName().Version!;
 
 	public string GetPluginPath() => typeof(IDataRepository).Assembly.Location;
 
@@ -136,7 +136,7 @@ public class FFXIVRepository {
 	[MethodImpl(MethodImplOptions.NoInlining)]
 	public Language GetLanguage() => GetRepository().GetSelectedLanguageID();
 
-	public string GetLocaleString() => GetLanguage() switch {
+	public string? GetLocaleString() => GetLanguage() switch {
 		Language.English => "en",
 		Language.French => "fr",
 		Language.German => "de",

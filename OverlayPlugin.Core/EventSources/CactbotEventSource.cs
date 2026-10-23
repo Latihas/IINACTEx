@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -15,6 +16,8 @@ using Timer = System.Timers.Timer;
 
 namespace RainbowMage.OverlayPlugin.EventSources;
 
+[SuppressMessage("ReSharper", "MemberCanBePrivate.Global")]
+[SuppressMessage("ReSharper", "UnusedMember.Global")]
 public class CactbotEventSource : EventSourceBase {
 	public CactbotEventSourceConfig Config { get; private set; }
 
@@ -41,8 +44,8 @@ public class CactbotEventSource : EventSourceBase {
 	// Held while the |fast_update_timer_| is running.
 	private FFXIVProcess ffxiv;
 
-	private string language;
-	private string pcLocale;
+	private string? language;
+	private string? pcLocale;
 	private List<FileSystemWatcher> watchers;
 
 	// public const string ForceReloadEvent = "onForceReload";
@@ -96,28 +99,31 @@ public class CactbotEventSource : EventSourceBase {
 			return null;
 		});
 		RegisterEventHandler("cactbotSay", msg => {
-			ActGlobals.oFormActMain.TTS(msg["text"].ToString());
+			var text = msg["text"]?.ToString();
+			if (!string.IsNullOrEmpty(text)) ActGlobals.oFormActMain.TTS(text);
 			return null;
 		});
 		RegisterEventHandler("cactbotSaveData", msg => {
-			Config.OverlayData[msg["overlay"].ToString()] = msg["data"];
+			if (Config?.OverlayData == null) return null;
+			var overlay = msg["overlay"]?.ToString();
+			var data = msg["data"];
+			if (overlay == null || data == null) return null;
+			Config.OverlayData[overlay] = data;
 			Config.OnUpdateConfig();
 			return null;
 		});
 		RegisterEventHandler("cactbotLoadData", msg => {
-			if (Config.OverlayData.ContainsKey(msg["overlay"].ToString())) {
-				var ret = new JObject {
-					["data"] = Config.OverlayData[msg["overlay"].ToString()]
-				};
-				return ret;
-			}
+			if (Config?.OverlayData == null) return null;
+			var overlay = msg["overlay"]?.ToString();
+			if (overlay == null) return null;
+			if (Config.OverlayData.TryGetValue(overlay, out var value))
+				return new JObject { ["data"] = value };
 			return null;
 		});
 		RegisterEventHandler("cactbotChooseDirectory", _ => {
 			var ret = new JObject();
 			var data = ChooseDirectory();
-			if (data != null)
-				ret["data"] = data;
+			if (data != null) ret["data"] = data;
 			return ret;
 		});
 	}
@@ -126,10 +132,10 @@ public class CactbotEventSource : EventSourceBase {
 		logger.Log(level, "Cactbot: " + msg);
 	}
 
-	private string ChooseDirectory() {
+	private string? ChooseDirectory() {
 		var fileDialogManager = container.Resolve<FileDialogManager>();
 		var semaphore = new SemaphoreSlim(0);
-		string chosenFolder = null;
+		string? chosenFolder = null;
 		fileDialogManager.OpenFolderDialog("Pick a cactbot user folder", (success, path) => {
 			if (!success) {
 				semaphore.Release();
@@ -195,7 +201,7 @@ public class CactbotEventSource : EventSourceBase {
 		LogInfo("Parsing Plugin Language: {0}", language ?? "(unknown)");
 
 		LogInfo("System Locale: {0}", pcLocale ?? "(unknown)");
-		ffxiv = new FFXIVProcessDalamud(container);
+		ffxiv = new FFXIVProcessDalamud();
 		LogInfo("Version: Dalamud");
 		// Incoming events.
 		ActGlobals.oFormActMain.OnLogLineRead += OnLogLineRead;
@@ -353,7 +359,7 @@ public class CactbotEventSource : EventSourceBase {
 		Log(LogLevel.Debug, format, args);
 	}
 
-	public void LogError(string format, params object[] args) {
+	public void LogError(string format, params object?[] args) {
 		Log(LogLevel.Error, format, args);
 	}
 
@@ -365,7 +371,8 @@ public class CactbotEventSource : EventSourceBase {
 		Log(LogLevel.Info, format, args);
 	}
 
-	private Dictionary<string, string> GetDataFiles(string url) {
+	private Dictionary<string, string>? GetDataFiles(string? url) {
+		if (string.IsNullOrEmpty(url)) return null;
 		// Uri is not smart enough to strip the query args here, so we'll do it manually?
 		var idx = url.IndexOf('?');
 		if (idx > 0)
@@ -376,7 +383,7 @@ public class CactbotEventSource : EventSourceBase {
 		if (url.StartsWith("file:///")) {
 			var html = File.ReadAllText(new Uri(url).LocalPath);
 			var match = Regex.Match(
-				html, @"<meta http-equiv=""refresh"" content=""0; url=(.*)?""\/?>");
+				html, """<meta http-equiv="refresh" content="0; url=(.*)?"\/?>""");
 			if (match.Groups.Count > 1) {
 				url = match.Groups[1].Value;
 			}
@@ -397,13 +404,8 @@ public class CactbotEventSource : EventSourceBase {
 					dataFilePaths.Add(line);
 			}
 		} catch (WebException e) {
-			if (e is { Status: WebExceptionStatus.ProtocolError, Response: HttpWebResponse { StatusCode: HttpStatusCode.NotFound } }) {
-				// Ignore file not found.
-			} else if (e.InnerException != null &&
-			           e.InnerException is FileNotFoundException or DirectoryNotFoundException) {
-				// Ignore file not found.
-			} else if (e.InnerException is { InnerException: not null } &&
-			           e.InnerException.InnerException is FileNotFoundException or DirectoryNotFoundException) {
+			if (e is { Status: WebExceptionStatus.ProtocolError, Response: HttpWebResponse { StatusCode: HttpStatusCode.NotFound } }
+			    || e.InnerException is FileNotFoundException or DirectoryNotFoundException or { InnerException: FileNotFoundException or DirectoryNotFoundException }) {
 				// Ignore file not found.
 			} else {
 				LogError("Unable to read manifest file: " + e.Message);
@@ -412,26 +414,23 @@ public class CactbotEventSource : EventSourceBase {
 			LogError("Unable to read manifest file: " + e.Message);
 		}
 
-		if (dataFilePaths.Count > 0) {
-			var fileData = new Dictionary<string, string>();
-			foreach (var dataFilename in dataFilePaths) {
-				try {
-					var filePath = new Uri(new Uri(url), "data/" + dataFilename);
-					fileData[dataFilename] = client.GetStringAsync(filePath).Result;
-					LogInfo("Read file " + dataFilename);
-				} catch (Exception e) {
-					LogError("Unable to read data file: " + e.Message);
-				}
+		if (dataFilePaths.Count == 0) return null;
+		var fileData = new Dictionary<string, string>();
+		foreach (var dataFilename in dataFilePaths) {
+			try {
+				var filePath = new Uri(new Uri(url), "data/" + dataFilename);
+				fileData[dataFilename] = client.GetStringAsync(filePath).Result;
+				LogInfo("Read file " + dataFilename);
+			} catch (Exception e) {
+				LogError("Unable to read data file: " + e.Message);
 			}
-
-			return fileData;
 		}
-
-		return null;
+		return fileData;
 	}
 
+
 	private JObject FetchDataFiles(JObject msg) {
-		var result = GetDataFiles(msg["source"].ToString());
+		var result = GetDataFiles(msg["source"]?.ToString());
 
 		var output = new JObject {
 			["detail"] = new JObject {
@@ -442,9 +441,8 @@ public class CactbotEventSource : EventSourceBase {
 		return output;
 	}
 
-	private Dictionary<string, string> GetLocalUserFiles(string configDir, string overlayName) {
-		if (string.IsNullOrEmpty(configDir))
-			return null;
+	private Dictionary<string, string>? GetLocalUserFiles(string configDir, string? overlayName) {
+		if (string.IsNullOrEmpty(configDir)) return null;
 
 		// TODO: It's not great to have to load every js and css file in the user dir.
 		// But most of the time they'll be short and there won't be many.  JS
@@ -452,7 +450,7 @@ public class CactbotEventSource : EventSourceBase {
 		// document ready event), but that's probably overkill.
 		var userFiles = new Dictionary<string, string>();
 		string topDir;
-		string subDir = null;
+		string? subDir = null;
 		try {
 			topDir = new Uri(configDir).LocalPath;
 		} catch (UriFormatException) {
@@ -512,7 +510,7 @@ public class CactbotEventSource : EventSourceBase {
 	}
 
 
-	private void GetUserConfigDirAndFiles(string overlayName, out string configDir, out Dictionary<string, string> localFiles) {
+	private void GetUserConfigDirAndFiles(string? overlayName, out string configDir, out Dictionary<string, string>? localFiles) {
 		localFiles = null;
 		configDir = null;
 
@@ -553,20 +551,18 @@ public class CactbotEventSource : EventSourceBase {
 
 	private void StartFileWatcher() {
 		watchers = [];
-		List<string?> paths = [Config.UserConfigFile];
+		// List<string?> paths = [Config.UserConfigFile];
+		var path = Config.UserConfigFile;
+		if (string.IsNullOrEmpty(path)) return;
+		var watchDir = "";
+		try {
+			// Get canonical url for paths so that Directory.Exists will work properly.
+			watchDir = Path.GetFullPath(Path.GetDirectoryName(new Uri(path).LocalPath)!);
+		} catch {
+			//
+		}
 
-		foreach (var path in paths) {
-			if (string.IsNullOrEmpty(path)) continue;
-			string watchDir;
-			try {
-				// Get canonical url for paths so that Directory.Exists will work properly.
-				watchDir = Path.GetFullPath(Path.GetDirectoryName(new Uri(path).LocalPath)!);
-			} catch {
-				continue;
-			}
-
-			if (!Directory.Exists(watchDir)) continue;
-
+		if (Directory.Exists(watchDir)) {
 			var watcher = new FileSystemWatcher {
 				Path = watchDir,
 				NotifyFilter = NotifyFilters.LastWrite | NotifyFilters.FileName,

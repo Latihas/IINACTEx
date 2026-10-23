@@ -13,7 +13,6 @@ public class EnmityMemoryManager : IEnmityMemory {
 	public EnmityMemoryManager(TinyIoCContainer container) {
 		container.Register<IEnmityMemory60, EnmityMemory60>();
 		memory = container.Resolve<IEnmityMemory60>();
-		memory.ScanPointers();
 	}
 
 	public void ScanPointers() {

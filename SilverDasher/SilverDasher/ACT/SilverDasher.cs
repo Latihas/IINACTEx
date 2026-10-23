@@ -109,7 +109,7 @@ public class SilverDasher {
 					if (Keeper.PlayerWorldID != 0 && Keeper.CurrentWorldID != 0 && Keeper.PlayerName != "") await Auth(token);
 				} catch (Exception ex) {
 					Trace.WriteLine(ex.ToString());
-					Logger.Log(ex.StackTrace);
+					Logger.Log(ex.ToString());
 				} finally {
 					await Task.Delay(TimeSpan.FromSeconds(5), token);
 				}
@@ -162,7 +162,7 @@ public class SilverDasher {
 					}
 				} catch (Exception ex) {
 					Trace.WriteLine(ex.ToString());
-					Logger.Log(ex.StackTrace);
+					Logger.Log(ex.ToString());
 				} finally {
 					await Task.Delay(TimeSpan.FromSeconds(15.0), token);
 				}

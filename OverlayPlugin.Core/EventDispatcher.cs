@@ -124,35 +124,36 @@ public class EventDispatcher(TinyIoCContainer container) {
 			}
 
 			var handler = value.ToString();
-			if (handler == "subscribe") {
-				if (!message.TryGetValue("events", out var value1)) {
-					_logger.Log(LogLevel.Error, Resources.OverlayApiMissingEventsField,
-						receiver.Name + ": " + data);
+			switch (handler) {
+				case "subscribe": {
+					if (!message.TryGetValue("events", out var value1)) {
+						_logger.Log(LogLevel.Error, Resources.OverlayApiMissingEventsField,
+							receiver.Name + ": " + data);
+						return null;
+					}
+
+					foreach (var name in value1.ToList()) {
+						Subscribe(name.ToString(), receiver);
+						_logger.Log(LogLevel.Debug, Resources.OverlayApiSubscribed, receiver.Name, name.ToString());
+					}
+
 					return null;
 				}
+				case "unsubscribe": {
+					if (!message.TryGetValue("events", out var value1)) {
+						_logger.Log(LogLevel.Error, Resources.OverlayApiMissingEventsFieldUnsub,
+							receiver.Name + ": " + data);
+						return null;
+					}
 
-				foreach (var name in value1.ToList()) {
-					Subscribe(name.ToString(), receiver);
-					_logger.Log(LogLevel.Debug, Resources.OverlayApiSubscribed, receiver.Name, name.ToString());
-				}
+					foreach (var name in value1.ToList()) {
+						Unsubscribe(name.ToString(), receiver);
+					}
 
-				return null;
-			}
-			if (handler == "unsubscribe") {
-				if (!message.TryGetValue("events", out var value1)) {
-					_logger.Log(LogLevel.Error, Resources.OverlayApiMissingEventsFieldUnsub,
-						receiver.Name + ": " + data);
 					return null;
 				}
-
-				foreach (var name in value1.ToList()) {
-					Unsubscribe(name.ToString(), receiver);
-				}
-
-				return null;
+				default: return CallHandler(message);
 			}
-
-			return CallHandler(message);
 		} catch (Exception e) {
 			_logger.Log(LogLevel.Error, Resources.JsHandlerCallException, e);
 			return null;

@@ -39,7 +39,7 @@ public class PartyListsStruct {
 public abstract class PartyMemory(TinyIoCContainer container) {
 	protected readonly FFXIVMemory memory = container.Resolve<FFXIVMemory>();
 
-	public bool IsValid() => memory.IsValid();
+	public bool IsValid() => true;
 
 	public void ScanPointers() {
 	}

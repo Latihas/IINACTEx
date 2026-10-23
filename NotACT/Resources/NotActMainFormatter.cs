@@ -400,13 +400,13 @@ public static class NotActMainFormatter {
 		CombatantData.ColumnDefs.Clear();
 		CombatantData.ColumnDefs.Add("EncId",
 			new CombatantData.ColumnDef("EncId", false, "CHAR(8)", "EncId",
-				_ => string.Empty, Data => Data.Parent.EncId, (_, _) => 0));
+				_ => string.Empty, Data => Data.Parent?.EncId, (_, _) => 0));
 		CombatantData.ColumnDefs.Add("Ally",
 			new CombatantData.ColumnDef("Ally", false, "CHAR(1)", "Ally",
 				Data => Data.Parent.GetAllies().Contains(Data).ToString(),
 				Data => !Data.Parent.GetAllies().Contains(Data) ? "F" : "T",
 				(Left, Right) =>
-					Left.Parent.GetAllies().Contains(Left).CompareTo(Right.Parent.GetAllies().Contains(Right))));
+					Left.Parent.GetAllies().Contains(Left).CompareTo(Right.Parent?.GetAllies().Contains(Right))));
 		CombatantData.ColumnDefs.Add("Name",
 			new CombatantData.ColumnDef("Name", true, "VARCHAR(64)", "Name",
 				Data => Data.Name, Data => Data.Name,
@@ -992,10 +992,10 @@ public static class NotActMainFormatter {
 		DamageTypeData.ColumnDefs.Clear();
 		DamageTypeData.ColumnDefs.Add("EncId",
 			new DamageTypeData.ColumnDef("EncId", false, "CHAR(8)", "EncId",
-				_ => string.Empty, Data => Data.Parent.Parent.EncId));
+				_ => string.Empty, Data => Data.Parent?.Parent.EncId));
 		DamageTypeData.ColumnDefs.Add("Combatant",
 			new DamageTypeData.ColumnDef("Combatant", false, "VARCHAR(64)", "Combatant",
-				Data => Data.Parent.Name, Data => Data.Parent.Name));
+				Data => Data.Parent?.Name, Data => Data.Parent?.Name));
 		DamageTypeData.ColumnDefs.Add(
 			"Grouping",
 			new DamageTypeData.ColumnDef("Grouping", false, "VARCHAR(92)", "Grouping",
@@ -1343,7 +1343,7 @@ public static class NotActMainFormatter {
 		string @params;
 		var swingTypeCount = 0;
 		if (damageData.Outgoing) {
-			@params = $"attacker={damageData.Parent.Name}";
+			@params = $"attacker={damageData.Parent?.Name}";
 			foreach (var swingTypeLink in CombatantData.SwingTypeToDamageTypeDataLinksOutgoing.SelectMany(swingTypeLink =>
 					         swingTypeLink.Value, (swingTypeLink, damageType) => new { swingTypeLink, damageType })
 				         .Where(t => damageData.Type == t.damageType)
@@ -1352,7 +1352,7 @@ public static class NotActMainFormatter {
 				swingTypeCount++;
 			}
 		} else {
-			@params = $"victim={damageData.Parent.Name}";
+			@params = $"victim={damageData.Parent?.Name}";
 			foreach (var swingTypeLink in CombatantData.SwingTypeToDamageTypeDataLinksIncoming.SelectMany(swingTypeLink =>
 					         swingTypeLink.Value, (swingTypeLink, damageType) => new { swingTypeLink, damageType })
 				         .Where(t => damageData.Type == t.damageType)
@@ -1380,7 +1380,8 @@ public static class NotActMainFormatter {
 	};
 
 	private static string EncounterFormatSwitch(
-		EncounterData data, List<CombatantData> selectiveAllies, string varName, string extra, int tries = 0) {
+		EncounterData? data, List<CombatantData> selectiveAllies, string varName, string extra, int tries = 0) {
+		if (data == null) return "ERROR";
 		try {
 			var num = 0L;
 			var num2 = 0L;

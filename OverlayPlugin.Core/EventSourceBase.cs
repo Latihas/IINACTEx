@@ -11,16 +11,11 @@ public abstract class EventSourceBase : IEventSource {
 	private EventDispatcher dispatcher;
 	private bool updateRunning;
 
-	protected Timer timer;
+	protected Timer? timer;
 	protected ILogger logger;
-	protected readonly Dictionary<string, JObject> eventCache = new();
+	private readonly Dictionary<string, JObject> eventCache = new();
 
-	// Backwards compat
-	public EventSourceBase(ILogger _) {
-		Init(Registry.GetContainer());
-	}
-
-	public EventSourceBase(TinyIoCContainer c) {
+	protected EventSourceBase(TinyIoCContainer c) {
 		Init(c);
 	}
 
@@ -32,7 +27,7 @@ public abstract class EventSourceBase : IEventSource {
 		timer = new Timer(UpdateWrapper, null, Timeout.Infinite, 1000);
 	}
 
-	protected void UpdateWrapper(object state) {
+	private void UpdateWrapper(object? state) {
 		if (updateRunning) {
 			Log(LogLevel.Warning, "Update for {0} took too long, skipping overlapping tick!", GetType().Name);
 			return;
@@ -52,7 +47,7 @@ public abstract class EventSourceBase : IEventSource {
 
 	public abstract void SaveConfig(IPluginConfig config);
 
-	protected void Log(LogLevel level, string message, params object[] args) {
+	protected void Log(LogLevel level, string message, params object?[] args) {
 		logger.Log(level, message, args);
 	}
 
@@ -61,11 +56,11 @@ public abstract class EventSourceBase : IEventSource {
 	}
 
 	public virtual void Start() {
-		timer.Change(0, 1000);
+		timer?.Change(0, 1000);
 	}
 
 	public virtual void Stop() {
-		timer.Change(-1, -1);
+		timer?.Change(-1, -1);
 	}
 
 	protected abstract void Update();
@@ -102,7 +97,7 @@ public abstract class EventSourceBase : IEventSource {
 	}
 
 	protected void DispatchAndCacheEvent(JObject e) {
-		eventCache[e["type"].ToString()] = e;
+		eventCache[e["type"]!.ToString()] = e;
 		dispatcher.DispatchEvent(e);
 	}
 

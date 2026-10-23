@@ -34,7 +34,7 @@ internal class LineActorControlSelfExtra(TinyIoCContainer container) : LineBaseS
 	];
 
 	internal class ActorControlSelfExtraPacket : MachinaPacketWrapper {
-		public override string ToString(long epoch, uint ActorID) {
+		public override string? ToString(long epoch, uint ActorID) {
 			var category = Get<Server_ActorControlCategory>("category");
 
 			if (!AllowedActorControlCategories.Contains(category)) return null;

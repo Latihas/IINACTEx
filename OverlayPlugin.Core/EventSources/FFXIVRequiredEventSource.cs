@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
@@ -44,7 +45,7 @@ internal class FFXIVRequiredEventSource : EventSourceBase {
 		[23] = "LookingForParty"
 	};
 
-	private readonly CancellationTokenSource cancellationToken;
+	private readonly CancellationTokenSource? cancellationToken;
 	private readonly ICombatantMemory combatantMemory;
 	private readonly IJobGaugeMemory jobGaugeMemory;
 	private readonly IPartyMemory partyMemory;
@@ -84,21 +85,15 @@ internal class FFXIVRequiredEventSource : EventSourceBase {
 				});
 			});
 
-			RegisterEventHandler("getVersion", _ => {
-				var version = repository.GetOverlayPluginVersion();
-				return JObject.FromObject(new {
-					version = version.ToString()
-				});
-			});
+			RegisterEventHandler("getVersion", _ => JObject.FromObject(new {
+				version = repository.GetOverlayPluginVersion().ToString()
+			}));
 
 			RegisterEventHandler("getCombatants", msg => {
-				var ids = new List<uint>();
-				if (msg["ids"] != null) ids.AddRange(from id in (JArray)msg["ids"] select id.ToObject<uint>());
-				var names = new List<string>();
-				if (msg["names"] != null) names.AddRange(from name in (JArray)msg["names"] select name.ToString());
-				var props = new List<string>();
-				if (msg["props"] != null) props.AddRange(from prop in (JArray)msg["props"] select prop.ToString());
-				var combatants = GetCombatants(ids, names, props);
+				var combatants = GetCombatants(
+					msg["ids"] is JArray msgids ? [.. msgids.Select(id => id.ToObject<uint>())] : [],
+					msg["names"] is JArray msgnames ? [.. msgnames.Select(name => name.ToString())] : [],
+					msg["props"] is JArray msgprops ? [.. msgprops.Select(prop => prop.ToString())] : []);
 				return JObject.FromObject(new {
 					combatants
 				});
@@ -126,10 +121,9 @@ internal class FFXIVRequiredEventSource : EventSourceBase {
 	public BuiltinEventConfig Config { get; set; }
 
 	[MethodImpl(MethodImplOptions.NoInlining)]
-	private List<Dictionary<string, object>> GetCombatants(List<uint> ids, List<string> names, List<string> props) {
-		var filteredCombatants = new List<Dictionary<string, object>>();
+	private List<Dictionary<string, object?>> GetCombatants(List<uint> ids, List<string> names, List<string> props) {
+		var filteredCombatants = new List<Dictionary<string, object?>>();
 		var pluginCombatants = repository.GetCombatants();
-		if (!combatantMemory.IsValid()) return filteredCombatants;
 		var pluginCombatantsById = new Dictionary<uint, PluginCombatant>(pluginCombatants.Count);
 		foreach (var combatant in pluginCombatants) pluginCombatantsById.TryAdd(combatant.ID, combatant);
 		var idSet = ids.Count > 0 ? new HashSet<uint>(ids) : null;
@@ -146,7 +140,7 @@ internal class FFXIVRequiredEventSource : EventSourceBase {
 			if (!include) continue;
 
 			var jObjCombatant = JObject.FromObject(combatant);
-			var result = new Dictionary<string, object>(jObjCombatant.Count);
+			var result = new Dictionary<string, object?>(jObjCombatant.Count);
 			foreach (var property in jObjCombatant.Properties()) {
 				result[property.Name] = property.Value.ToObject<object>();
 			}
@@ -158,7 +152,7 @@ internal class FFXIVRequiredEventSource : EventSourceBase {
 
 			// Handle 0xFFFE (outofrange1) and 0xFFFF (outofrange2) values for WorldID
 			var WorldID = Convert.ToUInt32(result["WorldID"]);
-			string WorldName = null;
+			string? WorldName = null;
 			if (WorldID < 0xFFFE) WorldName = GetWorldName(WorldID);
 
 			result["WorldName"] = WorldName;
@@ -177,14 +171,7 @@ internal class FFXIVRequiredEventSource : EventSourceBase {
 		// The PartyTypeEnum was renamed in 2.6.0.0 to work around that, we use reflection and cast the result to int.
 		(int)combatant.PartyType;
 
-	private string GetWorldName(uint WorldID) {
-		var dict = repository.GetResourceDictionary(ResourceType.WorldList_EN);
-		if (dict == null)
-			return null;
-		if (dict.TryGetValue(WorldID, out var WorldName))
-			return WorldName;
-		return null;
-	}
+	private string? GetWorldName(uint WorldID) => repository.GetResourceDictionary(ResourceType.WorldList_EN).TryGetValue(WorldID, out var WorldName) ? WorldName : null;
 
 	private void DispatchPartyChangeEvent() {
 		// TODO: We know how to detect alliance A/B/C. Need to verify alliance D/E/F
@@ -200,13 +187,9 @@ internal class FFXIVRequiredEventSource : EventSourceBase {
 		};
 
 		PartyType currentAlliance;
-		if ((cachedPartyList.allianceFlags & 0x1) == 0) {
-			if (cachedPartyList.memberCount <= 1) {
-				currentAlliance = PartyType.Solo;
-			} else {
-				currentAlliance = PartyType.Party;
-			}
-		} else if ((cachedPartyList.currentPartyFlags & 0x100) == 0x100) {
+		if ((cachedPartyList.allianceFlags & 0x1) == 0)
+			currentAlliance = cachedPartyList.memberCount <= 1 ? PartyType.Solo : PartyType.Party;
+		else if ((cachedPartyList.currentPartyFlags & 0x100) == 0x100) {
 			currentAlliance = remainingAlliances[0];
 			remainingAlliances.RemoveAt(0);
 		} else if ((cachedPartyList.currentPartyFlags & 0x1) == 0x1) {
@@ -243,10 +226,10 @@ internal class FFXIVRequiredEventSource : EventSourceBase {
 				cachedPartyList.partyLeaderIndex,
 
 				cachedPartyList.currentPartyFlags
-			},
-#if DEBUG
-			debugPartyStruct = cachedPartyList,
-#endif
+			}
+			// #if DEBUG
+// 			debugPartyStruct = cachedPartyList,
+// #endif
 		}));
 	}
 
@@ -273,7 +256,7 @@ internal class FFXIVRequiredEventSource : EventSourceBase {
 	public override void Start() {
 		// Use the config update interval, but clamp an upper limit at 5000ms
 		var updateInterval = Math.Min(5000, Config.UpdateInterval * 1000);
-		timer.Change(0, updateInterval);
+		timer?.Change(0, updateInterval);
 	}
 
 	public override void Stop() {
@@ -284,7 +267,7 @@ internal class FFXIVRequiredEventSource : EventSourceBase {
 	private async void PollJobGauge() {
 		try {
 			IJobGauge? lastJobGauge = null;
-			while (!cancellationToken.IsCancellationRequested) {
+			while (cancellationToken is { IsCancellationRequested: false }) {
 				var now = DateTime.Now;
 				if (HasSubscriber(JobGaugeChangedEvent)) {
 					var jobGauge = jobGaugeMemory.GetJobGauge();
@@ -303,19 +286,15 @@ internal class FFXIVRequiredEventSource : EventSourceBase {
 				await Task.Delay(delay > 0 ? delay : PollingRate);
 			}
 		} catch {
+			//
 		}
 	}
 
 	protected override void Update() {
-		if (partyMemory != null) {
-			UpdateParty();
-		}
+		UpdateParty();
 	}
 
 	private void UpdateParty() {
-		if (!partyMemory.IsValid()) {
-			return;
-		}
 		var newParty = partyMemory.GetPartyLists();
 
 		// If we don't have anyone in the party, "correct" it by making sure the current player is in the party
@@ -336,7 +315,7 @@ internal class FFXIVRequiredEventSource : EventSourceBase {
 					currentMP = (ushort)currentPlayer.CurrentMP,
 					maxMP = (ushort)currentPlayer.MaxMP,
 					homeWorld = currentPlayer.WorldID,
-					name = currentPlayer.Name,
+					name = currentPlayer.Name??"",
 					classJob = currentPlayer.Job,
 					level = currentPlayer.Level,
 					flags = 0x13
@@ -375,7 +354,7 @@ internal class FFXIVRequiredEventSource : EventSourceBase {
 		}
 	}
 
-	private bool HasPartyCompChanged(PartyListEntry[] oldList, PartyListEntry[] newList) {
+	private bool HasPartyCompChanged(PartyListEntry?[]? oldList, PartyListEntry?[]? newList) {
 		// If both lists are the same reference or both null, nothing changed
 		if (ReferenceEquals(oldList, newList)) {
 			return false;
@@ -419,6 +398,7 @@ internal class FFXIVRequiredEventSource : EventSourceBase {
 		return false;
 	}
 
+	[SuppressMessage("ReSharper", "NotAccessedField.Local")]
 	private struct PartyMember {
 		// Player id in hex (for ease in matching logs).
 		public string id;

@@ -52,7 +52,8 @@ public class PluginControl {
 			PluginStatus.CONNECTED => 0xFF008000,
 			PluginStatus.BANNED => 0xFFFF4500,
 			PluginStatus.BLOCKED => 0xFFCD5C5C,
-			PluginStatus.LEFT => 0xFFFF0000
+			PluginStatus.LEFT => 0xFFFF0000,
+			_ => 0xFF000000
 		});
 		ImGui.Text($"{Enum.GetName(SilverDasher.pluginStatus)}({ChineseStatusText[SilverDasher.pluginStatus]})");
 		ImGui.PopStyleColor();

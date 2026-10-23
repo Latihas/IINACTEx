@@ -116,7 +116,7 @@ public class Combatant {
 	public bool IsTargetable;
 
 	public byte Job;
-	public string Name;
+	public string? Name;
 
 	public int CurrentHP;
 	public int MaxHP;

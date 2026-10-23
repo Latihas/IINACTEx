@@ -30,8 +30,8 @@ public abstract class EnmityMemory(TinyIoCContainer container) : IEnmityMemory {
 			var entry = new EnmityEntry {
 				ID = e.EntityId,
 				Enmity = (uint)e.Enmity,
-				isMe = e.EntityId == mychar.ID,
-				Name = c == null ? "Unknown" : c.Name,
+				isMe = e.EntityId == mychar?.ID,
+				Name = c?.Name ?? "Unknown",
 				OwnerID = c?.OwnerID ?? 0,
 				HateRate = (int)(e.Enmity / (double)topEnmity * 100),
 				Job = c?.Job ?? 0

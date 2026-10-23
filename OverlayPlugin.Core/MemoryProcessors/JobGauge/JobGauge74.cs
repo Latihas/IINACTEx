@@ -11,7 +11,8 @@ internal partial class JobGaugeMemory74 : JobGaugeMemory {
 	public override IJobGauge? GetJobGauge() {
 		if (!IsValid()) return null;
 
-		var jobGaugeManager = GetJobGaugeManager();
+		var jobGaugeManager = Marshal.PtrToStructure<JobGaugeManager>(
+			FFXIVClientStructs.FFXIV.Client.Game.JobGaugeManager.Addresses.Instance.Value);
 
 		var ret = new JobGaugeImpl {
 			baseObject = jobGaugeManager,
@@ -41,10 +42,6 @@ internal partial class JobGaugeMemory74 : JobGaugeMemory {
 			JobGaugeJob.GNB => jobGaugeManager.Gunbreaker,
 			_ => ret.data
 		};
-
 		return ret;
 	}
-
-	private unsafe JobGaugeManager GetJobGaugeManager() => Marshal.PtrToStructure<JobGaugeManager>(
-		(IntPtr)FFXIVClientStructs.FFXIV.Client.Game.JobGaugeManager.Instance());
 }

@@ -1,25 +1,14 @@
 using System;
-using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using FFXIVClientStructs.FFXIV.Client.Game;
 using FFXIVClientStructs.FFXIV.Client.Game.Object;
 using Newtonsoft.Json.Linq;
 
 namespace RainbowMage.OverlayPlugin.MemoryProcessors;
 
-// Wrap Process so that Process.Handle can be overridden with a more restricted handle.
-public class LimitedProcess(Process process) {
-	public IntPtr Handle => -1;
-	public int Id => process.Id;
-	public ProcessModule MainModule => process.MainModule;
-}
-
-// Exposes the FFXIV game directly. Call FindProcess() regularly to update
-// memory addresses when FFXIV is run or closed.
-public abstract partial class FFXIVProcess(TinyIoCContainer container) {
-	private readonly ILogger logger_ = container.Resolve<ILogger>();
-	private readonly LimitedProcess process_ = new(Process.GetCurrentProcess());
-
+public abstract class FFXIVProcess {
 	// Values found in the EntityStruct's job field.
+	[SuppressMessage("ReSharper", "UnusedMember.Global")]
 	public enum EntityJob : byte {
 		None = 0,
 		GLA = 1,

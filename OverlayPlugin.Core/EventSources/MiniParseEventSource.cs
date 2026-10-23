@@ -8,8 +8,8 @@ using RainbowMage.OverlayPlugin.WebSocket;
 
 namespace RainbowMage.OverlayPlugin.EventSources;
 
-internal partial class MiniParseEventSource : EventSourceBase {
-	private List<string> importedLogs = [];
+internal class MiniParseEventSource : EventSourceBase {
+	// private readonly List<string> importedLogs = [];
 
 	private const string CombatDataEvent = "CombatData";
 	private const string ImportedLogLinesEvent = "ImportedLogLines";
@@ -17,7 +17,7 @@ internal partial class MiniParseEventSource : EventSourceBase {
 
 	// Event Source
 
-	public BuiltinEventConfig Config { get; set; }
+	private BuiltinEventConfig Config { get; set; }
 
 	public MiniParseEventSource(TinyIoCContainer container) : base(container) {
 		Name = "MiniParse";
@@ -29,43 +29,35 @@ internal partial class MiniParseEventSource : EventSourceBase {
 		]);
 
 		RegisterEventHandler("saveData", msg => {
+			if (Config?.OverlayData == null) return null;
 			var key = msg["key"]?.ToString();
-			if (key == null)
-				return null;
-
-			Config.OverlayData[key] = msg["data"];
+			var data = msg["data"]?.ToString();
+			if (key == null || data == null) return null;
+			Config.OverlayData[key] = data;
 			return null;
 		});
 
 		RegisterEventHandler("loadData", msg => {
+			if (Config?.OverlayData == null) return null;
 			var key = msg["key"]?.ToString();
-			if (key == null)
-				return null;
-
-			if (!Config.OverlayData.TryGetValue(key, out var value))
-				return null;
-
-			var ret = new JObject {
+			if (key == null) return null;
+			if (!Config.OverlayData.TryGetValue(key, out var value)) return null;
+			return new JObject {
 				["key"] = key,
 				["data"] = value
 			};
-			return ret;
 		});
 
 		RegisterEventHandler("say", msg => {
 			var text = msg["text"]?.ToString();
-			if (text == null)
-				return null;
-
+			if (text == null) return null;
 			ActGlobals.oFormActMain.TTS(text);
 			return null;
 		});
 
 		RegisterEventHandler("playSound", msg => {
 			var file = msg["file"]?.ToString();
-			if (file == null)
-				return null;
-
+			if (file == null) return null;
 			ActGlobals.oFormActMain.PlaySound(file);
 			return null;
 		});
@@ -110,7 +102,9 @@ internal partial class MiniParseEventSource : EventSourceBase {
 			}
 
 			try {
-				var url = wsServer.GetModernUrl(msg["url"].ToString());
+				var msgurl = msg["url"]?.ToString();
+				if (string.IsNullOrEmpty(msgurl)) throw new Exception("url is empty.");
+				var url = wsServer.GetModernUrl(msgurl);
 				var proc = new Process();
 				proc.StartInfo.Verb = "open";
 				proc.StartInfo.FileName = url;
@@ -125,18 +119,13 @@ internal partial class MiniParseEventSource : EventSourceBase {
 			return result;
 		});
 
-		ActGlobals.oFormActMain.BeforeLogLineRead +=
-			(isImport, logInfo) => {
-				if (isImport) {
-					lock (importedLogs) {
-						importedLogs.Add(logInfo.originalLogLine);
-					}
-				}
-			};
-	}
-
-	private void StopACTCombat() {
-		ActGlobals.oFormActMain.Invoke((Action)(() => { ActGlobals.oFormActMain.EndCombat(true); }));
+		// ActGlobals.oFormActMain.BeforeLogLineRead += (isImport, logInfo) => {
+		// 	if (isImport) {
+		// 		lock (importedLogs) {
+		// 			importedLogs.Add(logInfo.originalLogLine);
+		// 		}
+		// 	}
+		// };
 	}
 
 	public override void LoadConfig(IPluginConfig config) {
@@ -149,62 +138,26 @@ internal partial class MiniParseEventSource : EventSourceBase {
 	}
 
 	public override void Start() {
-		timer.Change(0, Config.UpdateInterval * 1000);
+		timer?.Change(0, Config.UpdateInterval * 1000);
 	}
 
 	protected override void Update() {
-		var importing = false;
-
-		if (CheckIsActReady() && (!importing || Config.UpdateDpsDuringImport)) {
-			if (!HasSubscriber(CombatDataEvent)) {
-				return;
-			}
-
-			// There used to be logic here to skip updating if the encounter info hasn't changed, but that's been commented
-			// out since https://github.com/ngld/OverlayPlugin/commit/a56c44e85f0a5608d4185d67e13690dbad461523
-			// Probably an unintentional change but it didn't break anything :shrug:
-
-			DispatchEvent(CreateCombatData());
-		}
-
-		if (importing && HasSubscriber(ImportedLogLinesEvent)) {
-			List<string>? logs = null;
-
-			lock (importedLogs) {
-				if (importedLogs.Count > 0) {
-					logs = importedLogs;
-					importedLogs = [];
-				}
-			}
-
-			if (logs != null) {
-				DispatchEvent(JObject.FromObject(new {
-					type = ImportedLogLinesEvent,
-					logLines = logs
-				}));
-			}
-		}
+		if (!CheckIsActReady()) return;
+		if (!HasSubscriber(CombatDataEvent)) return;
+		DispatchEvent(CreateCombatData());
 	}
 
-	internal JObject CreateCombatData() {
-		if (!CheckIsActReady()) {
-			return new JObject();
-		}
+	private JObject CreateCombatData() {
+		if (!CheckIsActReady()) return new JObject();
+// #if DEBUG
+// 		var stopwatch = new Stopwatch();
+// 		stopwatch.Start();
+// #endif
+		var allies = ActGlobals.oFormActMain.ActiveZone?.ActiveEncounter.GetAllies();
+		if (allies == null) return new JObject();
+		var encounter = GetEncounterDictionary(allies);
+		var combatant = GetCombatantList(allies);
 
-#if DEBUG
-		var stopwatch = new Stopwatch();
-		stopwatch.Start();
-#endif
-
-		var allies = ActGlobals.oFormActMain.ActiveZone.ActiveEncounter.GetAllies();
-		Dictionary<string, string> encounter = null;
-		List<KeyValuePair<CombatantData, Dictionary<string, string>>> combatant = null;
-
-
-		encounter = GetEncounterDictionary(allies);
-		combatant = GetCombatantList(allies);
-
-		if (encounter == null || combatant == null) return new JObject();
 
 		var obj = new JObject {
 			["type"] = "CombatData",
@@ -212,7 +165,7 @@ internal partial class MiniParseEventSource : EventSourceBase {
 			["Combatant"] = new JObject()
 		};
 
-		if (Config.SortKey != null && Config.SortKey != "") {
+		if (Config.SortKey != "") {
 			var factor = Config.SortDesc ? -1 : 1;
 			var key = Config.SortKey;
 
@@ -239,25 +192,24 @@ internal partial class MiniParseEventSource : EventSourceBase {
 			foreach (var pair2 in pair.Value) {
 				value.Add(pair2.Key, Util.ReplaceNaNString(pair2.Value, "---"));
 			}
-
-			obj["Combatant"][pair.Key.Name] = value;
+			obj["Combatant"]![pair.Key.Name] = value;
 		}
 
-		obj["isActive"] = ActGlobals.oFormActMain.ActiveZone.ActiveEncounter?.Active == true ? "true" : "false";
+		obj["isActive"] = ActGlobals.oFormActMain.ActiveZone?.ActiveEncounter.Active == true ? "true" : "false";
 
-#if DEBUG
-		stopwatch.Stop();
-		Log(LogLevel.Trace, "CreateUpdateScript: {0} msec", stopwatch.Elapsed.TotalMilliseconds);
-#endif
+// #if DEBUG
+// 		stopwatch.Stop();
+// 		Log(LogLevel.Trace, "CreateUpdateScript: {0} msec", stopwatch.Elapsed.TotalMilliseconds);
+// #endif
 		return obj;
 	}
 
 	private List<KeyValuePair<CombatantData, Dictionary<string, string>>> GetCombatantList(
 		IEnumerable<CombatantData> allies) {
-#if TRACE
-		var stopwatch = new Stopwatch();
-		stopwatch.Start();
-#endif
+// #if TRACE
+// 		var stopwatch = new Stopwatch();
+// 		stopwatch.Start();
+// #endif
 
 		Dictionary<string, string> BuildCombatantDict(CombatantData ally) {
 			var valueDict = new Dictionary<string, string>();
@@ -293,27 +245,27 @@ internal partial class MiniParseEventSource : EventSourceBase {
 				combatantData, BuildCombatantDict(combatantData)))
 			.ToList();
 
-#if TRACE
-		stopwatch.Stop();
-		Log(LogLevel.Trace, "GetCombatantList: {0} msec", stopwatch.Elapsed.TotalMilliseconds);
-#endif
+// #if TRACE
+// 		stopwatch.Stop();
+// 		Log(LogLevel.Trace, "GetCombatantList: {0} msec", stopwatch.Elapsed.TotalMilliseconds);
+// #endif
 
 		return combatantList;
 	}
 
 	private Dictionary<string, string> GetEncounterDictionary(List<CombatantData> allies) {
-#if TRACE
-		var stopwatch = new Stopwatch();
-		stopwatch.Start();
-#endif
+// #if TRACE
+// 		var stopwatch = new Stopwatch();
+// 		stopwatch.Start();
+// #endif
 
 		var encounterDict = new Dictionary<string, string>();
 		foreach (var exportValuePair in EncounterData.ExportVariables) {
 			try {
-#if TRACE
-				stopwatch.Reset();
-				stopwatch.Start();
-#endif
+// #if TRACE
+// 				stopwatch.Reset();
+// 				stopwatch.Start();
+// #endif
 
 				// ACT_FFXIV_Plugin が提供する LastXXDPS は、
 				// ally.Items[CombatantData.DamageTypeDataOutgoingDamage].Items に All キーが存在しない場合に、
@@ -327,7 +279,7 @@ internal partial class MiniParseEventSource : EventSourceBase {
 				}
 
 				var value = exportValuePair.Value.GetExportString(
-					ActGlobals.oFormActMain.ActiveZone.ActiveEncounter,
+					ActGlobals.oFormActMain.ActiveZone?.ActiveEncounter,
 					allies,
 					"");
 				encounterDict.Add(exportValuePair.Key, value);
@@ -336,20 +288,13 @@ internal partial class MiniParseEventSource : EventSourceBase {
 			}
 		}
 
-#if TRACE
-		stopwatch.Stop();
-		Log(LogLevel.Trace, "GetEncounterDictionary: {0} msec", stopwatch.Elapsed.TotalMilliseconds);
-#endif
+// #if TRACE
+// 		stopwatch.Stop();
+// 		Log(LogLevel.Trace, "GetEncounterDictionary: {0} msec", stopwatch.Elapsed.TotalMilliseconds);
+// #endif
 
 		return encounterDict;
 	}
 
-	private static bool CheckIsActReady() {
-		if (ActGlobals.oFormActMain?.ActiveZone?.ActiveEncounter != null &&
-		    EncounterData.ExportVariables != null &&
-		    CombatantData.ExportVariables != null) {
-			return true;
-		}
-		return false;
-	}
+	private static bool CheckIsActReady() => ActGlobals.oFormActMain.ActiveZone?.ActiveEncounter != null;
 }

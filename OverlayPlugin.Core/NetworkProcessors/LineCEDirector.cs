@@ -23,7 +23,7 @@ internal class LineCEDirector : LineBaseCustom<
 		[FieldOffset(0xE)] public byte unk12;
 		[FieldOffset(0xF)] public byte unk13;
 
-		public string ToString(long epoch, uint ActorID) {
+		public string? ToString(long epoch, uint ActorID) {
 			var line =
 				$"{popTime:X8}|" +
 				$"{timeRemaining:X4}|" +
@@ -39,14 +39,10 @@ internal class LineCEDirector : LineBaseCustom<
 
 			var isBeingRemoved = status == 0;
 			if (isBeingRemoved) {
-				if (!ces.Remove(ceKey)) {
-					return null;
-				}
+				if (!ces.Remove(ceKey)) return null;
 			} else {
 				if (ces.TryGetValue(ceKey, out var oldData)) {
-					if (oldData == line) {
-						return null;
-					}
+					if (oldData == line) return null;
 				}
 				ces[ceKey] = line;
 			}

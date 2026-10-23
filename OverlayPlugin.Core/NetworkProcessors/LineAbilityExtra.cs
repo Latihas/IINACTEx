@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Runtime.InteropServices;
 using Machina.FFXIV;
@@ -20,6 +21,7 @@ internal class LineAbilityExtra : LineBaseSubMachina<LineAbilityExtra.AbilityExt
 		public override unsafe string ToString(long epoch, uint ActorID) {
 			var packetPtr = IntPtr.Zero;
 			try {
+				if (staticRegion == null) throw new Exception("staticRegion is null");
 				var packetHelper = (MachinaPacketHelper<AbilityExtraPacket<Server_ActionEffect1_Extra>>)aeHelper[staticRegion.Value];
 
 				packetPtr = Marshal.AllocHGlobal(Marshal.SizeOf(packetValue));
@@ -87,7 +89,7 @@ internal class LineAbilityExtra : LineBaseSubMachina<LineAbilityExtra.AbilityExt
 	}
 
 	[StructLayout(LayoutKind.Explicit, Pack = 1)]
-	internal struct Server_ActionEffect8_Extra : IActionEffectExtra {
+	private struct Server_ActionEffect8_Extra : IActionEffectExtra {
 		[FieldOffset(0x290)] private ushort _x;
 
 		[FieldOffset(0x292)] private ushort _z;
@@ -102,7 +104,7 @@ internal class LineAbilityExtra : LineBaseSubMachina<LineAbilityExtra.AbilityExt
 	}
 
 	[StructLayout(LayoutKind.Explicit, Pack = 1)]
-	internal struct Server_ActionEffect16_Extra : IActionEffectExtra {
+	private struct Server_ActionEffect16_Extra : IActionEffectExtra {
 		[FieldOffset(0x4D0)] public ushort _x;
 
 		[FieldOffset(0x4D2)] public ushort _z;
@@ -117,7 +119,7 @@ internal class LineAbilityExtra : LineBaseSubMachina<LineAbilityExtra.AbilityExt
 	}
 
 	[StructLayout(LayoutKind.Explicit, Pack = 1)]
-	internal struct Server_ActionEffect24_Extra : IActionEffectExtra {
+	private struct Server_ActionEffect24_Extra : IActionEffectExtra {
 		[FieldOffset(0x710)] public ushort _x;
 
 		[FieldOffset(0x712)] public ushort _z;
@@ -132,7 +134,7 @@ internal class LineAbilityExtra : LineBaseSubMachina<LineAbilityExtra.AbilityExt
 	}
 
 	[StructLayout(LayoutKind.Explicit, Pack = 1)]
-	internal struct Server_ActionEffect32_Extra : IActionEffectExtra {
+	private struct Server_ActionEffect32_Extra : IActionEffectExtra {
 		[FieldOffset(0x950)] public ushort _x;
 
 		[FieldOffset(0x952)] public ushort _z;
@@ -147,6 +149,7 @@ internal class LineAbilityExtra : LineBaseSubMachina<LineAbilityExtra.AbilityExt
 	}
 
 	// For possible future expansion.
+	[SuppressMessage("ReSharper", "UnusedMember.Local")]
 	private enum LineSubType {
 		NO_DATA = 0,
 		DATA_PRESENT = 1,
@@ -186,28 +189,13 @@ internal class LineAbilityExtra : LineBaseSubMachina<LineAbilityExtra.AbilityExt
 		}
 	}
 
-	protected override void ProcessChanged(Process process) {
-		base.ProcessChanged(process);
-
-		staticRegion = null;
-	}
-
 	protected override void MessageReceived(string id, long epoch, byte[] message) {
-		if (packetHelper_32 == null)
-			return;
-
 		staticRegion ??= ffxiv.GetMachinaRegion();
-
-		if (staticRegion == null)
-			return;
-
 		var line = packetHelper[staticRegion.Value].ToString(epoch, message)
 		           ?? packetHelper_8[staticRegion.Value].ToString(epoch, message)
 		           ?? packetHelper_16[staticRegion.Value].ToString(epoch, message)
 		           ?? packetHelper_24[staticRegion.Value].ToString(epoch, message)
 		           ?? packetHelper_32[staticRegion.Value].ToString(epoch, message);
-		if (line == null) return;
-		var serverTime = ffxiv.EpochToDateTime(epoch);
-		logWriter(line, serverTime);
+		if (line != null) logWriter?.Invoke(line, ffxiv.EpochToDateTime(epoch));
 	}
 }

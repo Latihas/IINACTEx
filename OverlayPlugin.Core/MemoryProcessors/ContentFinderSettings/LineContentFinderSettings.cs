@@ -7,7 +7,7 @@ internal class LineContentFinderSettings {
 	public const uint LogFileLineID = 265;
 	private readonly FFXIVRepository ffxiv;
 
-	private readonly Func<string, DateTime, bool> logWriter;
+	private readonly Func<string, DateTime, bool>? logWriter;
 
 	private readonly IContentFinderSettingsMemory contentFinderSettingsMemory;
 
@@ -36,7 +36,6 @@ internal class LineContentFinderSettings {
 	}
 
 	private void LogLineHandler(bool isImport, LogLineEventArgs args) {
-		if (!contentFinderSettingsMemory.IsValid()) return;
 		var currentZoneId = ffxiv.GetCurrentTerritoryID();
 		if (!(currentZoneId > 0)) return;
 		var currentZoneName = ActGlobals.oFormActMain.CurrentZone;
@@ -45,14 +44,12 @@ internal class LineContentFinderSettings {
 	}
 
 	private void OnZoneChange(uint zoneId, string zoneName) {
-		if (!contentFinderSettingsMemory.IsValid())
-			return;
 		WriteInContentFinderSettingsLine(DateTime.Now, $"{zoneId:X}", zoneName);
 	}
 
 	private void WriteInContentFinderSettingsLine(DateTime dateTime, string zoneID, string zoneName) {
 		var settings = contentFinderSettingsMemory.GetContentFinderSettings();
-		logWriter.Invoke(
+		logWriter?.Invoke(
 			$"{zoneID}|" +
 			$"{zoneName}|" +
 			$"{settings.inContentFinderContent}|" +

@@ -19,7 +19,9 @@ public unsafe class ZoneDownHookManager : IDisposable {
 	private const string OpcodeKeyTableSignature = "?? ?? ?? 2B C8 ?? 8B ?? 8A ?? ?? ?? ?? 41 81";
 	private readonly int[] opcodeKeyTable;
 	private readonly byte[] keys = new byte[3];
+
 	private delegate nuint DownPrototype(byte* data, byte* a2, nuint a3, nuint a4, nuint a5);
+
 	private readonly Hook<DownPrototype> zoneDownHook;
 	private readonly SimpleBuffer buffer;
 	public readonly Unscrambler73 unscrambler;

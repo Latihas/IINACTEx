@@ -42,7 +42,7 @@ public class Logger(IPluginLog pluginLog) : ILogger {
 	/// <param name="level">ログレベル。</param>
 	/// <param name="format">複合書式指定文字列。</param>
 	/// <param name="args">書式指定するオブジェクト。</param>
-	public void Log(LogLevel level, string format, params object[] args) => Log(level, string.Format(format, args));
+	public void Log(LogLevel level, string format, params object?[] args) => Log(level, string.Format(format, args));
 
 	public void RegisterListener(Action<LogEntry> listener) {
 	}

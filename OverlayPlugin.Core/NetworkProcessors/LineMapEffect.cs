@@ -219,51 +219,35 @@ internal class LineMapEffect : LineBaseCustom<
 	}
 
 	protected override void MessageReceived(string id, long epoch, byte[] message) {
-		if (MessageReceivedSubHandler(packetHelper, epoch, message))
-			return;
-		if (MessageReceivedSubHandler(packetHelper_4, epoch, message))
-			return;
-		if (MessageReceivedSubHandler(packetHelper_8, epoch, message))
-			return;
-		if (MessageReceivedSubHandler(packetHelper_12, epoch, message))
-			return;
+		_ = MessageReceivedSubHandler(packetHelper, epoch, message) ||
+		    MessageReceivedSubHandler(packetHelper_4, epoch, message) ||
+		    MessageReceivedSubHandler(packetHelper_8, epoch, message) ||
+		    MessageReceivedSubHandler(packetHelper_12, epoch, message);
 	}
 
-	protected bool MessageReceivedSubHandler<T>(RegionalizedPacketHelper<
-		T,
-		T,
-		T,
-		T> helper, long epoch, byte[] message) where T : unmanaged, IMapEffectPacket, IPacketStruct {
-		if (packetHelper == null)
-			return true;
-
-		if (currentRegion == null)
-			currentRegion = ffxiv.GetMachinaRegion();
-
-		if (currentRegion == null)
-			return true;
-
+	protected bool MessageReceivedSubHandler<T>(RegionalizedPacketHelper<T, T, T, T> helper, long epoch, byte[] message) where T : unmanaged, IMapEffectPacket, IPacketStruct {
+		currentRegion ??= ffxiv.GetMachinaRegion();
 		switch (currentRegion) {
 			case GameRegion.Global: {
-				if (!helper.global.ToStructs(message, out var header, out var packet))
+				if (!helper.global.ToStructs(message, out _, out var packet))
 					return false;
 				WriteLinesFor(epoch, packet.instanceContentID, packet.count, packet.flags1, packet.flags2, packet.indexes);
 				return true;
 			}
 			case GameRegion.Chinese: {
-				if (!helper.cn.ToStructs(message, out var header, out var packet))
+				if (!helper.cn.ToStructs(message, out _, out var packet))
 					return false;
 				WriteLinesFor(epoch, packet.instanceContentID, packet.count, packet.flags1, packet.flags2, packet.indexes);
 				return true;
 			}
 			case GameRegion.Korean: {
-				if (!helper.kr.ToStructs(message, out var header, out var packet))
+				if (!helper.kr.ToStructs(message, out _, out var packet))
 					return false;
 				WriteLinesFor(epoch, packet.instanceContentID, packet.count, packet.flags1, packet.flags2, packet.indexes);
 				return true;
 			}
 			case GameRegion.TraditionalChinese: {
-				if (!helper.tc.ToStructs(message, out var header, out var packet))
+				if (!helper.tc.ToStructs(message, out _, out var packet))
 					return false;
 				WriteLinesFor(epoch, packet.instanceContentID, packet.count, packet.flags1, packet.flags2, packet.indexes);
 				return true;

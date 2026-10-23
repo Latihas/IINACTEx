@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using Newtonsoft.Json.Linq;
 
 namespace RainbowMage.OverlayPlugin;
 
+[SuppressMessage("ReSharper", "UnusedMemberInSuper.Global")] 
 public interface IPluginConfig {
 	OverlayConfigList<IOverlayConfig> Overlays { get; set; }
 	bool HideOverlaysWhenNotActive { get; set; }

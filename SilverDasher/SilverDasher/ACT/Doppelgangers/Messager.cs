@@ -71,7 +71,6 @@ internal class Messager(SilverDasher plugin) : Doppelganger(plugin) {
 						}
 					} catch (Exception ex) {
 						Log(ex.ToString());
-						Log(ex.StackTrace);
 					}
 				} finally {
 					await Task.Delay(TimeSpan.FromSeconds(6.0), token);

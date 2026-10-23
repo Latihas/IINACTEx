@@ -62,6 +62,7 @@ internal class FFXIVOptionalEventSource : EventSourceBase {
 					}
 				}
 			} catch {
+				//
 			}
 
 			return;
@@ -157,7 +158,7 @@ internal class FFXIVOptionalEventSource : EventSourceBase {
 	}
 
 	public override void Start() {
-		timer.Change(0, Config.UpdateInterval * 1000);
+		timer?.Change(0, Config.UpdateInterval * 1000);
 	}
 
 	protected override void Update() {

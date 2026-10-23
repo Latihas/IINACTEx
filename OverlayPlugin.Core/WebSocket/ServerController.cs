@@ -37,21 +37,15 @@ public class ServerController(TinyIoCContainer container) {
 	}
 
 
-	private static bool IsAssemblyLoadContextException(Exception ex) {
+	private static bool IsAssemblyLoadContextException(Exception? ex) {
 		if (ex == null) return false;
-
 		var message = ex.Message;
 		if (message.Contains("AssemblyLoadContext") ||
 		    message.Contains("unloading") ||
 		    message.Contains("unloaded")) {
 			return true;
 		}
-
-		if (ex.InnerException != null) {
-			return IsAssemblyLoadContextException(ex.InnerException);
-		}
-
-		return false;
+		return ex.InnerException != null && IsAssemblyLoadContextException(ex.InnerException);
 	}
 
 	public void Start() {

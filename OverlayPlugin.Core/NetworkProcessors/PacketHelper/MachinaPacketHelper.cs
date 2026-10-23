@@ -28,7 +28,7 @@ internal static class MachinaMap {
 			var parentNamespaceName = mType.Namespace;
 
 			// Wrong namespace
-			if (!parentNamespaceName.StartsWith("Machina.FFXIV.Headers")) continue;
+			if (parentNamespaceName == null || !parentNamespaceName.StartsWith("Machina.FFXIV.Headers")) continue;
 			// Not a struct or enum or primitive
 			if (!mType.IsValueType) continue;
 			// Check for enum
@@ -78,7 +78,7 @@ internal static class MachinaMap {
 		MachinaHeaderWrapper.InitTypePropertyMap(HeaderType_TC);
 	}
 
-	public static bool GetPacketType(GameRegion region, string name, out Type packetType) {
+	public static bool GetPacketType(GameRegion region, string name, out Type? packetType) {
 		packetType = null;
 		if (!packetTypeMap.TryGetValue(region, out var map)) return false;
 		if (!map.TryGetValue(name, out packetType)) {
@@ -107,13 +107,9 @@ public class MachinaRegionalizedPacketHelper<PacketType>
 	}
 
 	public static bool Create(string packetTypeName, out MachinaRegionalizedPacketHelper<PacketType> packetHelper, string? packetOpcodeName = null) {
-		packetOpcodeName = packetOpcodeName ?? packetTypeName;
+		packetOpcodeName ??= packetTypeName;
 		packetHelper = null;
 		var opcodes = FFXIVRepository.GetMachinaOpcodes();
-		if (opcodes == null) {
-			return false;
-		}
-
 		if (!opcodes.TryGetValue(GameRegion.Global, out var globalOpcodes)) {
 			return false;
 		}
@@ -175,8 +171,7 @@ public class MachinaRegionalizedPacketHelper<PacketType>
 	};
 }
 
-public class MachinaPacketHelper<PacketType> : IPacketHelper
-	where PacketType : MachinaPacketWrapper, new() {
+public class MachinaPacketHelper<PacketType> : IPacketHelper where PacketType : MachinaPacketWrapper, new() {
 	public readonly ushort Opcode;
 	public readonly int headerSize;
 	public readonly int packetSize;
@@ -184,13 +179,13 @@ public class MachinaPacketHelper<PacketType> : IPacketHelper
 	public readonly Type headerType;
 	public readonly Type packetType;
 
-	public MachinaPacketHelper(ushort opcode, Type headerType, Type packetType) {
+	public MachinaPacketHelper(ushort opcode, Type headerType, Type? packetType) {
 		Opcode = opcode;
 		headerSize = Marshal.SizeOf(headerType);
 		// Machina packets include the header as part of the packet struct
-		packetSize = Marshal.SizeOf(packetType) - headerSize;
+		packetSize = packetType == null ? 0 : Marshal.SizeOf(packetType) - headerSize;
 		this.headerType = headerType;
-		this.packetType = packetType;
+		this.packetType = packetType ?? typeof(object);
 	}
 
 	/// <summary>
@@ -199,28 +194,22 @@ public class MachinaPacketHelper<PacketType> : IPacketHelper
 	/// <param name="epoch">epoch timestamp from FFXIV_ACT_Plugin's NetworkReceivedDelegate</param>
 	/// <param name="message">Message byte array received from FFXIV_ACT_Plugin's NetworkReceivedDelegate</param>
 	/// <returns>null for invalid packet, otherwise a constructed packet</returns>
-	public string ToString(long epoch, byte[] message) {
-		if (!ToStructs(message, out var header, out var packet)) {
-			return null;
-		}
-
-		return ToString(epoch, header, packet);
-	}
+	public string? ToString(long epoch, byte[] message) => !ToStructs(message, out var header, out var packet) ? null : ToString(epoch, header, packet);
 
 	/// <summary>
 	///     Construct a string representation of a packet from a byte array
 	/// </summary>
 	/// <param name="epoch">epoch timestamp from FFXIV_ACT_Plugin's NetworkReceivedDelegate</param>
-	/// <param name="message">Message byte array received from FFXIV_ACT_Plugin's NetworkReceivedDelegate</param>
+	/// <param name="header">Message byte array received from FFXIV_ACT_Plugin's NetworkReceivedDelegate</param>
+	/// <param name="packet">Message byte array received from FFXIV_ACT_Plugin's NetworkReceivedDelegate</param>
 	/// <returns>null for invalid packet, otherwise a constructed packet</returns>
-	public string ToString(long epoch, MachinaHeaderWrapper header, MachinaPacketWrapper packet) => packet.ToString(epoch, header.ActorID);
+	public string? ToString(long epoch, MachinaHeaderWrapper header, MachinaPacketWrapper packet) => packet.ToString(epoch, header.ActorID);
 
 	public unsafe bool ToStructs(byte[] message, out MachinaHeaderWrapper header, out PacketType packet) {
 		// Message is too short to contain this packet
 		if (message.Length < headerSize + packetSize) {
 			header = null;
 			packet = null;
-
 			return false;
 		}
 
@@ -229,35 +218,36 @@ public class MachinaPacketHelper<PacketType> : IPacketHelper
 		}
 	}
 
-	public unsafe bool ToStructs(void* message, out MachinaHeaderWrapper header, out PacketType packet) {
-		var ptr = new IntPtr(message);
-		return ToStructs(ptr, out header, out packet);
-	}
+	public unsafe bool ToStructs(void* message, out MachinaHeaderWrapper header, out PacketType packet) => ToStructs((IntPtr)message, out header, out packet);
 
 	public bool ToStructs(IntPtr ptr, out MachinaHeaderWrapper header, out PacketType packet, bool ignoreOpcode = false) {
 		var headerObj = Marshal.PtrToStructure(ptr, headerType);
-
+		if (headerObj == null) {
+			header = null;
+			packet = null;
+			return false;
+		}
 		header = new MachinaHeaderWrapper(headerObj);
-
 		if (!ignoreOpcode && header.Opcode != Opcode) {
 			header = null;
 			packet = null;
-
 			return false;
 		}
-
 		var packetObj = Marshal.PtrToStructure(ptr, packetType);
-
+		if (packetObj == null) {
+			header = null;
+			packet = null;
+			return false;
+		}
 		packet = new PacketType {
 			packetType = packetType,
 			packetValue = packetObj
 		};
-
 		return true;
 	}
 }
 
-public class MachinaHeaderWrapper(object header, Type headerType = null) : IHeaderStruct {
+public class MachinaHeaderWrapper(object header, Type? headerType = null) : IHeaderStruct {
 	public readonly object header = header;
 
 	private static readonly Dictionary<Type, Dictionary<string, FieldInfo>> typePropertyMap = new();
@@ -271,11 +261,11 @@ public class MachinaHeaderWrapper(object header, Type headerType = null) : IHead
 		typePropertyMap.Add(type, dict);
 	}
 
-	public T Get<T>(string name) =>
+	public T? Get<T>(string name) =>
 		// For performance, we don't check that the dictionary entries exist here
 		// The only times they would not exist are a compile-time error, or Machina itself removing/renaming a field/struct
 		// which would require an OverlayPlugin version bump anyways
-		(T)propMap[name].GetValue(header);
+		(T?)propMap[name].GetValue(header);
 
 	public uint ActorID => Get<uint>("ActorID");
 
@@ -294,15 +284,15 @@ public abstract class MachinaPacketWrapper : IPacketStruct {
 		typePropertyMap.Add(type, type.GetFields().ToDictionary(fieldInfo => fieldInfo.Name));
 	}
 
-	public abstract string ToString(long epoch, uint ActorID);
+	public abstract string? ToString(long epoch, uint ActorID);
 
-	public T Get<T>(string name) {
+	public T? Get<T>(string name) {
 		// For performance, we don't check that the dictionary entries exist here
 		// The only times they would not exist are a compile-time error, or Machina itself removing/renaming a field/struct
 		// which would require an OverlayPlugin version bump anyways
 
 		// Cache the map locally for subsequent calls
 		propMap ??= typePropertyMap[packetType];
-		return (T)propMap[name].GetValue(packetValue);
+		return (T?)propMap[name].GetValue(packetValue);
 	}
 }

@@ -6,14 +6,14 @@ namespace RainbowMage.OverlayPlugin.EventSources;
 
 [Serializable]
 public class BuiltinEventConfig {
-	public event EventHandler UpdateIntervalChanged;
-	public event EventHandler EnmityIntervalChanged;
-	public event EventHandler SortKeyChanged;
-	public event EventHandler SortDescChanged;
-	public event EventHandler UpdateDpsDuringImportChanged;
-	public event EventHandler EndEncounterAfterWipeChanged;
-	public event EventHandler EndEncounterOutOfCombatChanged;
-	public event EventHandler LogLinesChanged;
+	public event EventHandler? UpdateIntervalChanged;
+	public event EventHandler? EnmityIntervalChanged;
+	public event EventHandler? SortKeyChanged;
+	public event EventHandler? SortDescChanged;
+	public event EventHandler? UpdateDpsDuringImportChanged;
+	public event EventHandler? EndEncounterAfterWipeChanged;
+	public event EventHandler? EndEncounterOutOfCombatChanged;
+	public event EventHandler? LogLinesChanged;
 
 	private int updateInterval = 1;
 
@@ -104,38 +104,37 @@ public class BuiltinEventConfig {
 	}
 
 	// Data that overlays can save/load via event handlers.
-	public Dictionary<string, JToken> OverlayData = new();
+	public Dictionary<string, JToken>? OverlayData = new();
 
-	public static BuiltinEventConfig LoadConfig(IPluginConfig config) {
+	public static BuiltinEventConfig LoadConfig(IPluginConfig? config) {
 		var result = new BuiltinEventConfig();
+		if (config == null || !config.EventSourceConfigs.TryGetValue("MiniParse", out var obj)) return result;
 
-		if (!config.EventSourceConfigs.TryGetValue("MiniParse", out var obj)) return result;
-
-		if (obj.TryGetValue("UpdateInterval", out var value)) {
+		if (obj.TryGetValue(nameof(UpdateInterval), out var value)) {
 			result.updateInterval = value.ToObject<int>();
 		}
 
-		if (obj.TryGetValue("EnmityIntervalMs", out value)) {
+		if (obj.TryGetValue(nameof(EnmityIntervalMs), out value)) {
 			result.enmityIntervalMs = value.ToObject<int>();
 		}
 
-		if (obj.TryGetValue("SortKey", out value)) {
+		if (obj.TryGetValue(nameof(SortKey), out value)) {
 			result.sortKey = value.ToString();
 		}
 
-		if (obj.TryGetValue("SortDesc", out value)) {
+		if (obj.TryGetValue(nameof(SortDesc), out value)) {
 			result.sortDesc = value.ToObject<bool>();
 		}
 
-		if (obj.TryGetValue("UpdateDpsDuringImport", out value)) {
+		if (obj.TryGetValue(nameof(UpdateDpsDuringImport), out value)) {
 			result.updateDpsDuringImport = value.ToObject<bool>();
 		}
 
-		if (obj.TryGetValue("EndEncounterAfterWipe", out value)) {
+		if (obj.TryGetValue(nameof(EndEncounterAfterWipe), out value)) {
 			result.endEncounterAfterWipe = value.ToObject<bool>();
 		}
 
-		if (obj.TryGetValue("EndEncounterOutOfCombat", out value)) {
+		if (obj.TryGetValue(nameof(EndEncounterOutOfCombat), out value)) {
 			result.endEncounterOutOfCombat = value.ToObject<bool>();
 		}
 
@@ -143,7 +142,7 @@ public class BuiltinEventConfig {
 			result.OverlayData = value.ToObject<Dictionary<string, JToken>>();
 		}
 
-		if (obj.TryGetValue("LogLines", out value)) {
+		if (obj.TryGetValue(nameof(LogLines), out value)) {
 			result._logLines = value.ToObject<bool>();
 		}
 
@@ -159,10 +158,10 @@ public class BuiltinEventConfig {
 	}
 }
 
-public enum MiniParseSortType {
-	None,
-	StringAscending,
-	StringDescending,
-	NumericAscending,
-	NumericDescending
-}
+// public enum MiniParseSortType {
+// 	None,
+// 	StringAscending,
+// 	StringDescending,
+// 	NumericAscending,
+// 	NumericDescending
+// }

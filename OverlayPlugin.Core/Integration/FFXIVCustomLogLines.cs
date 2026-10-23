@@ -24,12 +24,12 @@ public class FFXIVCustomLogLines {
 			var resourceName = assembly.GetManifestResourceNames()
 				.Single(str => str.EndsWith("reserved_log_lines.json"));
 			string reservedLogLinesJson;
-			using (var stream = assembly.GetManifestResourceStream(resourceName))
+			using (var stream = assembly.GetManifestResourceStream(resourceName)!)
 			using (var reader = new StreamReader(stream)) {
 				reservedLogLinesJson = reader.ReadToEnd();
 			}
 
-			var reservedData = JsonConvert.DeserializeObject<List<ConfigReservedLogLine>>(reservedLogLinesJson);
+			var reservedData = JsonConvert.DeserializeObject<List<ConfigReservedLogLine>>(reservedLogLinesJson)!;
 			logger.Log(LogLevel.Debug, $"Parsing {reservedData.Count} reserved log line entries.");
 			foreach (var reservedDataEntry in reservedData) {
 				if (reservedDataEntry.Source == null || reservedDataEntry.Version == null) {
@@ -106,7 +106,7 @@ public class FFXIVCustomLogLines {
 		}
 	}
 
-	public Func<string, DateTime, bool> RegisterCustomLogLine(ILogLineRegistryEntry entry) {
+	public Func<string, DateTime, bool>? RegisterCustomLogLine(ILogLineRegistryEntry entry) {
 		// Don't allow any attempt to write a custom log line with FFXIV_ACT_Plugin as the source.
 		// This prevents a downstream plugin from attempting to register e.g. `00` lines by just pretending to be FFXIV_ACT_Plugin.
 		if (entry.Source == "FFXIV_ACT_Plugin") {
@@ -159,7 +159,7 @@ public class LogLineRegistryEntry : ILogLineRegistryEntry {
 
 	public override string ToString() => Source + "|" + ID + "|" + Version;
 
-	public override bool Equals(object obj) {
+	public override bool Equals(object? obj) {
 		if (obj == null || GetType() != obj.GetType()) {
 			return false;
 		}
@@ -177,21 +177,12 @@ public class LogLineRegistryEntry : ILogLineRegistryEntry {
 	}
 }
 
-internal interface IConfigReservedLogLine {
-	uint? ID { get; }
-	uint? StartID { get; }
-	uint? EndID { get; }
-	string Name { get; }
-	string Source { get; }
-	uint? Version { get; }
-}
-
 [JsonObject(NamingStrategyType = typeof(DefaultNamingStrategy))]
-internal class ConfigReservedLogLine : IConfigReservedLogLine {
+internal class ConfigReservedLogLine {
 	public uint? ID { get; set; }
 	public uint? StartID { get; set; }
 	public uint? EndID { get; set; }
-	public string Name { get; set; }
-	public string Source { get; set; }
+	public string? Name { get; set; }
+	public string? Source { get; set; }
 	public uint? Version { get; set; }
 }

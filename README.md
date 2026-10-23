@@ -51,8 +51,8 @@ Plugin以适配现代.NET。与此同时，也添加了大量修改的Triggernom
 
 # 开发相关
 
-本分支基于国服IINACT开发，如需移植到国际服理论上仅需修改IINACT官库与CN库的区别即可(
-可能有部分翻译由于开发时未注意多语言需要适配一下)。
+本分支基于国服IINACT开发，如需移植到国际服理论上仅需修改IINACT官库与CN库的区别即可
+(可能有部分翻译由于开发时未注意多语言需要适配一下)。
 
 同理，卫月路径也需要改一下，在仓库目录中Directory.Build.props。
 
@@ -92,8 +92,8 @@ The data source here is only based on [Unscrambler](https://github.com/perchbird
 extra injection with [Deucalion](https://github.com/ff14wed/deucalion) or network capture with elevated privileges.
 
 This will **not** render overlays by itself, use something
-like [Browsingway](https://github.com/Styr1x/Browsingway), [Next UI](https://github.com/kaminaris/Next-UI), [hudkit](https://github.com/valarnin/hudkit) (
-Linux only) or [Bunny HUD](https://github.com/marzent/Bunny-HUD) (macOS only) to display Overlays.
+like [Browsingway](https://github.com/Styr1x/Browsingway), [Next UI](https://github.com/kaminaris/Next-UI), [hudkit](https://github.com/valarnin/hudkit)
+(Linux only) or [Bunny HUD](https://github.com/marzent/Bunny-HUD) (macOS only) to display Overlays.
 
 ## Why
 

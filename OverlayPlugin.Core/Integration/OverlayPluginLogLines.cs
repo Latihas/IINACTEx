@@ -60,12 +60,12 @@ internal class OverlayPluginLogLineConfig {
 			else {
 				var assembly = Assembly.GetExecutingAssembly();
 				var resourceName = assembly.GetManifestResourceNames().Single(str => str.EndsWith("opcodes.jsonc"));
-				using var stream = assembly.GetManifestResourceStream(resourceName);
+				using var stream = assembly.GetManifestResourceStream(resourceName)!;
 				using var reader = new StreamReader(stream);
 				jsonData = reader.ReadToEnd();
 			}
 
-			config = JsonConvert.DeserializeAnonymousType(jsonData, config);
+			config = JsonConvert.DeserializeAnonymousType(jsonData, config) ?? throw new Exception("Parse ExtraOpcodes Failed.");
 		} catch (Exception ex) {
 			LogException($"FFXIVCustomLogLines: Failed to load reserved log line: {ex}");
 		}
@@ -84,8 +84,7 @@ internal class OverlayPluginLogLineConfig {
 		logger.Log(LogLevel.Warning, message);
 	}
 
-	private IOpcodeConfigEntry GetOpcode(string name, Opcodes opcodes, string version, string opcodeType, MachinaRegion machinaRegion) {
-		if (opcodes == null) return null;
+	private IOpcodeConfigEntry? GetOpcode(string name, Opcodes opcodes, string version, string opcodeType, MachinaRegion machinaRegion) {
 		if (opcodes.TryGetValue(machinaRegion, out var regionOpcodes)) {
 			if (regionOpcodes.TryGetValue(version, out var versionOpcodes)) {
 				if (versionOpcodes.TryGetValue(name, out var opcode)) {
@@ -100,25 +99,12 @@ internal class OverlayPluginLogLineConfig {
 		} else {
 			LogException($"No {opcodeType} opcodes for game region {machinaRegion}");
 		}
-
 		return null;
 	}
 
-	public IOpcodeConfigEntry this[string name] {
-		get {
-			var machinaRegion = repository.GetMachinaRegion().ToString();
-			return this[name, machinaRegion];
-		}
-	}
-
-	public IOpcodeConfigEntry this[string name, MachinaRegion machinaRegion] {
+	public IOpcodeConfigEntry? this[string name, MachinaRegion machinaRegion] {
 		get {
 			var version = repository.GetGameVersion();
-			if (version == null) {
-				LogException("Could not detect game version from FFXIV_ACT_Plugin");
-				return null;
-			}
-
 			return GetOpcode(name, config, version, "resource", machinaRegion);
 		}
 	}

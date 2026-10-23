@@ -7,16 +7,19 @@ using RainbowMage.OverlayPlugin.MemoryProcessors.Target;
 
 namespace RainbowMage.OverlayPlugin.MemoryProcessors.Aggro;
 
-public abstract class AggroMemory(TinyIoCContainer container) : IAggroMemory {
-	private readonly ICombatantMemory combatantMemory = container.Resolve<ICombatantMemory>();
-	private readonly ITargetMemory targetMemory = container.Resolve<ITargetMemory>();
+public abstract class AggroMemory : IAggroMemory {
+	private readonly ICombatantMemory combatantMemory;
+	private readonly ITargetMemory targetMemory;
+
+	protected unsafe AggroMemory(TinyIoCContainer container) {
+		container.Resolve<ILogger>().Log(LogLevel.Debug, "aggroAddress: 0x{0:X}", (IntPtr)(&UIState.Instance()->Hater));
+		combatantMemory = container.Resolve<ICombatantMemory>();
+		targetMemory = container.Resolve<ITargetMemory>();
+	}
 
 	public bool IsValid() => true;
 
-
-	public unsafe void ScanPointers() {
-		var logger = container.Resolve<ILogger>();
-		logger.Log(LogLevel.Debug, "aggroAddress: 0x{0:X}", (IntPtr)(&UIState.Instance()->Hater));
+	public void ScanPointers() {
 	}
 
 	public abstract Version GetVersion();
@@ -44,7 +47,7 @@ public abstract class AggroMemory(TinyIoCContainer container) : IAggroMemory {
 				HateRate = e.Enmity,
 				isCurrentTarget = e.EntityId == currentTargetID,
 				IsTargetable = c.IsTargetable,
-				Name = c.Name,
+				Name = c.Name ?? "",
 				MaxHP = c.MaxHP,
 				CurrentHP = c.CurrentHP,
 				Effects = c.Effects
@@ -58,9 +61,9 @@ public abstract class AggroMemory(TinyIoCContainer container) : IAggroMemory {
 				if (t != null) {
 					entry.Target = new EnmityEntry {
 						ID = t.ID,
-						Name = t.Name,
+						Name = t.Name ?? "",
 						OwnerID = t.OwnerID,
-						isMe = mychar.ID == t.ID,
+						isMe = mychar?.ID == t.ID,
 						Enmity = 0,
 						HateRate = 0,
 						Job = t.Job

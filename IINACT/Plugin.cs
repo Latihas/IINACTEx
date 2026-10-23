@@ -184,7 +184,7 @@ public sealed class Plugin : IDalamudPlugin {
 			TerritoryChanged(0);
 			ZoneDownHookManager = new ZoneDownHookManager();
 			if (Configuration.UseArrManager) ArrManager = new ArrManager();
-			foreach (var rt in Directory.GetFiles(PluginActScriptDirectory, "*.dll", SearchOption.TopDirectoryOnly).Select(Path.GetFileName))
+			foreach (var rt in Directory.GetFiles(PluginActScriptDirectory, "*.dll", SearchOption.TopDirectoryOnly).Select(Path.GetFileName).Where(i=>i!=null).OfType<string>())
 				if (Configuration.ActScriptsEnabled.Contains(rt))
 					LoadIActPluginV1(rt, preserveEnableState: true);
 			PostNamazuPlugin.InitPlugin(PluginInterface, Log, SigScanner, Framework, new PluginIntegrationManager());

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
+using System.Linq;
 using System.Xml;
 using System.Xml.Schema;
 using System.Xml.Serialization;
@@ -11,36 +12,26 @@ namespace RainbowMage.OverlayPlugin;
 ///     XmlSerializer でシリアライズ可能な IOverlayConfig のコレクション。
 /// </summary>
 [Serializable]
-public class OverlayConfigList<T> : Collection<T>, IXmlSerializable {
+public class OverlayConfigList<T>(ILogger logger) : Collection<T>, IXmlSerializable where T : notnull {
 	public int MissingTypes { get; private set; }
 
-	[NonSerialized] private ILogger _logger;
+	[NonSerialized] private ILogger _logger = logger;
 
-	public OverlayConfigList(ILogger logger) {
-		_logger = logger;
-	}
-
-	public XmlSchema GetSchema() => null;
+	public XmlSchema? GetSchema() => null;
 
 	public void ReadXml(XmlReader reader) {
 		MissingTypes = 0;
-
-		if (reader.IsEmptyElement) {
-			return;
-		}
-
+		if (reader.IsEmptyElement) return;
 		reader.ReadToDescendant("Overlay");
 		do {
 			var typeName = reader.GetAttribute("Type");
-
 			reader.Read();
-
 			var type = GetType(typeName);
-
 			if (type != null) {
 				try {
 					var serializer = new XmlSerializer(type);
-					var config = (T)serializer.Deserialize(reader);
+					var config = (T?)serializer.Deserialize(reader);
+					if (config == null) throw new Exception("config is null");
 					Add(config);
 				} catch (Exception e) {
 					Trace.WriteLine(e);
@@ -55,15 +46,7 @@ public class OverlayConfigList<T> : Collection<T>, IXmlSerializable {
 		reader.ReadEndElement();
 	}
 
-	private Type GetType(string fullName) {
-		foreach (var asm in AppDomain.CurrentDomain.GetAssemblies()) {
-			var type = asm.GetType(fullName, false);
-			if (type != null) {
-				return type;
-			}
-		}
-		return null;
-	}
+	private static Type? GetType(string? fullName) => fullName == null ? null : AppDomain.CurrentDomain.GetAssemblies().Select(asm => asm.GetType(fullName, false)).OfType<Type>().FirstOrDefault();
 
 	public void WriteXml(XmlWriter writer) {
 		foreach (var config in this) {

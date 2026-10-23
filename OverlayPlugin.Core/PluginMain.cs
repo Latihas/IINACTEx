@@ -42,11 +42,11 @@ public class PluginMain {
 	internal string ConfigPath { get; private set; }
 	private readonly Timer configSaveTimer;
 
-	internal PluginConfig Config { get; private set; }
+	private PluginConfig? Config { get; set; }
 	internal List<IOverlay>? Overlays { get; private set; }
-	internal event EventHandler OverlaysChanged;
+	internal event EventHandler? OverlaysChanged;
 
-	internal string PluginDirectory { get; }
+	private string PluginDirectory { get; }
 
 	public PluginMain(string pluginDirectory, ILogger logger, TinyIoCContainer container) {
 		_container = container;
@@ -117,22 +117,15 @@ public class PluginMain {
 			// プラグイン間のメッセージ関連
 			OverlayApi.BroadcastMessage += (_, e) => {
 				Task.Run(() => {
-					foreach (var overlay in Overlays) {
-						overlay.SendMessage(e.Message);
-					}
+					if (Overlays == null) return;
+					foreach (var overlay in Overlays) overlay.SendMessage(e.Message);
 				});
 			};
 			OverlayApi.SendMessage += (_, e) => {
-				Task.Run(() => {
-					var targetOverlay = Overlays.FirstOrDefault(x => x.Name == e.Target);
-					targetOverlay?.SendMessage(e.Message);
-				});
+				Task.Run(() => Overlays?.FirstOrDefault(x => x.Name == e.Target)?.SendMessage(e.Message));
 			};
 			OverlayApi.OverlayMessage += (_, e) => {
-				Task.Run(() => {
-					var targetOverlay = Overlays.FirstOrDefault(x => x.Name == e.Target);
-					targetOverlay?.OverlayMessage(e.Message);
-				});
+				Task.Run(() => Overlays?.FirstOrDefault(x => x.Name == e.Target)?.OverlayMessage(e.Message));
 			};
 
 // #if DEBUG
@@ -149,18 +142,16 @@ public class PluginMain {
 				var assembly = Assembly.GetExecutingAssembly();
 				var resourceName = assembly.GetManifestResourceNames()
 					.Single(str => str.EndsWith("overlays.json"));
-				using var stream = assembly.GetManifestResourceStream(resourceName);
+				using var stream = assembly.GetManifestResourceStream(resourceName)!;
 				using var reader = new StreamReader(stream);
 				overlayTemplateData = reader.ReadToEnd();
 			} catch (Exception ex) {
 				_logger.Log(LogLevel.Error, string.Format(Resources.ErrorCouldNotLoadPresets, ex));
 			}
 
-			var overlayTemplates = JsonConvert.DeserializeObject<OverlayTemplateConfig>(overlayTemplateData);
+			var overlayTemplates = JsonConvert.DeserializeObject<OverlayTemplateConfig>(overlayTemplateData)!;
 			var registry = _container.Resolve<Registry>();
-			foreach (var pair in overlayTemplates.Overlays) {
-				registry.RegisterOverlayPreset2(pair);
-			}
+			foreach (var pair in overlayTemplates.Overlays) registry.RegisterOverlayPreset2(pair);
 		} catch (Exception ex) {
 			_logger.Log(LogLevel.Error, $"Failed to load presets: {ex}");
 		}
@@ -181,7 +172,7 @@ public class PluginMain {
 			_container.Register(new FFXIVCustomLogLines(_container));
 			// Register FFXIV memory reading subcomponents.
 			// Must be done before loading addons.
-			_container.Register(new FFXIVMemory(_container));
+			_container.Register(new FFXIVMemory());
 			// These are registered to be lazy-loaded. Use interface to force TinyIoC to use singleton pattern.
 			_container.Register<ICombatantMemory, CombatantMemoryManager>();
 			_container.Register<ITargetMemory, TargetMemoryManager>();
@@ -196,7 +187,7 @@ public class PluginMain {
 			_container.Register(new OverlayPluginLogLines(_container, extraOpcodes));
 			Tick("OverlayPluginLogLines");
 			Status = @"初始化阶段2：附加组件";
-			LoadAddons(Tick);
+			LoadAddons();
 			Status = @"初始化阶段2：UI";
 
 			// Now that addons have been loaded, we can finish the overlay setup.
@@ -211,7 +202,7 @@ public class PluginMain {
 
 			// WSServer has to start after the LoadAddons() call because clients can connect immediately
 			// after it's initialized and that requires the event sources to be initialized.
-			if (Config.WSServerRunning) {
+			if (Config is { WSServerRunning: true }) {
 				Status = @"初始化阶段2：WebSocket 服务";
 				_container.Resolve<ServerController>().Start();
 			}
@@ -237,18 +228,16 @@ public class PluginMain {
 	private void InitializeOverlays() {
 		// オーバーレイ初期化
 		Overlays = [];
+		if (Config == null) return;
 		foreach (var overlayConfig in Config.Overlays) {
 			var parameters = new NamedParameterOverloads {
 				["config"] = overlayConfig,
 				["name"] = overlayConfig.Name
 			};
-
-			var overlay = (IOverlay)_container.Resolve(overlayConfig.OverlayType, parameters);
-			if (overlay != null) {
+			if (_container.Resolve(overlayConfig.OverlayType, parameters) is IOverlay overlay)
 				RegisterOverlay(overlay);
-			} else {
+			else
 				_logger.Log(LogLevel.Error, "InitPlugin: Could not find addon for {0}.", overlayConfig.Name);
-			}
 		}
 	}
 
@@ -256,21 +245,9 @@ public class PluginMain {
 	///     オーバーレイを登録します。
 	/// </summary>
 	/// <param name="overlay"></param>
-	internal void RegisterOverlay(IOverlay overlay) {
+	private void RegisterOverlay(IOverlay overlay) {
 		overlay.Start();
-		Overlays.Add(overlay);
-
-		OverlaysChanged?.Invoke(this, null);
-	}
-
-	/// <summary>
-	///     登録されているオーバーレイを削除します。
-	/// </summary>
-	/// <param name="overlay">削除するオーバーレイ。</param>
-	internal void RemoveOverlay(IOverlay overlay) {
-		Overlays.Remove(overlay);
-		overlay.Dispose();
-
+		Overlays?.Add(overlay);
 		OverlaysChanged?.Invoke(this, null);
 	}
 
@@ -296,8 +273,8 @@ public class PluginMain {
 		try {
 			var registry = _container.Resolve<Registry>();
 			foreach (var source in registry.EventSources) {
-				source.Stop();
-				source.Dispose();
+				source?.Stop();
+				source?.Dispose();
 			}
 		} catch (Exception ex) {
 			_logger.Log(LogLevel.Error, $"DeInitPlugin: Failed to stop event sources {ex.Message}");
@@ -319,7 +296,7 @@ public class PluginMain {
 		Status = "Finalized.";
 	}
 
-	private void LoadAddons(Action<string> Tick) {
+	private void LoadAddons() {
 		var registry = _container.Resolve<Registry>();
 		_container.Register(BuiltinEventConfig.LoadConfig(Config));
 		// Make sure the event sources are ready before we load any overlays.
@@ -334,8 +311,7 @@ public class PluginMain {
 	}
 
 	private bool LoadConfig() {
-		if (Config != null)
-			return true;
+		if (Config != null) return true;
 
 		try {
 			Config = new PluginConfig(GetConfigPath(), _container);
@@ -355,7 +331,7 @@ public class PluginMain {
 	/// </summary>
 	private void SaveConfig(bool force = false) {
 		if (!_container.TryResolve(out Registry registry)) return;
-		if (Config == null || Overlays == null || registry.EventSources == null) return;
+		if (Config == null || Overlays == null) return;
 
 		try {
 			foreach (var overlay in Overlays) {

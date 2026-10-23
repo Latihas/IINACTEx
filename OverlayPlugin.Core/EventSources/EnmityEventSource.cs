@@ -1,8 +1,10 @@
-#if TRACEPERF
-using System.Diagnostics;
-#endif
+// #if TRACEPERF
+// using System.Diagnostics;
+// #endif
+
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -18,6 +20,7 @@ using static RainbowMage.OverlayPlugin.MemoryProcessors.InCombat.LineInCombat;
 
 namespace RainbowMage.OverlayPlugin.EventSources;
 
+[SuppressMessage("ReSharper", "MemberCanBePrivate.Global")]
 public class EnmityEventSource : EventSourceBase {
 	// General information about the target, focus target, hover target.  Also, enmity entries for main target.
 	private const string EnmityTargetDataEvent = "EnmityTargetData";
@@ -30,13 +33,13 @@ public class EnmityEventSource : EventSourceBase {
 	private readonly ICombatantMemory combatantMemory;
 	private readonly LineInCombat lineInCombat;
 	private readonly IAggroMemory aggroMemory;
-	private CancellationTokenSource endEncounterToken;
+	private CancellationTokenSource? endEncounterToken;
 	private readonly IEnmityHudMemory enmityHudMemory;
 	private readonly IEnmityMemory enmityMemory;
 	private readonly ITargetMemory targetMemory;
 
 	public EnmityEventSource(TinyIoCContainer container) : base(container) {
-		var haveCombatantMemory = container.TryResolve(out combatantMemory);
+		var haveCombatantMemory = container.TryResolve(out combatantMemory!);
 		if (!haveCombatantMemory) {
 			Log(LogLevel.Warning, "Could not construct EnmityEventSource: missing combatantMemory");
 			return;
@@ -61,13 +64,12 @@ public class EnmityEventSource : EventSourceBase {
 	public event Action EnmityTick;
 
 	public override void Start() {
-		timer.Change(0, Config.EnmityIntervalMs);
+		timer?.Change(0, Config.EnmityIntervalMs);
 	}
 
 	public override void LoadConfig(IPluginConfig cfg) {
 		Config = container.Resolve<BuiltinEventConfig>();
-
-		Config.EnmityIntervalChanged += (_, _) => { timer.Change(0, Config.EnmityIntervalMs); };
+		Config.EnmityIntervalChanged += (_, _) => timer?.Change(0, Config.EnmityIntervalMs);
 	}
 
 	public override void SaveConfig(IPluginConfig config) {
@@ -80,20 +82,16 @@ public class EnmityEventSource : EventSourceBase {
 			try {
 				endEncounterToken.Cancel();
 			} catch {
+				//
 			}
 			try {
 				endEncounterToken.Dispose();
 			} catch {
+				//
 			}
 			endEncounterToken = null;
 		}
-
-		if (lineInCombat != null) {
-			try {
-				lineInCombat.OnInCombatChanged -= OnInCombatChanged;
-			} catch {
-			}
-		}
+		lineInCombat.OnInCombatChanged -= OnInCombatChanged;
 	}
 
 	public override void Dispose() {
@@ -123,7 +121,7 @@ public class EnmityEventSource : EventSourceBase {
 					await Task.Delay(endEncounterOutOfCombatDelayMs, token).ConfigureAwait(false);
 
 					var form = ActGlobals.oFormActMain;
-					if (form != null && !token.IsCancellationRequested) {
+					if (!token.IsCancellationRequested) {
 						form.Invoke((Action)(() => {
 							try {
 								form.EndCombat(true);
@@ -157,12 +155,11 @@ public class EnmityEventSource : EventSourceBase {
 		var targetableEnemies = HasSubscriber(TargetableEnemiesEvent);
 		if (!targetData && !aggroList && !targetableEnemies)
 			return;
-
 		try {
-#if TRACEPERF
-                var stopwatch = new Stopwatch();
-                stopwatch.Start();
-#endif
+// #if TRACEPERF
+//                 var stopwatch = new Stopwatch();
+//                 stopwatch.Start();
+// #endif
 
 			var allCombatants = combatantMemory.GetCombatantList();
 			var combatants = allCombatants.FindAll(c => c.Type is ObjectType.PC or ObjectType.Monster);
@@ -177,21 +174,17 @@ public class EnmityEventSource : EventSourceBase {
 			if (targetableEnemies) {
 				DispatchEvent(CreateTargetableEnemyList(combatants));
 			}
-#if TRACEPERF
-                Log(LogLevel.Trace, "UpdateEnmity: {0}ms", stopwatch.ElapsedMilliseconds);
-#endif
+// #if TRACEPERF
+//                 Log(LogLevel.Trace, "UpdateEnmity: {0}ms", stopwatch.ElapsedMilliseconds);
+// #endif
 		} catch (Exception ex) {
 			Log(LogLevel.Error, "UpdateEnmity: {0}", ex.ToString());
 		}
 	}
 
-	protected override void Update() {
-		if (combatantMemory != null) {
-			EnmityTick.Invoke();
-		}
-	}
+	protected override void Update() => EnmityTick.Invoke();
 
-	internal JObject CreateTargetData(List<Combatant> combatants) {
+	private JObject CreateTargetData(List<Combatant> combatants) {
 		var enmity = new EnmityTargetDataObject();
 		try {
 			var mychar = combatantMemory.GetSelfCombatant();
@@ -200,9 +193,10 @@ public class EnmityEventSource : EventSourceBase {
 				if (enmity.Target.TargetID > 0) {
 					enmity.TargetOfTarget = combatants.FirstOrDefault(x => x.ID == enmity.Target.TargetID);
 				}
-				enmity.Target.Distance = mychar.DistanceString(enmity.Target);
-				enmity.Target.EffectiveDistance = mychar.EffectiveDistanceString(enmity.Target);
-
+				if (mychar != null) {
+					enmity.Target.Distance = mychar.DistanceString(enmity.Target);
+					enmity.Target.EffectiveDistance = mychar.EffectiveDistanceString(enmity.Target);
+				}
 				if (enmity.Target.Type == ObjectType.Monster) {
 					enmity.Entries = enmityMemory.GetEnmityEntryList(combatants);
 				}
@@ -231,7 +225,7 @@ public class EnmityEventSource : EventSourceBase {
 		return JObject.FromObject(enmity);
 	}
 
-	internal JObject CreateAggroList(List<Combatant> combatants) {
+	private JObject CreateAggroList(List<Combatant> combatants) {
 		var enmity = new EnmityAggroListObject();
 		try {
 			enmity.AggroList = aggroMemory.GetAggroList(combatants);
@@ -242,7 +236,7 @@ public class EnmityEventSource : EventSourceBase {
 		return JObject.FromObject(enmity);
 	}
 
-	internal JObject CreateTargetableEnemyList(List<Combatant> combatants) {
+	private JObject CreateTargetableEnemyList(List<Combatant> combatants) {
 		var enemies = new TargetableEnemiesObject();
 		try {
 			enemies.TargetableEnemyList = GetTargetableEnemyList(combatants);
@@ -260,7 +254,7 @@ public class EnmityEventSource : EventSourceBase {
 			if (!isHostile || !combatant.IsTargetable) continue;
 			var entry = new TargetableEnemyEntry {
 				ID = combatant.ID,
-				Name = combatant.Name,
+				Name = combatant.Name ?? "",
 				CurrentHP = combatant.CurrentHP,
 				MaxHP = combatant.CurrentHP,
 				IsEngaged = combatant.AggressionStatus >= AggressionStatus.EngagedPassive,
@@ -284,7 +278,7 @@ public class EnmityEventSource : EventSourceBase {
 		public Combatant? Focus;
 		public Combatant? Hover;
 		public Combatant? Target;
-		public Combatant TargetOfTarget;
+		public Combatant? TargetOfTarget;
 		public string type = EnmityTargetDataEvent;
 	}
 

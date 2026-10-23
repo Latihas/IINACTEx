@@ -28,13 +28,9 @@ internal class RegionalizedPacketHelper<
 		_ => global
 	};
 
-	public static RegionalizedPacketHelper<PacketStruct_Global, PacketStruct_CN, PacketStruct_KR, PacketStruct_TC>
+	public static RegionalizedPacketHelper<PacketStruct_Global, PacketStruct_CN, PacketStruct_KR, PacketStruct_TC>?
 		CreateFromMachina(string opcodeName) {
 		var opcodes = FFXIVRepository.GetMachinaOpcodes();
-		if (opcodes == null) {
-			return null;
-		}
-
 		if (!opcodes.TryGetValue(GameRegion.Global, out var globalOpcodes)) {
 			return null;
 		}
@@ -90,9 +86,8 @@ public interface IPacketHelper {
 
 internal class PacketHelper<PacketStruct>(ushort opcode) : IPacketHelper
 	where PacketStruct : struct, IPacketStruct {
-	public readonly ushort Opcode = opcode;
-	public readonly int headerSize = Marshal.SizeOf<Server_MessageHeader>();
-	public readonly int packetSize = Marshal.SizeOf<PacketStruct>();
+	private readonly int headerSize = Marshal.SizeOf<Server_MessageHeader>();
+	private readonly int packetSize = Marshal.SizeOf<PacketStruct>();
 
 	/// <summary>
 	///     Construct a string representation of a packet from a byte array
@@ -100,21 +95,16 @@ internal class PacketHelper<PacketStruct>(ushort opcode) : IPacketHelper
 	/// <param name="epoch">epoch timestamp from FFXIV_ACT_Plugin's NetworkReceivedDelegate</param>
 	/// <param name="message">Message byte array received from FFXIV_ACT_Plugin's NetworkReceivedDelegate</param>
 	/// <returns>null for invalid packet, otherwise a constructed packet</returns>
-	public string ToString(long epoch, byte[] message) {
-		if (!ToStructs(message, out var header, out var packet)) {
-			return null;
-		}
-
-		return ToString(epoch, header, packet);
-	}
+	public string? ToString(long epoch, byte[] message) => !ToStructs(message, out var header, out var packet) ? null : ToString(epoch, header, packet);
 
 	/// <summary>
 	///     Construct a string representation of a packet from a byte array
 	/// </summary>
 	/// <param name="epoch">epoch timestamp from FFXIV_ACT_Plugin's NetworkReceivedDelegate</param>
-	/// <param name="message">Message byte array received from FFXIV_ACT_Plugin's NetworkReceivedDelegate</param>
+	/// <param name="header">Message byte array received from FFXIV_ACT_Plugin's NetworkReceivedDelegate</param>
+	/// <param name="packet">Message byte array received from FFXIV_ACT_Plugin's NetworkReceivedDelegate</param>
 	/// <returns>null for invalid packet, otherwise a constructed packet</returns>
-	public string ToString(long epoch, Server_MessageHeader header, PacketStruct packet) => packet.ToString(epoch, header.ActorID);
+	private string? ToString(long epoch, Server_MessageHeader header, PacketStruct packet) => packet.ToString(epoch, header.ActorID);
 
 	public unsafe bool ToStructs(byte[] message, out Server_MessageHeader header, out PacketStruct packet) {
 		// Message is too short to contain this packet
@@ -130,7 +120,7 @@ internal class PacketHelper<PacketStruct>(ushort opcode) : IPacketHelper
 			var headerPtr = new IntPtr(messagePtr);
 			header = Marshal.PtrToStructure<Server_MessageHeader>(headerPtr);
 
-			if (header.MessageType != Opcode) {
+			if (header.MessageType != opcode) {
 				header = default;
 				packet = default;
 
@@ -146,10 +136,7 @@ internal class PacketHelper<PacketStruct>(ushort opcode) : IPacketHelper
 }
 
 internal interface IPacketStruct {
-	string ToString(long epoch, uint ActorID);
+	string? ToString(long epoch, uint ActorID);
 }
 
-internal interface IHeaderStruct {
-	uint ActorID { get; }
-	uint Opcode { get; }
-}
+internal interface IHeaderStruct;

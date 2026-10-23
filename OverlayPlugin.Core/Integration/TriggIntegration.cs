@@ -3,19 +3,13 @@ using Newtonsoft.Json.Linq;
 
 namespace RainbowMage.OverlayPlugin;
 
-internal class TriggIntegration {
-	private readonly PluginMain _plugin;
+internal class TriggIntegration(TinyIoCContainer container) {
+	private readonly PluginMain _plugin = container.Resolve<PluginMain>();
 
 	public delegate void CustomCallbackDelegate(object o, string param);
 
-	private object GetPluginData() => null;
-
-	public TriggIntegration(TinyIoCContainer container) {
-		var logger = container.Resolve<ILogger>();
-		_plugin = container.Resolve<PluginMain>();
-	}
-
 	public void SendOverlayMessage(object _, string msg) {
+		if (_plugin.Overlays == null) return;
 		var pos = msg.IndexOf('|');
 		if (pos < 1) return;
 
@@ -32,6 +26,7 @@ internal class TriggIntegration {
 	}
 
 	public void HideOverlay(object _, string msg) {
+		if (_plugin.Overlays == null) return;
 		foreach (var overlay in _plugin.Overlays.Where(overlay => overlay.Name == msg)) {
 			overlay.Config.IsVisible = false;
 			break;
@@ -39,6 +34,7 @@ internal class TriggIntegration {
 	}
 
 	public void ShowOverlay(object _, string msg) {
+		if (_plugin.Overlays == null) return;
 		foreach (var overlay in _plugin.Overlays.Where(overlay => overlay.Name == msg)) {
 			overlay.Config.IsVisible = true;
 			break;

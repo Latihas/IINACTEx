@@ -1,14 +1,12 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 
 namespace RainbowMage.OverlayPlugin;
 
 /// <summary>
 ///     オーバーレイに必要な機能を定義します。
 /// </summary>
-/// <remarks>
-///     アドオンを作成する場合はこのインターフェイスを実装するのではなく、
-///     <see cref="RainbowMage.OverlayPlugin.OverlayBase" /> 抽象クラスを継承してください。
-/// </remarks>
+[SuppressMessage("ReSharper", "UnusedMember.Global")]
 public interface IOverlay : IDisposable {
 	/// <summary>
 	///     ユーザーが設定したオーバーレイの名前を取得します。

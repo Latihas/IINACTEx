@@ -25,7 +25,6 @@ internal class ContentFinderSettingsMemoryManager : IContentFinderSettingsMemory
 	public ContentFinderSettingsMemoryManager(TinyIoCContainer container) {
 		container.Register<IContentFinderSettingsMemory71, ContentFinderSettingsMemory71>();
 		memory = container.Resolve<IContentFinderSettingsMemory71>();
-		memory.ScanPointers();
 	}
 
 	public void ScanPointers() {

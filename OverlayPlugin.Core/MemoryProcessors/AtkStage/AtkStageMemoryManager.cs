@@ -14,7 +14,6 @@ internal class AtkStageMemoryManager : IAtkStageMemory {
 	public AtkStageMemoryManager(TinyIoCContainer container) {
 		container.Register<IAtkStageMemory62, AtkStageMemory62>();
 		memory = container.Resolve<IAtkStageMemory62>();
-		memory.ScanPointers();
 	}
 
 	public void ScanPointers() {

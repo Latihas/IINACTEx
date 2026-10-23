@@ -10,22 +10,16 @@ using AtkStage = FFXIVClientStructs.FFXIV.Component.GUI.AtkStage;
 
 internal interface IAtkStageMemory62 : IAtkStageMemory;
 
-internal class AtkStageMemory62(TinyIoCContainer container) : AtkStageMemory, IAtkStageMemory62 {
+internal class AtkStageMemory62 : AtkStageMemory, IAtkStageMemory62 {
 	public virtual Version GetVersion() => new(6, 2);
 
 	public unsafe IntPtr GetAddonAddress(string name) {
 		var atkStage = AtkStage.Instance();
-		if (atkStage == null)
-			return nint.Zero;
-
+		if (atkStage == null) return nint.Zero;
 		var unitMgr = atkStage->RaptureAtkUnitManager;
-		if (unitMgr == null)
-			return nint.Zero;
-
+		if (unitMgr == null) return nint.Zero;
 		var addon = unitMgr->GetAddonByName(name);
-		if (addon == null)
-			return nint.Zero;
-
+		if (addon == null) return nint.Zero;
 		return (IntPtr)addon;
 	}
 
@@ -186,159 +180,6 @@ internal class AtkStageMemory62(TinyIoCContainer container) : AtkStageMemory, IA
 		}, {
 			"WeeklyPuzzle", typeof(AddonWeeklyPuzzle)
 		}
-
-
-		// These addons are known to exist but not mapped yet:
-		// (double entries are intentional, they appear twice in the list in game memory)
-		/**
-		Achievement
-		ActionDetail
-		ActionMenu
-		AddonContextMenuTitle
-		AddonContextSub
-		AdventureNoteBook
-		AetherCurrent
-		AreaMap
-		ArmouryBoard
-		Character
-		CharacterStatus
-		ChatLog
-		CircleFinder
-		CircleList
-		ConfigKeybind
-		ConfigSystem
-		ContactList
-		ContentsInfo
-		ContentsNote
-		ContentsReplaySetting
-		CountDownSettingDialog
-		CrossWorldLinkshell
-		Currency
-		CursorAddon
-		CursorLocation
-		Dawn
-		DawnStory
-		DragDropS
-		Emote
-		FadeBack
-		FadeMiddle
-		FateProgress
-		Filter
-		FilterSystem
-		FishGuide2
-		FishingNote
-		FreeCompany
-		FreeCompanyTopics
-		GSInfoGeneral
-		GatheringNote
-		GoldSaucerInfo
-		HousingMenu
-		HowToList
-		Hud
-		HudLayout
-		Inventory
-		InventoryCrystalGrid
-		InventoryCrystalGrid
-		InventoryEventGrid0
-		InventoryEventGrid0E
-		InventoryEventGrid1
-		InventoryEventGrid1E
-		InventoryEventGrid2
-		InventoryEventGrid2E
-		InventoryExpansion
-		InventoryGrid
-		InventoryGrid0
-		InventoryGrid0E
-		InventoryGrid1
-		InventoryGrid1E
-		InventoryGrid2E
-		InventoryGrid3E
-		InventoryGridCrystal
-		InventoryLarge
-		ItemDetail
-		JobHudWHM
-		JobHudWHM0
-		Journal
-		JournalDetail
-		JournalDetail
-		LicenseViewer
-		LinkShell
-		LoadingTips
-		LookingForGroup
-		Marker
-		McGuffin
-		MinionNoteBook
-		MiragePrismPrismItemDetail
-		MonsterNote
-		MountNoteBook
-		MountSpeed
-		NowLoading
-		OperationGuide
-		Orchestrion
-		OrnamentNoteBook
-		PlayGuide
-		PvpProfile
-		PvpProfileColosseum
-		QuestRedoHud
-		RecommendList
-		ScenarioTree
-		ScreenFrameSystem
-		ScreenLog
-		Social
-		SocialList
-		SupportDesk
-		Tooltip
-		VVDFinder
-		WebLauncher
-		_ActionContents
-		_AllianceList1
-		_AllianceList2
-		_AreaText
-		_AreaText
-		_BagWidget
-		_BattleTalk
-		_ContentGauge
-		_DTR
-		_FlyText
-		_FocusTargetInfo
-		_Image
-		_Image
-		_Image3
-		_Image3
-		_LimitBreak
-		_LocationTitle
-		_LocationTitleShort
-		_MainCommand
-		_MainCross
-		_MiniTalk
-		_Money
-		_NaviMap
-		_Notification
-		_ParameterWidget
-		_PoisonText
-		_PoisonText
-		_PopUpText
-		_ScreenInfoBack
-		_ScreenInfoFront
-		_ScreenText
-		_Status
-		_StatusCustom0
-		_StatusCustom1
-		_StatusCustom2
-		_StatusCustom3
-		_TargetCursor
-		_TargetCursorGround
-		_TargetInfo
-		_TargetInfoBuffDebuff
-		_TargetInfoCastBar
-		_TargetInfoMainTarget
-		_TextChain
-		_TextClassChange
-		_TextError
-		_ToDoList
-		_WideText
-		_WideText
-		*/
 	};
 
 	public T? GetAddon<T>() where T : struct {

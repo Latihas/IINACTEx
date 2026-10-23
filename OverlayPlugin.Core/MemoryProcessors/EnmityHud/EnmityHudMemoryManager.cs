@@ -13,7 +13,6 @@ public class EnmityHudMemoryManager : IEnmityHudMemory {
 	public EnmityHudMemoryManager(TinyIoCContainer container) {
 		container.Register<IEnmityHudMemory73, EnmityHudMemory73>();
 		memory = container.Resolve<IEnmityHudMemory73>();
-		memory.ScanPointers();
 	}
 
 	public void ScanPointers() {

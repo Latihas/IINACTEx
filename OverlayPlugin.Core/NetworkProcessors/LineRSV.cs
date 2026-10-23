@@ -20,14 +20,14 @@ internal class LineRSV(TinyIoCContainer container) : LineBaseCustom<
 		[FieldOffset(0x34)] public fixed byte value[valueSize];
 
 		public string ToString(long epoch, uint ActorID) {
-			fixed (byte* key = this.key)
-			fixed (byte* value = this.value) {
+			fixed (byte* k = this.key)
+			fixed (byte* v = this.value) {
 				var valSize = Math.Min(valueByteCount, valueSize);
 				return
 					$"{ffxiv.GetLocaleString()}|" +
 					$"{valueByteCount:X8}|" +
-					$"{FFXIVMemory.GetStringFromBytes(key, keySize).Replace("\r", "\\r").Replace("\n", "\\n")}|" +
-					$"{FFXIVMemory.GetStringFromBytes(value, valSize, valSize).Replace("\r", "\\r").Replace("\n", "\\n")}";
+					$"{FFXIVMemory.GetStringFromBytes(k, keySize).Replace("\r", "\\r").Replace("\n", "\\n")}|" +
+					$"{FFXIVMemory.GetStringFromBytes(v, valSize, valSize).Replace("\r", "\\r").Replace("\n", "\\n")}";
 			}
 		}
 	}

@@ -17,7 +17,6 @@ public class CombatantMemoryManager : ICombatantMemory {
 	public CombatantMemoryManager(TinyIoCContainer container) {
 		container.Register<ICombatantMemory75, CombatantMemory75>();
 		memory = container.Resolve<ICombatantMemory75>();
-		memory.ScanPointers();
 	}
 
 	public void ScanPointers() {

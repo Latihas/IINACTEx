@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
@@ -116,19 +117,8 @@ public class PluginConfig : IPluginConfig {
 	}
 
 	[JsonIgnore] public Version Version {
-		get {
-			if (string.IsNullOrEmpty(VersionString)) {
-				return null;
-			}
-			return new Version(VersionString);
-		}
-		set {
-			if (value != null) {
-				VersionString = value.ToString();
-			} else {
-				VersionString = null;
-			}
-		}
+		get => string.IsNullOrEmpty(VersionString) ? null : new Version(VersionString);
+		set => VersionString = value != null ? value.ToString() : null;
 	}
 
 	private string _versionString;
@@ -313,22 +303,9 @@ public class PluginConfig : IPluginConfig {
 		OverlayObjects = overlayLeftOvers;
 	}
 
-	public static PluginConfig LoadJson(string path, TinyIoCContainer container) {
-		if (!File.Exists(path)) {
-			return null;
-		}
-
-		return new PluginConfig(path, container);
+	public static PluginConfig? LoadJson(string path, TinyIoCContainer container) {
+		return !File.Exists(path) ? null : new PluginConfig(path, container);
 	}
 
-	private static Type GetType(string fullName) {
-		foreach (var asm in AppDomain.CurrentDomain.GetAssemblies()) {
-			var type = asm.GetType(fullName, false);
-			if (type != null) {
-				return type;
-			}
-		}
-
-		return null;
-	}
+	private static Type? GetType(string fullName) => AppDomain.CurrentDomain.GetAssemblies().Select(asm => asm.GetType(fullName, false)).OfType<Type>().FirstOrDefault();
 }

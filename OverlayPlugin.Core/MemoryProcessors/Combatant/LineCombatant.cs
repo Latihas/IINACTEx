@@ -17,13 +17,13 @@ namespace RainbowMage.OverlayPlugin.MemoryProcessors.Combatant;
 public class LineCombatant : IDisposable {
 	public const uint LogFileLineID = 261;
 
-	private readonly CancellationTokenSource cancellationToken;
+	private readonly CancellationTokenSource? cancellationToken;
 	private readonly ICombatantMemory combatantMemoryManager;
 	private readonly ConcurrentDictionary<uint, CombatantStateInfo> combatantStateMap = [];
 	private readonly FFXIVRepository ffxiv;
 	private readonly ILogger logger;
 
-	private readonly Func<string, DateTime, bool> logWriter;
+	private readonly Func<string, DateTime, bool>? logWriter;
 	private bool _disposed;
 	private bool inCombat;
 
@@ -77,7 +77,7 @@ public class LineCombatant : IDisposable {
 
 	private async void PollCombatants() {
 		try {
-			while (!cancellationToken.IsCancellationRequested) {
+			while (cancellationToken is { IsCancellationRequested: false }) {
 				try {
 					var now = DateTime.Now;
 
@@ -92,6 +92,7 @@ public class LineCombatant : IDisposable {
 				}
 			}
 		} catch {
+			//
 		}
 	}
 
@@ -232,10 +233,8 @@ public class LineCombatant : IDisposable {
 		return $"|{info.Name}|{value}";
 	}
 
-	private void WriteLine(CombatantMemoryChangeType type, uint combatantID, string info) {
-		var line = $"{type}|{combatantID:X8}{info}";
-		logWriter(line, ffxiv.GetServerTimestamp());
-	}
+	private void WriteLine(CombatantMemoryChangeType type, uint combatantID, string info) =>
+		logWriter?.Invoke($"{type}|{combatantID:X8}{info}", ffxiv.GetServerTimestamp());
 
 	private unsafe void MessageReceived(string id, long epoch, byte[] message) {
 		fixed (byte* buffer = message) {
@@ -278,23 +277,23 @@ public class LineCombatant : IDisposable {
 
 			CheckFieldDelay = new ReadOnlyDictionary<FieldInfo, uint>(new Dictionary<FieldInfo, uint> {
 				// Default delay threshold
-				[typeof(Combatant).GetField(nameof(Combatant.OwnerID))] = InCombatDelayDefault,
-				[typeof(Combatant).GetField(nameof(Combatant.Type))] = InCombatDelayDefault,
-				[typeof(Combatant).GetField(nameof(Combatant.MonsterType))] = InCombatDelayDefault,
-				[typeof(Combatant).GetField(nameof(Combatant.Status))] = InCombatDelayDefault,
-				[typeof(Combatant).GetField(nameof(Combatant.AggressionStatus))] = InCombatDelayDefault,
-				[typeof(Combatant).GetField(nameof(Combatant.IsTargetable))] = InCombatDelayDefault,
-				[typeof(Combatant).GetField(nameof(Combatant.Name))] = InCombatDelayDefault,
-				[typeof(Combatant).GetField(nameof(Combatant.Radius))] = InCombatDelayDefault,
-				[typeof(Combatant).GetField(nameof(Combatant.BNpcID))] = InCombatDelayDefault,
-				[typeof(Combatant).GetField(nameof(Combatant.CurrentMP))] = InCombatDelayDefault,
-				[typeof(Combatant).GetField(nameof(Combatant.IsCasting1))] = InCombatDelayDefault,
+				[typeof(Combatant).GetField(nameof(Combatant.OwnerID))!] = InCombatDelayDefault,
+				[typeof(Combatant).GetField(nameof(Combatant.Type))!] = InCombatDelayDefault,
+				[typeof(Combatant).GetField(nameof(Combatant.MonsterType))!] = InCombatDelayDefault,
+				[typeof(Combatant).GetField(nameof(Combatant.Status))!] = InCombatDelayDefault,
+				[typeof(Combatant).GetField(nameof(Combatant.AggressionStatus))!] = InCombatDelayDefault,
+				[typeof(Combatant).GetField(nameof(Combatant.IsTargetable))!] = InCombatDelayDefault,
+				[typeof(Combatant).GetField(nameof(Combatant.Name))!] = InCombatDelayDefault,
+				[typeof(Combatant).GetField(nameof(Combatant.Radius))!] = InCombatDelayDefault,
+				[typeof(Combatant).GetField(nameof(Combatant.BNpcID))!] = InCombatDelayDefault,
+				[typeof(Combatant).GetField(nameof(Combatant.CurrentMP))!] = InCombatDelayDefault,
+				[typeof(Combatant).GetField(nameof(Combatant.IsCasting1))!] = InCombatDelayDefault,
 				// No delay threshold
-				[typeof(Combatant).GetField(nameof(Combatant.BNpcNameID))] = 0,
-				[typeof(Combatant).GetField(nameof(Combatant.TransformationId))] = 0,
-				[typeof(Combatant).GetField(nameof(Combatant.WeaponId))] = 0,
-				[typeof(Combatant).GetField(nameof(Combatant.TargetID))] = 0,
-				[typeof(Combatant).GetField(nameof(Combatant.ModelStatus))] = 0
+				[typeof(Combatant).GetField(nameof(Combatant.BNpcNameID))!] = 0,
+				[typeof(Combatant).GetField(nameof(Combatant.TransformationId))!] = 0,
+				[typeof(Combatant).GetField(nameof(Combatant.WeaponId))!] = 0,
+				[typeof(Combatant).GetField(nameof(Combatant.TargetID))!] = 0,
+				[typeof(Combatant).GetField(nameof(Combatant.ModelStatus))!] = 0
 			})
 		};
 
@@ -306,23 +305,23 @@ public class LineCombatant : IDisposable {
 
 			CheckFieldDelay = new ReadOnlyDictionary<FieldInfo, uint>(new Dictionary<FieldInfo, uint> {
 				// Default delay threshold
-				[typeof(Combatant).GetField(nameof(Combatant.OwnerID))] = OutOfCombatDelayDefault,
-				[typeof(Combatant).GetField(nameof(Combatant.Type))] = OutOfCombatDelayDefault,
-				[typeof(Combatant).GetField(nameof(Combatant.MonsterType))] = OutOfCombatDelayDefault,
-				[typeof(Combatant).GetField(nameof(Combatant.Status))] = OutOfCombatDelayDefault,
-				[typeof(Combatant).GetField(nameof(Combatant.AggressionStatus))] = OutOfCombatDelayDefault,
-				[typeof(Combatant).GetField(nameof(Combatant.IsTargetable))] = OutOfCombatDelayDefault,
-				[typeof(Combatant).GetField(nameof(Combatant.Name))] = OutOfCombatDelayDefault,
-				[typeof(Combatant).GetField(nameof(Combatant.Radius))] = OutOfCombatDelayDefault,
-				[typeof(Combatant).GetField(nameof(Combatant.BNpcID))] = OutOfCombatDelayDefault,
-				[typeof(Combatant).GetField(nameof(Combatant.CurrentMP))] = OutOfCombatDelayDefault,
-				[typeof(Combatant).GetField(nameof(Combatant.IsCasting1))] = OutOfCombatDelayDefault,
+				[typeof(Combatant).GetField(nameof(Combatant.OwnerID))!] = OutOfCombatDelayDefault,
+				[typeof(Combatant).GetField(nameof(Combatant.Type))!] = OutOfCombatDelayDefault,
+				[typeof(Combatant).GetField(nameof(Combatant.MonsterType))!] = OutOfCombatDelayDefault,
+				[typeof(Combatant).GetField(nameof(Combatant.Status))!] = OutOfCombatDelayDefault,
+				[typeof(Combatant).GetField(nameof(Combatant.AggressionStatus))!] = OutOfCombatDelayDefault,
+				[typeof(Combatant).GetField(nameof(Combatant.IsTargetable))!] = OutOfCombatDelayDefault,
+				[typeof(Combatant).GetField(nameof(Combatant.Name))!] = OutOfCombatDelayDefault,
+				[typeof(Combatant).GetField(nameof(Combatant.Radius))!] = OutOfCombatDelayDefault,
+				[typeof(Combatant).GetField(nameof(Combatant.BNpcID))!] = OutOfCombatDelayDefault,
+				[typeof(Combatant).GetField(nameof(Combatant.CurrentMP))!] = OutOfCombatDelayDefault,
+				[typeof(Combatant).GetField(nameof(Combatant.IsCasting1))!] = OutOfCombatDelayDefault,
 				// No delay threshold
-				[typeof(Combatant).GetField(nameof(Combatant.BNpcNameID))] = 1000,
-				[typeof(Combatant).GetField(nameof(Combatant.TransformationId))] = 1000,
-				[typeof(Combatant).GetField(nameof(Combatant.WeaponId))] = 1000,
-				[typeof(Combatant).GetField(nameof(Combatant.TargetID))] = 1000,
-				[typeof(Combatant).GetField(nameof(Combatant.ModelStatus))] = 1000
+				[typeof(Combatant).GetField(nameof(Combatant.BNpcNameID))!] = 1000,
+				[typeof(Combatant).GetField(nameof(Combatant.TransformationId))!] = 1000,
+				[typeof(Combatant).GetField(nameof(Combatant.WeaponId))!] = 1000,
+				[typeof(Combatant).GetField(nameof(Combatant.TargetID))!] = 1000,
+				[typeof(Combatant).GetField(nameof(Combatant.ModelStatus))!] = 1000
 			})
 		};
 
