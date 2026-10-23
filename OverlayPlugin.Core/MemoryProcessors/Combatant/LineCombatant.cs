@@ -159,12 +159,9 @@ public class LineCombatant : IDisposable {
 				// Check all fields for changes, since we're writing a change line
 				foreach (var fi in CombatantChangeCriteria.AllFields) {
 					// Don't reprocess an already checked line that we know has a change
-					if (changed.Contains(fi)) {
+					if (changed.Contains(fi))
 						continue;
-					}
-					if (!ValueEqual(fi, oldCombatant, combatant)) {
-						changed.Add(fi);
-					}
+					if (!ValueEqual(fi, oldCombatant, combatant)) changed.Add(fi);
 				}
 
 				combatantStateMap[combatant.ID] = new CombatantStateInfo {
@@ -175,7 +172,7 @@ public class LineCombatant : IDisposable {
 					CombatantMemoryChangeType.Change,
 					combatant.ID,
 					string.Join("",
-						CombatantChangeCriteria.AllFields.Where(field => changed.Contains(field))
+						CombatantChangeCriteria.AllFields.Where(changed.Contains)
 							.Select(fi => FormatFieldChange(fi, combatant))));
 			}
 		}
@@ -343,22 +340,20 @@ public class LineCombatant : IDisposable {
 		];
 
 		// Fields that should be written out for add or full list of changes
-		public static readonly FieldInfo[] AllFields = typeof(Combatant).GetFields()
-			.Where(field => !IgnoreFieldNames.Contains(field.Name))
-			.OrderBy(field => field.Name).ToArray();
+		public static readonly FieldInfo[] AllFields = [
+			.. typeof(Combatant).GetFields()
+				.Where(field => !IgnoreFieldNames.Contains(field.Name))
+				.OrderBy(field => field.Name)
+		];
 
-		public static readonly ReadOnlyDictionary<Type, object> DefaultValues =
+		public static readonly ReadOnlyDictionary<Type, object?> DefaultValues =
 			new(
-				AllFields.Select(fi => fi.FieldType).Distinct().ToDictionary(t => t, t => GetDefault(t)));
+				AllFields.Select(fi => fi.FieldType).Distinct().ToDictionary(t => t, GetDefault));
 
 		public static CriteriaData Criteria(bool inCombat) => inCombat ? InCombatCriteria : OutOfCombatCriteria;
 
-		private static object GetDefault(Type type) {
-			if (type.IsValueType) {
-				return Activator.CreateInstance(type);
-			}
-			return type == typeof(string) ? string.Empty : null;
-		}
+		private static object? GetDefault(Type type) => type.IsValueType ? Activator.CreateInstance(type)
+			: type == typeof(string) ? string.Empty : null;
 
 		public class CriteriaData {
 			public ReadOnlyDictionary<FieldInfo, uint> CheckFieldDelay;
