@@ -53,7 +53,7 @@ public partial class LWindow {
 						Task.Run(() => {
 							List<ActxtCombat> combats = [];
 							FilePath = str.First();
-							ImportLogs = ReadLockedTextFile(FilePath).Split(Environment.NewLine).ToList();
+							ImportLogs = [.. ReadLockedTextFile(FilePath).Split(Environment.NewLine)];
 							ImportLogs.Sort((a, b) => string.Compare(
 								a, 0, b, 0, 14, StringComparison.Ordinal));
 							var Territory = 0u;

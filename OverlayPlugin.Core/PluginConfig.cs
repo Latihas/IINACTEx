@@ -116,14 +116,14 @@ public class PluginConfig : IPluginConfig {
 		}
 	}
 
-	[JsonIgnore] public Version Version {
+	[JsonIgnore] public Version? Version {
 		get => string.IsNullOrEmpty(VersionString) ? null : new Version(VersionString);
 		set => VersionString = value != null ? value.ToString() : null;
 	}
 
-	private string _versionString;
+	private string? _versionString;
 
-	[JsonProperty("Version")] public string VersionString {
+	[JsonProperty(nameof(Version))] public string? VersionString {
 		get => _versionString;
 		set {
 			_versionString = value;
@@ -153,17 +153,15 @@ public class PluginConfig : IPluginConfig {
 
 	[JsonIgnore] public OverlayConfigList<IOverlayConfig> Overlays { get; set; }
 
-	[JsonProperty("Overlays")] public List<JObject> OverlayObjects;
+	[JsonProperty(nameof(Overlays))] public List<JObject> OverlayObjects;
 
 	public Dictionary<string, JObject> EventSourceConfigs { get; set; }
 
 	[JsonIgnore] private ILogger logger;
 
 	public PluginConfig(string configPath, TinyIoCContainer container) {
-		if (configPath == null) throw new Exception("Invalid config path passed to PluginConfig!");
-
 		_container = container;
-		filePath = configPath;
+		filePath = configPath ?? throw new Exception("Invalid config path passed to PluginConfig!");
 		logger = container.Resolve<ILogger>();
 		Overlays = new OverlayConfigList<IOverlayConfig>(logger);
 		EventSourceConfigs = new Dictionary<string, JObject>();
@@ -283,17 +281,11 @@ public class PluginConfig : IPluginConfig {
 
 		foreach (var item in OverlayObjects) {
 			try {
-				var typeName = item["$type"].ToString();
+				var typeName = item["$type"]?.ToString();
+				if (string.IsNullOrEmpty(typeName)) throw new Exception("$type is empty.");
 				var type = GetType(typeName.Split(',')[0]);
-				if (type == null) {
-					throw new Exception($"Type {typeName} not found!");
-				}
-
-				Overlays.Add((IOverlayConfig)JsonConvert.DeserializeObject(
-					item.ToString(),
-					type,
-					new ConfigCreationConverter(_container)
-				));
+				if (type == null) throw new Exception($"Type {typeName} not found!");
+				if (JsonConvert.DeserializeObject(item.ToString(), type, new ConfigCreationConverter(_container)) is IOverlayConfig n) Overlays.Add(n);
 			} catch (Exception e) {
 				logger.Log(LogLevel.Error, $"Failed to load an overlay config: ${e}");
 				overlayLeftOvers.Add(item);
