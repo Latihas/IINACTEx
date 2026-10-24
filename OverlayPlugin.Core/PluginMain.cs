@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 using Advanced_Combat_Tracker;
 using Newtonsoft.Json;
@@ -44,7 +43,7 @@ public class PluginMain {
 
 	private PluginConfig? Config { get; set; }
 	internal List<IOverlay>? Overlays { get; private set; }
-	internal event EventHandler? OverlaysChanged;
+	// internal event EventHandler? OverlaysChanged;
 
 	private string PluginDirectory { get; }
 
@@ -115,18 +114,18 @@ public class PluginMain {
 
 			Status = @"初始化阶段1：消息总线";
 			// プラグイン間のメッセージ関連
-			OverlayApi.BroadcastMessage += (_, e) => {
-				Task.Run(() => {
-					if (Overlays == null) return;
-					foreach (var overlay in Overlays) overlay.SendMessage(e.Message);
-				});
-			};
-			OverlayApi.SendMessage += (_, e) => {
-				Task.Run(() => Overlays?.FirstOrDefault(x => x.Name == e.Target)?.SendMessage(e.Message));
-			};
-			OverlayApi.OverlayMessage += (_, e) => {
-				Task.Run(() => Overlays?.FirstOrDefault(x => x.Name == e.Target)?.OverlayMessage(e.Message));
-			};
+			// OverlayApi.BroadcastMessage += (_, e) => {
+			// 	Task.Run(() => {
+			// 		if (Overlays == null) return;
+			// 		foreach (var overlay in Overlays) overlay.SendMessage(e.Message);
+			// 	});
+			// };
+			// OverlayApi.SendMessage += (_, e) => {
+			// 	Task.Run(() => Overlays?.FirstOrDefault(x => x.Name == e.Target)?.SendMessage(e.Message));
+			// };
+			// OverlayApi.OverlayMessage += (_, e) => {
+			// 	Task.Run(() => Overlays?.FirstOrDefault(x => x.Name == e.Target)?.OverlayMessage(e.Message));
+			// };
 
 // #if DEBUG
 //                 watch.Reset();
@@ -248,7 +247,7 @@ public class PluginMain {
 	private void RegisterOverlay(IOverlay overlay) {
 		overlay.Start();
 		Overlays?.Add(overlay);
-		OverlaysChanged?.Invoke(this, null);
+		// OverlaysChanged?.Invoke(this, null!);
 	}
 
 	/// <summary>

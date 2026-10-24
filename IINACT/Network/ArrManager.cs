@@ -9,8 +9,8 @@ namespace IINACT.Network;
 
 public unsafe class ArrManager : IDisposable {
 	public ArrManager() {
-		ReplayPacketHook = GameInteropProvider.HookFromAddress<ReplayPacketDelegate>(SigScanner.ScanText("E8 ?? ?? ?? ?? 80 BB ?? ?? ?? ?? ?? 77 9A"), ReplayPacketDetour);
-		ReplayPacketHook.Enable();
+		ReplayPacketHook = GameInteropProvider.HookFromSignature<ReplayPacketDelegate>("E8 ?? ?? ?? ?? 80 BB ?? ?? ?? ?? ?? 77 9A", ReplayPacketDetour);
+		ReplayPacketHook?.Enable();
 	}
 
 	public struct DataSegment {
@@ -31,7 +31,7 @@ public unsafe class ArrManager : IDisposable {
 	}
 
 	private static bool ReplayPacketDetour(IntPtr contentsReplayModule, DataSegment* segment, byte* data) {
-		var ret = ReplayPacketHook.Original(contentsReplayModule, segment, data);
+		var ret = ReplayPacketHook!.Original(contentsReplayModule, segment, data);
 		var hexBuilder = new StringBuilder();
 		var packetStart = (byte*)segment;
 		for (var i = 0; i < segment->Length; i++) {
@@ -44,10 +44,11 @@ public unsafe class ArrManager : IDisposable {
 
 	private delegate bool ReplayPacketDelegate(IntPtr contentsReplayModule, DataSegment* segment, byte* data);
 
-	private static Hook<ReplayPacketDelegate> ReplayPacketHook;
+	private static Hook<ReplayPacketDelegate>? ReplayPacketHook;
 
 	public void Dispose() {
-		ReplayPacketHook.Disable();
-		ReplayPacketHook.Dispose();
+		ReplayPacketHook?.Disable();
+		ReplayPacketHook?.Dispose();
+		GC.SuppressFinalize(this);
 	}
 }

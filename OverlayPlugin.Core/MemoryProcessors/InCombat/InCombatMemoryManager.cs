@@ -12,7 +12,6 @@ internal class InCombatMemoryManager : IInCombatMemory {
 	public InCombatMemoryManager(TinyIoCContainer container) {
 		container.Register<IInCombatMemory73, InCombatMemory73>();
 		memory = container.Resolve<IInCombatMemory73>();
-		memory.ScanPointers();
 	}
 
 	public void ScanPointers() {

@@ -6,20 +6,16 @@ using Newtonsoft.Json.Linq;
 namespace RainbowMage.OverlayPlugin;
 
 public abstract class EventSourceBase : IEventSource {
-	public string Name { get; protected set; }
-	protected TinyIoCContainer container;
-	private EventDispatcher dispatcher;
+	public string? Name { get; protected set; }
+	protected readonly TinyIoCContainer container;
+	private readonly EventDispatcher dispatcher;
 	private bool updateRunning;
 
-	protected Timer? timer;
-	protected ILogger logger;
-	private readonly Dictionary<string, JObject> eventCache = new();
+	protected readonly Timer? timer;
+	protected readonly ILogger logger;
+	private readonly Dictionary<string, JObject?> eventCache = new();
 
 	protected EventSourceBase(TinyIoCContainer c) {
-		Init(c);
-	}
-
-	private void Init(TinyIoCContainer c) {
 		container = c;
 		logger = container.Resolve<ILogger>();
 		dispatcher = container.Resolve<EventDispatcher>();

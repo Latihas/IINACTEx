@@ -139,6 +139,7 @@ public sealed class Plugin : IDalamudPlugin {
 			var logger = new Logger(Log);
 			Container.Register(logger);
 			Container.Register<ILogger>(logger);
+			Container.Register(framework);
 			Container.Register(HttpClient);
 			Container.Register(FileDialogManager);
 			Container.Register(PluginInterface);

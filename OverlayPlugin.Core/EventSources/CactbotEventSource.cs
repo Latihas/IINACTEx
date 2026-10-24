@@ -160,10 +160,6 @@ public class CactbotEventSource : EventSourceBase {
 
 	public override void Start() {
 		var ffxivRepository = container.Resolve<FFXIVRepository>();
-		if (!ffxivRepository.IsFFXIVPluginPresent()) {
-			Log(LogLevel.Error, "FFXIV plugin not found. Not initializing.");
-			return;
-		}
 
 		// Our own timer with a higher frequency than OverlayPlugin since we want to see
 		// the effect of log messages quickly.

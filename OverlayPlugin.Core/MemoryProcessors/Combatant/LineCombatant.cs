@@ -7,8 +7,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
-using System.Threading;
-using System.Threading.Tasks;
+using Dalamud.Plugin.Services;
 using Machina.FFXIV.Headers;
 using RainbowMage.OverlayPlugin.MemoryProcessors.InCombat;
 
@@ -17,28 +16,25 @@ namespace RainbowMage.OverlayPlugin.MemoryProcessors.Combatant;
 public class LineCombatant : IDisposable {
 	public const uint LogFileLineID = 261;
 
-	private readonly CancellationTokenSource? cancellationToken;
+	// private readonly CancellationTokenSource? cancellationToken;
 	private readonly ICombatantMemory combatantMemoryManager;
 	private readonly ConcurrentDictionary<uint, CombatantStateInfo> combatantStateMap = [];
 	private readonly FFXIVRepository ffxiv;
 	private readonly ILogger logger;
+	private readonly IFramework framework;
 
 	private readonly Func<string, DateTime, bool>? logWriter;
 	private bool _disposed;
 	private bool inCombat;
-
-	#region PreDefineFields
-
 	private static readonly FieldInfo PosXField = typeof(Combatant).GetField(nameof(Combatant.PosX))!;
 	private static readonly FieldInfo PosYField = typeof(Combatant).GetField(nameof(Combatant.PosY))!;
 	private static readonly FieldInfo PosZField = typeof(Combatant).GetField(nameof(Combatant.PosZ))!;
 	private static readonly FieldInfo HeadingField = typeof(Combatant).GetField(nameof(Combatant.Heading))!;
 
-	#endregion
-
 	public LineCombatant(TinyIoCContainer container) {
 		logger = container.Resolve<ILogger>();
 		ffxiv = container.Resolve<FFXIVRepository>();
+		framework = container.Resolve<IFramework>();
 		combatantMemoryManager = container.Resolve<ICombatantMemory>();
 		container.Resolve<LineInCombat>().OnInCombatChanged += (_, args) => {
 			if (args.InGameCombatChanged) {
@@ -60,10 +56,7 @@ public class LineCombatant : IDisposable {
 		} catch (Exception e) {
 			logger.Log(LogLevel.Error, Resources.NetworkParserInitException, e);
 		}
-
-		cancellationToken = new CancellationTokenSource();
-
-		Task.Run(PollCombatants, cancellationToken.Token);
+		framework.Update += PollCombatants;
 	}
 
 	public void Dispose() {
@@ -75,26 +68,7 @@ public class LineCombatant : IDisposable {
 		Dispose(false);
 	}
 
-	private async void PollCombatants() {
-		try {
-			while (cancellationToken is { IsCancellationRequested: false }) {
-				try {
-					var now = DateTime.Now;
-
-					CheckCombatants(now);
-
-					// Wait for next poll
-					var delay = CombatantChangeCriteria.PollingRate - (int)Math.Ceiling((DateTime.Now - now).TotalMilliseconds);
-					// If we're lagging enough to not have a sleep duration, delay by PollingRate to reduce lag
-					await Task.Delay(delay > 0 ? delay : CombatantChangeCriteria.PollingRate);
-				} catch (Exception e) {
-					logger.Log(LogLevel.Debug, $"LineCombatant: Exception: {e}");
-				}
-			}
-		} catch {
-			//
-		}
-	}
+	private void PollCombatants(IFramework _) => CheckCombatants(DateTime.Now);
 
 	private void CheckCombatants(DateTime now, params uint[] filter) {
 		var combatants = combatantMemoryManager.GetCombatantList();
@@ -189,9 +163,7 @@ public class LineCombatant : IDisposable {
 		// Any combatants no longer in memory, signify that they were removed
 		foreach (var ID in combatantStateMap.Keys) {
 			// If we're filtering, only consider removing those in the filters
-			if (filter.Length > 0 && !filter.Contains(ID)) {
-				continue;
-			}
+			if (filter.Length > 0 && !filter.Contains(ID)) continue;
 			if (combatantIDs.Contains(ID)) continue;
 			combatantStateMap.TryRemove(ID, out _);
 			WriteLine(CombatantMemoryChangeType.Remove, ID, "");
@@ -253,10 +225,7 @@ public class LineCombatant : IDisposable {
 
 	protected virtual void Dispose(bool disposing) {
 		if (_disposed) return;
-		if (disposing) {
-			cancellationToken?.Cancel();
-			cancellationToken?.Dispose();
-		}
+		if (disposing) framework.Update -= PollCombatants;
 		_disposed = true;
 	}
 

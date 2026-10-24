@@ -6,7 +6,7 @@ public interface IEventSource : IDisposable {
 	/// <summary>
 	///     ユーザーが設定したオーバーレイの名前を取得します。
 	/// </summary>
-	string Name { get; }
+	string? Name { get; }
 
 	/// <summary>
 	///     オーバーレイの更新を開始します。

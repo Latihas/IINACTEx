@@ -1,4 +1,3 @@
-using System;
 using System.Diagnostics.CodeAnalysis;
 using Advanced_Combat_Tracker;
 using PostNamazu.Common.Localization;
@@ -36,36 +35,34 @@ public class PluginIntegrationManager {
 	///     Triggernometry集成初始化
 	/// </summary>
 	private void InitializeTriggerIntegration() {
-		try {
-			var plugin = ActGlobals.oFormActMain.TriggernometryPlugin;
+		// try {
+		var plugin = ActGlobals.oFormActMain.TriggernometryPlugin;
 
-			if (plugin == null) {
-				PostNamazu.Plugin.PluginUi.Log(L.Get("PostNamazu/trigNotFound"));
-				return;
-			}
-			_triggerHoster = new Program(plugin) {
-				PostNamazuDelegate = PostNamazu.Plugin.DoAction,
-				LogDelegate = PostNamazu.Plugin.PluginUi.Log
-			};
-			_triggerHoster.Init(PostNamazu.Plugin.GetCommandKeys());
-			PostNamazu.Plugin.PluginUi.Log(L.Get("PostNamazu/trig"));
-		} catch (Exception ex) {
-			PostNamazu.Plugin.PluginUi.Log(ex.Message);
+		if (plugin == null) {
+			PostNamazu.Plugin.PluginUi.Log(L.Get("PostNamazu/trigNotFound"));
+			return;
 		}
+		_triggerHoster = new Program(plugin) {
+			PostNamazuDelegate = PostNamazu.Plugin.DoAction,
+			LogDelegate = PostNamazu.Plugin.PluginUi.Log
+		};
+		_triggerHoster.Init(PostNamazu.Plugin.GetCommandKeys());
+		PostNamazu.Plugin.PluginUi.Log(L.Get("PostNamazu/trig"));
+		// } catch (Exception ex) {
+		// 	PostNamazu.Plugin.PluginUi.Log(ex.Message);
+		// }
 	}
 
 	/// <summary>
 	///     OverlayPlugin集成初始化
 	/// </summary>
 	private void InitializeOverlayIntegration() {
-		try {
-			_overlayHoster = new OverlayHoster.Program {
-				PostNamazuDelegate = PostNamazu.Plugin.DoAction
-			};
-			_overlayHoster.Init();
-			PostNamazu.Plugin.PluginUi.Log(L.Get("PostNamazu/op"));
-		} catch (Exception ex) {
-			PostNamazu.Plugin.PluginUi.Log(ex.Message);
-		}
+		// try {
+		_overlayHoster = new OverlayHoster.Program(PostNamazu.Plugin.DoAction);
+		// 	_overlayHoster.Init();
+		// 	PostNamazu.Plugin.PluginUi.Log(L.Get("PostNamazu/op"));
+		// } catch (Exception ex) {
+		// 	PostNamazu.Plugin.PluginUi.Log(ex.Message);
+		// }
 	}
 }

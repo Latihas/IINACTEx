@@ -3,8 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Runtime.CompilerServices;
-using System.Threading;
-using System.Threading.Tasks;
+using Dalamud.Plugin.Services;
 using FFXIV_ACT_Plugin.Common;
 using Newtonsoft.Json.Linq;
 using RainbowMage.OverlayPlugin.MemoryProcessors.Combatant;
@@ -45,16 +44,18 @@ internal class FFXIVRequiredEventSource : EventSourceBase {
 		[23] = "LookingForParty"
 	};
 
-	private readonly CancellationTokenSource? cancellationToken;
+	// private readonly CancellationTokenSource? cancellationToken;
 	private readonly ICombatantMemory combatantMemory;
 	private readonly IJobGaugeMemory jobGaugeMemory;
 	private readonly IPartyMemory partyMemory;
 
 	private readonly FFXIVRepository repository;
 	private PartyListsStruct cachedPartyList = new();
+	private readonly IFramework framework;
 
 	public FFXIVRequiredEventSource(TinyIoCContainer container) : base(container) {
 		Name = "FFXIVRequired";
+		framework = container.Resolve<IFramework>();
 		var haveRepository = container.TryResolve(out repository);
 		var haveCombatantMemory = container.TryResolve(out combatantMemory);
 
@@ -110,9 +111,9 @@ internal class FFXIVRequiredEventSource : EventSourceBase {
 				DispatchAndCacheEvent(obj);
 			};
 
-			cancellationToken = new CancellationTokenSource();
-
-			Task.Run(PollJobGauge, cancellationToken.Token);
+			// cancellationToken = new CancellationTokenSource();
+			framework.Update += PollJobGauge;
+			// Task.Run(PollJobGauge, cancellationToken.Token);
 		}
 	}
 
@@ -247,7 +248,7 @@ internal class FFXIVRequiredEventSource : EventSourceBase {
 
 	public override void LoadConfig(IPluginConfig config) {
 		Config = container.Resolve<BuiltinEventConfig>();
-		Config.UpdateIntervalChanged += (_, _) => { Start(); };
+		Config.UpdateIntervalChanged += (_, _) => Start();
 	}
 
 	public override void SaveConfig(IPluginConfig config) {
@@ -261,33 +262,20 @@ internal class FFXIVRequiredEventSource : EventSourceBase {
 
 	public override void Stop() {
 		base.Stop();
-		cancellationToken?.Cancel();
+		framework.Update -= PollJobGauge;
+		// cancellationToken?.Cancel();
 	}
 
-	private async void PollJobGauge() {
-		try {
-			IJobGauge? lastJobGauge = null;
-			while (cancellationToken is { IsCancellationRequested: false }) {
-				var now = DateTime.Now;
-				if (HasSubscriber(JobGaugeChangedEvent)) {
-					var jobGauge = jobGaugeMemory.GetJobGauge();
-					if (jobGauge != null) {
-						if (!jobGauge.Equals(lastJobGauge)) {
-							lastJobGauge = jobGauge;
-							var obj = JObject.FromObject(jobGauge);
-							obj["type"] = JobGaugeChangedEvent;
-							DispatchAndCacheEvent(obj);
-						}
-					}
-				}
-				// Wait for next poll
-				var delay = PollingRate - (int)Math.Ceiling((DateTime.Now - now).TotalMilliseconds);
-				// If we're lagging enough to not have a sleep duration, delay by PollingRate to reduce lag
-				await Task.Delay(delay > 0 ? delay : PollingRate);
-			}
-		} catch {
-			//
-		}
+	private IJobGauge? lastJobGauge;
+
+	private void PollJobGauge(IFramework framework1) {
+		if (!HasSubscriber(JobGaugeChangedEvent)) return;
+		var jobGauge = jobGaugeMemory.GetJobGauge();
+		if (jobGauge == null || jobGauge.Equals(lastJobGauge)) return;
+		lastJobGauge = jobGauge;
+		var obj = JObject.FromObject(jobGauge);
+		obj["type"] = JobGaugeChangedEvent;
+		DispatchAndCacheEvent(obj);
 	}
 
 	protected override void Update() {
@@ -315,7 +303,7 @@ internal class FFXIVRequiredEventSource : EventSourceBase {
 					currentMP = (ushort)currentPlayer.CurrentMP,
 					maxMP = (ushort)currentPlayer.MaxMP,
 					homeWorld = currentPlayer.WorldID,
-					name = currentPlayer.Name??"",
+					name = currentPlayer.Name ?? "",
 					classJob = currentPlayer.Job,
 					level = currentPlayer.Level,
 					flags = 0x13

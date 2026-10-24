@@ -181,8 +181,7 @@ public partial class FormActMain : Form, ISynchronizeInvoke {
 		if (WriteLogFile && !DisableWritingPvpLogFile) LogQueue.Enqueue(logLine);
 		if (BeforeLogLineRead == null || GetDateTimeFromLog == null) return;
 		var parsedLogTime = GetDateTimeFromLog(logLine);
-		LastKnownTime = parsedLogTime;
-		var logLineEventArgs = new LogLineEventArgs(logLine, 0, parsedLogTime, CurrentZone, inCombat, "Plugin");
+		var logLineEventArgs = new LogLineEventArgs(logLine, 0, LastKnownTime = parsedLogTime, CurrentZone, inCombat, "Plugin");
 		BeforeLogLineRead(false, logLineEventArgs);
 		if (WriteLogFile && WriteActLogFile)
 			ActLogQueue.Enqueue(logLineEventArgs.logLine);

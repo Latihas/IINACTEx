@@ -106,21 +106,21 @@ public class TargetAssembly : IDisposable {
 			var field = new FieldDefinition("DieMoeBuildVersion", FieldAttributes.Public | FieldAttributes.Static | FieldAttributes.InitOnly, Assembly.MainModule.TypeSystem.String) {
 				Constant = RemoteDieMoeBuildVersion
 			};
-			Log.Info($"WriteOut Version {AssemblyPath}->{RemoteDieMoeBuildVersion}");
+			Instance.Log.Info($"WriteOut Version {AssemblyPath}->{RemoteDieMoeBuildVersion}");
 			var d = GetDieMoeBuildVersion();
 			if (string.IsNullOrEmpty(GetDieMoeBuildVersion())) {
 				Assembly.MainModule.Types.First().Fields.Add(field);
-				Log.Info($"Added DieMoeBuildVersion {d}");
+				Instance.Log.Info($"Added DieMoeBuildVersion {d}");
 			} else
-				Log.Info($"Detected DieMoeBuildVersion {d}");
+				Instance.Log.Info($"Detected DieMoeBuildVersion {d}");
 		} else
-			Log.Warning("RemoteDieMoeBuildVersion is Empty");
+			Instance.Log.Warning("RemoteDieMoeBuildVersion is Empty");
 		var patchedPath = AssemblyPath + ".patched";
 
 		Assembly.Write(patchedPath);
 		Assembly.Dispose();
 		var dst = outp ?? AssemblyPath;
-		Log.Warning($"Moving {patchedPath}->{dst}");
+		Instance.Log.Warning($"Moving {patchedPath}->{dst}");
 		File.Move(patchedPath, dst, true);
 	}
 }

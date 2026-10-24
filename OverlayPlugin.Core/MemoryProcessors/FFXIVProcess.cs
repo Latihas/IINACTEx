@@ -84,7 +84,7 @@ public abstract class FFXIVProcess {
 		// public string debug_job;
 		public uint shield_value;
 
-		public override bool Equals(object obj) =>
+		public override bool Equals(object? obj) =>
 			obj is EntityData o &&
 			id == o.id &&
 			type == o.type &&

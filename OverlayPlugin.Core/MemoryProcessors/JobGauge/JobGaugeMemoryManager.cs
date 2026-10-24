@@ -66,7 +66,6 @@ internal class JobGaugeMemoryManager : IJobGaugeMemory {
 	public JobGaugeMemoryManager(TinyIoCContainer container) {
 		container.Register<IJobGaugeMemory74, JobGaugeMemory74>();
 		memory = container.Resolve<IJobGaugeMemory74>();
-		memory.ScanPointers();
 	}
 
 	public void ScanPointers() {

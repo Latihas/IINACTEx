@@ -12,7 +12,6 @@ internal class PartyMemoryManager : IPartyMemory {
 	public PartyMemoryManager(TinyIoCContainer container) {
 		container.Register<IPartyMemory72, PartyMemory72>();
 		memory = container.Resolve<IPartyMemory72>();
-		memory.ScanPointers();
 	}
 
 	public void ScanPointers() {

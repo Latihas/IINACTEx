@@ -15,11 +15,11 @@ internal class AtkStageMemory62 : AtkStageMemory, IAtkStageMemory62 {
 
 	public unsafe IntPtr GetAddonAddress(string name) {
 		var atkStage = AtkStage.Instance();
-		if (atkStage == null) return nint.Zero;
+		if (atkStage == null) return IntPtr.Zero;
 		var unitMgr = atkStage->RaptureAtkUnitManager;
-		if (unitMgr == null) return nint.Zero;
+		if (unitMgr == null) return IntPtr.Zero;
 		var addon = unitMgr->GetAddonByName(name);
-		if (addon == null) return nint.Zero;
+		if (addon == null) return IntPtr.Zero;
 		return (IntPtr)addon;
 	}
 

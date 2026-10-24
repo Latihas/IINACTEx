@@ -16,7 +16,6 @@ internal class TargetMemoryManager : ITargetMemory {
 	public TargetMemoryManager(TinyIoCContainer container) {
 		container.Register<ITargetMemory70, TargetMemory70>();
 		memory = container.Resolve<ITargetMemory70>();
-		memory.ScanPointers();
 	}
 
 	public void ScanPointers() {

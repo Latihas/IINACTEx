@@ -22,6 +22,7 @@ public partial class FetchDependencies {
 	}
 
 	public FetchDependencies(Version version, string assemblyDir, bool isChinese, int languagePreserve, HttpClient httpClient, IPluginLog log) {
+		Instance = this;
 		PluginVersion = version;
 		DependenciesDir = assemblyDir;
 		IsChinese = isChinese;
@@ -41,7 +42,8 @@ public partial class FetchDependencies {
 	private bool IsChinese { get; }
 	private int LanguagePreserve { get; }
 	private HttpClient HttpClient { get; }
-	internal static IPluginLog Log;
+	internal readonly IPluginLog Log;
+	internal static FetchDependencies Instance = null!;
 	public static string RemoteDieMoeBuildVersion = "";
 
 	public bool CheckCnUpdate() => IsChinese && NeedsUpdate(Path.Combine(DependenciesDir, "FFXIV_ACT_Plugin.dll"));

@@ -32,7 +32,7 @@ public class EventDispatcher(TinyIoCContainer container) {
 		RegisterEventType(name, null);
 	}
 
-	public void RegisterEventType(string name, Func<JObject>? initCallback) {
+	public void RegisterEventType(string name, Func<JObject?>? initCallback) {
 		eventFilter[name] = [];
 
 		if (initCallback != null)

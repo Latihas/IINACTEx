@@ -13,8 +13,6 @@ internal class LineContentFinderSettings {
 
 	public LineContentFinderSettings(TinyIoCContainer container) {
 		ffxiv = container.Resolve<FFXIVRepository>();
-		if (!ffxiv.IsFFXIVPluginPresent())
-			return;
 		contentFinderSettingsMemory = container.Resolve<IContentFinderSettingsMemory>();
 		var customLogLines = container.Resolve<FFXIVCustomLogLines>();
 		logWriter = customLogLines.RegisterCustomLogLine(new LogLineRegistryEntry {

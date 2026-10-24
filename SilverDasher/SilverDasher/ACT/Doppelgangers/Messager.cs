@@ -16,7 +16,7 @@ using SilverDasher.ACT.Views;
 namespace SilverDasher.ACT.Doppelgangers;
 
 internal class Messager(SilverDasher plugin) : Doppelganger(plugin) {
-	private IMqttClient Tomestone;
+	private IMqttClient? Tomestone;
 
 	private readonly ConcurrentQueue<Message> Messages = new();
 
@@ -47,7 +47,7 @@ internal class Messager(SilverDasher plugin) : Doppelganger(plugin) {
 			.Build();
 		Tomestone.ApplicationMessageReceivedAsync -= Unpack;
 		Tomestone.ApplicationMessageReceivedAsync += Unpack;
-		Task.Run(async delegate {
+		Task.Run(async () => {
 			var i = 0;
 			while (Keeper.RUNNING) {
 				try {
@@ -81,7 +81,7 @@ internal class Messager(SilverDasher plugin) : Doppelganger(plugin) {
 	}
 
 	private Task Subscribe(List<(string, string)> subscriptions, CancellationToken token) {
-		return Task.Run(async delegate {
+		return Task.Run(async () => {
 			if (subscriptions.Count != 0) {
 				List<List<string>> list = [];
 				List<string> list2 = [];
@@ -127,7 +127,7 @@ internal class Messager(SilverDasher plugin) : Doppelganger(plugin) {
 	}
 
 	private Task Unsubscribe(List<(string, string)> unsubscriptions, CancellationToken token) {
-		return Task.Run(async delegate {
+		return Task.Run(async () => {
 			List<List<string>> list = [];
 			List<string> list2 = [];
 			list.Add(list2);
@@ -158,7 +158,7 @@ internal class Messager(SilverDasher plugin) : Doppelganger(plugin) {
 		}, token);
 	}
 
-	public bool IsRunning() => Tomestone.IsConnected;
+	public bool IsRunning() => Tomestone is { IsConnected: true };
 
 	public void Disconnect() {
 		if (Tomestone == null) return;
@@ -175,7 +175,7 @@ internal class Messager(SilverDasher plugin) : Doppelganger(plugin) {
 		if (Tomestone == null) return;
 		// Painter?.pluginControl?.CheckBoxCrossWorldToggle(false);
 		var filteredSub = tag == "" ? Subscriptions : Subscriptions.FindAll(e => e.Item1 == tag);
-		Task.Run(async delegate {
+		Task.Run(async () => {
 			await Unsubscribe(filteredSub, token);
 			await Subscribe(filteredSub, token);
 			// Painter?.pluginControl?.CheckBoxCrossWorldToggle(true);
