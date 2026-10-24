@@ -2,6 +2,7 @@ using System.Diagnostics.CodeAnalysis;
 using Advanced_Combat_Tracker;
 using PostNamazu.Common.Localization;
 using PostNamazu.TriggerHoster;
+using TriggernometryProxy;
 
 // ReSharper disable once CheckNamespace
 namespace PostNamazu.Common;
@@ -42,11 +43,7 @@ public class PluginIntegrationManager {
 			PostNamazu.Plugin.PluginUi.Log(L.Get("PostNamazu/trigNotFound"));
 			return;
 		}
-		_triggerHoster = new Program(plugin) {
-			PostNamazuDelegate = PostNamazu.Plugin.DoAction,
-			LogDelegate = PostNamazu.Plugin.PluginUi.Log
-		};
-		_triggerHoster.Init(PostNamazu.Plugin.GetCommandKeys());
+		_triggerHoster = new Program((ProxyPlugin)plugin, PostNamazu.Plugin.GetCommandKeys(), PostNamazu.Plugin.DoAction, PostNamazu.Plugin.PluginUi.Log);
 		PostNamazu.Plugin.PluginUi.Log(L.Get("PostNamazu/trig"));
 		// } catch (Exception ex) {
 		// 	PostNamazu.Plugin.PluginUi.Log(ex.Message);
@@ -57,12 +54,6 @@ public class PluginIntegrationManager {
 	///     OverlayPlugin集成初始化
 	/// </summary>
 	private void InitializeOverlayIntegration() {
-		// try {
 		_overlayHoster = new OverlayHoster.Program(PostNamazu.Plugin.DoAction);
-		// 	_overlayHoster.Init();
-		// 	PostNamazu.Plugin.PluginUi.Log(L.Get("PostNamazu/op"));
-		// } catch (Exception ex) {
-		// 	PostNamazu.Plugin.PluginUi.Log(ex.Message);
-		// }
 	}
 }
