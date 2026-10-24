@@ -1,6 +1,4 @@
-﻿using System;
-using System.Buffers;
-using System.Runtime.InteropServices;
+using System;
 using FFXIVClientStructs.FFXIV.Client.Game.Character;
 using FFXIVClientStructs.FFXIV.Client.Game.Object;
 
@@ -8,7 +6,7 @@ namespace RainbowMage.OverlayPlugin.MemoryProcessors.Combatant;
 
 internal interface ICombatantMemory75 : ICombatantMemory;
 
-internal class CombatantMemory75 : CombatantMemory, ICombatantMemory75 {
+internal class CombatantMemory75(TinyIoCContainer container) : CombatantMemory(container), ICombatantMemory75 {
 	private static readonly IntPtr CurrentProcessHandle = NativeMethods.GetCurrentProcess();
 
 	public override Version GetVersion() => new(7, 4);
@@ -16,7 +14,7 @@ internal class CombatantMemory75 : CombatantMemory, ICombatantMemory75 {
 	// Returns a combatant if the combatant is a mob or a PC.
 	public override unsafe Combatant? GetMobFromByteArray(GameObject* gameObject, uint mycharID) {
 		if (gameObject == null) return null;
-		if (!TryReadStruct((IntPtr)gameObject, out BattleChara mem)) return null;
+		if (!TryReadStruct(gameObject, out var mem)) return null;
 		return mem.EntityId is 0 or emptyID ? null : CreateCombatant(mem, mycharID, false);
 	}
 
@@ -24,7 +22,7 @@ internal class CombatantMemory75 : CombatantMemory, ICombatantMemory75 {
 	// This function always returns a combatant object, even if empty.
 	protected override unsafe Combatant? GetCombatantFromByteArray(GameObject* gameObject, uint mycharID, bool isPlayer, bool exceptEffects = false) {
 		if (gameObject == null) return null;
-		return TryReadStruct((IntPtr)gameObject, out BattleChara ori) ? CreateCombatant(ori, mycharID, isPlayer, exceptEffects) : null;
+		return TryReadStruct(gameObject, out var ori) ? CreateCombatant(ori, mycharID, isPlayer, exceptEffects) : null;
 	}
 
 	private static unsafe Combatant CreateCombatant(BattleChara ori, uint mycharID, bool isPlayer, bool exceptEffects = false) {
@@ -99,26 +97,15 @@ internal class CombatantMemory75 : CombatantMemory, ICombatantMemory75 {
 		return combatant;
 	}
 
-	private static bool TryReadStruct<T>(IntPtr address, out T value) where T : struct {
+	private static unsafe bool TryReadStruct(GameObject* address, out BattleChara value) {
 		value = default;
-		if (address == IntPtr.Zero) return false;
-		var size = Marshal.SizeOf<T>();
-		var buffer = ArrayPool<byte>.Shared.Rent(size);
-		try {
-			var bytesRead = IntPtr.Zero;
-			if (!NativeMethods.ReadProcessMemory(CurrentProcessHandle, address, buffer, size, ref bytesRead) ||
-			    bytesRead.ToInt64() != size) {
-				return false;
-			}
-			var handle = GCHandle.Alloc(buffer, GCHandleType.Pinned);
-			try {
-				value = Marshal.PtrToStructure<T>(handle.AddrOfPinnedObject());
-				return true;
-			} finally {
-				handle.Free();
-			}
-		} finally {
-			ArrayPool<byte>.Shared.Return(buffer);
-		}
+		if (address == null) return false;
+		BattleChara buffer = default;
+		var size = sizeof(BattleChara);
+		var bytesRead = IntPtr.Zero;
+		if (!NativeMethods.ReadProcessMemory(CurrentProcessHandle, (IntPtr)address, (IntPtr)(&buffer), size,
+			    ref bytesRead) || bytesRead.ToInt64() != size) return false;
+		value = buffer;
+		return true;
 	}
 }

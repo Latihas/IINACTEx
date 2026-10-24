@@ -41,8 +41,8 @@ public partial class FfxivActPluginWrapper : IDisposable {
 	private readonly IPartyProcessor partyProcessor;
 	private readonly IPlayerProcessor playerProcessor;
 	private readonly IProcessManager processManager;
-	private readonly SemaphoreSlim refreshSemaphore = new(0);
-	private readonly CancellationTokenSource cancellationTokenSource;
+	// private readonly SemaphoreSlim refreshSemaphore = new(0);
+	// private readonly CancellationTokenSource cancellationTokenSource;
 	public readonly IDataRepository Repository;
 
 	private readonly ServerTimeProcessor serverTimeProcessor;
@@ -93,11 +93,7 @@ public partial class FfxivActPluginWrapper : IDisposable {
 		SetChatMessageLoggingEnabled(Instance.Configuration.LogChatMessages);
 		ActGlobals.oFormActMain.BeforeLogLineRead += OFormActMain_BeforeLogLineRead;
 		serverTimeProcessor.ServerTime = DateTime.Now;
-		cancellationTokenSource = new CancellationTokenSource();
-		var scanThread1 = new Thread(() => ScanMemory(cancellationTokenSource.Token)) {
-			IsBackground = true
-		};
-		scanThread1.Start();
+		Framework.Update += ScanMemory;
 		mobArraySize = mobArrayProcessor._internalMmobArray.Length;
 		var combatantProcessor = (CombatantProcessor)combatantManager._combatantProcessor;
 		var combatantBufferSize1 = ((ReadCombatant)combatantProcessor._readCombatant)._buffer.Length;
@@ -121,8 +117,7 @@ public partial class FfxivActPluginWrapper : IDisposable {
 		};
 
 	public void Dispose() {
-		cancellationTokenSource.Cancel();
-		cancellationTokenSource.Dispose();
+		Framework.Update -= ScanMemory;
 		Framework.Update -= MobDataRefresh;
 		RemoveDataSubscription();
 		SetChatMessageLoggingEnabled(false);
@@ -220,8 +215,8 @@ public partial class FfxivActPluginWrapper : IDisposable {
 		if (settingsMediator.DataCollectionSettings is null) return;
 		if (mobDataAge < (Condition[ConditionFlag.BoundByDuty56] ? 3 : 10)) {
 			mobDataAge++;
-			if (mobArrayProcessor.PrimaryPlayerPointer != nint.Zero)
-				refreshSemaphore.Release();
+			// if (mobArrayProcessor.PrimaryPlayerPointer != nint.Zero)
+				// refreshSemaphore.Release();
 			return;
 		}
 		mobDataAge = 0;
@@ -248,28 +243,24 @@ public partial class FfxivActPluginWrapper : IDisposable {
 			ReadMemory(mobDataOffsets[i], (nint)address, combatantSize);
 			mobSpan[i] = mobDataOffsets[i];
 		}
-		refreshSemaphore.Release();
+		// refreshSemaphore.Release();
 	}
 
-	private void ScanMemory(CancellationToken token) {
-		while (!token.IsCancellationRequested) {
-			try {
-				refreshSemaphore.Wait(token);
-				serverTimeProcessor.ServerTime = GameServerTime.CurrentServerTime;
-				var zoneId = zoneMapProcessor.ZoneID;
-				zoneMapProcessor.Refresh();
-				if (zoneMapProcessor.ZoneID == 0) continue;
-				if (zoneId != zoneMapProcessor.ZoneID)
-					combatantManager.Rescan();
-				else
-					combatantManager.Refresh();
-				playerProcessor.Refresh();
-				partyProcessor.Refresh();
-			} catch (Exception ex) when (ex is ThreadAbortException or OperationCanceledException or ObjectDisposedException) {
-				return;
-			} catch (Exception ex) {
-				Log.Error(ex, "[FFXIV_ACT_Plugin] ScanMemory failure");
-			}
+	private void ScanMemory(IFramework framework) {
+		try {
+			// refreshSemaphore.Wait();
+			serverTimeProcessor.ServerTime = GameServerTime.CurrentServerTime;
+			var zoneId = zoneMapProcessor.ZoneID;
+			zoneMapProcessor.Refresh();
+			if (zoneMapProcessor.ZoneID == 0) return;
+			if (zoneId != zoneMapProcessor.ZoneID)
+				combatantManager.Rescan();
+			else
+				combatantManager.Refresh();
+			playerProcessor.Refresh();
+			partyProcessor.Refresh();
+		} catch (Exception ex) when (ex is ThreadAbortException or OperationCanceledException or ObjectDisposedException) { } catch (Exception ex) {
+			Log.Error(ex, "[FFXIV_ACT_Plugin] ScanMemory failure");
 		}
 	}
 }

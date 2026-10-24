@@ -197,7 +197,7 @@ public class CactbotEventSource : EventSourceBase {
 		LogInfo("Parsing Plugin Language: {0}", language ?? "(unknown)");
 
 		LogInfo("System Locale: {0}", pcLocale ?? "(unknown)");
-		ffxiv = new FFXIVProcessDalamud();
+		ffxiv = new FFXIVProcessDalamud(container);
 		LogInfo("Version: Dalamud");
 		// Incoming events.
 		ActGlobals.oFormActMain.OnLogLineRead += OnLogLineRead;

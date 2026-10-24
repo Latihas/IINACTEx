@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Dalamud.Plugin.Services;
 using FFXIVClientStructs.FFXIV.Client.Game;
 using FFXIVClientStructs.FFXIV.Client.Game.Character;
 using FFXIVClientStructs.FFXIV.Client.Game.Object;
@@ -8,14 +9,13 @@ using FFXIVClientStructs.Interop;
 
 namespace RainbowMage.OverlayPlugin.MemoryProcessors.Combatant;
 
-public abstract class CombatantMemory : ICombatantMemory {
+public abstract class CombatantMemory(TinyIoCContainer container) : ICombatantMemory {
+	private readonly IObjectTable ObjectTable = container.Resolve<IObjectTable>();
 	protected const uint emptyID = 0xE0000000;
 	public unsafe GameObject* charmapAddress {
 		get {
-			var gobs = CharacterManager.Instance()->BattleCharas.ToArray()
-				.Select(entry => (Pointer<GameObject>)(GameObject*)entry.Value)
-				.Where(entry => entry.Value != null).ToArray();
-			return gobs.Length == 0 ? null : gobs[0].Value;
+			var p = ObjectTable.LocalPlayer;
+			return p == null ? null : (GameObject*)p.Address;
 		}
 	}
 
@@ -27,10 +27,8 @@ public abstract class CombatantMemory : ICombatantMemory {
 	public abstract Version GetVersion();
 
 	public unsafe Combatant? GetSelfCombatant() {
-		var gobs = CharacterManager.Instance()->BattleCharas.ToArray()
-			.Select(entry => (Pointer<GameObject>)(GameObject*)entry.Value)
-			.Where(entry => entry.Value != null).ToArray();
-		return gobs.Length == 0 ? null : GetCombatantFromByteArray(gobs[0].Value, 0, true, true);
+		var p = ObjectTable.LocalPlayer;
+		return p == null ? null : GetCombatantFromByteArray((GameObject*)p.Address, 0, true, true);
 	}
 
 	public unsafe Combatant? GetCombatantFromAddress(GameObject* address, uint selfCharID = 0) => GetCombatantFromByteArray(address, selfCharID, false);
@@ -40,10 +38,9 @@ public abstract class CombatantMemory : ICombatantMemory {
 		var seen = new HashSet<uint>();
 		var mychar = GetSelfCombatant();
 
-		foreach (var p in CharacterManager.Instance()->BattleCharas.ToArray()
-			         .Select(entry => (Pointer<GameObject>)(GameObject*)entry.Value)
-			         .Where(entry => entry.Value != null)) {
-			var combatant = GetMobFromByteArray(p.Value, mychar?.ID ?? 0);
+		foreach (var p in CharacterManager.Instance()->BattleCharas) {
+			if(p==null)continue;
+			var combatant = GetMobFromByteArray((GameObject*)p.Value, mychar?.ID ?? 0);
 			if (combatant == null) continue;
 			if (seen.Contains(combatant.ID)) continue;
 

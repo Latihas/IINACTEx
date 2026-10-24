@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
+using Dalamud.Plugin.Services;
 using FFXIVClientStructs.FFXIV.Client.Game;
 using FFXIVClientStructs.FFXIV.Client.Game.Character;
 using FFXIVClientStructs.FFXIV.Client.Game.Object;
@@ -12,7 +13,9 @@ using Newtonsoft.Json.Serialization;
 
 namespace RainbowMage.OverlayPlugin.MemoryProcessors;
 
-public class FFXIVProcessDalamud : FFXIVProcess {
+public class FFXIVProcessDalamud(TinyIoCContainer container) : FFXIVProcess {
+	private readonly IObjectTable ObjectTable = container.Resolve<IObjectTable>();
+
 	public override unsafe EntityData GetEntityDataFromByteArray(GameObject* source) {
 		var mem = Marshal.PtrToStructure<Character>((IntPtr)source);
 		var entity = new EntityData {
@@ -53,10 +56,8 @@ public class FFXIVProcessDalamud : FFXIVProcess {
 		entity_ptr == null ? null : GetEntityDataFromByteArray(entity_ptr);
 
 	public override unsafe EntityData? GetSelfData() {
-		var gobs = CharacterManager.Instance()->BattleCharas.ToArray()
-			.Select(entry => (Pointer<GameObject>)(GameObject*)entry.Value)
-			.Where(entry => entry.Value != null).ToArray();
-		return gobs.Length == 0 ? null : GetEntityData(gobs[0].Value);
+		var p = ObjectTable.LocalPlayer;
+		return p == null ? null : GetEntityData((GameObject*)p.Address);
 	}
 
 	public sealed class JobGaugeStructResolver : DefaultContractResolver {

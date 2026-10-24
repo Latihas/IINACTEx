@@ -41,7 +41,7 @@ internal class NativeMethods {
 
 	[DllImport("kernel32.dll")]
 	public static extern bool ReadProcessMemory(
-		IntPtr hProcess, IntPtr lpBaseAddress, byte[] lpBuffer, IntPtr nSize, ref IntPtr lpNumberOfBytesRead);
+		IntPtr hProcess, IntPtr lpBaseAddress, IntPtr lpBuffer, IntPtr nSize, ref IntPtr lpNumberOfBytesRead);
 
 	private delegate void WinEventDelegate(
 		IntPtr hWinEventHook, uint eventType, IntPtr hwnd, int idObject, int idChild, uint dwEventThread,
