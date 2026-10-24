@@ -28,9 +28,9 @@ public class CombatantMemoryManager : ICombatantMemory {
 
 	public unsafe Combatant? GetCombatantFromAddress(GameObject* address, uint selfCharID) => memory.GetCombatantFromAddress(address, selfCharID);
 
-	public List<Combatant> GetCombatantList() => IsValid() ? memory.GetCombatantList() : [];
+	public List<Combatant> GetCombatantList() => memory.GetCombatantList();
 
-	public Combatant? GetSelfCombatant() => IsValid() ? memory.GetSelfCombatant() : null;
+	public Combatant? GetSelfCombatant() => memory.GetSelfCombatant();
 
 	public void ReturnCombatant() { }
 }

@@ -188,10 +188,8 @@ internal class AtkStageMemory62 : AtkStageMemory, IAtkStageMemory62 {
 	}
 
 	public object? GetAddon(string name) {
-		if (!AddonMap.TryGetValue(name, out var addonType) || !IsValid()) return null;
+		if (!AddonMap.TryGetValue(name, out var addonType)) return null;
 		var ptr = GetAddonAddress(name);
-		if (ptr == nint.Zero) return null;
-		var addon = Marshal.PtrToStructure(ptr, addonType);
-		return addon;
+		return ptr == nint.Zero ? null : Marshal.PtrToStructure(ptr, addonType);
 	}
 }

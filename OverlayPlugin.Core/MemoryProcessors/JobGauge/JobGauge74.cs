@@ -9,8 +9,6 @@ internal partial class JobGaugeMemory74 : JobGaugeMemory {
 	public override Version GetVersion() => new(7, 4);
 
 	public override IJobGauge? GetJobGauge() {
-		if (!IsValid()) return null;
-
 		var jobGaugeManager = Marshal.PtrToStructure<JobGaugeManager>(
 			FFXIVClientStructs.FFXIV.Client.Game.JobGaugeManager.Addresses.Instance.Value);
 
