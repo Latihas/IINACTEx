@@ -743,13 +743,12 @@ public static partial class LWindow {
 	}
 
 	private static void TTable(SerializableDictionary<string, VariableTable> data) =>
-		NewTable(["名称", "宽", "高", "值", "时间", "源"], data.ToArray(), [
+		NewTable(["名称", "宽", "高", "值", "时间", "源"], [.. data], [
 			i => ImGui.Text(i.Key),
 			i => ImGui.Text(i.Value.Width.ToString()),
 			i => ImGui.Text(i.Value.Height.ToString()),
 			i => {
-				List<string> sb = [];
-				sb.AddRange(i.Value.Rows.Select(item => $"({string.Join(',', item.Values)})"));
+				List<string> sb = [.. i.Value.Rows.Select(item => $"({string.Join(',', item.Values)})")];
 				ImGui.TextWrapped(string.Join(';', sb));
 			},
 			i => ImGui.Text(i.Value.LastChanged.ToString()),
