@@ -129,89 +129,6 @@ public
 
 	#endregion
 }
-#else
-#if TINYIOC_INTERNAL
-    internal
-#else
-    public
-#endif
-    class SafeDictionary<TKey, TValue> : IDisposable
-    {
-        private readonly object _Padlock = new object();
-        private readonly Dictionary<TKey, TValue> _Dictionary = new Dictionary<TKey, TValue>();
-
-        public TValue this[TKey key]
-        {
-            set
-            {
-                lock (_Padlock)
-                {
-                    TValue current;
-                    if (_Dictionary.TryGetValue(key, out current))
-                    {
-                        var disposable = current as IDisposable;
-
-                        if (disposable != null)
-                            disposable.Dispose();
-                    }
-
-                    _Dictionary[key] = value;
-                }
-            }
-        }
-
-        public bool TryGetValue(TKey key, out TValue value)
-        {
-            lock (_Padlock)
-            {
-                return _Dictionary.TryGetValue(key, out value);
-            }
-        }
-
-        public bool Remove(TKey key)
-        {
-            lock (_Padlock)
-            {
-                return _Dictionary.Remove(key);
-            }
-        }
-
-        public void Clear()
-        {
-            lock (_Padlock)
-            {
-                _Dictionary.Clear();
-            }
-        }
-
-        public IEnumerable<TKey> Keys
-        {
-            get
-            {
-                return _Dictionary.Keys;
-            }
-        }
-    #region IDisposable Members
-
-        public void Dispose()
-        {
-            lock (_Padlock)
-            {
-                var disposableItems = from item in _Dictionary.Values
-                                      where item is IDisposable
-                                      select item as IDisposable;
-
-                foreach (var item in disposableItems)
-                {
-                    item.Dispose();
-                }
-            }
-
-            GC.SuppressFinalize(this);
-        }
-
-    #endregion
-    }
 #endif
 
 #endregion
@@ -1576,7 +1493,7 @@ public sealed class TinyIoCContainer : IDisposable {
 	}
 
 	private class CustomObjectLifetimeFactory : ObjectFactoryBase, IDisposable {
-		private readonly object SingletonLock = new();
+		private readonly Lock SingletonLock = new();
 		private readonly Type registerType;
 		private readonly Type registerImplementation;
 		private readonly ITinyIoCObjectLifetimeProvider _LifetimeProvider;
@@ -1722,7 +1639,7 @@ public sealed class TinyIoCContainer : IDisposable {
 
 	#region Internal Methods
 
-	private readonly object _AutoRegisterLock = new();
+	private readonly Lock _AutoRegisterLock = new();
 
 	private void AutoRegisterInternal(
 		IEnumerable<Assembly> assemblies, DuplicateImplementationActions duplicateAction,

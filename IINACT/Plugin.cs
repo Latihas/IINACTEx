@@ -239,7 +239,6 @@ public sealed class Plugin : IDalamudPlugin {
 	public Plugin() {
 		Instance = this;
 		Version = Version.Parse(Assembly.GetExecutingAssembly().GetCustomAttribute<AssemblyInformationalVersionAttribute>()!.InformationalVersion.Split('+')[0]);
-		Init();
 		oFormActMain = new FormActMain(this, Log, Framework);
 		ActLocalization.Init();
 		ActLocalization.AddPrebuild();

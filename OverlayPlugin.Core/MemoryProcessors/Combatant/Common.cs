@@ -124,7 +124,7 @@ public class Combatant {
 	public float PosX;
 	public float PosY;
 	public float PosZ;
-	private Vector3 Position => new(PosX, PosY, PosZ);
+	internal Vector3 Position => new(PosX, PosY, PosZ);
 	public float Heading;
 	public float Radius;
 

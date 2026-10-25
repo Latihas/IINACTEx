@@ -1,4 +1,6 @@
-﻿namespace Advanced_Combat_Tracker;
+﻿using System.Threading;
+
+namespace Advanced_Combat_Tracker;
 
 public static partial class ActGlobals {
 	public static readonly bool mainTableShowCommas = true;
@@ -15,12 +17,10 @@ public static partial class ActGlobals {
 	public static readonly string mDSort2 = "Damage";
 	public static readonly string aTSort2 = "Time";
 	public static FormActMain oFormActMain = null!;
-	internal static object ActionDataLock;
-	public static ActLocalization.LocalizationStringsHelper Trans { get; private set; }
+	internal static readonly object ActionDataLock = new();
+	public static ActLocalization.LocalizationStringsHelper Trans { get; } = new();
 
 	public static void Init() {
-		Trans = new ActLocalization.LocalizationStringsHelper();
-		ActionDataLock = new object();
 	}
 
 	public static void Dispose() {

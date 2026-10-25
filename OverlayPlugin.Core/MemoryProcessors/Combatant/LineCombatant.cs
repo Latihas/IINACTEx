@@ -5,6 +5,7 @@ using System.Collections.ObjectModel;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Numerics;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using Dalamud.Plugin.Services;
@@ -26,10 +27,10 @@ public class LineCombatant : IDisposable {
 	private readonly Func<string, DateTime, bool>? logWriter;
 	private bool _disposed;
 	private bool inCombat;
-	private static readonly FieldInfo PosXField = typeof(Combatant).GetField(nameof(Combatant.PosX))!;
-	private static readonly FieldInfo PosYField = typeof(Combatant).GetField(nameof(Combatant.PosY))!;
-	private static readonly FieldInfo PosZField = typeof(Combatant).GetField(nameof(Combatant.PosZ))!;
-	private static readonly FieldInfo HeadingField = typeof(Combatant).GetField(nameof(Combatant.Heading))!;
+	// private static readonly FieldInfo PosXField = typeof(Combatant).GetField(nameof(Combatant.PosX))!;
+	// private static readonly FieldInfo PosYField = typeof(Combatant).GetField(nameof(Combatant.PosY))!;
+	// private static readonly FieldInfo PosZField = typeof(Combatant).GetField(nameof(Combatant.PosZ))!;
+	// private static readonly FieldInfo HeadingField = typeof(Combatant).GetField(nameof(Combatant.Heading))!;
 
 	public LineCombatant(TinyIoCContainer container) {
 		logger = container.Resolve<ILogger>();
@@ -71,8 +72,9 @@ public class LineCombatant : IDisposable {
 	private void PollCombatants(IFramework _) => CheckCombatants(DateTime.Now);
 
 	private void CheckCombatants(DateTime now, params uint[] filter) {
+		var T0 = DateTime.Now;
 		var combatants = combatantMemoryManager.GetCombatantList();
-
+		var T1 = DateTime.Now;
 		Span<uint> combatantIDs = stackalloc uint[combatants.Count];
 		var index = 0;
 		foreach (var c in combatants) combatantIDs[index++] = c.ID;
@@ -95,7 +97,7 @@ public class LineCombatant : IDisposable {
 			}
 			var oldCombatant = oldState.combatant;
 			var lastUpdatedDiff = (now - oldState.lastUpdated).TotalMilliseconds;
-			var changed = new HashSet<FieldInfo>();
+			var changed = new HashSet<string>();
 
 
 			// Check position/heading first since it has a custom delay timing with threshold
@@ -105,10 +107,7 @@ public class LineCombatant : IDisposable {
 				// This check seems redundant but it's less expensive than the check below against distance
 				// so it uses less CPU
 				if (combatant.PosX != oldCombatant.PosX || combatant.PosY != oldCombatant.PosY || combatant.PosZ != oldCombatant.PosZ) {
-					var dist = Math.Pow(combatant.PosX - oldCombatant.PosX, 2)
-					           + Math.Pow(combatant.PosY - oldCombatant.PosY, 2)
-					           + Math.Pow(combatant.PosZ - oldCombatant.PosZ, 2);
-					if (dist > criteria.DistancePosition) {
+					if (Vector3.DistanceSquared(combatant.Position, oldCombatant.Position) > criteria.DistancePosition) {
 						writePosition = true;
 					}
 				} else if (combatant.Heading != oldCombatant.Heading) {
@@ -122,10 +121,10 @@ public class LineCombatant : IDisposable {
 
 				// If any position data has changed, write all position data
 				if (writePosition) {
-					changed.Add(PosXField);
-					changed.Add(PosYField);
-					changed.Add(PosZField);
-					changed.Add(HeadingField);
+					changed.Add(nameof(Combatant.PosX));
+					changed.Add(nameof(Combatant.PosY));
+					changed.Add(nameof(Combatant.PosZ));
+					changed.Add(nameof(Combatant.Heading));
 				}
 			}
 
@@ -168,17 +167,62 @@ public class LineCombatant : IDisposable {
 			combatantStateMap.TryRemove(ID, out _);
 			WriteLine(CombatantMemoryChangeType.Remove, ID, "");
 		}
+		var T2 = DateTime.Now;
+		logger.Log(LogLevel.Warning, $"{(T1 - T0).TotalMilliseconds},{(T2 - T1).TotalMilliseconds}");
 	}
 
-	private bool ValueEqual(FieldInfo fi, Combatant oldCombatant, Combatant combatant) {
-		var oldVal = fi.GetValue(oldCombatant);
-		var newVal = fi.GetValue(combatant);
-		// There's some weird behavior with just using `==` or `.Equals` here, where two UInt32 values that are the same somehow aren't.
-		if (oldVal is IComparable comparable) return comparable.CompareTo(newVal) == 0;
-		return oldVal.Equals(newVal);
+	private bool ValueEqual(string fi, Combatant oldCombatant, Combatant combatant) {
+		return fi switch {
+			nameof(Combatant.ID) => oldCombatant.ID == combatant.ID,
+			nameof(Combatant.OwnerID) => oldCombatant.OwnerID == combatant.OwnerID,
+			nameof(Combatant.Type) => oldCombatant.Type == combatant.Type,
+			nameof(Combatant.MonsterType) => oldCombatant.MonsterType == combatant.MonsterType,
+			nameof(Combatant.Status) => oldCombatant.Status == combatant.Status,
+			nameof(Combatant.ModelStatus) => oldCombatant.ModelStatus == combatant.ModelStatus,
+			nameof(Combatant.AggressionStatus) => oldCombatant.AggressionStatus == combatant.AggressionStatus,
+			nameof(Combatant.TargetID) => oldCombatant.TargetID == combatant.TargetID,
+			nameof(Combatant.IsTargetable) => oldCombatant.IsTargetable == combatant.IsTargetable,
+			nameof(Combatant.Job) => oldCombatant.Job == combatant.Job,
+			nameof(Combatant.Name) => string.Equals(oldCombatant.Name, combatant.Name, StringComparison.Ordinal),
+			nameof(Combatant.CurrentHP) => oldCombatant.CurrentHP == combatant.CurrentHP,
+			nameof(Combatant.MaxHP) => oldCombatant.MaxHP == combatant.MaxHP,
+			nameof(Combatant.PosX) => oldCombatant.PosX == combatant.PosX,
+			nameof(Combatant.PosY) => oldCombatant.PosY == combatant.PosY,
+			nameof(Combatant.PosZ) => oldCombatant.PosZ == combatant.PosZ,
+			nameof(Combatant.Heading) => oldCombatant.Heading == combatant.Heading,
+			nameof(Combatant.Radius) => oldCombatant.Radius == combatant.Radius,
+			nameof(Combatant.Distance) => string.Equals(oldCombatant.Distance, combatant.Distance, StringComparison.Ordinal),
+			nameof(Combatant.EffectiveDistance) => string.Equals(oldCombatant.EffectiveDistance, combatant.EffectiveDistance, StringComparison.Ordinal),
+			nameof(Combatant.BNpcID) => oldCombatant.BNpcID == combatant.BNpcID,
+			nameof(Combatant.CurrentMP) => oldCombatant.CurrentMP == combatant.CurrentMP,
+			nameof(Combatant.MaxMP) => oldCombatant.MaxMP == combatant.MaxMP,
+			nameof(Combatant.Level) => oldCombatant.Level == combatant.Level,
+			nameof(Combatant.BNpcNameID) => oldCombatant.BNpcNameID == combatant.BNpcNameID,
+			nameof(Combatant.WorldID) => oldCombatant.WorldID == combatant.WorldID,
+			nameof(Combatant.CurrentWorldID) => oldCombatant.CurrentWorldID == combatant.CurrentWorldID,
+			nameof(Combatant.NPCTargetID) => oldCombatant.NPCTargetID == combatant.NPCTargetID,
+			nameof(Combatant.CurrentGP) => oldCombatant.CurrentGP == combatant.CurrentGP,
+			nameof(Combatant.MaxGP) => oldCombatant.MaxGP == combatant.MaxGP,
+			nameof(Combatant.CurrentCP) => oldCombatant.CurrentCP == combatant.CurrentCP,
+			nameof(Combatant.MaxCP) => oldCombatant.MaxCP == combatant.MaxCP,
+			nameof(Combatant.PCTargetID) => oldCombatant.PCTargetID == combatant.PCTargetID,
+			nameof(Combatant.IsCasting1) => oldCombatant.IsCasting1 == combatant.IsCasting1,
+			nameof(Combatant.IsCasting2) => oldCombatant.IsCasting2 == combatant.IsCasting2,
+			nameof(Combatant.CastBuffID) => oldCombatant.CastBuffID == combatant.CastBuffID,
+			nameof(Combatant.CastTargetID) => oldCombatant.CastTargetID == combatant.CastTargetID,
+			nameof(Combatant.CastGroundTargetX) => oldCombatant.CastGroundTargetX == combatant.CastGroundTargetX,
+			nameof(Combatant.CastGroundTargetY) => oldCombatant.CastGroundTargetY == combatant.CastGroundTargetY,
+			nameof(Combatant.CastGroundTargetZ) => oldCombatant.CastGroundTargetZ == combatant.CastGroundTargetZ,
+			nameof(Combatant.CastDurationCurrent) => oldCombatant.CastDurationCurrent == combatant.CastDurationCurrent,
+			nameof(Combatant.CastDurationMax) => oldCombatant.CastDurationMax == combatant.CastDurationMax,
+			nameof(Combatant.TransformationId) => oldCombatant.TransformationId == combatant.TransformationId,
+			nameof(Combatant.WeaponId) => oldCombatant.WeaponId == combatant.WeaponId,
+			nameof(Combatant.Effects) => ReferenceEquals(oldCombatant.Effects, combatant.Effects),
+			_ =>throw new Exception($"Field {fi} Not Support.")
+		};
 	}
 
-	private string FormatFieldChange(FieldInfo info, Combatant combatant, bool skipDefaultValues = false) {
+	private string FormatFieldChange(string info, Combatant combatant, bool skipDefaultValues = false) {
 		var value = info.GetValue(combatant);
 
 		if (value == null) {
@@ -316,10 +360,10 @@ public class LineCombatant : IDisposable {
 		];
 
 		// Fields that should be written out for add or full list of changes
-		public static readonly FieldInfo[] AllFields = [
+		public static readonly string[] AllFields = [
 			.. typeof(Combatant).GetFields()
-				.Where(field => !IgnoreFieldNames.Contains(field.Name))
-				.OrderBy(field => field.Name)
+				.Select(f=>f.Name)
+				.Where(field => !IgnoreFieldNames.Contains(field))
 		];
 
 		public static readonly ReadOnlyDictionary<Type, object?> DefaultValues =
@@ -332,7 +376,7 @@ public class LineCombatant : IDisposable {
 			: type == typeof(string) ? string.Empty : null;
 
 		public class CriteriaData {
-			public ReadOnlyDictionary<FieldInfo, uint> CheckFieldDelay;
+			public ReadOnlyDictionary<string, uint> CheckFieldDelay;
 			// in milliseconds
 			public uint DelayDefault; // If any property has changed in this timeframe, a line will be written
 			public uint DelayPosition;
