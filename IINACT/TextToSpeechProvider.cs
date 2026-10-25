@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
@@ -80,15 +81,13 @@ internal class TextToSpeechProvider : IDisposable {
 		Instance.Configuration.Save();
 	}
 
-	private static readonly Dictionary<string, DateTime> time = new();
+	private static readonly ConcurrentDictionary<string, DateTime> time = new();
 
 	[SuppressMessage("ReSharper", "MemberCanBePrivate.Global")]
 	public void Speak(string message) {
 		if (string.IsNullOrEmpty(message)) return;
-		lock (time) {
-			if (time.TryGetValue(message, out var value) && (DateTime.Now - value).TotalSeconds < Instance.Configuration.TtsInterval) return;
-			time[message] = DateTime.Now;
-		}
+		if (time.TryGetValue(message, out var value) && (DateTime.Now - value).TotalSeconds < Instance.Configuration.TtsInterval) return;
+		time[message] = DateTime.Now;
 		_ = speechChannel.Writer.TryWrite(message);
 	}
 

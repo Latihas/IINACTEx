@@ -41,10 +41,7 @@ public partial class FFXIVMemory {
 		}
 
 		for (var i = 0; i < size; i++) {
-			if (bytes[i] != 0) {
-				continue;
-			}
-
+			if (bytes[i] != 0) continue;
 			realSize = i;
 			break;
 		}
