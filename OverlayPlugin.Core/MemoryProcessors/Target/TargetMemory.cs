@@ -1,5 +1,7 @@
 ﻿using System;
+using FFXIVClientStructs.FFXIV.Client.Game.Character;
 using FFXIVClientStructs.FFXIV.Client.Game.Control;
+using FFXIVClientStructs.FFXIV.Client.Game.Object;
 using RainbowMage.OverlayPlugin.MemoryProcessors.Combatant;
 
 namespace RainbowMage.OverlayPlugin.MemoryProcessors.Target;
@@ -16,16 +18,16 @@ public abstract class TargetMemory(TinyIoCContainer container) : ITargetMemory {
 
 	public unsafe Combatant.Combatant? GetTargetCombatant() {
 		var t = TargetSystem.Instance()->GetTargetObject();
-		return t == null ? null : combatantMemory.GetCombatantFromAddress(t, 0);
+		return t == null || t->ObjectKind is not (ObjectKind.Pc or ObjectKind.BattleNpc) ? null : combatantMemory.GetCombatantFromAddress((BattleChara*)t, 0);
 	}
 
 	public unsafe Combatant.Combatant? GetFocusCombatant() {
 		var t = TargetSystem.Instance()->FocusTarget;
-		return t == null ? null : combatantMemory.GetCombatantFromAddress(t, 0);
+		return t == null || t->ObjectKind is not (ObjectKind.Pc or ObjectKind.BattleNpc) ? null : combatantMemory.GetCombatantFromAddress((BattleChara*)t, 0);
 	}
 
 	public unsafe Combatant.Combatant? GetHoverCombatant() {
 		var t = TargetSystem.Instance()->MouseOverTarget;
-		return t == null ? null : combatantMemory.GetCombatantFromAddress(t, 0);
+		return t == null || t->ObjectKind is not (ObjectKind.Pc or ObjectKind.BattleNpc) ? null : combatantMemory.GetCombatantFromAddress((BattleChara*)t, 0);
 	}
 }

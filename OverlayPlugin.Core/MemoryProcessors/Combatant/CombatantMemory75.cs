@@ -1,76 +1,66 @@
 using System;
 using FFXIVClientStructs.FFXIV.Client.Game.Character;
-using FFXIVClientStructs.FFXIV.Client.Game.Object;
 
 namespace RainbowMage.OverlayPlugin.MemoryProcessors.Combatant;
 
 internal interface ICombatantMemory75 : ICombatantMemory;
 
 internal class CombatantMemory75(TinyIoCContainer container) : CombatantMemory(container), ICombatantMemory75 {
-	private static readonly IntPtr CurrentProcessHandle = NativeMethods.GetCurrentProcess();
-
 	public override Version GetVersion() => new(7, 4);
 
 	// Returns a combatant if the combatant is a mob or a PC.
-	public override unsafe Combatant? GetMobFromByteArray(GameObject* gameObject, uint mycharID) {
-		if (gameObject == null) return null;
-		if (!TryReadStruct(gameObject, out var mem)) return null;
-		return mem.EntityId is 0 or emptyID ? null : CreateCombatant(mem, mycharID, false);
-	}
+	public override unsafe Combatant? GetMobFromByteArray(BattleChara* gameObject, uint mycharID) => gameObject == null ? null : CreateCombatant(gameObject, mycharID, false);
 
 	// Will return any kind of combatant, even if not a mob.
 	// This function always returns a combatant object, even if empty.
-	protected override unsafe Combatant? GetCombatantFromByteArray(GameObject* gameObject, uint mycharID, bool isPlayer, bool exceptEffects = false) {
-		if (gameObject == null) return null;
-		return TryReadStruct(gameObject, out var ori) ? CreateCombatant(ori, mycharID, isPlayer, exceptEffects) : null;
-	}
+	protected override unsafe Combatant? GetCombatantFromByteArray(BattleChara* gameObject, uint mycharID, bool isPlayer, bool exceptEffects = false) => gameObject == null ? null : CreateCombatant(gameObject, mycharID, isPlayer, exceptEffects);
 
-	private static unsafe Combatant CreateCombatant(BattleChara ori, uint mycharID, bool isPlayer, bool exceptEffects = false) {
-		if (isPlayer) mycharID = ori.EntityId;
-		var type = (ObjectType)ori.ObjectKind;
-		var PCTargetID = (uint)ori.LookAt.Controller.Params[0].TargetParam.TargetId;
-		var position = ori.Position;
-		var castinfo = ori.CastInfo;
+	private static unsafe Combatant CreateCombatant(BattleChara* ori, uint mycharID, bool isPlayer, bool exceptEffects = false) {
+		if (isPlayer) mycharID = ori->EntityId;
+		var type = (ObjectType)ori->ObjectKind;
+		var PCTargetID = (uint)ori->LookAt.Controller.Params[0].TargetParam.TargetId;
+		var position = ori->Position;
+		var castinfo = ori->CastInfo;
 		var targetLocation = castinfo.TargetLocation;
 		var combatant = new Combatant {
-			Name = ori.NameString,
-			Job = ori.ClassJob,
-			ID = ori.EntityId,
-			OwnerID = ori.OwnerId == emptyID ? 0 : ori.OwnerId,
+			Name = ori->NameString,
+			Job = ori->ClassJob,
+			ID = ori->EntityId,
+			OwnerID = ori->OwnerId,
 			Type = type,
 			MonsterType = 0,
-			Status = (ObjectStatus)(byte)(&ori.TargetableStatus - 2),
-			ModelStatus = (ModelStatus)ori.RenderFlags,
+			Status = (ObjectStatus)(byte)(&ori->TargetableStatus - 2),
+			ModelStatus = (ModelStatus)ori->RenderFlags,
 			// Normalize all possible aggression statuses into the basic 4 ones.
 			AggressionStatus = 0,
-			NPCTargetID = (uint)ori.TargetId,
-			RawEffectiveDistance = ori.NextDistance,
+			NPCTargetID = (uint)ori->TargetId,
+			RawEffectiveDistance = ori->NextDistance,
 			PosX = position.X,
 			// Y and Z are deliberately swapped to match FFXIV_ACT_Plugin's data model
 			PosY = position.Z,
 			PosZ = position.Y,
-			Heading = ori.Rotation,
-			Radius = ori.HitboxRadius,
+			Heading = ori->Rotation,
+			Radius = ori->HitboxRadius,
 			// In-memory there are separate values for PC's current target and NPC's current target
-			TargetID = type == ObjectType.PC ? PCTargetID : (uint)ori.TargetId,
-			CurrentHP = (int)ori.Health,
-			MaxHP = (int)ori.MaxHealth,
-			Effects = exceptEffects ? [] : GetEffectEntries(ori.StatusManager, type, mycharID),
+			TargetID = type == ObjectType.PC ? PCTargetID : (uint)ori->TargetId,
+			CurrentHP = (int)ori->Health,
+			MaxHP = (int)ori->MaxHealth,
+			Effects = exceptEffects ? [] : GetEffectEntries(ori->StatusManager, type, mycharID),
 
-			BNpcID = ori.BaseId,
-			CurrentMP = (int)ori.Mana,
-			MaxMP = (int)ori.MaxMana,
-			CurrentGP = ori.GatheringPoints,
-			MaxGP = ori.MaxGatheringPoints,
-			CurrentCP = ori.CraftingPoints,
-			MaxCP = ori.MaxCraftingPoints,
-			Level = ori.Level,
+			BNpcID = ori->BaseId,
+			CurrentMP = (int)ori->Mana,
+			MaxMP = (int)ori->MaxMana,
+			CurrentGP = ori->GatheringPoints,
+			MaxGP = ori->MaxGatheringPoints,
+			CurrentCP = ori->CraftingPoints,
+			MaxCP = ori->MaxCraftingPoints,
+			Level = ori->Level,
 			PCTargetID = PCTargetID,
 
-			BNpcNameID = ori.NameId,
+			BNpcNameID = ori->NameId,
 
-			WorldID = ori.HomeWorld,
-			CurrentWorldID = ori.CurrentWorld,
+			WorldID = ori->HomeWorld,
+			CurrentWorldID = ori->CurrentWorld,
 
 			// @TODO: Fix this for 8.0 with breaking change.
 			// ref: <https://github.com/aers/FFXIVClientStructs/commit/da0a825b4758b82136ae1826d7168c230e3ab063>
@@ -85,8 +75,8 @@ internal class CombatantMemory75(TinyIoCContainer container) : CombatantMemory(c
 			CastDurationCurrent = castinfo.CurrentCastTime,
 			CastDurationMax = castinfo.BaseCastTime,
 
-			TransformationId = ori.TransformationId,
-			WeaponId = ori.Timeline.ModelState
+			TransformationId = ori->TransformationId,
+			WeaponId = ori->Timeline.ModelState
 		};
 		combatant.IsTargetable = combatant is { ModelStatus: ModelStatus.Visible, Status: ObjectStatus.NormalActorStatus or ObjectStatus.NormalSubActorStatus };
 		if (combatant.Type != ObjectType.PC && combatant.Type != ObjectType.Monster) {
@@ -95,17 +85,5 @@ internal class CombatantMemory75(TinyIoCContainer container) : CombatantMemory(c
 			combatant.MaxHP = 0;
 		}
 		return combatant;
-	}
-
-	private static unsafe bool TryReadStruct(GameObject* address, out BattleChara value) {
-		value = default;
-		if (address == null) return false;
-		BattleChara buffer = default;
-		var size = sizeof(BattleChara);
-		var bytesRead = IntPtr.Zero;
-		if (!NativeMethods.ReadProcessMemory(CurrentProcessHandle, (IntPtr)address, (IntPtr)(&buffer), size,
-			    ref bytesRead) || bytesRead.ToInt64() != size) return false;
-		value = buffer;
-		return true;
 	}
 }
