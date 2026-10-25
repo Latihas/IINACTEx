@@ -96,6 +96,14 @@ public partial class LWindow {
 						null
 					);
 					break;
+				case ConditionComment single:
+					RenderConditionNode(
+						single.ToString(),
+						single,
+						parent is not null && !parent.Enabled,
+						null
+					);
+					break;
 			}
 		}
 
@@ -103,7 +111,7 @@ public partial class LWindow {
 		private static readonly Vector4 ColorGrey = new(0.5f, 0.5f, 0.5f, 1.0f);
 
 		private void RenderConditionNode(string text, ConditionComponent condition, bool parentDisabled, Action? renderChildren) {
-			var nodeId = condition.Id;
+			var nodeId = condition.GetHashCode();
 			_nodeConditionExpandedStates.TryAdd(nodeId, false);
 			var isDisabled = parentDisabled || !condition.Enabled;
 			if (isDisabled) ImGui.PushStyleColor(ImGuiCol.Text, ColorGrey);

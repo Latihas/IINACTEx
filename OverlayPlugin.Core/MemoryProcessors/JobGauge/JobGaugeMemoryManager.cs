@@ -1,7 +1,6 @@
 ﻿using System;
-#if !DEBUG
 using Newtonsoft.Json;
-#endif
+
 
 namespace RainbowMage.OverlayPlugin.MemoryProcessors.JobGauge;
 
