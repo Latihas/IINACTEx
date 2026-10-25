@@ -205,7 +205,7 @@ public class MachinaPacketHelper<PacketType> : IPacketHelper where PacketType : 
 	/// <returns>null for invalid packet, otherwise a constructed packet</returns>
 	public string? ToString(long epoch, MachinaHeaderWrapper header, MachinaPacketWrapper packet) => packet.ToString(epoch, header.ActorID);
 
-	public unsafe bool ToStructs(byte[] message, out MachinaHeaderWrapper header, out PacketType packet) {
+	public unsafe bool ToStructs(byte[] message, out MachinaHeaderWrapper? header, out PacketType? packet) {
 		// Message is too short to contain this packet
 		if (message.Length < headerSize + packetSize) {
 			header = null;
@@ -218,9 +218,9 @@ public class MachinaPacketHelper<PacketType> : IPacketHelper where PacketType : 
 		}
 	}
 
-	public unsafe bool ToStructs(void* message, out MachinaHeaderWrapper header, out PacketType packet) => ToStructs((IntPtr)message, out header, out packet);
+	public unsafe bool ToStructs(void* message, out MachinaHeaderWrapper? header, out PacketType? packet) => ToStructs((IntPtr)message, out header, out packet);
 
-	public bool ToStructs(IntPtr ptr, out MachinaHeaderWrapper header, out PacketType packet, bool ignoreOpcode = false) {
+	public bool ToStructs(IntPtr ptr, out MachinaHeaderWrapper? header, out PacketType? packet, bool ignoreOpcode = false) {
 		var headerObj = Marshal.PtrToStructure(ptr, headerType);
 		if (headerObj == null) {
 			header = null;

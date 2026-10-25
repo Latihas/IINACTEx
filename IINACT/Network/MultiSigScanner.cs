@@ -133,7 +133,7 @@ public class MultiSigScanner : IDisposable {
 			size -= offset;
 		}
 
-		return addrs.ToArray();
+		return [.. addrs];
 	}
 
 	/// <summary>

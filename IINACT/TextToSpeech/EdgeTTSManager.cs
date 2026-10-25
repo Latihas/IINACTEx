@@ -128,32 +128,34 @@ public class EdgeTTSManager {
 			return voiceInfo.Gender;
 		}
 
-		return _engine.Voices
-			.SelectMany(localeGroup => localeGroup.Value.SelectMany(genderGroup => genderGroup.Value))
-			.Select(voiceInfo => {
-				var localeInfo = voiceInfo.LocaleInfo;
-				var languageCode = localeInfo.TwoLetterISOLanguageName;
+		return [
+			.. _engine.Voices
+				.SelectMany(localeGroup => localeGroup.Value.SelectMany(genderGroup => genderGroup.Value))
+				.Select(voiceInfo => {
+					var localeInfo = voiceInfo.LocaleInfo;
+					var languageCode = localeInfo.TwoLetterISOLanguageName;
 
-				return new VoiceEntry(
-					voiceInfo.ShortName,
-					voiceInfo.FriendlyName,
-					voiceInfo.Locale,
-					localeInfo.DisplayName,
-					languageCode,
-					GetLanguageDisplayName(languageCode),
-					voiceInfo.Gender,
-					GetGenderDisplayName(voiceInfo)
-				);
-			})
-			.ToArray();
+					return new VoiceEntry(
+						voiceInfo.ShortName,
+						voiceInfo.FriendlyName,
+						voiceInfo.Locale,
+						localeInfo.DisplayName,
+						languageCode,
+						GetLanguageDisplayName(languageCode),
+						voiceInfo.Gender,
+						GetGenderDisplayName(voiceInfo)
+					);
+				})
+		];
 	}
 
 	public List<AudioDevice> GetAvailableDevices() {
 		var devices = _engine.AudioDevices;
-		return devices
-			.OrderBy(pair => pair.Key)
-			.Select(pair => pair.Value)
-			.ToList();
+		return [
+			.. devices
+				.OrderBy(pair => pair.Key)
+				.Select(pair => pair.Value)
+		];
 	}
 
 	public async Task Speak(string text) {

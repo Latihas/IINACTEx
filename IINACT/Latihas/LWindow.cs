@@ -458,10 +458,12 @@ public static partial class LWindow {
 			if (tab) {
 				if (Plugin.ObjectTable.LocalPlayer != null) {
 					if (ImGui.Button("新建小队信息")) {
-						Instance.Configuration.PartyInfos.Add(new PartyInfo(PartyList.Select((i, o) => {
-							var job = Entity.GetEntityByID(i.EntityId).Job;
-							return new PartyInfo.PartyPlayer(job, i.Name.TextValue, i.World.Value.Name.ToString(), o);
-						}).ToArray(), Plugin.ClientState.TerritoryType));
+						Instance.Configuration.PartyInfos.Add(new PartyInfo([
+							.. PartyList.Select((i, o) => {
+								var job = Entity.GetEntityByID(i.EntityId).Job;
+								return new PartyInfo.PartyPlayer(job, i.Name.TextValue, i.World.Value.Name.ToString(), o);
+							})
+						], Plugin.ClientState.TerritoryType));
 						Instance.Configuration.Save();
 					}
 					ImGui.Text("当前激活小队:");
@@ -673,7 +675,7 @@ public static partial class LWindow {
 	}
 
 	private static void TScaler(SerializableDictionary<string, VariableScalar> data) =>
-		NewTable(["名称", "值", "时间", "源"], data.ToArray(), [
+		NewTable(["名称", "值", "时间", "源"], [.. data], [
 			i => ImGui.Text(i.Key),
 			i => ImGui.Text(i.Value.Value),
 			i => ImGui.Text(i.Value.LastChanged.ToString()),
@@ -718,7 +720,7 @@ public static partial class LWindow {
 	}
 
 	private static void TList(SerializableDictionary<string, VariableList> data) =>
-		NewTable(["名称", "长度", "值", "时间", "源"], data.ToArray(), [
+		NewTable(["名称", "长度", "值", "时间", "源"], [.. data], [
 			i => ImGui.Text(i.Key),
 			i => ImGui.Text(i.Value.Size.ToString()),
 			i => ImGui.TextWrapped(string.Join(",", i.Value.Values)),
@@ -772,12 +774,11 @@ public static partial class LWindow {
 	}
 
 	private static void TDict(SerializableDictionary<string, VariableDictionary> data) =>
-		NewTable(["名称", "长度", "值", "时间", "源"], data.ToArray(), [
+		NewTable(["名称", "长度", "值", "时间", "源"], [.. data], [
 			i => ImGui.Text(i.Key),
 			i => ImGui.Text(i.Value.Size.ToString()),
 			i => {
-				List<string> sb = [];
-				sb.AddRange(i.Value.Values.Select(item => $"({item.Key}:{item.Value})"));
+				List<string> sb = [.. i.Value.Values.Select(item => $"({item.Key}:{item.Value})")];
 				ImGui.TextWrapped(string.Join(',', sb));
 			},
 			i => ImGui.Text(i.Value.LastChanged.ToString()),
@@ -805,7 +806,7 @@ public static partial class LWindow {
 		if (!tab) return;
 		List<RealPlugin.NamedCallback> nCs = [];
 		foreach (var cs in RealPlugin.Instance.callbacksByName.Values) nCs.AddRange(cs);
-		NewTable(["Id", "名称", "注册者", "注册时间"], nCs.ToArray(), [
+		NewTable(["Id", "名称", "注册者", "注册时间"], [.. nCs], [
 			i => ImGui.Text(i.Id.ToString()),
 			i => ImGui.Text(i.Name),
 			i => ImGui.Text(i.Registrant),
@@ -817,7 +818,7 @@ public static partial class LWindow {
 		using var tab = ImRaii.TabItem("文本悬浮窗");
 		if (!tab) return;
 
-		NewTable(["悬浮窗名称", "名称", "文本"], RealPlugin.Instance.textauras.ToArray(), [
+		NewTable(["悬浮窗名称", "名称", "文本"], [.. RealPlugin.Instance.textauras], [
 			i => ImGui.Text(i.Key),
 			i => ImGui.Text(i.Value.AuraName),
 			i => ImGui.Text(i.Value.TextExpression.ToString())

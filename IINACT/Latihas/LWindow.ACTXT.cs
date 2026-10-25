@@ -22,7 +22,7 @@ public partial class LWindow {
 		public bool IsReplayIgnoreT_Trn => ReplayCts != null && Plugin.Instance.Configuration.ReplayIgnoreTerritoryTrn;
 		public bool IsReplayIgnoreT_Script => ReplayCts != null && Plugin.Instance.Configuration.ReplayIgnoreTerritoryScript;
 
-		public static string ReadLockedTextFile(string filePath) {
+		private static string ReadLockedTextFile(string filePath) {
 			using var stream = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
 			using var reader = new StreamReader(stream);
 			return reader.ReadToEnd();
@@ -38,7 +38,7 @@ public partial class LWindow {
 		}
 
 		private ActxtCombat? currentCombat;
-		private string currentCombatStart;
+
 		private int ReplayTotal, ReplayIndex;
 		private double ReplayelapsedMs;
 
@@ -51,6 +51,7 @@ public partial class LWindow {
 						if (!succ) return;
 						actxtCombats = null;
 						Task.Run(() => {
+							string? currentCombatStart = null;
 							List<ActxtCombat> combats = [];
 							FilePath = str.First();
 							ImportLogs = [.. ReadLockedTextFile(FilePath).Split(Environment.NewLine)];
@@ -69,7 +70,7 @@ public partial class LWindow {
 								currentCombat?.logs.Add(log);
 								var end = EndCombatRegex_.Match(log);
 								if (end.Success) {
-									if (currentCombat != null) {
+									if (currentCombat != null && currentCombatStart != null) {
 										currentCombat.time = $"{currentCombatStart}-{end.Groups["time"].Value}";
 										var duration =
 											TimeSpan.ParseExact(end.Groups["time"].Value.Trim('[', ']'), fmt, null) -
@@ -82,7 +83,7 @@ public partial class LWindow {
 									currentCombat = null;
 								}
 							}
-							actxtCombats = combats.ToArray();
+							actxtCombats = [.. combats];
 						});
 					}, 1, Plugin.Instance.Configuration.LogFilePath);
 				ImGui.SameLine();

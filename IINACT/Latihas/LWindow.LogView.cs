@@ -35,7 +35,7 @@ public partial class LWindow {
 				if (i++ != check.Count) ImGui.SameLine();
 			}
 			try {
-				NewTable(["Time", "Lvl", "Log"], RealPlugin.Instance.logFlattenTrn.Where(x => check[x.Level] && (Reg == null || Reg.IsMatch(x.Message))).ToArray(), [
+				NewTable(["Time", "Lvl", "Log"], [.. RealPlugin.Instance.logFlattenTrn.Where(x => check[x.Level] && (Reg == null || Reg.IsMatch(x.Message)))], [
 						x => ImGui.Text(x.Timestamp.ToString()),
 						x => ImGui.Text(x.Level.ToString()),
 						x => ImGui.TextWrapped(x.Message)
@@ -65,7 +65,7 @@ public partial class LWindow {
 		private static readonly FileDialogManager FileDialogManager = new();
 		private static string FilePath = "";
 		private static List<string> ImportLogs = [];
-		private static string[] F(IEnumerable<string> l) => l.Where(i => Reg == null || Reg.IsMatch(i)).ToArray();
+		private static string[] F(IEnumerable<string> l) => [.. l.Where(i => Reg == null || Reg.IsMatch(i))];
 
 		public static string ReadLockedTextFile(string filePath) {
 			using var stream = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
@@ -81,7 +81,7 @@ public partial class LWindow {
 					FileDialogManager.OpenFileDialog("Selector", ".actxt", (succ, str) => {
 						if (succ) {
 							FilePath = str.First();
-							ImportLogs = ReadLockedTextFile(FilePath).Split(Environment.NewLine).ToList();
+							ImportLogs = [.. ReadLockedTextFile(FilePath).Split(Environment.NewLine)];
 						}
 					}, 1, Plugin.Instance.Configuration.LogFilePath);
 				ImGui.SameLine();

@@ -7,7 +7,7 @@ using SilverDasher.ACT.Enums;
 namespace SilverDasher.ACT.Models;
 
 public class Opcode {
-	[JsonProperty("name")] public string Name;
+	[JsonProperty("name")] public string Name = "";
 
 	[JsonProperty("global")] public string globalRaw = "";
 
@@ -19,7 +19,7 @@ public class Opcode {
 
 	[JsonProperty("globall")] public int GlobalLength = -1;
 
-	[JsonProperty("types")] public IDictionary<string, int> PacketSubType = new Dictionary<string, int>();
+	[JsonProperty("types")] public Dictionary<string, int> PacketSubType = [];
 
 	[JsonIgnore] private ushort Global {
 		get {
@@ -44,8 +44,7 @@ public class Opcode {
 
 	[JsonIgnore] private Dictionary<int, string> PacketSubTypeNameByID {
 		get {
-			if (PacketSubType == null) field = new Dictionary<int, string>();
-			else if (field == null) {
+			if (field == null) {
 				field = new Dictionary<int, string>();
 				foreach (var key in PacketSubType.Keys) field[PacketSubType[key]] = key;
 			}

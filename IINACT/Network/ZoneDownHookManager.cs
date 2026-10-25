@@ -197,7 +197,7 @@ public unsafe class ZoneDownHookManager : IDisposable {
 
 	private static void EnqueueToMachina(ReadOnlySpan<byte> data) {
 		var queue = DalamudClient.MessageQueue;
-		queue?.Enqueue((GameServerTime.LastSeverTimestamp, data.ToArray()));
+		queue?.Enqueue((GameServerTime.LastSeverTimestamp, [.. data]));
 	}
 
 	private static string GetRunningGameVersion() {

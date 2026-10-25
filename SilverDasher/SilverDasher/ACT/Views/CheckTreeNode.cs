@@ -10,7 +10,7 @@ namespace SilverDasher.ACT.Views;
 public class CheckTreeNode(string name, string id) {
 	internal static bool BUILDING;
 
-	private CheckTreeNode Parent;
+	private CheckTreeNode? Parent;
 
 	internal readonly List<CheckTreeNode> Related = [];
 

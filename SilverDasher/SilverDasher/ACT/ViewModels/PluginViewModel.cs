@@ -57,7 +57,7 @@ public class PluginViewModel {
 		FateNodeIndex.Clear();
 	}
 
-	private CheckTreeNode BuildGroupNode<T>(Dictionary<int, T> itemEntries, ItemGroup itemGroup, string type, Dictionary<int, List<CheckTreeNode>> nodeIndex) where T : GameDynamicObject {
+	private static CheckTreeNode BuildGroupNode<T>(Dictionary<int, T> itemEntries, ItemGroup itemGroup, string type, Dictionary<int, List<CheckTreeNode>> nodeIndex) where T : GameDynamicObject {
 		var checkTreeNode = new CheckTreeNode(itemGroup.Name, $"{type}-group-{itemGroup.Group}");
 		foreach (var subGroup in itemGroup.SubGroups)
 			checkTreeNode.Add(BuildGroupNode(itemEntries, subGroup, type, nodeIndex));

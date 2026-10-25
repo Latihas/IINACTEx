@@ -180,7 +180,7 @@ public partial class LatihasTts : IDisposable {
 				foreach (var t in Py(text))
 					if (Symbol.TryGetValue(t, out var value))
 						list.Add(value);
-				return list.ToArray();
+				return [.. list];
 			}
 
 			private static List<string> Py(string text) {
@@ -258,7 +258,7 @@ public partial class LatihasTts : IDisposable {
 					["logmel"] = outputs1[0]
 				};
 				using var results = SessionVcoder.Run(RunOptions, inputs2, SessionVcoder.OutputNames);
-				return results[0].GetTensorMutableDataAsSpan<float>().ToArray();
+				return [.. results[0].GetTensorMutableDataAsSpan<float>()];
 			}
 		}
 	}

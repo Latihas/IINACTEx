@@ -56,7 +56,7 @@ public class Patcher(Version version, string workPath) {
 			ilProcessor.Replace(
 				0, Instruction.Create(OpCodes.Ldstr, $"This is IINACT {PluginVersion} (API {ApiVersion.IinactApiVersion}) based on FFXIV_ACT_Plugin {{0}}"));
 			ilProcessor.Replace(1, Instruction.Create(OpCodes.Ldc_I4_1));
-			var stelemIndex = Array.FindIndex(ilProcessor.Body.Instructions.ToArray(),
+			var stelemIndex = Array.FindIndex([.. ilProcessor.Body.Instructions],
 				code => code.OpCode == OpCodes.Stelem_Ref);
 			Enumerable.Range(0, 5).ToList().ForEach(_ => ilProcessor.RemoveAt(stelemIndex + 1));
 		}

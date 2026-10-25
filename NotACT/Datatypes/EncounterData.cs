@@ -323,8 +323,10 @@ public class EncounterData {
 		}
 		var thisCombatantIsEnemy = sortedAllies[combatant.Name.ToUpper()].allyVal < 0;
 		// list.RemoveAll(item => item == null);
-		cachedAllies = sortedAllies.Where(ally => thisCombatantIsEnemy && ally.Value.allyVal < 0 || !thisCombatantIsEnemy && ally.Value.allyVal > 0)
-			.Select(ally => ally.Value.cd).ToList();
+		cachedAllies = [
+			.. sortedAllies.Where(ally => thisCombatantIsEnemy && ally.Value.allyVal < 0 || !thisCombatantIsEnemy && ally.Value.allyVal > 0)
+				.Select(ally => ally.Value.cd)
+		];
 		alliesCached = true;
 		alliesLastCall = DateTime.Now;
 		return cachedAllies;

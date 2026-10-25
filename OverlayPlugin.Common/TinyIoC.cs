@@ -242,7 +242,7 @@ public static class TypeExtensions {
 			_hashCode = GenerateHashCode();
 		}
 
-		public override bool Equals(object obj) {
+		public override bool Equals(object? obj) {
 			if (obj is not GenericMethodCacheKey cacheKey)
 				return false;
 
@@ -1596,7 +1596,7 @@ public sealed class TinyIoCContainer : IDisposable {
 			_hashCode = string.Concat(Type.FullName, "|", Name).GetHashCode();
 		}
 
-		public override bool Equals(object obj) {
+		public override bool Equals(object? obj) {
 			if (obj is not TypeRegistration typeRegistration)
 				return false;
 

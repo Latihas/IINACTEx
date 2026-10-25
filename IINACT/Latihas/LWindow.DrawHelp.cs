@@ -216,7 +216,7 @@ public static partial class LWindow {
 		if (ImGui.Button("以自己为中心绘制长10，宽10的射线,随面向改变")) DrawShape(new IGRay(Me_Position, 60, Me_Rotation, 5000, 10));
 	}
 
-	private static string testLogline;
+	private static string testLogline = "";
 	private static int testIndex = 1;
 
 	private static string WriteLine(LogMessageType messageType, DateTime ServerDate, string line) {

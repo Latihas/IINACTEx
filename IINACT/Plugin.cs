@@ -98,10 +98,11 @@ public sealed class Plugin : IDalamudPlugin {
 					var d1 = OpcodeManager.Instance._opcodes[region].ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
 					var d2 = OpcodeManager.ConvertOpCode(File.ReadAllText(opcodestxtPath));
 					OpcodeManager.Instance.SetRegion(region, d2);
-					opcodestxtDiff = d2
-						.Where(kvp => !d1.ContainsKey(kvp.Key) || !Equals(d1[kvp.Key], kvp.Value))
-						.Select(kvp => (kvp.Key, d1.GetValueOrDefault(kvp.Key, (ushort)0), kvp.Value))
-						.ToArray();
+					opcodestxtDiff = [
+						.. d2
+							.Where(kvp => !d1.ContainsKey(kvp.Key) || !Equals(d1[kvp.Key], kvp.Value))
+							.Select(kvp => (kvp.Key, d1.GetValueOrDefault(kvp.Key, (ushort)0), kvp.Value))
+					];
 					opcodestxtReplaced = true;
 					Log.Warning("opcodestxt Replaced");
 				} catch (Exception ex) {

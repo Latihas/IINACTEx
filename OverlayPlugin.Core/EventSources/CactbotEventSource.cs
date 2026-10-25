@@ -46,7 +46,7 @@ public class CactbotEventSource : EventSourceBase {
 
 	private string? language;
 	private string? pcLocale;
-	private List<FileSystemWatcher> watchers;
+	private List<FileSystemWatcher>? watchers;
 
 	// public const string ForceReloadEvent = "onForceReload";
 	// public const string GameExistsEvent = "onGameExistsEvent";
@@ -506,7 +506,7 @@ public class CactbotEventSource : EventSourceBase {
 	}
 
 
-	private void GetUserConfigDirAndFiles(string? overlayName, out string configDir, out Dictionary<string, string>? localFiles) {
+	private void GetUserConfigDirAndFiles(string? overlayName, out string? configDir, out Dictionary<string, string>? localFiles) {
 		localFiles = null;
 		configDir = null;
 
@@ -602,7 +602,7 @@ public class CactbotEventSource : EventSourceBase {
 		public bool Dead;
 		public string? ZoneName;
 		public JObject JobData = new();
-		public FFXIVProcess.EntityData Player;
+		public FFXIVProcess.EntityData? Player;
 	}
 
 	private NotifyState notifyState = new();

@@ -36,7 +36,7 @@ internal abstract class BaseStorage<T, K>(Keeper kp) : BaseStorage(kp) {
 	internal abstract T Get(K id);
 	internal abstract bool Contains(K id);
 
-	internal bool TryGet(K id, out T item) {
+	internal bool TryGet(K id, out T? item) {
 		if (Contains(id)) {
 			item = Get(id);
 			return true;
