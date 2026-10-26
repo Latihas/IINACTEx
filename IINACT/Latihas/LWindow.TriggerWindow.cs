@@ -13,7 +13,7 @@ public static partial class LWindow {
 	[SuppressMessage("ReSharper", "InconsistentNaming")]
 	public class TriggerWindow() : Window($"{WindowPrefix}TriggerWindow") {
 		internal static Trigger? Trigger;
-		internal static ConditionPanel ConditionPanel;
+		internal static ConditionPanel? ConditionPanel;
 
 		private static readonly Vector4 ColorGrey = new(0.5f, 0.5f, 0.5f, 1.0f);
 
@@ -48,7 +48,7 @@ public static partial class LWindow {
 						var data = Trigger.Actions;
 						var Enabled = new bool[data.Count];
 						for (var i = 0; i < data.Count; i++) {
-							var d = data[i].GetDescription(null);
+							var d = data[i].GetDescription(Context.Unbound);
 							var isSelected = selected == i;
 							Enabled[i] = Trigger.Actions[i].Enabled;
 							if (ImGui.Checkbox($"## Trigger_Action_Enabled_{i}", ref Enabled[i])) Trigger.Actions[i].Enabled = Enabled[i];
@@ -70,7 +70,7 @@ public static partial class LWindow {
 					ImGui.EndTabItem();
 				}
 				if (ImGui.BeginTabItem("动作条件")) {
-					ConditionPanel.Draw();
+					ConditionPanel?.Draw();
 					ImGui.EndTabItem();
 				}
 				if (ImGui.BeginTabItem("计划任务")) {

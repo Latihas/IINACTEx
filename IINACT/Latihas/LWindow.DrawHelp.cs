@@ -19,7 +19,7 @@ namespace IINACT.Latihas;
 
 public static partial class LWindow {
 	private static string TestTriggerId = "", TestCode = "", TestExpression = "", TestTts = "";
-	private static readonly Context TestContext = new(null);
+	private static readonly Context TestContext = Context.Unbound;
 	private static FileDownloader? FileDownloaderCactbot;
 
 	internal static void DrawInitSettings() {

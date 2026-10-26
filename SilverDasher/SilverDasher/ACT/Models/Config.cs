@@ -169,7 +169,7 @@ public class Config {
 
 	[JsonProperty("UseExtraServer")] public bool UseExtraServer { get; set; }
 
-	[JsonProperty("ExtraServerAddress")] public string ExtraServer { get; set; }
+	[JsonProperty("ExtraServerAddress")] public string ExtraServer { get; set; } = "";
 
 	[JsonProperty("WriteActLog")] public bool WriteACTLog { get; set; }
 

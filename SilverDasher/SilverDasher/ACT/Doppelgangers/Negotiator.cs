@@ -11,7 +11,7 @@ namespace SilverDasher.ACT.Doppelgangers;
 
 internal class Negotiator : Doppelganger {
 	private readonly FFXIV_ACT_Plugin.FFXIV_ACT_Plugin FFXIVACTPlugin;
-	private IDataSubscription ffevents;
+	private IDataSubscription? ffevents;
 
 	internal Negotiator(SilverDasher self) : base(self) {
 		FFXIVACTPlugin = ActGlobals.oFormActMain.FfxivPlugin;
@@ -19,12 +19,15 @@ internal class Negotiator : Doppelganger {
 
 	internal override void Init() {
 		ffevents = FFXIVACTPlugin.DataSubscription;
-		ffevents.NetworkReceived += Overseer.OnNetworkReceive;
-		ffevents.LogLine += OnInGameLoglineRead;
+		var events = FFXIVACTPlugin.DataSubscription;
+		ffevents = events;
+		events.NetworkReceived += Overseer.OnNetworkReceive;
+		events.LogLine += OnInGameLoglineRead;
 	}
 
 	internal override void Deinit() {
-		var obj = FFXIVACTPlugin.DataSubscription;
+		var obj = ffevents;
+		if (obj == null) return;
 		obj.NetworkReceived -= Overseer.OnNetworkReceive;
 		obj.LogLine -= OnInGameLoglineRead; //++
 	}

@@ -106,7 +106,7 @@ public class MachinaRegionalizedPacketHelper<PacketType>
 		this.tc = tc;
 	}
 
-	public static bool Create(string packetTypeName, out MachinaRegionalizedPacketHelper<PacketType> packetHelper, string? packetOpcodeName = null) {
+	public static bool Create(string packetTypeName, out MachinaRegionalizedPacketHelper<PacketType>? packetHelper, string? packetOpcodeName = null) {
 		packetOpcodeName ??= packetTypeName;
 		packetHelper = null;
 		var opcodes = FFXIVRepository.GetMachinaOpcodes();
@@ -203,7 +203,7 @@ public class MachinaPacketHelper<PacketType> : IPacketHelper where PacketType : 
 	/// <param name="header">Message byte array received from FFXIV_ACT_Plugin's NetworkReceivedDelegate</param>
 	/// <param name="packet">Message byte array received from FFXIV_ACT_Plugin's NetworkReceivedDelegate</param>
 	/// <returns>null for invalid packet, otherwise a constructed packet</returns>
-	public string? ToString(long epoch, MachinaHeaderWrapper header, MachinaPacketWrapper packet) => packet.ToString(epoch, header.ActorID);
+	public string? ToString(long epoch, MachinaHeaderWrapper? header, MachinaPacketWrapper? packet) => packet?.ToString(epoch, header?.ActorID ?? 0);
 
 	public unsafe bool ToStructs(byte[] message, out MachinaHeaderWrapper? header, out PacketType? packet) {
 		// Message is too short to contain this packet

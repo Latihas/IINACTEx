@@ -289,7 +289,7 @@ internal class LineMapEffect : LineBaseCustom<
 			// Two blank fields at the end used to be $"{unknown1:X2}|{unknown2:X4}", turned out to be padding
 			// @TODO: Remove these fields at some point, this is a breaking change.
 			// @TODO: Since we'll be breaking things anyways, maybe separate flags out into two fields?
-			logWriter($"{strInstanceContentID}|{flag2:X4}{flag1:X4}|{index:X2}||", serverTime);
+			logWriter?.Invoke($"{strInstanceContentID}|{flag2:X4}{flag1:X4}|{index:X2}||", serverTime);
 		}
 	}
 }

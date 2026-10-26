@@ -1,7 +1,7 @@
 ﻿<Project>
 	<PropertyGroup>
-		<NoWarn>$(NoWarn);CS8618;CS0649;CS0659</NoWarn>
-		<!--NU1701是framework与core的版本不匹配警告，CS8618是退出构造函数时null!字段警告，CS8765、CS8625是无法将null字面量转换为非null的引用类型-->
+		<NoWarn>$(NoWarn);CS0649;CS0659;CS8618;CA2211;CS0067;CS0414;CS0169</NoWarn>
+		<!--NU1701是framework与core的版本不匹配警告，CS8765、CS8625是无法将null字面量转换为非null的引用类型-->
 		<!--CS0659重写Object.Equals(object o) 但不重写 Object.GetHashCode()-->
 		<!--CA2211: 非常量字段应当不可见-->
 		<TargetFramework>net10.0-windows7.0</TargetFramework>

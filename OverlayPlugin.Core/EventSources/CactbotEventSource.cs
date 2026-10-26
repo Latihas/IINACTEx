@@ -46,7 +46,7 @@ public class CactbotEventSource : EventSourceBase {
 
 	private string? language;
 	private string? pcLocale;
-	private List<FileSystemWatcher>? watchers;
+	private List<FileSystemWatcher> watchers;
 
 	// public const string ForceReloadEvent = "onForceReload";
 	// public const string GameExistsEvent = "onGameExistsEvent";
@@ -587,7 +587,7 @@ public class CactbotEventSource : EventSourceBase {
 			watcher.Dispose();
 		}
 
-		watchers = null;
+		watchers.Clear();
 	}
 
 	// State that is tracked and sent to JS when it changes.

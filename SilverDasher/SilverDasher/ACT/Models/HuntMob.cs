@@ -5,7 +5,7 @@ using SilverDasher.ACT.Enums;
 namespace SilverDasher.ACT.Models;
 
 public class HuntMob : GameDynamicObject {
-	[JsonProperty("rank")] public string RankRaw;
+	[JsonProperty("rank")] public string RankRaw = "C";
 
 	[JsonIgnore] public Rank Rank => (Rank)Enum.Parse(typeof(Rank), RankRaw);
 

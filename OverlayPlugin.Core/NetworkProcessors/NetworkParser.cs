@@ -33,6 +33,7 @@ internal class NetworkParser {
 		if (currentRegion == null) return;
 		var helper = (MachinaPacketHelper<ActorControlPacket>)actorControlPacketHelper[currentRegion.Value];
 		if (helper.ToStructs(message, out var header, out var packet)) {
+			if(header==null||packet==null)return;
 			var category = packet.Get<Server_ActorControlCategory>("category");
 			if (category != Server_ActorControlCategory.StatusUpdate) return;
 

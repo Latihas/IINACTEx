@@ -20,7 +20,7 @@ public class ActPluginData {
 	public FileInfo pluginFile;
 	public string pluginFileName;
 	public IActPluginV1 pluginObj;
-	public string pluginVersion;
+	public string pluginVersion = string.Empty;
 	public Panel pPluginInfo = new();
 
 	public ActPluginData(string pluginFile, IActPluginV1 pluginObj, bool isIScriptBase, bool useForm = true) {

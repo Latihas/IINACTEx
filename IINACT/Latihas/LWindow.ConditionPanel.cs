@@ -9,7 +9,7 @@ namespace IINACT.Latihas;
 
 public partial class LWindow {
 	internal class ConditionPanel {
-		private static dynamic AT;
+		private readonly dynamic AT;
 
 		public ConditionPanel(dynamic at) {
 			AT = at;

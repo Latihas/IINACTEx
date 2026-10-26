@@ -16,27 +16,27 @@ using Unscrambler.Constants;
 namespace SilverDasher.ACT;
 
 public class SilverDasher {
-	public static SilverDasher Instance;
-	public Painter Painter;
-	internal Negotiator Negotiator;
-	internal Notifier Notifier;
-	internal Overseer Overseer;
-	internal Messager Messager;
-	internal Agent Agent;
-	internal Keeper Keeper;
-	internal Primal Primal;
-	internal Logger Logger;
+	public static SilverDasher Instance= null!;
+	public Painter Painter = null!;
+	internal Negotiator Negotiator = null!;
+	internal Notifier Notifier = null!;
+	internal Overseer Overseer = null!;
+	internal Messager Messager = null!;
+	internal Agent Agent = null!;
+	internal Keeper Keeper = null!;
+	internal Primal Primal = null!;
+	internal Logger Logger = null!;
 	internal readonly CancellationTokenSource tokenSource = new();
-	internal static IClientState ClientState;
-	internal static IObjectTable ObjectTable;
-	private static IFramework Framework;
-	internal static INotificationManager NotificationManager;
-	internal static IDataManager DataManager;
+	internal static IClientState ClientState = null!;
+	internal static IObjectTable ObjectTable = null!;
+	private static IFramework Framework = null!;
+	internal static INotificationManager NotificationManager = null!;
+	internal static IDataManager DataManager = null!;
 	private readonly List<Doppelganger> Doppelgangers = [];
-	internal static string Datadir;
+	internal static string Datadir = "";
 	public static readonly ConcurrentQueue<string> FileLogs = [];
 	internal static PluginStatus pluginStatus = default;
-	internal static VersionConstants UnscramblerConstants;
+	internal static VersionConstants UnscramblerConstants = new();
 
 	public SilverDasher(string datadir, IClientState clientState, IObjectTable objectTable, IFramework framework, INotificationManager notificationManager, IDataManager dataManager, VersionConstants constants) {
 		Datadir = datadir;
@@ -73,15 +73,16 @@ public class SilverDasher {
 	}
 
 	private void SummonDoppelgangers() {
-		Doppelgangers.Add(Logger = new Logger(this));
-		Doppelgangers.Add(Agent = new Agent(this));
-		Doppelgangers.Add(Keeper = new Keeper(this));
-		Doppelgangers.Add(Painter = new Painter(this));
-		Doppelgangers.Add(Negotiator = new Negotiator(this));
-		Doppelgangers.Add(Overseer = new Overseer(this));
-		Doppelgangers.Add(Notifier = new Notifier(this));
-		Doppelgangers.Add(Messager = new Messager(this));
-		Doppelgangers.Add(Primal = new Primal(this));
+		Logger = new Logger(this);
+		Agent = new Agent(this);
+		Keeper = new Keeper(this);
+		Painter = new Painter(this);
+		Negotiator = new Negotiator(this);
+		Overseer = new Overseer(this);
+		Notifier = new Notifier(this);
+		Messager = new Messager(this);
+		Primal = new Primal(this);
+		Doppelgangers.AddRange([Logger, Agent, Keeper, Painter, Negotiator, Overseer, Notifier, Messager, Primal]);
 		foreach (var doppelganger in Doppelgangers) doppelganger.Init();
 		Resignal(tokenSource.Token);
 	}

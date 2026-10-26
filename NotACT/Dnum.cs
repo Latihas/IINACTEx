@@ -23,7 +23,7 @@ public class Dnum(long numberValue, string customDamageString) : IComparable {
 		set => damageString = value;
 	}
 	[SuppressMessage("ReSharper", "UnusedAutoPropertyAccessor.Global")]
-	public string DamageString2 { get; set; }
+	public string DamageString2 { get; set; } = string.Empty;
 
 	public int CompareTo(object? obj) {
 		var otherDnum = (Dnum)obj!;

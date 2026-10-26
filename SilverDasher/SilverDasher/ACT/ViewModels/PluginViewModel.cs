@@ -9,11 +9,11 @@ using SilverDasher.ACT.Views;
 namespace SilverDasher.ACT.ViewModels;
 
 public class PluginViewModel {
-	private Dictionary<int, Patch> PatchNames;
+	private Dictionary<int, Patch> PatchNames = new();
 
-	private readonly CheckTreeNode huntRoot;
+	private CheckTreeNode huntRoot = null!;
 
-	private readonly CheckTreeNode fateRoot;
+	private CheckTreeNode fateRoot = null!;
 
 	private readonly Dictionary<string, CheckTreeNode> HuntNodeIndex = new();
 

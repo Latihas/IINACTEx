@@ -98,7 +98,7 @@ public partial class OverlayWindow {
 	private TreeNodeData? _currentSelectedNode;
 	private List<object> _currentTable = [];
 	private IDalamudTextureWrap? _currentTexture;
-	private string _tableType;
+	private string _tableType = string.Empty;
 
 	private static Bitmap GenDamageTypeGraph(DamageTypeData DamageTypeSource, int SizeX, int SizeY, string Sorting) {
 		if (SizeX < 16 || SizeY < 16) return new Bitmap(16, 16);

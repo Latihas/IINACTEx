@@ -343,8 +343,7 @@ public class MainWindow() : Window(WindowPrefix) {
 			Instance.Configuration.Save();
 		}
 		ImGui.Separator();
-		if (SilverDasherPlugin != null)
-			SilverDasher.ACT.SilverDasher.Instance.Painter.DrawImGui();
+		SilverDasherPlugin?.Painter.DrawImGui();
 	}
 
 	internal void DrawOverlayLink() {

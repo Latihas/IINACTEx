@@ -3,14 +3,15 @@ using FFXIVClientStructs.FFXIV.Client.System.Framework;
 
 namespace IINACT.Network;
 
-[SuppressMessage("Performance", "CS0169")]
-[SuppressMessage("ReSharper", "UnusedMember.Global")]
+
 [SuppressMessage("ReSharper", "UnassignedField.Global")]
+[SuppressMessage("ReSharper", "UnusedMember.Global")]
 public unsafe struct PacketDispatcher {
+#pragma warning disable CS0169
 	private void* Unknown1;
 	private void* Unknown2;
 	private void* NetworkModuleProxy;
-
+#pragma warning restore CS0169
 	public uint GameRandom;
 	public uint LastPacketRandom;
 	public uint Key0;

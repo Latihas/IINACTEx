@@ -56,35 +56,35 @@ public sealed class Plugin : IDalamudPlugin {
 	internal static MainWindow MainWindow = null!;
 	private static DateTime lastLogTick = DateTime.Now;
 	private static EdgeTTSWindow EdgeTTSWindow = null!;
-	public static Plugin Instance;
+	public static Plugin Instance = null!;
 
 	internal static DateTime lastCnUpdateCheck = DateTime.Now.AddMinutes(-8);
-	public ActionWindow ActionWindow;
-	public ACTLogView ACTLogView;
-	public ActxtEditor ActxtEditor;
+	public ActionWindow ActionWindow = null!;
+	public ACTLogView ACTLogView = null!;
+	public ActxtEditor ActxtEditor = null!;
 	// ReSharper disable once MemberCanBePrivate.Global
-	public TinyIoCContainer Container;
+	public TinyIoCContainer Container = null!;
 	internal readonly FetchDependencies.FetchDependencies fetchDependencies;
-	public FolderWindow FolderWindow;
+	public FolderWindow FolderWindow = null!;
 	internal readonly HttpClient HttpClient = new() {
 		Timeout = TimeSpan.FromSeconds(30)
 	};
 	// public readonly ExportWindow ExportWindow;
-	public ImportWindow ImportWindow;
+	public ImportWindow ImportWindow = null!;
 	public bool opcodesjsoncReplaced;
 	public (string, ushort, ushort)[] opcodestxtDiff = [];
 	public bool opcodestxtReplaced;
-	public OverlayWindow OverlayWindow;
-	public PostNamazu.PostNamazu PostNamazuPlugin;
-	public RepoWindow RepoWindow;
+	public OverlayWindow OverlayWindow = null!;
+	public PostNamazu.PostNamazu PostNamazuPlugin = null!;
+	public RepoWindow RepoWindow = null!;
 	private readonly DateTime startLogTick = DateTime.Now;
-	public TriggernometryLogView TriggernometryLogView;
-	public ProxyPlugin TriggernometryProxyPlugin;
+	public TriggernometryLogView TriggernometryLogView = null!;
+	public ProxyPlugin TriggernometryProxyPlugin = null!;
 	[SuppressMessage("ReSharper", "NotAccessedField.Global")]
-	public TriggerWindow TriggerWindow;
+	public TriggerWindow TriggerWindow = null!;
 	internal readonly Version Version;
 	private readonly WindowSystem WindowSystem = new("IINACT");
-	public DalamudStartInfo DalamudStartInfo;
+	public DalamudStartInfo DalamudStartInfo = null!;
 	private readonly CancellationTokenSource PluginCts = new();
 	public static Dictionary<uint, string> MapInfo = new();
 
@@ -307,13 +307,13 @@ public sealed class Plugin : IDalamudPlugin {
 	[PluginService] private ITextureProvider textureProvider { get; set; }
 	public static ITextureProvider TextureProvider => Instance.textureProvider;
 	public Configuration Configuration { get; private set; }
-	internal static TextToSpeechProvider TextToSpeechProvider { get; private set; }
-	internal static FileDialogManager FileDialogManager { get; private set; }
-	internal ZoneDownHookManager ZoneDownHookManager { get; set; }
+	internal static TextToSpeechProvider TextToSpeechProvider { get; private set; } = null!;
+	internal static FileDialogManager FileDialogManager { get; private set; } = null!;
+	internal ZoneDownHookManager ZoneDownHookManager { get; set; } = null!;
 	internal ArrManager? ArrManager { get; set; }
-	private IpcProviders IpcProviders { get; set; }
-	public FfxivActPluginWrapper FfxivActPluginWrapper { get; set; }
-	public PluginMain OverlayPlugin { get; set; }
+	private IpcProviders IpcProviders { get; set; } = null!;
+	public FfxivActPluginWrapper FfxivActPluginWrapper { get; set; } = null!;
+	public PluginMain OverlayPlugin { get; set; } = null!;
 	private ServerController? WebSocketServer { get; set; }
 	internal string OverlayPluginStatus => OverlayPlugin.Status;
 	public string PluginAssemblyDirectory => PluginInterface.AssemblyLocation.Directory!.ToString();

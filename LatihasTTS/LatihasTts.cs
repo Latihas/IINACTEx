@@ -16,10 +16,10 @@ namespace LatihasTTS;
 [SuppressMessage("Usage", "CA2211:非常量字段应当不可见")]
 [SuppressMessage("ReSharper", "UnusedMember.Global")]
 public partial class LatihasTts : IDisposable {
-	private static string Tmpdir;
-	private static string Assetsdir;
-	private static string[] AssetsList;
-	private static IPluginLog Log;
+	private static string? Tmpdir;
+	private static string? Assetsdir;
+	private static string[] AssetsList = [];
+	private static IPluginLog? Log;
 	private static readonly bool[] Alive = [true];
 	private readonly List<IntPtr> onnxruntimedll = [];
 
@@ -60,9 +60,9 @@ public partial class LatihasTts : IDisposable {
 				.Replace("AOE", "AAOOE")
 				.Replace("aoe", "aaooe");
 			_ = new TtsEngine.Player(StrRegex().Split(smg));
-			Log.Info("TTS: " + message);
+			Log?.Info("TTS: " + message);
 		} catch (Exception e) {
-			Log.Error("TTS: " + message + e);
+			Log?.Error("TTS: " + message + e);
 		}
 	}
 
@@ -73,14 +73,14 @@ public partial class LatihasTts : IDisposable {
 	[SuppressMessage("ReSharper", "MemberCanBeMadeStatic.Global")]
 	[SuppressMessage("ReSharper", "MemberCanBePrivate.Global")]
 	[SuppressMessage("Performance", "CA1822")]
-	public bool CheckAssets() => AssetsList.All(File.Exists);
+	public bool CheckAssets() => AssetsList.Length != 0 && AssetsList.All(File.Exists);
 
 	public static partial class TtsEngine {
 		private static MemoryStream GetWav(string text) {
 			if (string.IsNullOrEmpty(text)) return new MemoryStream();
-			var tmpfp = Path.Combine(Tmpdir, text + ".wav");
+			var tmpfp = Path.Combine(Tmpdir ?? throw new InvalidOperationException("TTS is not initialized."), text + ".wav");
 			if (File.Exists(tmpfp)) {
-				Log.Info("Cached: " + text);
+				Log?.Info("Cached: " + text);
 				using var fileStream = new FileStream(tmpfp, FileMode.Open, FileAccess.Read);
 				var mStream = new MemoryStream();
 				fileStream.CopyTo(mStream);
@@ -97,10 +97,11 @@ public partial class LatihasTts : IDisposable {
 
 		private static async Task WriteCacheAsync(string path, byte[] data) {
 			try {
-				if (!Directory.Exists(Tmpdir)) Directory.CreateDirectory(Tmpdir);
+				var tmpdir = Tmpdir ?? throw new InvalidOperationException("TTS is not initialized.");
+				if (!Directory.Exists(tmpdir)) Directory.CreateDirectory(tmpdir);
 				await File.WriteAllBytesAsync(path, data).ConfigureAwait(false);
 			} catch (Exception e) {
-				Log.Error(e.ToString());
+				Log?.Error(e.ToString());
 			}
 		}
 
@@ -143,7 +144,7 @@ public partial class LatihasTts : IDisposable {
 			private static readonly Dictionary<string, long> Symbol = [];
 
 			static PaddleTextTokenizer() {
-				using (var sr = File.OpenText(Path.Combine(Assetsdir, "vocab.txt"))) {
+				using (var sr = File.OpenText(Path.Combine(Assetsdir ?? throw new InvalidOperationException("TTS is not initialized."), "vocab.txt"))) {
 					while (sr.ReadLine() is { } nextLine) {
 						try {
 							var array = nextLine.Split(':');
@@ -153,7 +154,7 @@ public partial class LatihasTts : IDisposable {
 						}
 					}
 				}
-				using (var sr = File.OpenText(Path.Combine(Assetsdir, "pinyin.txt"))) {
+				using (var sr = File.OpenText(Path.Combine(Assetsdir ?? throw new InvalidOperationException("TTS is not initialized."), "pinyin.txt"))) {
 					while (sr.ReadLine() is { } nextLine) {
 						try {
 							var array = nextLine.Split(':');
@@ -163,7 +164,7 @@ public partial class LatihasTts : IDisposable {
 						}
 					}
 				}
-				using (var sr = File.OpenText(Path.Combine(Assetsdir, "symbol.txt"))) {
+				using (var sr = File.OpenText(Path.Combine(Assetsdir ?? throw new InvalidOperationException("TTS is not initialized."), "symbol.txt"))) {
 					while (sr.ReadLine() is { } nextLine) {
 						try {
 							var array = nextLine.Split(' ');
@@ -192,7 +193,7 @@ public partial class LatihasTts : IDisposable {
 					i = text.Length + 1;
 					if (zhTone is [<= 'Z' and >= 'A']) {
 						if (!Pinyin.TryGetValue(zhTone, out var what)) {
-							Log.Error($"{zhTone} is not pinyin.");
+							Log?.Error($"{zhTone} is not pinyin.");
 							continue;
 						}
 						list.Add(what);
@@ -200,7 +201,7 @@ public partial class LatihasTts : IDisposable {
 					foreach (var x in zhTone.Split(' ')) {
 						var key = NumRegex().Replace(x, "");
 						if (!Pinyin.TryGetValue(key, out var what)) {
-							Log.Error($"{key} is not pinyin.");
+							Log?.Error($"{key} is not pinyin.");
 							continue;
 						}
 						what += x[^1..];
@@ -241,8 +242,8 @@ public partial class LatihasTts : IDisposable {
 			static GenTts() {
 				var options = new SessionOptions();
 				options.AddSessionConfigEntry("session.load_model_format", "ORT");
-				SessionFastspeech = new InferenceSession(Path.Combine(Assetsdir, "a.ort"), options);
-				SessionVcoder = new InferenceSession(Path.Combine(Assetsdir, "v.ort"), options);
+				SessionFastspeech = new InferenceSession(Path.Combine(Assetsdir ?? throw new InvalidOperationException("TTS is not initialized."), "a.ort"), options);
+				SessionVcoder = new InferenceSession(Path.Combine(Assetsdir ?? throw new InvalidOperationException("TTS is not initialized."), "v.ort"), options);
 			}
 
 			public static float[] Forward(long[] ids) {
@@ -269,7 +270,7 @@ public partial class LatihasTts : IDisposable {
 			try {
 				FreeLibrary(onnx);
 			} catch {
-				Log.Warning($"Probably Leaked Onnx Dll: {onnx}");
+				Log?.Warning($"Probably Leaked Onnx Dll: {onnx}");
 			}
 		}
 	}

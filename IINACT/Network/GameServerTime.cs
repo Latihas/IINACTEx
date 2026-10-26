@@ -7,11 +7,11 @@ internal static class GameServerTime {
 
 	private static long LastSeverTimestampTicks { get; set; }
 
-	private static readonly DateTime Date1970 = DateTime.MinValue.AddYears(1969);
-
-	public static DateTime LastServerTime => LastSeverTimestamp > 0
-		? Date1970.AddTicks(LastSeverTimestamp * 10_000L).ToLocalTime()
-		: DateTime.Now;
+	public static DateTime LastServerTime {
+		get => LastSeverTimestamp > 0
+			? field.AddTicks(LastSeverTimestamp * 10_000L).ToLocalTime()
+			: DateTime.Now;
+	} = DateTime.MinValue.AddYears(1969);
 
 	public static DateTime CurrentServerTime => LastSeverTimestamp > 0
 		? LastServerTime.AddMilliseconds(

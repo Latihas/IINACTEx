@@ -6,7 +6,7 @@ namespace IINACT.Latihas;
 public static partial class LWindow {
 	public class ImportWindow //() : Window($"{WindowPrefix}ImportWindow") 
 	{
-		internal static object Tag;
+		internal static object? Tag;
 		// internal static string str;
 
 		// public override void Draw() {

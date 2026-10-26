@@ -93,7 +93,7 @@ public class JSEvents {
 		public float rotation = e.rotation;
 
 		// One of the FooJobDetails structures, depending on the value of |job|.
-		public object jobDetail = null;
+		public object? jobDetail = null;
 	}
 
 	// public abstract class EntityChangedEvent {

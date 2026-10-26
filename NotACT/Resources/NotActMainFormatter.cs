@@ -13,7 +13,7 @@ public static class NotActMainFormatter {
 		EncounterData.ColumnDefs.Clear();
 		EncounterData.ColumnDefs.Add("EncId",
 			new EncounterData.ColumnDef("EncId", false, "CHAR(8)", "EncId",
-				_ => string.Empty, Data => Data.EncId));
+				_ => string.Empty, Data => Data.EncId ?? string.Empty));
 		EncounterData.ColumnDefs.Add("Title",
 			new EncounterData.ColumnDef("Title", true, "VARCHAR(64)", "Title",
 				Data => Data.Title, Data => Data.Title));
@@ -400,13 +400,13 @@ public static class NotActMainFormatter {
 		CombatantData.ColumnDefs.Clear();
 		CombatantData.ColumnDefs.Add("EncId",
 			new CombatantData.ColumnDef("EncId", false, "CHAR(8)", "EncId",
-				_ => string.Empty, Data => Data.Parent?.EncId, (_, _) => 0));
+				_ => string.Empty, Data => Data.Parent?.EncId ?? string.Empty, (_, _) => 0));
 		CombatantData.ColumnDefs.Add("Ally",
 			new CombatantData.ColumnDef("Ally", false, "CHAR(1)", "Ally",
-				Data => Data.Parent.GetAllies().Contains(Data).ToString(),
-				Data => !Data.Parent.GetAllies().Contains(Data) ? "F" : "T",
+				Data => (Data.Parent?.GetAllies().Contains(Data) ?? false).ToString(),
+				Data => Data.Parent?.GetAllies().Contains(Data) == true ? "T" : "F",
 				(Left, Right) =>
-					Left.Parent.GetAllies().Contains(Left).CompareTo(Right.Parent?.GetAllies().Contains(Right))));
+					(Left.Parent?.GetAllies().Contains(Left) ?? false).CompareTo(Right.Parent?.GetAllies().Contains(Right) ?? false)));
 		CombatantData.ColumnDefs.Add("Name",
 			new CombatantData.ColumnDef("Name", true, "VARCHAR(64)", "Name",
 				Data => Data.Name, Data => Data.Name,
@@ -992,14 +992,14 @@ public static class NotActMainFormatter {
 		DamageTypeData.ColumnDefs.Clear();
 		DamageTypeData.ColumnDefs.Add("EncId",
 			new DamageTypeData.ColumnDef("EncId", false, "CHAR(8)", "EncId",
-				_ => string.Empty, Data => Data.Parent?.Parent.EncId));
+				_ => string.Empty, Data => Data.Parent?.Parent?.EncId ?? string.Empty));
 		DamageTypeData.ColumnDefs.Add("Combatant",
 			new DamageTypeData.ColumnDef("Combatant", false, "VARCHAR(64)", "Combatant",
-				Data => Data.Parent?.Name, Data => Data.Parent?.Name));
+				Data => Data.Parent?.Name ?? string.Empty, Data => Data.Parent?.Name ?? string.Empty));
 		DamageTypeData.ColumnDefs.Add(
 			"Grouping",
 			new DamageTypeData.ColumnDef("Grouping", false, "VARCHAR(92)", "Grouping",
-				_ => string.Empty, GetDamageTypeGrouping));
+				_ => string.Empty, Data => GetDamageTypeGrouping(Data)));
 		DamageTypeData.ColumnDefs.Add("Type",
 			new DamageTypeData.ColumnDef("Type", true, "VARCHAR(64)", "Type",
 				Data => Data.Type, Data => Data.Type));
@@ -1095,17 +1095,17 @@ public static class NotActMainFormatter {
 		AttackType.ColumnDefs.Add("EncId",
 			new AttackType.ColumnDef("EncId", false, "CHAR(8)", "EncId",
 				_ => string.Empty,
-				Data => Data.Parent.Parent.Parent.EncId,
+				Data => Data.Parent?.Parent?.Parent?.EncId ?? string.Empty,
 				(_, _) => 0));
 		AttackType.ColumnDefs.Add("Attacker",
 			new AttackType.ColumnDef("Attacker", false, "VARCHAR(64)", "Attacker",
-				Data => !Data.Parent.Outgoing ? string.Empty : Data.Parent.Parent.Name,
-				Data => !Data.Parent.Outgoing ? string.Empty : Data.Parent.Parent.Name,
+				Data => Data.Parent?.Outgoing != true ? string.Empty : Data.Parent.Parent?.Name ?? string.Empty,
+				Data => Data.Parent?.Outgoing != true ? string.Empty : Data.Parent.Parent?.Name ?? string.Empty,
 				(_, _) => 0));
 		AttackType.ColumnDefs.Add("Victim",
 			new AttackType.ColumnDef("Victim", false, "VARCHAR(64)", "Victim",
-				Data => !Data.Parent.Outgoing ? Data.Parent.Parent.Name : string.Empty,
-				Data => !Data.Parent.Outgoing ? Data.Parent.Parent.Name : string.Empty,
+				Data => Data.Parent?.Outgoing != false ? string.Empty : Data.Parent.Parent?.Name ?? string.Empty,
+				Data => Data.Parent?.Outgoing != false ? string.Empty : Data.Parent.Parent?.Name ?? string.Empty,
 				(_, _) => 0));
 		AttackType.ColumnDefs.Add("SwingType",
 			new AttackType.ColumnDef("SwingType", false, "TINYINT",
@@ -1235,7 +1235,7 @@ public static class NotActMainFormatter {
 		MasterSwing.ColumnDefs.Add("EncId",
 			new MasterSwing.ColumnDef("EncId", false, "CHAR(8)", "EncId",
 				_ => string.Empty,
-				Data => Data.ParentEncounter.EncId,
+				Data => Data.ParentEncounter?.EncId ?? string.Empty,
 				(_, _) => 0));
 		MasterSwing.ColumnDefs.Add("Time",
 			new MasterSwing.ColumnDef("Time", true, "TIMESTAMP", "STime",
@@ -1245,8 +1245,8 @@ public static class NotActMainFormatter {
 		MasterSwing.ColumnDefs.Add("RelativeTime",
 			new MasterSwing.ColumnDef("RelativeTime", true, "FLOAT",
 				"RelativeTime",
-				Data => (Data.Time - Data.ParentEncounter.StartTime).ToString("T"),
-				Data => (Data.Time - Data.ParentEncounter.StartTime).TotalSeconds.ToString(),
+				Data => (Data.Time - (Data.ParentEncounter?.StartTime ?? DateTime.MinValue)).ToString("T"),
+				Data => (Data.Time - (Data.ParentEncounter?.StartTime ?? DateTime.MinValue)).TotalSeconds.ToString(),
 				(Left, Right) => Left.Time.CompareTo(Right.Time)));
 		MasterSwing.ColumnDefs.Add("Attacker",
 			new MasterSwing.ColumnDef("Attacker", true, "VARCHAR(64)", "Attacker",

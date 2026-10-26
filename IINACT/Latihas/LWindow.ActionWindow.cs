@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
@@ -16,7 +16,7 @@ public partial class LWindow {
 	public class ActionWindow() : Window($"{WindowPrefix}ActionWindow") {
 		internal static ActionOld? Action;
 		internal static Trigger? Trigger;
-		internal static ConditionPanel ConditionPanel;
+		internal static ConditionPanel? ConditionPanel;
 
 		internal void Open(Trigger trigger, ActionOld action) {
 			Trigger = trigger;
@@ -53,25 +53,25 @@ public partial class LWindow {
 				if (ImGui.BeginTabItem("特定动作设置")) {
 					switch (Action.ActionType) {
 						case ActionTypeEnum.SystemBeep: {
-							var SystemBeepFreqExpression = Action.SystemBeepFreqExpression;
+							var SystemBeepFreqExpression = Action.SystemBeepFreqExpression ?? "";
 							if (ImGui.InputText("频率", ref SystemBeepFreqExpression))
 								Action.SystemBeepFreqExpression = SystemBeepFreqExpression;
-							var SystemBeepLengthExpression = Action.SystemBeepLengthExpression;
+							var SystemBeepLengthExpression = Action.SystemBeepLengthExpression ?? "";
 							if (ImGui.InputText("时长", ref SystemBeepLengthExpression))
 								Action.SystemBeepLengthExpression = SystemBeepLengthExpression;
 							break;
 						}
 						case ActionTypeEnum.PlaySound: {
-							var PlaySoundFileExpression = Action.PlaySoundFileExpression;
+							var PlaySoundFileExpression = Action.PlaySoundFileExpression ?? "";
 							if (ImGui.InputText("音频路径", ref PlaySoundFileExpression))
 								Action.PlaySoundFileExpression = PlaySoundFileExpression;
-							var PlaySoundVolumeExpression = Action.PlaySoundVolumeExpression;
+							var PlaySoundVolumeExpression = Action.PlaySoundVolumeExpression ?? "";
 							if (ImGui.InputText("音量(0-100)", ref PlaySoundVolumeExpression))
 								Action.PlaySoundVolumeExpression = PlaySoundVolumeExpression;
 							break;
 						}
 						case ActionTypeEnum.UseTTS: {
-							var UseTTSTextExpression = Action.UseTTSTextExpression;
+							var UseTTSTextExpression = Action.UseTTSTextExpression ?? "";
 							if (ImGui.InputText("播读内容", ref UseTTSTextExpression))
 								Action.UseTTSTextExpression = UseTTSTextExpression;
 							break;
@@ -86,7 +86,7 @@ public partial class LWindow {
 									    .ToList()))
 								Action.VariableOp = currenVariableOpEnumItem == 0 ? null : ((VariableOpEnum)currenVariableOpEnumItem).ToString();
 							if (currenVariableOpEnumItem == (int)VariableOpEnum.UnsetAll) break;
-							var VariableName = Action.VariableName;
+							var VariableName = Action.VariableName ?? "";
 							if (ImGui.InputText("源变量", ref VariableName))
 								Action.VariableName = VariableName;
 							var VariablePersist = Action.VariablePersist != null && bool.Parse(Action.VariablePersist);
@@ -95,12 +95,12 @@ public partial class LWindow {
 							if (currenVariableOpEnumItem is (int)VariableOpEnum.Unset
 							    or (int)VariableOpEnum.UnsetRegex
 							    or (int)VariableOpEnum.UnsetRegexUniversal) break;
-							var VariableExpression = Action.VariableExpression;
+							var VariableExpression = Action.VariableExpression ?? "";
 							if (ImGui.InputText("表达式", ref VariableExpression))
 								Action.VariableExpression = VariableExpression;
 							if (Action.VariableOp is nameof(VariableOpEnum.QueryJsonPath)
 							    or nameof(VariableOpEnum.QueryJsonPathList)) {
-								var VariableJsonTarget = Action.VariableJsonTarget;
+								var VariableJsonTarget = Action.VariableJsonTarget ?? "";
 								if (ImGui.InputText("目标变量", ref VariableJsonTarget))
 									Action.VariableJsonTarget = VariableJsonTarget;
 								var VariableTargetPersist = Action.VariableTargetPersist != null && bool.Parse(Action.VariableTargetPersist);
@@ -167,13 +167,13 @@ public partial class LWindow {
 								    Enum.GetValues<MessageBoxIconTypeEnum>()
 									    .Select(i => i.ToString()).ToList()))
 								Action.MessageBoxIconType = currenMessageBoxIconTypeEnumItem == 0 ? null : ((MessageBoxIconTypeEnum)currenMessageBoxIconTypeEnumItem).ToString();
-							var MessageBoxText = Action.MessageBoxText;
+							var MessageBoxText = Action.MessageBoxText ?? "";
 							if (ImGui.InputText("消息内容", ref MessageBoxText))
 								Action.MessageBoxText = MessageBoxText;
 							break;
 						}
 						case ActionTypeEnum.LogMessage: {
-							var LogMessageText = Action.LogMessageText;
+							var LogMessageText = Action.LogMessageText ?? "";
 							if (ImGui.InputText("日志文本", ref LogMessageText))
 								Action.LogMessageText = LogMessageText;
 							var LogProcess = Action.LogProcess != null && bool.Parse(Action.LogProcess);
@@ -209,10 +209,10 @@ public partial class LWindow {
 								    Enum.GetValues<AuraOpEnum>()
 									    .Select(i => i.ToString()).ToList()))
 								Action.TextAuraOp = TextAuraOpEnumItem == 0 ? null : ((AuraOpEnum)TextAuraOpEnumItem).ToString();
-							var TextAuraName = Action.TextAuraName;
+							var TextAuraName = Action.TextAuraName ?? "";
 							if (ImGui.InputText("名称", ref TextAuraName))
 								Action.TextAuraName = TextAuraName;
-							var TextAuraExpression = Action.TextAuraExpression;
+							var TextAuraExpression = Action.TextAuraExpression ?? "";
 							if (ImGui.InputText("文本", ref TextAuraExpression))
 								Action.TextAuraExpression = TextAuraExpression;
 							var TextAuraAlignmentEnumItem = 0;
@@ -236,13 +236,13 @@ public partial class LWindow {
 							if (string.IsNullOrEmpty(Action.TextAuraFontSize) || ImGui.InputText("字体大小", ref TextAuraFontSize))
 								Action.TextAuraFontSize = TextAuraFontSize;
 							ImGui.Separator();
-							var TextAuraForeground = Action.TextAuraForeground;
+							var TextAuraForeground = Action.TextAuraForeground ?? "";
 							if (ImGui.InputText("前景颜色(文本)", ref TextAuraForeground))
 								Action.TextAuraForeground = TextAuraForeground;
-							var TextAuraBackground = Action.TextAuraBackground;
+							var TextAuraBackground = Action.TextAuraBackground ?? "";
 							if (ImGui.InputText("背景颜色", ref TextAuraBackground))
 								Action.TextAuraBackground = TextAuraBackground;
-							var TextAuraOutline = Action.TextAuraOutline;
+							var TextAuraOutline = Action.TextAuraOutline ?? "";
 							if (ImGui.InputText("轮廓颜色", ref TextAuraOutline))
 								Action.TextAuraOutline = TextAuraOutline;
 							ImGui.Separator();
@@ -258,24 +258,24 @@ public partial class LWindow {
 							var TextAuraHIniExpression = string.IsNullOrEmpty(Action.TextAuraHIniExpression) ? "500" : Action.TextAuraHIniExpression;
 							if (string.IsNullOrEmpty(Action.TextAuraHIniExpression) || ImGui.InputText("窗口初始高度H", ref TextAuraHIniExpression))
 								Action.TextAuraHIniExpression = TextAuraHIniExpression;
-							var TextAuraOIniExpression = Action.TextAuraOIniExpression;
+							var TextAuraOIniExpression = Action.TextAuraOIniExpression ?? "";
 							if (ImGui.InputText("窗口初始不透明度O", ref TextAuraOIniExpression))
 								Action.TextAuraOIniExpression = TextAuraOIniExpression;
 							ImGui.Separator();
 							ImGui.Text("刷新间隔20ms");
-							var TextAuraXTickExpression = Action.TextAuraXTickExpression;
+							var TextAuraXTickExpression = Action.TextAuraXTickExpression ?? "";
 							if (ImGui.InputText("窗口刷新坐标X", ref TextAuraXTickExpression))
 								Action.TextAuraXTickExpression = TextAuraXTickExpression;
-							var TextAuraYTickExpression = Action.TextAuraYTickExpression;
+							var TextAuraYTickExpression = Action.TextAuraYTickExpression ?? "";
 							if (ImGui.InputText("窗口刷新坐标Y", ref TextAuraYTickExpression))
 								Action.TextAuraYTickExpression = TextAuraYTickExpression;
-							var TextAuraWTickExpression = Action.TextAuraWTickExpression;
+							var TextAuraWTickExpression = Action.TextAuraWTickExpression ?? "";
 							if (ImGui.InputText("窗口刷新宽度W", ref TextAuraWTickExpression))
 								Action.TextAuraWTickExpression = TextAuraWTickExpression;
-							var TextAuraHTickExpression = Action.TextAuraHTickExpression;
+							var TextAuraHTickExpression = Action.TextAuraHTickExpression ?? "";
 							if (ImGui.InputText("窗口刷新高度H", ref TextAuraHTickExpression))
 								Action.TextAuraHTickExpression = TextAuraHTickExpression;
-							var TextAuraOTickExpression = Action.TextAuraOTickExpression;
+							var TextAuraOTickExpression = Action.TextAuraOTickExpression ?? "";
 							if (ImGui.InputText("窗口刷新不透明度O", ref TextAuraOTickExpression))
 								Action.TextAuraOTickExpression = TextAuraOTickExpression;
 							break;
@@ -299,10 +299,10 @@ public partial class LWindow {
 								    Enum.GetValues<MouseCoordEnum>()
 									    .Select(i => i.ToString()).ToList()))
 								Action.MouseCoordType = MouseCoordTypeEnumItem == 0 ? null : ((MouseCoordEnum)MouseCoordTypeEnumItem).ToString();
-							var MouseX = Action.MouseX;
+							var MouseX = Action.MouseX ?? "";
 							if (ImGui.InputText("X", ref MouseX))
 								Action.MouseX = MouseX;
-							var MouseY = Action.MouseY;
+							var MouseY = Action.MouseY ?? "";
 							if (ImGui.InputText("Y", ref MouseY))
 								Action.MouseY = MouseY;
 							break;
@@ -316,45 +316,45 @@ public partial class LWindow {
 									    .Select(i => i.ToString()).ToList()))
 								Action.KeypressType = KeypressTypeEnumItem == 0 ? null : ((KeypressTypeEnum)KeypressTypeEnumItem).ToString();
 							if (KeypressTypeEnumItem == (int)KeypressTypeEnum.SendKeys) {
-								var KeyPressExpression = Action.KeyPressExpression;
+								var KeyPressExpression = Action.KeyPressExpression ?? "";
 								if (ImGui.InputText("按键命令", ref KeyPressExpression))
 									Action.KeypressType = KeyPressExpression;
 							} else {
-								var KeyPressProcId = Action.KeyPressProcId;
+								var KeyPressProcId = Action.KeyPressProcId ?? "";
 								if (ImGui.InputText("进程ID", ref KeyPressProcId))
 									Action.KeyPressProcId = KeyPressProcId;
-								var KeyPressWindow = Action.KeyPressWindow;
+								var KeyPressWindow = Action.KeyPressWindow ?? "";
 								if (ImGui.InputText("窗口标题", ref KeyPressWindow))
 									Action.KeyPressWindow = KeyPressWindow;
-								var KeyPressCode = Action.KeyPressCode;
+								var KeyPressCode = Action.KeyPressCode ?? "";
 								if (ImGui.InputText("键码", ref KeyPressCode))
 									Action.KeyPressCode = KeyPressCode;
 							}
 							break;
 						}
 						case ActionTypeEnum.NamedCallback: {
-							var NamedCallbackName = Action.NamedCallbackName;
+							var NamedCallbackName = Action.NamedCallbackName ?? "";
 							if (ImGui.InputText("回调名称", ref NamedCallbackName))
 								Action.NamedCallbackName = NamedCallbackName;
-							var NamedCallbackParam = Action.NamedCallbackParam;
+							var NamedCallbackParam = Action.NamedCallbackParam ?? "";
 							if (ImGui.InputTextMultiline("回调参数", ref NamedCallbackParam, 1145141, new Vector2(-1, -1)))
 								Action.NamedCallbackParam = NamedCallbackParam;
 							break;
 						}
 						case ActionTypeEnum.WindowMessage: {
-							var WmsgProcId = Action.WmsgProcId;
+							var WmsgProcId = Action.WmsgProcId ?? "";
 							if (ImGui.InputText("进程ID", ref WmsgProcId))
 								Action.WmsgProcId = WmsgProcId;
-							var WmsgTitle = Action.WmsgTitle;
+							var WmsgTitle = Action.WmsgTitle ?? "";
 							if (ImGui.InputText("窗口标题", ref WmsgTitle))
 								Action.WmsgTitle = WmsgTitle;
-							var WmsgCode = Action.WmsgCode;
+							var WmsgCode = Action.WmsgCode ?? "";
 							if (ImGui.InputText("消息代码", ref WmsgCode))
 								Action.WmsgCode = WmsgCode;
-							var WmsgWparam = Action.WmsgWparam;
+							var WmsgWparam = Action.WmsgWparam ?? "";
 							if (ImGui.InputText("Wparam", ref WmsgWparam))
 								Action.WmsgWparam = WmsgWparam;
-							var WmsgLparam = Action.WmsgLparam;
+							var WmsgLparam = Action.WmsgLparam ?? "";
 							if (ImGui.InputText("Lparam", ref WmsgLparam))
 								Action.WmsgLparam = WmsgLparam;
 							break;
@@ -367,10 +367,10 @@ public partial class LWindow {
 								    Enum.GetValues<KeypressTypeEnum>()
 									    .Select(i => i.ToString()).ToList()))
 								Action.DiskFileOp = DiskFileOpEnumItem == 0 ? null : ((KeypressTypeEnum)DiskFileOpEnumItem).ToString();
-							var DiskFileOpName = Action.DiskFileOpName;
+							var DiskFileOpName = Action.DiskFileOpName ?? "";
 							if (ImGui.InputText("文件名", ref DiskFileOpName))
 								Action.DiskFileOpName = DiskFileOpName;
-							var DiskFileOpVar = Action.DiskFileOpVar;
+							var DiskFileOpVar = Action.DiskFileOpVar ?? "";
 							if (ImGui.InputText("变量名", ref DiskFileOpVar))
 								Action.DiskFileOpVar = DiskFileOpVar;
 							var DiskFileCache = Action.DiskFileCache != null && bool.Parse(Action.DiskFileCache);
@@ -379,13 +379,13 @@ public partial class LWindow {
 							break;
 						}
 						case ActionTypeEnum.LaunchProcess: {
-							var LaunchProcessPathExpression = Action.LaunchProcessPathExpression;
+							var LaunchProcessPathExpression = Action.LaunchProcessPathExpression ?? "";
 							if (ImGui.InputText("程序路径", ref LaunchProcessPathExpression))
 								Action.LaunchProcessPathExpression = LaunchProcessPathExpression;
-							var LaunchProcessCmdlineExpression = Action.LaunchProcessCmdlineExpression;
+							var LaunchProcessCmdlineExpression = Action.LaunchProcessCmdlineExpression ?? "";
 							if (ImGui.InputText("命令行参数", ref LaunchProcessCmdlineExpression))
 								Action.LaunchProcessCmdlineExpression = LaunchProcessCmdlineExpression;
-							var LaunchProcessWorkingDirExpression = Action.LaunchProcessWorkingDirExpression;
+							var LaunchProcessWorkingDirExpression = Action.LaunchProcessWorkingDirExpression ?? "";
 							if (ImGui.InputText("工作目录", ref LaunchProcessWorkingDirExpression))
 								Action.LaunchProcessWorkingDirExpression = LaunchProcessWorkingDirExpression;
 							var currenProcessWindowStyleItem = 0;
@@ -398,7 +398,7 @@ public partial class LWindow {
 							break;
 						}
 						case ActionTypeEnum.ExecuteScript: {
-							var ExecScriptExpression = Action.ExecScriptExpression;
+							var ExecScriptExpression = Action.ExecScriptExpression ?? "";
 							ImGui.SetNextItemWidth(-1);
 							if (ImGui.InputTextMultiline("## 脚本代码", ref ExecScriptExpression, 1145141, new Vector2(-1, -1)))
 								Action.ExecScriptExpression = ExecScriptExpression;
@@ -412,7 +412,7 @@ public partial class LWindow {
 								    Enum.GetValues<MutexOpEnum>()
 									    .Select(i => i.ToString()).ToList()))
 								Action.MutexOpType = MutexOpEnumItem == 0 ? null : ((MutexOpEnum)MutexOpEnumItem).ToString();
-							var MutexName = Action.MutexName;
+							var MutexName = Action.MutexName ?? "";
 							if (ImGui.InputText("互斥锁名称", ref MutexName))
 								Action.MutexName = MutexName;
 							break;
@@ -422,7 +422,7 @@ public partial class LWindow {
 							break;
 						}
 						case ActionTypeEnum.GenericJson: {
-							var JsonEndpointExpression = Action.JsonEndpointExpression;
+							var JsonEndpointExpression = Action.JsonEndpointExpression ?? "";
 							if (ImGui.InputText("目标URL", ref JsonEndpointExpression))
 								Action.JsonEndpointExpression = JsonEndpointExpression;
 							var JsonOperationEnumItem = 0;
@@ -432,19 +432,19 @@ public partial class LWindow {
 								    Enum.GetValues<HTTPMethodEnum>()
 									    .Select(i => i.ToString()).ToList()))
 								Action.JsonOperationType = JsonOperationEnumItem == 0 ? null : ((HTTPMethodEnum)JsonOperationEnumItem).ToString();
-							var JsonPayloadExpression = Action.JsonPayloadExpression;
+							var JsonPayloadExpression = Action.JsonPayloadExpression ?? "";
 							if (ImGui.InputText("发送内容", ref JsonPayloadExpression))
 								Action.JsonPayloadExpression = JsonPayloadExpression;
-							var JsonHeaderExpression = Action.JsonHeaderExpression;
+							var JsonHeaderExpression = Action.JsonHeaderExpression ?? "";
 							if (ImGui.InputText("JSON头部", ref JsonHeaderExpression))
 								Action.JsonHeaderExpression = JsonHeaderExpression;
-							var JsonResultVariable = Action.JsonResultVariable;
+							var JsonResultVariable = Action.JsonResultVariable ?? "";
 							if (ImGui.InputText("结果存储至变量", ref JsonResultVariable))
 								Action.JsonResultVariable = JsonResultVariable;
 							var JsonResultVariablePersist = Action.JsonResultVariablePersist != null && bool.Parse(Action.JsonResultVariablePersist);
 							if (ImGui.Checkbox("结果存储至永久变量", ref JsonResultVariablePersist))
 								Action.JsonResultVariablePersist = JsonResultVariablePersist.ToString();
-							var JsonFiringExpression = Action.JsonFiringExpression;
+							var JsonFiringExpression = Action.JsonFiringExpression ?? "";
 							if (ImGui.InputText("文本解析响应结果", ref JsonFiringExpression))
 								Action.JsonFiringExpression = JsonFiringExpression;
 							var JsonCacheRequest = Action.JsonCacheRequest != null && bool.Parse(Action.JsonCacheRequest);
@@ -453,10 +453,10 @@ public partial class LWindow {
 							break;
 						}
 						case ActionTypeEnum.DiscordWebhook: {
-							var DiscordWebhookURL = Action.DiscordWebhookURL;
+							var DiscordWebhookURL = Action.DiscordWebhookURL ?? "";
 							if (ImGui.InputText("接口URL", ref DiscordWebhookURL))
 								Action.DiscordWebhookURL = DiscordWebhookURL;
-							var DiscordWebhookMessage = Action.DiscordWebhookMessage;
+							var DiscordWebhookMessage = Action.DiscordWebhookMessage ?? "";
 							if (ImGui.InputText("发送消息", ref DiscordWebhookMessage))
 								Action.DiscordWebhookMessage = DiscordWebhookMessage;
 							var DiscordTts = Action.DiscordTts != null && bool.Parse(Action.DiscordTts);
@@ -474,7 +474,7 @@ public partial class LWindow {
 									    .Select(i => i.ToString()).ToList()))
 								Action.LiveSplitControlType = LiveSplitControlEnumItem == 0 ? null : ((LiveSplitControlTypeEnum)LiveSplitControlEnumItem).ToString();
 							if (LiveSplitControlEnumItem == (int)LiveSplitControlTypeEnum.CustomPayload) {
-								var LiveSplitCustomPayload = Action.LiveSplitCustomPayload;
+								var LiveSplitCustomPayload = Action.LiveSplitCustomPayload ?? "";
 								if (ImGui.InputText("消息负载", ref LiveSplitCustomPayload))
 									Action.LiveSplitCustomPayload = LiveSplitCustomPayload;
 								ImGui.Text("还没做");
@@ -483,10 +483,10 @@ public partial class LWindow {
 							break;
 						}
 						case ActionTypeEnum.ObsControl: {
-							var OBSEndPoint = Action.OBSEndPoint;
+							var OBSEndPoint = Action.OBSEndPoint ?? "";
 							if (ImGui.InputText("URL", ref OBSEndPoint))
 								Action.OBSEndPoint = OBSEndPoint;
-							var OBSPassword = Action.OBSPassword;
+							var OBSPassword = Action.OBSPassword ?? "";
 							if (ImGui.InputText("密码", ref OBSPassword))
 								Action.OBSPassword = OBSPassword;
 							var OBSControlEnumItem = 0;
@@ -499,17 +499,17 @@ public partial class LWindow {
 							if (OBSControlEnumItem is (int)ObsControlTypeEnum.SetScene
 							    or (int)ObsControlTypeEnum.ShowSource
 							    or (int)ObsControlTypeEnum.HideSource) {
-								var OBSSceneName = Action.OBSSceneName;
+								var OBSSceneName = Action.OBSSceneName ?? "";
 								if (ImGui.InputText("场景名称", ref OBSSceneName))
 									Action.OBSSceneName = OBSSceneName;
 								if (OBSControlEnumItem != (int)ObsControlTypeEnum.SetScene) {
-									var OBSSourceName = Action.OBSSourceName;
+									var OBSSourceName = Action.OBSSourceName ?? "";
 									if (ImGui.InputText("源名称", ref OBSSourceName))
 										Action.OBSSourceName = OBSSourceName;
 								}
 							}
 							if (OBSControlEnumItem is (int)ObsControlTypeEnum.JSONPayload) {
-								var OBSJSONPayload = Action.OBSJSONPayload;
+								var OBSJSONPayload = Action.OBSJSONPayload ?? "";
 								if (ImGui.InputText("JSON消息", ref OBSJSONPayload))
 									Action.OBSJSONPayload = OBSJSONPayload;
 							}
@@ -549,7 +549,7 @@ public partial class LWindow {
 					ImGui.EndTabItem();
 				}
 				if (ImGui.BeginTabItem("动作条件")) {
-					ConditionPanel.Draw();
+					ConditionPanel?.Draw();
 					ImGui.EndTabItem();
 				}
 				if (ImGui.BeginTabItem("计划任务")) {
@@ -565,7 +565,7 @@ public partial class LWindow {
 							    "并允许触发器再次触发", "并禁止触发器再次触发"
 						    }))
 						Action.RefireRequeue = currentRefireRequeueItem == 1;
-					var ExecutionDelayExpression = Action.ExecutionDelayExpression;
+					var ExecutionDelayExpression = Action.ExecutionDelayExpression ?? "";
 					if (ImGui.InputText("动作延迟(ms)", ref ExecutionDelayExpression))
 						Action.ExecutionDelayExpression = ExecutionDelayExpression;
 					var Asynchronous = Action.Asynchronous;

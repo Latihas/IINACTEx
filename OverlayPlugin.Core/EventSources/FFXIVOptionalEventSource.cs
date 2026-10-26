@@ -128,7 +128,7 @@ internal class FFXIVOptionalEventSource : EventSourceBase {
 
 					break;
 				case LogMessageType.Process:
-					var gameVersion = repository.GetGameVersion();
+					var gameVersion = repository?.GetGameVersion();
 					DispatchAndCacheEvent(JObject.FromObject(new {
 						type = GameVersionEvent,
 						gameVersion

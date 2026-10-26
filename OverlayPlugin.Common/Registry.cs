@@ -14,12 +14,12 @@ public class Registry(TinyIoCContainer container) {
 
 	public IEnumerable<Type> Overlays => _overlays;
 
-	public IEnumerable<IEventSource?> EventSources => _eventSources;
+	public IEnumerable<IEventSource> EventSources => _eventSources;
 
 	public IReadOnlyList<IOverlayPreset> OverlayPresets => _overlayPresets;
 
 	public event EventHandler<EventSourceRegisteredEventArgs>? EventSourceRegistered;
-	public event EventHandler? EventSourcesStarted;
+	public event EventHandler<EventArgs>? EventSourcesStarted;
 
 	public void RegisterOverlay<T>() where T : class, IOverlay {
 		_overlays.Add(typeof(T));
@@ -46,7 +46,7 @@ public class Registry(TinyIoCContainer container) {
 	}
 
 	public void StartEventSources() {
-		EventSourcesStarted?.Invoke(null, null);
+		EventSourcesStarted?.Invoke(this, EventArgs.Empty);
 	}
 
 	// For backwards compat only!!

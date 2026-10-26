@@ -16,7 +16,7 @@ using SilverDasher.ACT.Views;
 namespace SilverDasher.ACT.Doppelgangers;
 
 internal class Messager(SilverDasher plugin) : Doppelganger(plugin) {
-	private IMqttClient? Tomestone;
+	private IMqttClient Tomestone=null!;
 
 	private readonly ConcurrentQueue<Message> Messages = new();
 
@@ -31,7 +31,6 @@ internal class Messager(SilverDasher plugin) : Doppelganger(plugin) {
 	}
 
 	internal override void Deinit() {
-		if (Tomestone == null) return;
 		if (Tomestone.IsConnected) Tomestone.DisconnectAsync(new MqttClientDisconnectOptions()).Wait(); //++
 		Tomestone.Dispose();
 		PluginControl.SetPluginStatus(PluginStatus.INITIALIZED);
@@ -161,7 +160,6 @@ internal class Messager(SilverDasher plugin) : Doppelganger(plugin) {
 	public bool IsRunning() => Tomestone is { IsConnected: true };
 
 	public void Disconnect() {
-		if (Tomestone == null) return;
 		if (Tomestone.IsConnected) Tomestone.DisconnectAsync(new MqttClientDisconnectOptions()).Wait();
 		Tomestone.ApplicationMessageReceivedAsync -= Unpack;
 		PluginControl.SetPluginStatus(PluginStatus.INITIALIZED);
@@ -172,7 +170,6 @@ internal class Messager(SilverDasher plugin) : Doppelganger(plugin) {
 	}
 
 	internal void Resubscribe(string tag, CancellationToken token) {
-		if (Tomestone == null) return;
 		// Painter?.pluginControl?.CheckBoxCrossWorldToggle(false);
 		var filteredSub = tag == "" ? Subscriptions : Subscriptions.FindAll(e => e.Item1 == tag);
 		Task.Run(async () => {

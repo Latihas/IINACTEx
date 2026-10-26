@@ -21,6 +21,7 @@ internal class LineAbilityExtra : LineBaseSubMachina<LineAbilityExtra.AbilityExt
 			var packetPtr = IntPtr.Zero;
 			try {
 				if (staticRegion == null) throw new Exception("staticRegion is null");
+				if (aeHelper == null) throw new Exception("aeHelper is null");
 				var packetHelper = (MachinaPacketHelper<AbilityExtraPacket<Server_ActionEffect1_Extra>>)aeHelper[staticRegion.Value];
 
 				packetPtr = Marshal.AllocHGlobal(Marshal.SizeOf(packetValue));
@@ -29,7 +30,7 @@ internal class LineAbilityExtra : LineBaseSubMachina<LineAbilityExtra.AbilityExt
 				var rawPacket = *(T*)packetPtr.ToPointer();
 
 				packetHelper.ToStructs(packetPtr, out _, out var aeHeader, true);
-
+				if (aeHeader == null) throw new Exception("aeHeader is null");
 				// Ability ID is really 16-bit, so it is formatted as such, but we will get an
 				// exception if we try to prematurely cast it to UInt16
 				var abilityId = aeHeader.Get<uint>("actionId");
@@ -62,12 +63,12 @@ internal class LineAbilityExtra : LineBaseSubMachina<LineAbilityExtra.AbilityExt
 
 	// Just use the smallest expected packet for the default `packetHelper` implementation
 	// We don't care if actual packet data is mangled in the struct, it is just to access the header data
-	private static MachinaRegionalizedPacketHelper<AbilityExtraPacket<Server_ActionEffect1_Extra>> aeHelper;
+	private static MachinaRegionalizedPacketHelper<AbilityExtraPacket<Server_ActionEffect1_Extra>>? aeHelper;
 
-	private readonly MachinaRegionalizedPacketHelper<AbilityExtraPacket<Server_ActionEffect8_Extra>> packetHelper_8;
-	private readonly MachinaRegionalizedPacketHelper<AbilityExtraPacket<Server_ActionEffect16_Extra>> packetHelper_16;
-	private readonly MachinaRegionalizedPacketHelper<AbilityExtraPacket<Server_ActionEffect24_Extra>> packetHelper_24;
-	private readonly MachinaRegionalizedPacketHelper<AbilityExtraPacket<Server_ActionEffect32_Extra>> packetHelper_32;
+	private readonly MachinaRegionalizedPacketHelper<AbilityExtraPacket<Server_ActionEffect8_Extra>>? packetHelper_8;
+	private readonly MachinaRegionalizedPacketHelper<AbilityExtraPacket<Server_ActionEffect16_Extra>>? packetHelper_16;
+	private readonly MachinaRegionalizedPacketHelper<AbilityExtraPacket<Server_ActionEffect24_Extra>>? packetHelper_24;
+	private readonly MachinaRegionalizedPacketHelper<AbilityExtraPacket<Server_ActionEffect32_Extra>>? packetHelper_32;
 
 	protected static GameRegion? staticRegion;
 
@@ -190,11 +191,11 @@ internal class LineAbilityExtra : LineBaseSubMachina<LineAbilityExtra.AbilityExt
 
 	protected override void MessageReceived(string id, long epoch, byte[] message) {
 		staticRegion ??= ffxiv.GetMachinaRegion();
-		var line = packetHelper[staticRegion.Value].ToString(epoch, message)
-		           ?? packetHelper_8[staticRegion.Value].ToString(epoch, message)
-		           ?? packetHelper_16[staticRegion.Value].ToString(epoch, message)
-		           ?? packetHelper_24[staticRegion.Value].ToString(epoch, message)
-		           ?? packetHelper_32[staticRegion.Value].ToString(epoch, message);
+		var line = packetHelper?[staticRegion.Value].ToString(epoch, message)
+		           ?? packetHelper_8?[staticRegion.Value].ToString(epoch, message)
+		           ?? packetHelper_16?[staticRegion.Value].ToString(epoch, message)
+		           ?? packetHelper_24?[staticRegion.Value].ToString(epoch, message)
+		           ?? packetHelper_32?[staticRegion.Value].ToString(epoch, message);
 		if (line != null) logWriter?.Invoke(line, ffxiv.EpochToDateTime(epoch));
 	}
 }

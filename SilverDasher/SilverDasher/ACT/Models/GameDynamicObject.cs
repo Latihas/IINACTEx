@@ -11,11 +11,11 @@ public abstract class GameDynamicObject {
 		Region = ""
 	};
 
-	[JsonIgnore] internal BaseStorage Storage;
+	[JsonIgnore] internal BaseStorage Storage = null!;
 
 	[JsonIgnore] internal int Id;
 
-	[JsonProperty("name")] public LocalizedEntry Name;
+	[JsonProperty("name")] public LocalizedEntry Name = new();
 
 	[JsonProperty("level")] public int Level;
 
@@ -23,19 +23,19 @@ public abstract class GameDynamicObject {
 
 	[JsonProperty("territory")] public uint TerritoryID;
 
-	[JsonProperty("coords")] internal Coordinate Coordinate;
+	[JsonProperty("coords")] internal Coordinate? Coordinate = new();
 
 	[JsonIgnore] public int Progress;
 
 	[JsonIgnore] public uint Instance;
 
-	internal string TypeName;
+	internal string TypeName = "";
 
 	[JsonIgnore] public Territory Territory {
 		get {
 			if (TerritoryID == 0) return DefaultMultiTerritory;
 			Storage.Keeper.Territories.TryGet((int)TerritoryID, out var item);
-			return item;
+			return item ?? DefaultMultiTerritory;
 		}
 	}
 }

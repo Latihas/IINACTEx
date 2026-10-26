@@ -80,7 +80,7 @@ public partial class FormActMain : Form, ISynchronizeInvoke {
 	[DesignerSerializationVisibility(Hidden)]
 	public string LogFileFilter { get; set; } = "Network_*.log";
 	[DesignerSerializationVisibility(Hidden)]
-	public string LogFilePath { get; set; }
+	public string LogFilePath { get; set; } = string.Empty;
 	[DesignerSerializationVisibility(Hidden)]
 	public DirectoryInfo AppDataFolder { get; private set; }
 	[SuppressMessage("ReSharper", "AutoPropertyCanBeMadeGetOnly.Local")]
@@ -93,20 +93,20 @@ public partial class FormActMain : Form, ISynchronizeInvoke {
 	[DesignerSerializationVisibility(Hidden)]
 	public ConcurrentQueue<string> TrnLogQueue { get; private set; } = new();
 	[DesignerSerializationVisibility(Hidden)]
-	public string CurrentZone { get; set; }
+	public string CurrentZone { get; set; } = string.Empty;
 	[DesignerSerializationVisibility(Hidden)]
-	public FFXIV_ACT_Plugin.FFXIV_ACT_Plugin FfxivPlugin { get; set; }
+	public FFXIV_ACT_Plugin.FFXIV_ACT_Plugin FfxivPlugin { get; set; } = null!;
 	[DesignerSerializationVisibility(Hidden)]
-	public dynamic OverlayPluginContainer { get; set; }
+	public dynamic OverlayPluginContainer { get; set; } = null!;
 	[DesignerSerializationVisibility(Hidden)]
-	public dynamic TriggernometryPlugin { get; set; }
+	public dynamic TriggernometryPlugin { get; set; } = null!;
 	[DesignerSerializationVisibility(Hidden)]
-	public dynamic PostNamazuPlugin { get; set; }
+	public dynamic PostNamazuPlugin { get; set; } = null!;
 	[DesignerSerializationVisibility(Hidden)]
 	public DateTime LastHostileTime { get; private set; }
 	public object AfterCombatActionDataLock => ActGlobals.ActionDataLock;
 	[DesignerSerializationVisibility(Hidden)]
-	public Regex ZoneChangeRegex { get; set; }
+	public Regex? ZoneChangeRegex { get; set; }
 	[DesignerSerializationVisibility(Hidden)]
 	public bool LogPathHasCharName { get; set; }
 	[DesignerSerializationVisibility(Hidden)]
@@ -158,9 +158,9 @@ public partial class FormActMain : Form, ISynchronizeInvoke {
 	public event LogLineEventDelegate? BeforeLogLineRead;
 	public event LogLineEventDelegate? OnLogLineRead;
 	[SuppressMessage("Performance", "CS0067")]
-	public event LogFileChangedDelegate LogFileChanged;
-	public event CombatActionDelegate AfterCombatAction;
-	public event TextToSpeechDelegate TextToSpeech;
+	public event LogFileChangedDelegate? LogFileChanged;
+	public event CombatActionDelegate? AfterCombatAction;
+	public event TextToSpeechDelegate? TextToSpeech;
 
 	[SuppressMessage("Performance", "CA1822")]
 	public void ValidateLists() {
@@ -192,7 +192,7 @@ public partial class FormActMain : Form, ISynchronizeInvoke {
 	public void FakeOnLogLineRead(string s) => OnLogLineRead?.Invoke(false,
 		new LogLineEventArgs(s, 0, DateTime.Now, CurrentZone, inCombat, "Plugin"));
 
-	public void TTS(string message) => TextToSpeech(message);
+	public void TTS(string message) => TextToSpeech?.Invoke(message);
 
 	public void ChangeZone(string ZoneName) {
 		lastZoneRecord?.EndTime = LastKnownTime;

@@ -46,7 +46,7 @@ public unsafe class ZoneDownHookManager : IDisposable {
 			Marshal.Copy(opcodeKeyTableIns, bytes, 0, 13);
 			var opcodeKeyTableOffset = BitConverter.ToUInt32(bytes, 9);
 			var opcodeKeyTableAddress = moduleBase + (nint)opcodeKeyTableOffset;
-			var searchRange = 0x1000;
+			const int searchRange = 0x1000;
 			var memory = new byte[searchRange];
 			Marshal.Copy(opcodeKeyTableAddress, memory, 0, searchRange);
 			var moduleSize = multiScanner.Module.ModuleMemorySize;

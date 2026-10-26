@@ -7,7 +7,7 @@ using SilverDasher.ACT.Models;
 namespace SilverDasher.ACT.Storages;
 
 internal class TerritoryStorage : BaseStorage<Territory> {
-	internal static TerritoryStorage Instance;
+	internal static TerritoryStorage Instance = null!;
 	private Dictionary<int, Territory> TerritoryById = new();
 	internal override string? ResourceFileName => null;
 

@@ -13,7 +13,7 @@ using SilverDasher.ACT.Storages;
 namespace SilverDasher.ACT.Doppelgangers;
 
 internal class Agent(SilverDasher plugin) : Doppelganger(plugin) {
-	public string session;
+	public string session = "";
 
 	private readonly Encoding encoding = Encoding.UTF8;
 

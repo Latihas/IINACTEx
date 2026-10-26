@@ -4,9 +4,9 @@ using Newtonsoft.Json;
 namespace SilverDasher.ACT.Models;
 
 public class ItemGroup {
-	[JsonProperty("group")] public string Group;
+	[JsonProperty("group")] public string Group = "";
 
-	[JsonProperty("name")] public string Name;
+	[JsonProperty("name")] public string Name = "";
 
 	[JsonProperty("items")] public List<int> Items = [];
 

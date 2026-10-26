@@ -52,13 +52,13 @@ internal class Keeper : Doppelganger {
 
 	internal readonly PatchStorage Patches;
 
-	internal static Config Config;
+	internal static Config Config = new();
 
 
 	private Territory CurrentTerritory {
 		get {
 			Territories.TryGet((int)CurrentMapID, out var item);
-			return item;
+			return item ?? new Territory();
 		}
 	}
 
@@ -87,7 +87,7 @@ internal class Keeper : Doppelganger {
 
 	internal override void Deinit() => Config.Save(Config);
 
-	// internal void ConfigPropertyChanged(object sender, PropertyChangedEventArgs e) {
+	// internal void ConfigPropertyChanged(object? sender, PropertyChangedEventArgs e) {
 	//     var config = sender as Config;
 	//     switch (e.PropertyName) {
 	//         case "UseExtraServer":
@@ -106,7 +106,7 @@ internal class Keeper : Doppelganger {
 
 	// internal World GetPlayerWorld() => Worlds.Get(PlayerWorldID);
 
-	internal void FateUpdate(int fateId, int progress = -1, Coordinate coords = null, uint startTime = 0u, uint duration = 0u) {
+	internal void FateUpdate(int fateId, int progress = -1, Coordinate? coords = null, uint startTime = 0u, uint duration = 0u) {
 		if (!CurrentFates.TryGetValue(fateId, out var value)) {
 			try {
 				if (!Fates.Contains(fateId)) return;
