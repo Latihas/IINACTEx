@@ -515,7 +515,7 @@ public sealed class Plugin : IDalamudPlugin {
 		FileDialogManager.Draw();
 	}
 
-	private static void DrawConfigUI() => MainWindow.IsOpen = true;
+	private static void DrawConfigUI() => MainWindow.Toggle();
 
 	private static void EnterPvP() {
 		if (Instance.Configuration is not { DisablePvp: true, DisableWritingPvpLogFile: false }) return;
