@@ -96,6 +96,7 @@ public class FFXIVProcessDalamud(TinyIoCContainer container) : FFXIVProcess {
 			EntityJob.RPR => JObject.FromObject(jg->Reaper, settings),
 			EntityJob.VPR => JObject.FromObject(jg->Viper, settings),
 			EntityJob.PCT => JObject.FromObject(jg->Pictomancer, settings),
+			EntityJob.BST => JObject.FromObject(jg->Beastmaster, settings),
 			_ => null
 		};
 	}
