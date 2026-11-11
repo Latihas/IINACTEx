@@ -2,13 +2,13 @@
 using RainbowMage.OverlayPlugin.MemoryProcessors;
 using RainbowMage.OverlayPlugin.NetworkProcessors.PacketHelper;
 
-namespace RainbowMage.OverlayPlugin.NetworkProcessors;
-
-internal class LineCountdown(TinyIoCContainer container) : LineBaseCustom<
-	LineCountdown.Countdown_v730,
-	LineCountdown.Countdown_v730,
-	LineCountdown.Countdown_v655,
-	LineCountdown.Countdown_v655>(container, LogFileLineID, logLineName, MachinaPacketName) {
+namespace RainbowMage.OverlayPlugin.NetworkProcessors
+{
+    class LineCountdown : LineBaseCustom<
+            Server_MessageHeader_Global, LineCountdown.Countdown_v730,
+            Server_MessageHeader_CN, LineCountdown.Countdown_v730,
+            Server_MessageHeader_KR, LineCountdown.Countdown_v730>
+    {
 	[StructLayout(LayoutKind.Explicit, Size = structSize, Pack = 1)]
 	internal unsafe struct Countdown_v655 : IPacketStruct {
 		// 6.5.5 packet data (minus header):
